@@ -1,0 +1,323 @@
+<html>
+<head>
+<title>Stored Procedures</title>
+<link href='lib/slides.css' rel='stylesheet' type='text/css'>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML" async></script>
+<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js'></script>
+<link href='https://fonts.googleapis.com/css?family=Lato' rel='stylesheet'>
+<link href='lib/prism.css' rel='stylesheet'>
+<script src='lib/sg.js'></script>
+</head>
+<body>
+ <DIV class='slideCl1' id="s0"  >
+<div class='navCl1'><a href="#s1"><span class='nextArrowCl'>>></span></a> </div> <div class='heading'>Stored Procedures</div><p><ul class='indexUl'  style='font-size: 0.7em;'><li class="i"> <a href="#s1">Limitations of Basic SQL</a>
+<li class="i"> <a href="#s2">Extending SQL</a>
+<li class="i"> <a href="#s3">SQL as a Programming Language</a>
+<li class="i"> <a href="#s6">Database Programming</a>
+<li class="i"> <a href="#s8">Stored Procedures</a>
+<li class="i"> <a href="#s10">SQL Functions</a>
+<li class="i"> <a href="#s13">Functions vs Views</a>
+</ul></DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Stored Procedures &#9826; [0/14]</div> <DIV class='slideCl1    ' id="s1"  >
+<div class='navCl1'> <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s2"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Limitations of Basic SQL</div></td><td align='right'></td></tr></table>
+<p>
+What we have seen of SQL so far:
+<ul>
+<li> data definition language
+	&nbsp; <small>(<large><code>create table(...)</code></large>)</small>
+<li> constraints
+	&nbsp; <small>(domain, key, referential integrity)</small>
+<li> query language
+	&nbsp; <small>(<large><code>select...from...where...</code></large>)</small>
+<li> views
+	&nbsp; <small>(give names to SQL queries)</small>
+</ul>
+This provides powerful declarative data extraction mechanisms.
+<p>
+This is not sufficient to write complete applications.
+<p>
+More <font color='#0000BB'>extensibility</font> and <font color='#0000BB'>programmability</font> are needed.
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Stored Procedures &#9826; [1/14]</div> <DIV class='slideCl1    ' id="s2"  >
+<div class='navCl1'><a href="#s1"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s3"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Extending SQL</div></td><td align='right'></td></tr></table>
+<p>
+Ways in which standard SQL might be extended:
+<ul>
+<li> new data types
+	<small>(incl. constraints, I/O, indexes, ...)</small>
+<li> object-orientation
+<li> more powerful constraint checking
+<li> packaging/parameterizing queries
+<li> more functions/aggregates for use in queries
+<li> event-based triggered actions 
+</ul>
+All are required to <i>assist</i>&nbsp; in application development.
+<p>
+But still do not provide a solution to developing applications.
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Stored Procedures &#9826; [2/14]</div> <DIV class='slideCl1    ' id="s3"  >
+<div class='navCl1'><a href="#s2"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s4"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; SQL as a Programming Language</div></td><td align='right'></td></tr></table>
+<p>
+<br>
+At some point in developing complete database applications
+<ul>
+<li> we need to implement user interactions
+<li> we need to control sequences of database operations
+<li> we need to process query results in complex ways
+<li> we need to build a web interface for users to access data
+</ul>
+and SQL cannot do any of these.
+<p>
+SQL cannot even do something as simple as factorial!
+<p>
+<small>
+Ok ... so PostgreSQL added a factorial operator ... but it's non-standard.
+</small>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Stored Procedures &#9826; [3/14]</div> <DIV class='slideCl1    ' id="s4"  >
+<div class='navCl1'><a href="#s3"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s5"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; SQL as a Programming Language <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Consider the problem of withdrawal from a bank account:
+<p>
+<i>If a bank customer attempts to withdraw more funds than
+they have in their account, then indicate "Insufficient Funds",
+otherwise update the account</i>
+<p>
+An attempt to implement this in SQL:
+<p><pre style="font-size:90%">
+select 'Insufficient Funds'
+from   Accounts
+where  acctNo = <i>AcctNum</i> and balance &lt; <i>Amount</i>;
+update Accounts
+set    balance = balance - <i>Amount</i>
+where  acctNo = <i>AcctNum</i> and balance >= <i>Amount</i>;
+select 'New balance: '||balance
+from   Accounts
+where  acctNo = <i>AcctNum</i>;
+</pre><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Stored Procedures &#9826; [4/14]</div> <DIV class='slideCl1    ' id="s5"  >
+<div class='navCl1'><a href="#s4"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s6"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; SQL as a Programming Language <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Two possible evaluation scenarios:
+<ul>
+<li> displays "Insufficient Funds", <large><code>UPDATE</code></large> has no effect, displays unchanged balance
+<li> <large><code>UPDATE</code></large> occurs as required, displays changed balance
+</ul>
+Some problems:
+<ul>
+<li> SQL doesn't allow parameterisation (e.g. <i>AcctNum</i>)
+<li> always attempts <large><code>UPDATE</code></large>, even when it knows it's invalid
+<li> need to evaluate <large><code>(balance &lt; </code></large><i>Amount</i><large><code>)</code></large> test twice
+<li> always displays balance, even when not changed
+</ul>
+To accurately express the "business logic",
+we need facilities like conditional execution and parameter passing.
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Stored Procedures &#9826; [5/14]</div> <DIV class='slideCl1    ' id="s6"  >
+<div class='navCl1'><a href="#s5"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s7"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Database Programming</div></td><td align='right'></td></tr></table>
+<p>
+Database programming requires a combination of
+<ul>
+<li> manipulation of data in DB &nbsp; <small>(via SQL)</small>
+<li> conventional programming &nbsp; <small>(via procedural code)</small>
+</ul>
+This combination is realised in a number of ways:
+<ul>
+<li> passing SQL commands via a "call-level" interface <br>
+<small><font color="#777777">(prog lang is decoupled from DBMS; most flexible; e.g. Java/JDBC, PHP, Python)</font></small>
+<li> embedding SQL into augmented programming languages <br>
+<small><font color="#777777">(requires pre-processor for language; typically DBMS-specific; e.g. SQL/C)</font></small>
+<li> special-purpose programming languages in the DBMS <br>
+<small><font color="#777777">(closely integrated with DBMS; enable extensibility; e.g. PL/SQL, PLpgSQL)</font></small>
+</ul>
+<small>
+Here we focus on the last: extending DBMS capabilities via programs stored in the DB
+</small>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Stored Procedures &#9826; [6/14]</div> <DIV class='slideCl1    ' id="s7"  >
+<div class='navCl1'><a href="#s6"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s8"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Database Programming <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Combining <font color="#CC0000">SQL</font> and <font color="#009900">procedural</font> code solves the "withdrawal" problem:
+<p><pre><small>
+<font color="#009900">create function
+    withdraw(<font color="#0000EE">acctNum</font> text, <font color="#0000EE">amount</font> integer) returns text
+declare bal integer;
+begin
+    set bal = (<font color="#CC0000">select balance
+               from   Accounts
+               where  acctNo = <font color="#0000EE">acctNum</font></font>);
+    if (bal &lt; <font color="#0000EE">amount</font>) then
+        return 'Insufficient Funds';
+    else
+        <font color="#CC0000">update Accounts
+        set    balance = balance - <font color="#0000EE">amount</font>
+        where  acctNo = <font color="#0000EE">acctNum</font></font>;
+        set bal = (<font color="#CC0000">select balance
+                   from   Accounts
+                   where  acctNo = <font color="#0000EE">acctNum</font></font>);
+        return 'New Balance: ' || bal;
+    end if
+end;</font>
+</small></pre><p>
+<small>(This example is actually a stored procedure, using SQL/PSM syntax)</small>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Stored Procedures &#9826; [7/14]</div> <DIV class='slideCl1    ' id="s8"  >
+<div class='navCl1'><a href="#s7"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s9"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Stored Procedures</div></td><td align='right'></td></tr></table>
+<p>
+<font color='#0000BB'>Stored procedures</font> are small programs ...
+<ul>
+<li> stored in the database, alongside the stored data
+<li> invoked in SQL queries, or automatically invoked in triggers
+</ul>
+SQL/PSM is a standard for stored procedures, developed in 1996. <br>
+By then, most DBMSs had their own stored procedure languages.
+<p>
+PostgreSQL supports stored procedures in a variety of languages
+<ul>
+<li> PLpgSQL ... PostgreSQL-specific procedural language &nbsp; <span class="smaller">(cf. Oracle's PL/SQL)</span>
+<li> SQL ... functions that resemble parameterised views
+<li> Python, Perl, Tcl, ... etc.
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Stored Procedures &#9826; [8/14]</div> <DIV class='slideCl1    ' id="s9"  >
+<div class='navCl1'><a href="#s8"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s10"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Stored Procedures <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+The PLpgSQL interpreter
+<ul>
+<li> executes procedural code and manages variables
+<li> calls PostgreSQL engine to evaluate SQL statements
+</ul>
+<p><div align='center'>
+<img alt="[Diagram:Pics/plpgsql/engine.png]" src="Pics/plpgsql/engine.png">
+</div><p>
+Embedded in DBMS engine, so efficient to execute with queries
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Stored Procedures &#9826; [9/14]</div> <DIV class='slideCl1    ' id="s10"  >
+<div class='navCl1'><a href="#s9"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s11"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; SQL Functions</div></td><td align='right'></td></tr></table>
+<p>
+PostgreSQL allows functions to be defined in SQL
+<p><pre>
+CREATE OR REPLACE
+   <font color="#000099"><i>funcName</i>(<i>arg1type</i>, <i>arg2type</i>, ....)
+   RETURNS <i>rettype</i></font>
+AS <font color="#009900">$$
+   <i>SQL</i> <i>statements</i>
+$$</font> LANGUAGE sql;
+</pre><p>
+Within the function, arguments are accessed as <large><code>$1</code></large>, <large><code>$2</code></large>, ...
+<p>
+Return value: result of the last SQL statement.
+<p>
+<i>rettype</i> can be any PostgreSQL data type (incl tuples,tables).
+<p>
+Function returning a table: &nbsp; <large><code>returns setof</code></large> <i>TupleType</i>
+<p>
+Details: PostgreSQL Documentation, Section 37.5
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Stored Procedures &#9826; [10/14]</div> <DIV class='slideCl1    ' id="s11"  >
+<div class='navCl1'><a href="#s10"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s12"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; SQL Functions <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<b>Example:</b> info about bars from a given suburb
+<p><pre style="font-size:90%">
+create or replace function
+    hotelsIn(text) returns setof Bars
+as $$
+select * from Bars where addr = $1;
+$$ language sql;
+
+<span class='comment'>-- usage examples</span>
+select * from hotelsIn('The Rocks');
+      name       |   addr    | license 
+-----------------+-----------+---------
+ Australia Hotel | The Rocks |  123456
+ Lord Nelson     | The Rocks |  123888
+
+select * from hotelsIn('Randwick');
+    name     |   addr   | license 
+-------------+----------+---------
+ Royal Hotel | Randwick |  938500
+</pre><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Stored Procedures &#9826; [11/14]</div> <DIV class='slideCl1    ' id="s12"  >
+<div class='navCl1'><a href="#s11"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s13"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; SQL Functions <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<b>Example:</b> Name of cheapest beer at each bar
+<p><pre style="font-size:90%">
+create view Cheapest(bar, price) as
+select bar, min(price) from Sells group by bar;
+
+select s.*
+from   Sells s
+where  s.price =
+         (select price from Cheapest where bar = s.bar);
+</pre><p>
+Could be implemted by defining an SQL function <large><code>LowestPriceAt(bar)</code></large>
+<p><pre style="font-size:90%">
+create or replace
+    function LowestPriceAt(text) returns float
+as $$
+select min(price) from Sells where bar = $1;
+$$ language sql;
+
+select * from Sells where price = LowestPriceAt(bar);
+</pre><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Stored Procedures &#9826; [12/14]</div> <DIV class='slideCl1    ' id="s13"  >
+<div class='navCl1'><a href="#s12"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s14"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Functions vs Views</div></td><td align='right'></td></tr></table>
+<p>
+A parameterless function behaves similar to a view
+<p>
+E.g.
+<p><pre>
+create or replace view EmpList
+as
+select given||' '||family as name,
+       street||', '||town as addr
+from   Employees;
+</pre><p>
+which is used as
+<p><pre>
+mydb=# select * from EmpList;
+</pre><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Stored Procedures &#9826; [13/14]</div> <DIV class='slideCl1    ' id="s14"  >
+<div class='navCl1'><a href="#s13"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>   </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Functions vs Views <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Compared to its implementation as a function:
+<p><pre>
+create type EmpRecord as (name text, addr text);
+
+create or replace function
+   EmpList() returns setof EmpRecord
+as $$
+select family||' '||given as name,
+       street||', '||town as addr
+from   Employees
+$$ language sql;
+</pre><p>
+which is used as
+<p><pre>
+mydb=# select * from EmpList();
+</pre><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Stored Procedures &#9826; [14/14]</div><p><hr><p>
+<span style='font-size:11px;color: grey;'>Produced: 5 Oct 2020</span>
+ <script src='lib/prism.js'></script>   
+ <script src='lib/sg.js'></script>   
+</body>
+</html>

@@ -1,0 +1,69 @@
+All timings run on Grieg after buffers filled
+Note that count(*) was used to reduce the amount of output,
+  while requiring the query to completely evaluate
+
+
+select count(*) from titles where main_title like 'D%';
+
+  Average time 24ms
+
+select count(*) from titles where substring(main_title,1,1) = 'D';
+
+  Average time 47ms
+
+select count(*) from titles where main_title ~ '^D.*';
+
+  Average time 65ms
+
+All of the above queries are evaluated very fast
+LIKE is fast enough
+Calling functions in a WHERE clause is relatively expensive
+PostgreSQL's imlementation of regular expressions is slow
+
+
+select count(*) from titles where main_title = 'District 6';
+
+  Average time 21ms
+
+select count(*) from titles where main_title ~ 'Dis.* 6';
+
+  Average time 111ms
+
+select count(*) from titles where main_title like 'Dis% 6';
+
+  Average time 23ms
+
+select count(*) from titles where id = 110010302;
+
+  Average time 0.4ms
+
+All of the above queries are evaluated very fast
+String comparison and LIKE have comparable speeds.
+Retrieval with an indexed attribute is very very fast.
+
+
+select max(id) from titles;
+
+  Average time 0.3ms
+
+select max(main_title) from titles;
+
+  Average time 43ms
+
+Both of the above queries are fast.
+Finding the max on an indexed attribute is done without
+even looking at the table data; it just uses the index
+(which contains the values of the indexed attribute)
+Finding the max on non-indexed fields requires a scan of
+the entire table data
+
+
+select count(*)
+from   Titles t join Principals p on (t.id = p.title_id)
+       join Names n on (n.id = p.name_id)
+where  p.ordering = 1
+
+Average time 4.8ms
+
+This join on three large tables is very fast
+Joins on indexed primary keys can be very efficiently implemented

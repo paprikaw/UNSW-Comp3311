@@ -1,0 +1,1061 @@
+<html>
+<head>
+<title>Programming with Databases</title>
+<link href='lib/notes.css' rel='stylesheet' type='text/css'>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML" async></script>
+<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js'></script>
+<link href='lib/prism.css' rel='stylesheet'>
+<script src='lib/sg.js'></script>
+</head>
+<body>
+<div class='heading'>Programming with Databases</div><p><ul class='indexUl'  style='font-size: 0.7em;'><li class="i"> <a href="#s1">Programming with Databases</a>
+<li class="i"> <a href="#s6">Functional Languages and RDBMS</a>
+<li class="i"> <a href="#s11">Logic Languages and RDBMS</a>
+<li class="i"> <a href="#s16">Procedural Lanaguages and RDBMS</a>
+<li class="i"> <a href="#s18">Example PHP/PGSQL Interaction</a>
+<li class="i"> <a href="#s20">Object-oriented Languages and RDBMS</a>
+<li class="i"> <a href="#s25">PL/DB Interface</a>
+<li class="i"> <a href="#s27">DB/PL Mismatch</a>
+<li class="i"> <a href="#s34">Exercise: DB/PL Mismatch</a>
+<li class="i"> <a href="#s38">Python and DB Access</a>
+<li class="i"> <a href="#s39">Python</a>
+<li class="i"> <a href="#s40">Psycopg2</a>
+<li class="i"> <a href="#s42">Database <large><code>connection</code></large>s</a>
+<li class="i"> <a href="#s43">Example: connecting to a database</a>
+<li class="i"> <a href="#s44">Operations on <large><code>connection</code></large>s</a>
+<li class="i"> <a href="#s45">Database <large><code>Cursor</code></large>s</a>
+<li class="i"> <a href="#s46">Operations on <large><code>cursor</code></large>s</a>
+</ul><hr>
+<DIV id="s1">
+<div class='heading'>Programming with Databases</div>
+<p>
+So far, we have seen ...
+<ul>
+<li> accessing data via SQL queries
+<li> packaging SQL queries as views/functions
+<li> building functions to return tables
+<li> implementing assertions via triggers
+</ul>
+All of the above programming
+<ul>
+<li> is very close to the data
+<li> takes place inside the DBMS
+</ul>
+</DIV>
+<hr>
+<DIV id="s2">
+<div class='heading'>Programming with Databases <span style="font-size:67%">(cont)</span></div>
+<p>
+Programming language access to DBMSs
+<p>
+<p><div align='center'>
+<img alt="[Diagram:Pic/pldb/dbpl-arch.png]" src="Pic/pldb/dbpl-arch.png">
+</div><p>
+<p>
+Note the PLpgSQL is "closer" to the DBMS than PLs
+</DIV>
+<hr>
+<DIV id="s3">
+<div class='heading'>Programming with Databases <span style="font-size:67%">(cont)</span></div>
+<p>
+Complete applications require code outside the DBMS
+<ul>
+<li> to handle the user interface &nbsp; <small>(GUI or Web)</small>
+<li> to interact with other systems &nbsp; <small>(e.g. other DBs)</small>
+<li> to perform compute-intensive work &nbsp; <small>(vs. data-intensive)</small>
+</ul>
+"Conventional" programming languages (PLs) provide these.
+<p>
+We consider four families of programming language:
+<ul>
+<li> logic programming, functional programming
+<li> procedural programming, object-oriented programming
+</ul>
+and how they might interface with the relational model.
+</DIV>
+<hr>
+<DIV id="s4">
+<div class='heading'>Programming with Databases <span style="font-size:67%">(cont)</span></div>
+<p>
+Requirements of an interface between PL and RDBMS:
+<ul>
+<li> mechanism for connecting to the DBMS
+<li> mapping betwen tuples and PL objects
+<li> mechanism for mapping PL "requests" to queries
+<li> mechanism for iterating over query results
+</ul>
+Distance between PL and DBMS is variable, e.g.
+<ul>
+<li> <large><code>libpq</code></large> allows C programs to use PG structs
+<li> JDBC transmits SQL strings, retrieves tuples-as-objects
+<li> FP interfaces operate on lists (sets) of tuples
+</ul>
+</DIV>
+<hr>
+<DIV id="s5">
+<div class='heading'>Programming with Databases <span style="font-size:67%">(cont)</span></div>
+<p>
+Levels of abstraction in DB/PL interfaces
+<ul>
+<li> high: DB hidden behind objects, no DB schema/SQL, portable
+<ul>
+<li> e.g. Active Record, SQLalchemy, ...
+</ul>
+<li> medium: write schema, SQL construction functions, portable?
+<ul>
+<li> e.g. CodeIgniter DB interface
+</ul>
+<li> low: write schema, write SQL, not portable?
+<ul>
+<li> e.g. JDBC, PDO, COMP3311 DB library, ...
+</ul>
+</ul>
+Since this is a DB course, we consider low-level abstraction
+</DIV>
+<hr>
+<DIV id="s6">
+<div class='heading'>Functional Languages and RDBMS</div>
+<p>
+Functional programming languages <small>(FPLs)</small> (e.g. Haskell)
+<ul>
+<li> understand tuples and sets (arrays) of tuples
+<li> provide methods for extracting tuple components
+<li> list comprehensions provide a mechanism for
+<ul>
+<li> generating results, filtering, joining, ...
+</ul>
+<li> but are missing e.g. foreign key checking
+</ul>
+Examples courtesy of Stefan Stanczyk, University of Linz, Austria.
+
+<small>Note: the Haskell code is approximate; no guarantees it compiles.</small>
+</DIV>
+<hr>
+<DIV id="s7">
+<div class='heading'>Functional Languages and RDBMS <span style="font-size:67%">(cont)</span></div>
+<p>
+Example: airports, airlines database
+<p><pre><small>
+data Country = GBR | USA | NZL  deriving (Eq,Show)
+data Airline = BA | UA | NZ  deriving (Eq,Show)
+data Airport = LHR | JFK | LAX | AKL deriving (Eq,Show)
+
+allCountries :: [Country]
+allCountries = [GBR, USA, NZL]
+
+allAirlines :: [Airline]
+allAirlines = [BA, UA, NZ]
+
+allAirports :: [Airport]
+allAirports = [LHR, JFK, LAX, AKL]
+
+type CountryData  =  (String,Integer)
+countryInfo :: Country -> CountryData
+countryInfo GBR = ("Britain", 60)
+countryInfo UA = ("United States", 250)
+countryInfo NZ = ("New Zealand", 3)
+
+type AirlineData  =  (String,Country)
+airlineInfo :: Airline -> AirlineData
+airlineInfo BA = ("British Airways", GBR)
+airlineInfo UA = ("United Airlines", USA)
+airlineInfo NZ = ("Air New Zealand", NZL)
+
+type AirportData  =  (String,String,Country)
+airportInfo :: Airport -> AirportData
+airportInfo LHR = ("Heathrow", "London", GBR)
+airportInfo JFK = ("JFK Intl", "New York", USA)
+airportInfo LAX = ("LA Intl", "Los Angeles", USA)
+airportInfo AKL = ("Auckland", "Auckland", NZL)
+</small></pre><p>
+</DIV>
+<hr>
+<DIV id="s8">
+<div class='heading'>Functional Languages and RDBMS <span style="font-size:67%">(cont)</span></div>
+<p>
+<p><pre><small>
+<span class='comment'>-- extracting fields</span>
+
+countryName :: Country -> String
+countryName x = first (countryInfo x)
+countryPopulation :: Country -> Integer
+countryPopulation x = second (countryInfo x)
+
+airlineName :: Airline -> String
+airlineName x = first (airlineInfo x)
+airlineHome :: Airline -> Country
+airlineHome x = second (airlineInfo x)
+
+airportName :: Airport -> String
+airportName x = first (airportInfo x)
+airportCity :: Airport -> String
+airportCity x = second (airportInfo x)
+airportCountry :: Airport -> Country
+airportCountry x = third (airportInfo x)
+</small></pre><p>
+</DIV>
+<hr>
+<DIV id="s9">
+<div class='heading'>Functional Languages and RDBMS <span style="font-size:67%">(cont)</span></div>
+<p>
+<p><pre><small>
+<span class='comment'># how many airlines are there?</span>
+
+q1 = length allAirlines
+
+<span class='comment'># names of all countries</span>
+
+q2 = [ countryName c | c <- allCountries ]
+<span class='comment'>#or</span>
+q2 = map countryName allCountries
+
+<span class='comment'># which airports are located in the USA?</span>
+
+q3 = [ ap | ap <- allAirports, airportCountry = USA ]
+
+<span class='comment'># which airports are in United's home country?</span>
+
+q4 = [ ap | ap <- allAirports,
+            airportCountry ap = (airlineHome UA) ]
+</small></pre><p>
+</DIV>
+<hr>
+<DIV id="s10">
+<div class='heading'>Functional Languages and RDBMS <span style="font-size:67%">(cont)</span></div>
+<p>
+<p><pre><small>
+<span class='comment'># country (or countries) with smallest population</span>
+
+smallestPop :: [Country] -> Integer
+smallestPop cs = minimum (map countryPopulation allCountries)
+
+q5 = [ c | c <- allCountries,
+           countryPopulation c = smallestPop allcountries]
+
+<span class='comment'># which airline(s) have their home in Britain</span>
+
+q6 = [ a | a <- allAirlines,
+           countryName (airlineHome a) = "Britain" ]
+<span class='comment'># or</span>
+q6 = [ a | a <- allAirlines, b <- allCountries,
+           countryName b = "Britain", airlineHome a = b ]
+
+<span class='comment'># which airlines have home in small population country?</span>
+
+q6 = [ a | a <- allAirlines, b <- q5, airlineHome a = b ]
+</small></pre><p>
+</DIV>
+<hr>
+<DIV id="s11">
+<div class='heading'>Logic Languages and RDBMS</div>
+<p>
+Logic programming languages <small>(LPLs)</small> (e.g. Prolog/Datalog)
+<ul>
+<li> have a notion of tuples (aka ground facts)
+<li> understand sets of tuples (aka ground predicates)
+<li> have a notion of querying (deduction)
+<li> provide flexible result instantiation (variables)
+</ul>
+LPLs are an excellent fit with the relational model.
+<p>
+If developed first, may have been better than SQL.
+</DIV>
+<hr>
+<DIV id="s12">
+<div class='heading'>Logic Languages and RDBMS <span style="font-size:67%">(cont)</span></div>
+<p>
+Example: airports, airlines database
+<p><pre><small>
+country('GBR', 'Britain', 60).
+country('USA', 'United States', 250).
+country('NZL', 'New Zealand', 3).
+country('AUS', 'Australia', 22).
+
+city('London', 'GBR').
+city('New York','USA').
+city('Los Angeles','USA').
+city('Auckland','NZL').
+city('Sydney','AUS').
+city('Melbourne','AUS').
+
+airline('BA', 'British Airways', 'GBR').
+airline('UA', 'United Airlines', 'USA').
+airline('NZ', 'Air New Zealand', 'NZL').
+airline('QF', 'Qantas', 'AUS').
+
+airport('LHR', 'Heathrow', 'London').
+airport('JFK', 'JFK Intl', 'New York').
+airport('LAX', 'LA Intl', 'Los Angeles').
+airport('AKL', 'Auckland', 'Auckland').
+airport('SYD', 'Kingsford-Smith', 'Sydney').
+airport('MEL', 'Tullamarine', 'Melbourne').
+</small></pre><p>
+</DIV>
+<hr>
+<DIV id="s13">
+<div class='heading'>Logic Languages and RDBMS <span style="font-size:67%">(cont)</span></div>
+<p>
+<p><pre><small>
+<span class='comment'>-- extracting fields</span>
+
+countryName(C,N) :- country(C,N,_).
+countryPopulation(C,P) :- country(C,_,P).
+
+airlineName(A,N) :- airline(A,N,_).
+airlineHome(A,H) :- airline(A,_,H).
+
+airportName(A,N) :- airport(A,N,_).
+airportCity(A,C) :- airport(A,_,C).
+airportCountry(A,C) :- airport(A,_,X), city(X,C).
+
+<span class='comment'># usage ...</span>
+?- countryName('GBR',N).
+N = Britain
+?- airportCountry('MEL',C).
+C = Australia
+</small></pre><p>
+</DIV>
+<hr>
+<DIV id="s14">
+<div class='heading'>Logic Languages and RDBMS <span style="font-size:67%">(cont)</span></div>
+<p>
+<p><pre><small>
+<span class='comment'># how many airlines are there?</span>
+
+q1(N) :- findall(A,airline(A,_,_),All), length(All,N).
+
+<span class='comment'># names of all countries</span>
+
+q2(C) :- country(_,C,_).
+
+<span class='comment'># which airports are located in the USA?</span>
+
+q3(A) :- airport(A,_,C), city(C,'USA').
+
+<span class='comment'># which airports are in United's home country?</span>
+
+q4(A) :- airline('UA',_,Country),
+         city(City,Country), airport(A,_,City).
+</small></pre><p>
+</DIV>
+<hr>
+<DIV id="s15">
+<div class='heading'>Logic Languages and RDBMS <span style="font-size:67%">(cont)</span></div>
+<p>
+<p><pre><small>
+<span class='comment'># country (or countries) with smallest population</span>
+
+smallestPop(P) :-
+   findall(Pop,country(_,_,Pop),Pops), min_list(Pops,P).
+
+q5(C) :- smallestPop(Min), country(C,_,Min).
+
+<span class='comment'># which airline(s) have their home in Britain</span>
+
+q6(A) :- airline(A,_,C), country(C,'Britain',_).
+
+<span class='comment'># which airlines have home in small population country?</span>
+
+q7(A) :- airline(A,_,C), q5(C).
+</small></pre><p>
+</DIV>
+<hr>
+<DIV id="s16">
+<div class='heading'>Procedural Lanaguages and RDBMS</div>
+<p>
+Most RDBMSs have a low-level C library which provide
+<ul>
+<li> <large><code>structs</code></large> for tuples, queries, connections
+<li> function to establish DB connection <small>(authentication)</small>
+<li> function to initiate a query
+<small>
+<ul>
+<li> send SQL query string to DBMS via established connection
+<li> return "handle" to access tuples in result set
+</ul>
+</small>
+<li> function to retrieve next tuple in result set
+<li> methods for extracting contents of tuple
+</ul>
+</DIV>
+<hr>
+<DIV id="s17">
+Higher-level languages and scripting languages typically
+have a DB interface.
+<p>
+Examples: Java/JDBC, PHP/PDO, Perl/DBI
+<p>
+Above APIs are DB agnostic; DBMS-specific interfaces
+are also avaiable.
+<p>
+Example: PHP's <large><code>pg_connect()</code></large>, <large><code>pg_query()</code></large>, <large><code>pg_fetch()</code></large>
+<p>
+COMP3311 previous used a simple PHP-PostgreSQL library.
+</DIV>
+<hr>
+<DIV id="s18">
+<div class='heading'>Example PHP/PGSQL Interaction</div>
+<p>
+Assuming same airline database as for previous examples ...
+<p><pre><small>
+$db = dbConnect("dbname=airlines");
+
+<span class='comment'># how many airlines are there?</span>
+
+$query = "select count(*) from Airlines";
+$nAirlines = dbOneValue($db, $query);
+
+<span class='comment'># names of all countries</span>
+
+$query = "select country from Countries";
+$result = dbQuer($db, $query);
+while ($tuple = dbNext($result))
+   echo $tuple[1],"\n";
+
+<span class='comment'># which airports are located in the USA?</span>
+
+$query = &lt;<_SQL_
+_SQL_;
+$result = dbQuery($db, $query);
+
+<span class='comment'># which airports are in United's home country?</span>
+
+q4(A) :- airline('UA',_,Country),
+         city(City,Country), airport(A,_,City).
+</small></pre><p>
+</DIV>
+<hr>
+<DIV id="s19">
+<div class='heading'>Example PHP/PGSQL Interaction <span style="font-size:67%">(cont)</span></div>
+<p>
+<p><pre><small>
+<span class='comment'># country (or countries) with smallest population</span>
+
+smallestPop(P) :-
+   findall(Pop,country(_,_,Pop),Pops), min_list(Pops,P).
+
+q5(C) :- smallestPop(Min), country(C,_,Min).
+
+<span class='comment'># which airline(s) have their home in Britain</span>
+
+q6(A) :- airline(A,_,C), country(C,'Britain',_).
+
+<span class='comment'># which airlines have home in small population country?</span>
+
+q7(A) :- airline(A,_,C), q5(C).
+</small></pre><p>
+</DIV>
+<hr>
+<DIV id="s20">
+<div class='heading'>Object-oriented Languages and RDBMS</div>
+<p>
+Associating OO programs and RDBMS requires
+<ul>
+<li> mapping between DB structures and objects
+<li> representation for connections, queries, result sets
+</ul>
+Two major mapping approaches have been developed:
+<ul>
+<li> record-based mapping (e.g. JDBC, PDO)
+<li> object-relational mapping (e.g. Hibernate, Active Record)
+</ul>
+</DIV>
+<hr>
+<DIV id="s21">
+<div class='heading'>Object-oriented Languages and RDBMS <span style="font-size:67%">(cont)</span></div>
+<p>
+Record-based Mapping:
+<ul>
+<li> implement database using conventional methods
+<li> implement application code considering DB design
+<li> <font color="#009900">good:</font> good DB design, can tune DB performance
+<li> <font color="#996600">bad:</font> manual mapping between application/DB objects
+</ul>
+Object-relational Mapping:
+<ul>
+<li> provide data structures in OO <small>(possibly via wrapper)</small>
+<li> system builds DB access methods automatically
+<li> <font color="#009900">good:</font> easy, maintainable, no SQL
+<li> <font color="#996600">bad:</font> often leads to poor usage of the database
+</ul>
+</DIV>
+<hr>
+<DIV id="s22">
+<div class='heading'>Object-oriented Languages and RDBMS <span style="font-size:67%">(cont)</span></div>
+<p>
+Often DB access is packaged within a large OO framework
+<ul>
+<li> e.g. Java, J2EE and its Data Access Objects (DAOs)
+</ul>
+The idea behind this:
+<ul>
+<li> business objects are represented by a collection of values
+<li> values may be spread across multiple tables
+<li> implement a business object class with operations
+<small>
+<ul>
+<li> <large><code>create()</code></large> ... inserts new tuple(s), given object values
+<li> <large><code>getData()</code></large> ... fetch value of (typically) one attribute
+<li> <large><code>setData()</code></large> ... update value of (typically) one attribute
+</ul>
+</small>
+</ul>
+</DIV>
+<hr>
+<DIV id="s23">
+<div class='heading'>Object-oriented Languages and RDBMS <span style="font-size:67%">(cont)</span></div>
+<p>
+Persistence frameworks (e.g. Hibernate) simplify DAOs
+<ul>
+<li> developer defines own database tables
+<li> developer gives mapping from tables to application objects
+<li> framework produces mapping methods
+<li> developer then programs solely with application objects
+</ul>
+However, reference back to DB structures is needed
+<ul>
+<li> if ORM produces poor execution performance
+<li> for some complex data manipulations
+	<small>(which are SQL-friendly)</small>
+</ul>
+Unfortunately, solution is often <i>x</i>QL rather than SQL.
+</DIV>
+<hr>
+<DIV id="s24">
+<div class='heading'>Object-oriented Languages and RDBMS <span style="font-size:67%">(cont)</span></div>
+<p>
+Alternative approach: the <font color='#0000BB'>Active Record</font> design pattern.
+<p>
+Used in some strongly OO contexts <small>(e.g. Ruby-on-Rails)</small>
+<p>
+Treats tuples as core objects:
+<ul>
+<li> requires user to follow conventions in defining tables
+<li> uses DBMS metadata to derive access methods
+<li> provides access to DB via objects, no SQL needed
+<li> automatically generates methods to access tables
+</ul>
+<small>
+Similar to persistence framework, but uses convention rather than configuration.
+</small>
+</DIV>
+<hr>
+<DIV id="s25">
+<div class='heading'>PL/DB Interface</div>
+<p>
+Common pattern used by record-based libraries: 
+<p><pre>
+<i>db</i> = connect_to_dbms(<i>DBname</i>,<i>User/Password</i>);
+<i>query</i> = build_SQL("<i>sql_statement_template</i>",<i>values</i>);
+<i>results</i> = execute_query(<i>db</i>,<i>query</i>);
+while (more_tuples_in(<i>results</i>))
+{
+   <i>tuple</i> = fetch_row_from(<i>results</i>);
+   // do something with values in tuple ...
+}
+</pre><p>
+This pattern is used in many different libraries:
+<ul>
+<li> Java/JDBC, PHP/PDO, Perl/DBI, Python/dbapi2, Tcl, ...
+</ul>
+</DIV>
+<hr>
+<DIV id="s26">
+<div class='heading'>PL/DB Interface <span style="font-size:67%">(cont)</span></div>
+<p>
+All record-based libraries have the same overall structure.
+<p>
+They differ in the details:
+<ul>
+<li> whether specific to one database or generic
+<li> whether object-oriented or procedural flavour
+<li> function/method names and parameters
+<li> how to get data from program into SQL statements
+<li> how to get data from tuples to program variables
+</ul>
+We use PHP and a simple, locally-developed library for this.
+</DIV>
+<hr>
+<DIV id="s27">
+<div class='heading'>DB/PL Mismatch</div>
+<p>
+There is a tension between PLs and DBMSs
+<ul>
+<li> DBMSs deal efficiently with sets of tuples
+<li> PLs encourage dealing with single tuples/objects
+</ul>
+If not handled carefully, can lead to inefficient use of DB.
+<p>
+Note: relative costs of DB access operations:
+<ul>
+<li> establishing a DBMS connection ... very high
+<li> initiating an SQL query ... high
+<li> accessing individual tuple ... low
+</ul>
+</DIV>
+<hr>
+<DIV id="s28">
+<div class='heading'>DB/PL Mismatch <span style="font-size:67%">(cont)</span></div>
+<p>
+Consider the PL/DBMS access method, phrased in a made-up DB/PL api
+<p><pre>
+<span class='comment'>--  establish connection to DBMS</span>
+db = dbAccess("DB");
+query = "select a,b from R,S where ... ";
+<span class='comment'>--  invoke query and get handle to result set</span>
+results = runQuery(db, query);
+<span class='comment'>--  for each tuple in result set</span>
+while (tuple = getNext(results)) {
+    <span class='comment'>--  process next tuple</span>
+    process(tuple['a'], tuple['b']);
+}
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s29">
+<div class='heading'>DB/PL Mismatch <span style="font-size:67%">(cont)</span></div>
+<p>
+Example database:
+<p><pre>
+Students(id, name, ...)
+Marks(student, course, mark, ...)
+</pre><p>
+where there are
+<ul>
+<li> 1000 Students
+<li> 10000 Marks tuples
+</ul>
+</DIV>
+<hr>
+<DIV id="s30">
+<div class='heading'>DB/PL Mismatch <span style="font-size:67%">(cont)</span></div>
+<p>
+Example: find mature-age students
+<p><pre>
+query = "select * from Student";
+results = runQuery(db,query);
+while (tuple = getNext($results)) {
+    if (tuple['age'] >= 40) {
+        <span class='comment'>--  process mature-age student</span>
+    }
+}
+</pre><p>
+If 1000 students, and only 50 of them are over 40,
+<br>
+we transfer 950 unnecessary tuples from DB.
+</DIV>
+<hr>
+<DIV id="s31">
+<div class='heading'>DB/PL Mismatch <span style="font-size:67%">(cont)</span></div>
+<p>
+E.g. should be implemented as:
+<p><pre>
+query = "select * from Student where age >= 40";
+results = runQuery(db,query);
+while (tuple = getNext(results)) {
+    <span class='comment'>--  process mature-age student</span>
+}
+</pre><p>
+Transfers only the 50 tuples that are needed.
+</DIV>
+<hr>
+<DIV id="s32">
+<div class='heading'>DB/PL Mismatch <span style="font-size:67%">(cont)</span></div>
+<p>
+Example: find info about all marks for all students
+<p><pre>
+query1 = "select id,name from Student";
+res1 = runQuery(db,query1);
+while (tuple1 = getNext(res1)) {
+    query2 = "select course,mark from Marks"+
+              " where student = "+tuple1['id'];
+    res2 = runQuery(db,query2);
+    while (tuple2 = getNext(res2)) {
+        <span class='comment'>--  process student/course/mark info</span>
+    }
+}
+</pre><p>
+We invoke 1001 queries on database <small>(outer query + 1 per student)</small>
+<p>
+If average 10 Marks/Student, 10000 tuples transferred
+</DIV>
+<hr>
+<DIV id="s33">
+<div class='heading'>DB/PL Mismatch <span style="font-size:67%">(cont)</span></div>
+<p>
+E.g. should be implemented as:
+<p><pre>
+query = "select id,name,course,mark"+
+         " from Student s, Marks m"+
+         " where s.id = m.student";
+results = runQuery(db,query);
+while (tuple = getNext(results)) {
+    <span class='comment'>--  process student/course/mark info</span>
+}
+</pre><p>
+We invoke 1 query, and transfer 10000 tuples
+</DIV>
+<hr>
+<DIV id="s34">
+<div class='heading'>Exercise: DB/PL Mismatch</div>
+<p>
+Give two different approaches for producing a table of
+<ul>
+<li> student ID and name
+<li> maximum mark they ever obtained for any course
+</ul>
+Analyse the cost for each in terms of
+<ul>
+<li> number of queries made on the database
+<li> number of tuples read
+</ul>
+Assume 1000 student tuples with 10 marks per student (on average).
+</DIV>
+<hr>
+<DIV id="s35">
+<div class='heading'>Exercise: DB/PL Mismatch <span style="font-size:67%">(cont)</span></div>
+<p>
+Solution1: most work done by database
+<p><pre>
+query = "
+select s.id, s.name, max(m.mark)
+from   Students s join Marks m on m.student = s.id
+group  by s.id, s.name
+";
+result = runQuery(db,query)
+while (tuple = getNext(result)
+	print(tuple['id'],tuple['max'])
+</pre><p>
+Runs 1 query; tranfers 10000 tuples from DB to program
+</DIV>
+<hr>
+<DIV id="s36">
+<div class='heading'>Exercise: DB/PL Mismatch <span style="font-size:67%">(cont)</span></div>
+<p>
+Solution2: multiple queries
+<p><pre>
+q1 = "select s.id, s.name from Students";
+res1 = runQuery(db,q1)
+while (tuple =getNext(result) {
+	tuple = getNext(res1)
+	sid = tuple['id']
+	max = -1
+	q2 = "select mark from Marks "+
+	     "where students = "+sid
+	res2 = dbQuery(db, q2)
+	while (tup2 = getNext(res2)) {
+		mark = tup2['mark']
+		if (mark > max) max = mark
+}	}		
+print(sid,max)
+</pre><p>
+Runs 1001 queries; tranfers 10000 tuples from DB to program
+</DIV>
+<hr>
+<DIV id="s37">
+<div class='heading'>Exercise: DB/PL Mismatch <span style="font-size:67%">(cont)</span></div>
+<p>
+Solution3: inefficient strategy (no <large><code>where</code></large> clauses)
+<p><pre>
+q1 = "select s.id, s.name from Students";
+res1 = runQuery(db,q1)
+while (tuple =getNext(result) {
+	tuple = getNext(res1)
+	sid = tuple['id']
+	max = -1
+	q2 = "select student, mark from Marks"
+	res2 = dbQuery(db, q2)
+	while (tup2 = getNext(res2)) {
+		if ($tup2['student'] != sid) continue
+		mark = tup2['mark']
+		if (mark > max) max = mark
+}	}		
+print(sid,max)
+</pre><p>
+Runs 1001 queries; tranfers 100000 tuples from DB to program
+</DIV>
+<hr>
+<DIV id="s38">
+<div class='section'>&#8750; Python and DB Access</div>
+<p>
+</DIV>
+<hr>
+<DIV id="s39">
+<div class='heading'>Python</div>
+<p>
+Python is a very popular programming language
+<ul>
+<li> easy to learn/use &nbsp;<allegedly)</tiny>
+<li> with a wide range of useful libraries
+</ul>
+We assume that you know enough Python to manipulate DBs
+<ul>
+<li> the primary goal is Database, not Python programming
+</ul>
+If you're not overly familiar with Python ...
+<ul>
+<li> there will be many examples of Python code in this course
+<li> there are many excellent tutorials online
+</ul>
+</DIV>
+<hr>
+<DIV id="s40">
+<div class='heading'>Psycopg2</div>
+<p>
+Psycopg2 is a Python module that provides
+<ul>
+<li> a method to connect to PostgreSQL databases
+<li> a collection of DB-related exceptions
+<li> a collection of type and object constructors
+</ul>
+In order to use Psycopg2 in a Python program
+<p><pre>
+import psycopg2
+</pre><p>
+<br>
+<small>
+Note:
+<ul>
+<li> assumes that the Psycopg2 module is installed on your system
+<li> Psycopg2 is installed on Grieg for both python2 and python3
+</ul>
+</small>
+</DIV>
+<hr>
+<DIV id="s41">
+<div class='heading'>Psycopg2 <span style="font-size:67%">(cont)</span></div>
+<p>
+Where <large><code>psycopg2</code></large> fits in the PL/DB architecture
+<p><br>
+<p><div align='center'>
+<img alt="[Diagram:Pic/pldb/pypsy-arch.png]" src="Pic/pldb/pypsy-arch.png">
+</div><p>
+</DIV>
+<hr>
+<DIV id="s42">
+<div class='heading'>Database <large><code>connection</code></large>s</div>
+<p>
+<large><font color=#009900><b><code>conn = psycopg2.connect(</code></b></font></large><i>DB_connection_string</i><large><font color=#009900><b><code>)</code></b></font></large>
+<ul>
+<li> creates a <large><code>connection</code></large> object on a named database
+<li> effectively starts a session with the database <small>(cf <large><code>psql</code></large>)</small>
+<li> returns a <large><code>connection</code></large> object used to access DB
+<li> if can't connect, raises an exception
+</ul>
+DB connection string components
+<ul>
+<li> <large><font color=#009900><b><code>dbname</code></b></font></large> ... name of database
+<li> <large><font color=#009900><b><code>user</code></b></font></large> ... user name <small>(for authentication)</small>
+<li> <large><font color=#009900><b><code>password</code></b></font></large> ... user password <small>(for authentication)</small>
+<li> <large><font color=#009900><b><code>host</code></b></font></large> ... where is the server running <small>(default=localhost)</small>
+<li> <large><font color=#009900><b><code>port</code></b></font></large> ... which port is server listening on <small>(default=5432)</small>
+</ul>
+On Grieg, only <large><code>dbname</code></large> is required.
+</DIV>
+<hr>
+<DIV id="s43">
+<div class='heading'>Example: connecting to a database</div>
+<p>
+Simple script that connects and then closes connection
+<p><pre>
+import psycopg2
+
+try:
+   conn = psycopg2.connect("dbname=mydb")
+   print(conn)  <span class='comment'># state of connection after opening</span>
+   conn.close()
+   print(conn)  <span class='comment'># state of connection after closing</span>
+except Exception as e:
+   print("Unable to connect to the database")
+</pre><p>
+which, if <large><code>mydb</code></large> is accessible, produces output:
+<p><pre>
+$ <b>python3 ex1.py</b>
+&lt;connection object at 0xf67186ec; dsn: 'dbname=mydb', closed: 0&gt;
+&lt;connection object at 0xf67186ec; dsn: 'dbname=mydb', closed: 1&gt;
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s44">
+<div class='heading'>Operations on <large><code>connection</code></large>s</div>
+<p>
+<large><font color=#009900><b><code>cur = conn.cursor()</code></b></font></large>
+<ul>
+<li> set up a handle for performing queries/updates on database
+<li> must create a <large><code>cursor</code></large> before performing any DB operations
+</ul>
+<br>
+<large><font color=#009900><b><code>conn.close()</code></b></font></large>
+<ul>
+<li> close the database connection <large><code>conn</code></large>
+</ul>
+<br>
+<large><font color=#009900><b><code>conn.commit()</code></b></font></large>
+<ul>
+<li> commit changes made to database since last <large><code>commit()</code></large>
+</ul>
+<br>
+Plus many others ... see Psycopg2 documentation
+</DIV>
+<hr>
+<DIV id="s45">
+<div class='heading'>Database <large><code>Cursor</code></large>s</div>
+<p>
+<large><code>Cursor</code></large>s are "pipelines" to the database
+<p>
+<large><code>Cursor</code></large> objects allow you to ...
+<ul>
+<li> execute queries, perform updates, change meta-data
+</ul>
+Cursors are created from a database <large><code>connection</code></large>
+<ul>
+<li> can create multiple cursors from the same connection
+<li> each cursor handles one DB operation at a time
+<li> but cursors are not isolated <small>(can see each others' changes)</small>
+</ul>
+To set up a <large><code>cursor</code></large> object called <large><code>cur</code></large> ...
+<p><pre>
+cur = conn.cursor()
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s46">
+<div class='heading'>Operations on <large><code>cursor</code></large>s</div>
+<p>
+<large><font color=#009900><b><code>cur.execute(</code></b></font></large><i>SQL_statement</i><large><font color=#009900><b><code>, </code></b></font></large><i>Values</i><large><font color=#009900><b><code>)</code></b></font></large>
+<ul>
+<li> if supplied, insert values into the SQL statement
+<li> then execute the SQL statement
+<li> results are available via the cursor's fetch methods
+</ul>
+Examples:
+<p><pre>
+<span class='comment'># run a fixed query</span>
+cur.execute("select * from R where x = 1");
+
+<span class='comment'># run a query with values inserted</span>
+cur.execute("select * from R where x = %s", (1,))
+cur.execute("select * from R where x = %s", [1])
+
+<span class='comment'># run a query stored in a variable</span>
+query = "select * from Students where name ilike %s"
+pattern = "%mith%"
+cur.execute(query, [pattern])
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s47">
+<div class='heading'>Operations on <large><code>cursor</code></large>s <span style="font-size:67%">(cont)</span></div>
+<p>
+<large><font color=#009900><b><code>cur.mogrify(</code></b></font></large><i>SQL_statement</i><large><font color=#009900><b><code>, </code></b></font></large><i>Values</i><large><font color=#009900><b><code>)</code></b></font></large>
+<ul>
+<li> return the SQL statement as a string, with values inserted
+<li> useful for checking whether <large><code>execute()</code></large> is doing what you want
+</ul>
+Examples:
+<p><pre><small>
+query = "select * from R where x = %s"
+print(cur.mogrify(query, [1]))
+<i>Produces:</i> <font color="#996600">b'select * from R where x = 1'</font>
+
+query = "select * from R where x = %s and y = %s"
+print(cur.mogrify(query, [1,5]))
+<i>Produces:</i> <font color="#996600">b'select * from R where x = 1 and y = 5'</font>
+
+query = "select * from Students where name ilike %s"
+pattern = "%mith%"
+print(cur.mogrify(query, [pattern]))
+<i>Produces:</i> <font color="#996600">b"select * from Students where name ilike '%mith%'"</font>
+
+query = "select * from Students where family = %s"
+fname = "O'Reilly"
+print(cur.mogrify(query, [fname]))
+<i>Produces:</i> <font color="#996600">b"select * from Students where family = 'O''Reilly'"</font>
+</small></pre><p>
+</DIV>
+<hr>
+<DIV id="s48">
+<div class='heading'>Operations on <large><code>cursor</code></large>s <span style="font-size:67%">(cont)</span></div>
+<p>
+<large><font color=#009900><b><code>list = cur.fetchall()</code></b></font></large>
+<ul>
+<li> gets all answers for a query and stores in a list of tuples
+<li> can iterate through list of results using Python's <large><code>for</code></large>
+</ul>
+Example:
+<p><pre>
+<span class='comment'># table R contains (1,2), (2,1), ...</span>
+
+cur.execute("select * from R")
+for tup in cur.fetchall():
+   x,y = tup
+   print(x,y)   <span class='comment'># or print(tup[0],tup[1])</span>
+
+<span class='comment'># prints</span>
+<span class='comment'>1 2</span>
+<span class='comment'>2 1</span>
+<span class='comment'>...</span>
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s49">
+<div class='heading'>Operations on <large><code>cursor</code></large>s <span style="font-size:67%">(cont)</span></div>
+<p>
+<large><font color=#009900><b><code>tup = cur.fetchone()</code></b></font></large>
+<ul>
+<li> gets next result for a query and stores in a tuple
+<li> can iterate through list of results using Python's <large><code>while</code></large>
+</ul>
+Example:
+<p><pre>
+<span class='comment'># table R contains (1,2), (2,1), ...</span>
+
+cur.execute("select * from R")
+while True:
+   tup = cur.fetchone()
+   if tup == None:
+      break
+   x,y = tup
+   print(x,y)
+
+<span class='comment'># prints</span>
+<span class='comment'>1 2</span>
+<span class='comment'>2 1</span>
+<span class='comment'>...</span>
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s50">
+<div class='heading'>Operations on <large><code>cursor</code></large>s <span style="font-size:67%">(cont)</span></div>
+<p>
+<large><font color=#009900><b><code>tup = cur.fetchmany(</code></b></font></large><i>nTuples</i><large><font color=#009900><b><code>)</code></b></font></large>
+<ul>
+<li> gets next <i>nTuples</i> results for a query
+<li> stores tuples in a list
+<li> when no results left, returns empty list
+</ul>
+Example:
+<p><pre>
+<span class='comment'># table R contains (1,2), (2,1), ...</span>
+
+cur.execute("select * from R")
+while True:
+   tups = cur.fetchmany(3)
+   if tups == []:
+      break
+   for tup in tups:
+      x,y = tup
+      print(x,y)
+
+<span class='comment'># prints</span>
+<span class='comment'>1 2</span>
+<span class='comment'>2 1</span>
+<span class='comment'>...</span>
+</pre><p>
+</DIV>
+<p><hr><p>
+<span style='font-size:11px;color: grey;'>Produced: 13 Sep 2020</span>
+ <script src='lib/prism.js'></script>   
+ <script src='lib/sg.js'></script>   
+</body>
+</html>

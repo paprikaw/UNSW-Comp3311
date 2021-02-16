@@ -1,0 +1,976 @@
+<title>Programming with Databases
+
+<slide>
+<heading>Programming with Databases
+So far, we have seen ...
+<itemize>
+<item> accessing data via SQL queries
+<item> packaging SQL queries as views/functions
+<item> building functions to return tables
+<item> implementing assertions via triggers
+</itemize>
+All of the above programming
+<itemize>
+<item> is very close to the data
+<item> takes place inside the DBMS
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Programming language access to DBMSs
+<p>
+<diagram>Pic/pldb/dbpl-arch
+<p>
+Note the PLpgSQL is "closer" to the DBMS than PLs
+</slide>
+
+<slide>
+<continued>
+Complete applications require code outside the DBMS
+<itemize>
+<item> to handle the user interface <~> <small>(GUI or Web)</small>
+<item> to interact with other systems <~> <small>(e.g. other DBs)</small>
+<item> to perform compute-intensive work <~> <small>(vs. data-intensive)</small>
+</itemize>
+<q>Conventional</q> programming languages (PLs) provide these.
+<p>
+We consider four families of programming language:
+<itemize>
+<item> logic programming, functional programming
+<item> procedural programming, object-oriented programming
+</itemize>
+and how they might interface with the relational model.
+</slide>
+
+<slide>
+<continued>
+Requirements of an interface between PL and RDBMS:
+<itemize>
+<item> mechanism for connecting to the DBMS
+<item> mapping betwen tuples and PL objects
+<item> mechanism for mapping PL "requests" to queries
+<item> mechanism for iterating over query results
+</itemize>
+Distance between PL and DBMS is variable, e.g.
+<itemize>
+<item> <@>libpq</@> allows C programs to use PG structs
+<item> JDBC transmits SQL strings, retrieves tuples-as-objects
+<item> FP interfaces operate on lists (sets) of tuples
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Levels of abstraction in DB/PL interfaces
+<itemize>
+<item> high: DB hidden behind objects, no DB schema/SQL, portable
+<itemize>
+<sitem> e.g. Active Record, SQLalchemy, ...
+</itemize>
+<item> medium: write schema, SQL construction functions, portable?
+<itemize>
+<sitem> e.g. CodeIgniter DB interface
+</itemize>
+<item> low: write schema, write SQL, not portable?
+<itemize>
+<sitem> e.g. JDBC, PDO, COMP3311 DB library, ...
+</itemize>
+</itemize>
+Since this is a DB course, we consider low-level abstraction
+</slide>
+
+<slide>
+<heading>Functional Languages and RDBMS
+Functional programming languages <small>(FPLs)</small> (e.g. Haskell)
+<itemize>
+<item> understand tuples and sets (arrays) of tuples
+<item> provide methods for extracting tuple components
+<item> list comprehensions provide a mechanism for
+<itemize>
+<item> generating results, filtering, joining, ...
+</itemize>
+<item> but are missing e.g. foreign key checking
+</itemize>
+Examples courtesy of Stefan Stanczyk, University of Linz, Austria.
+
+<small>Note: the Haskell code is approximate; no guarantees it compiles.</small>
+</slide>
+
+<slide>
+<continued>
+Example: airports, airlines database
+<sprogram>
+data Country = GBR | USA | NZL  deriving (Eq,Show)
+data Airline = BA | UA | NZ  deriving (Eq,Show)
+data Airport = LHR | JFK | LAX | AKL deriving (Eq,Show)
+
+allCountries :: [Country]
+allCountries = [GBR, USA, NZL]
+
+allAirlines :: [Airline]
+allAirlines = [BA, UA, NZ]
+
+allAirports :: [Airport]
+allAirports = [LHR, JFK, LAX, AKL]
+
+type CountryData  =  (String,Integer)
+countryInfo :: Country -> CountryData
+countryInfo GBR = ("Britain", 60)
+countryInfo UA = ("United States", 250)
+countryInfo NZ = ("New Zealand", 3)
+
+type AirlineData  =  (String,Country)
+airlineInfo :: Airline -> AirlineData
+airlineInfo BA = ("British Airways", GBR)
+airlineInfo UA = ("United Airlines", USA)
+airlineInfo NZ = ("Air New Zealand", NZL)
+
+type AirportData  =  (String,String,Country)
+airportInfo :: Airport -> AirportData
+airportInfo LHR = ("Heathrow", "London", GBR)
+airportInfo JFK = ("JFK Intl", "New York", USA)
+airportInfo LAX = ("LA Intl", "Los Angeles", USA)
+airportInfo AKL = ("Auckland", "Auckland", NZL)
+</sprogram>
+</slide>
+
+<slide>
+<continued>
+<sprogram>
+<comment>-- extracting fields</comment>
+
+countryName :: Country -> String
+countryName x = first (countryInfo x)
+countryPopulation :: Country -> Integer
+countryPopulation x = second (countryInfo x)
+
+airlineName :: Airline -> String
+airlineName x = first (airlineInfo x)
+airlineHome :: Airline -> Country
+airlineHome x = second (airlineInfo x)
+
+airportName :: Airport -> String
+airportName x = first (airportInfo x)
+airportCity :: Airport -> String
+airportCity x = second (airportInfo x)
+airportCountry :: Airport -> Country
+airportCountry x = third (airportInfo x)
+</sprogram>
+</slide>
+
+<slide>
+<continued>
+<sprogram>
+<comment># how many airlines are there?</comment>
+
+q1 = length allAirlines
+
+<comment># names of all countries</comment>
+
+q2 = [ countryName c | c <- allCountries ]
+<comment>#or</comment>
+q2 = map countryName allCountries
+
+<comment># which airports are located in the USA?</comment>
+
+q3 = [ ap | ap <- allAirports, airportCountry = USA ]
+
+<comment># which airports are in United's home country?</comment>
+
+q4 = [ ap | ap <- allAirports,
+            airportCountry ap = (airlineHome UA) ]
+</sprogram>
+</slide>
+
+<slide>
+<continued>
+<sprogram>
+<comment># country (or countries) with smallest population</comment>
+
+smallestPop :: [Country] -> Integer
+smallestPop cs = minimum (map countryPopulation allCountries)
+
+q5 = [ c | c <- allCountries,
+           countryPopulation c = smallestPop allcountries]
+
+<comment># which airline(s) have their home in Britain</comment>
+
+q6 = [ a | a <- allAirlines,
+           countryName (airlineHome a) = "Britain" ]
+<comment># or</comment>
+q6 = [ a | a <- allAirlines, b <- allCountries,
+           countryName b = "Britain", airlineHome a = b ]
+
+<comment># which airlines have home in small population country?</comment>
+
+q6 = [ a | a <- allAirlines, b <- q5, airlineHome a = b ]
+</sprogram>
+</slide>
+
+<slide>
+<heading>Logic Languages and RDBMS
+Logic programming languages <small>(LPLs)</small> (e.g. Prolog/Datalog)
+<itemize>
+<item> have a notion of tuples (aka ground facts)
+<item> understand sets of tuples (aka ground predicates)
+<item> have a notion of querying (deduction)
+<item> provide flexible result instantiation (variables)
+</itemize>
+LPLs are an excellent fit with the relational model.
+<p>
+If developed first, may have been better than SQL.
+</slide>
+
+<slide>
+<continued>
+Example: airports, airlines database
+<sprogram>
+country('GBR', 'Britain', 60).
+country('USA', 'United States', 250).
+country('NZL', 'New Zealand', 3).
+country('AUS', 'Australia', 22).
+
+city('London', 'GBR').
+city('New York','USA').
+city('Los Angeles','USA').
+city('Auckland','NZL').
+city('Sydney','AUS').
+city('Melbourne','AUS').
+
+airline('BA', 'British Airways', 'GBR').
+airline('UA', 'United Airlines', 'USA').
+airline('NZ', 'Air New Zealand', 'NZL').
+airline('QF', 'Qantas', 'AUS').
+
+airport('LHR', 'Heathrow', 'London').
+airport('JFK', 'JFK Intl', 'New York').
+airport('LAX', 'LA Intl', 'Los Angeles').
+airport('AKL', 'Auckland', 'Auckland').
+airport('SYD', 'Kingsford-Smith', 'Sydney').
+airport('MEL', 'Tullamarine', 'Melbourne').
+</sprogram>
+</slide>
+
+<slide>
+<continued>
+<sprogram>
+<comment>-- extracting fields</comment>
+
+countryName(C,N) :- country(C,N,_).
+countryPopulation(C,P) :- country(C,_,P).
+
+airlineName(A,N) :- airline(A,N,_).
+airlineHome(A,H) :- airline(A,_,H).
+
+airportName(A,N) :- airport(A,N,_).
+airportCity(A,C) :- airport(A,_,C).
+airportCountry(A,C) :- airport(A,_,X), city(X,C).
+
+<comment># usage ...</comment>
+?- countryName('GBR',N).
+N = Britain
+?- airportCountry('MEL',C).
+C = Australia
+</sprogram>
+</slide>
+
+<slide>
+<continued>
+<sprogram>
+<comment># how many airlines are there?</comment>
+
+q1(N) :- findall(A,airline(A,_,_),All), length(All,N).
+
+<comment># names of all countries</comment>
+
+q2(C) :- country(_,C,_).
+
+<comment># which airports are located in the USA?</comment>
+
+q3(A) :- airport(A,_,C), city(C,'USA').
+
+<comment># which airports are in United's home country?</comment>
+
+q4(A) :- airline('UA',_,Country),
+         city(City,Country), airport(A,_,City).
+</sprogram>
+</slide>
+
+<slide>
+<continued>
+<sprogram>
+<comment># country (or countries) with smallest population</comment>
+
+smallestPop(P) :-
+   findall(Pop,country(_,_,Pop),Pops), min_list(Pops,P).
+
+q5(C) :- smallestPop(Min), country(C,_,Min).
+
+<comment># which airline(s) have their home in Britain</comment>
+
+q6(A) :- airline(A,_,C), country(C,'Britain',_).
+
+<comment># which airlines have home in small population country?</comment>
+
+q7(A) :- airline(A,_,C), q5(C).
+</sprogram>
+</slide>
+
+<slide>
+<heading>Procedural Lanaguages and RDBMS
+Most RDBMSs have a low-level C library which provide
+<itemize>
+<item> <@>structs</@> for tuples, queries, connections
+<item> function to establish DB connection <small>(authentication)</small>
+<item> function to initiate a query
+<small>
+<itemize>
+<sitem> send SQL query string to DBMS via established connection
+<sitem> return <q>handle</q> to access tuples in result set
+</itemize>
+</small>
+<item> function to retrieve next tuple in result set
+<item> methods for extracting contents of tuple
+</itemize>
+</slide>
+
+<slide>
+Higher-level languages and scripting languages typically
+have a DB interface.
+<p>
+Examples: Java/JDBC, PHP/PDO, Perl/DBI
+<p>
+Above APIs are DB agnostic; DBMS-specific interfaces
+are also avaiable.
+<p>
+Example: PHP's <@>pg_connect()</@>, <@>pg_query()</@>, <@>pg_fetch()</@>
+<p>
+COMP3311 previous used a simple PHP-PostgreSQL library.
+</slide>
+
+<slide>
+<heading>Example PHP/PGSQL Interaction
+Assuming same airline database as for previous examples ...
+<sprogram>
+$db = dbConnect("dbname=airlines");
+
+<comment># how many airlines are there?</comment>
+
+$query = "select count(*) from Airlines";
+$nAirlines = dbOneValue($db, $query);
+
+<comment># names of all countries</comment>
+
+$query = "select country from Countries";
+$result = dbQuer($db, $query);
+while ($tuple = dbNext($result))
+   echo $tuple[1],"\n";
+
+<comment># which airports are located in the USA?</comment>
+
+$query = <<<_SQL_
+_SQL_;
+$result = dbQuery($db, $query);
+
+<comment># which airports are in United's home country?</comment>
+
+q4(A) :- airline('UA',_,Country),
+         city(City,Country), airport(A,_,City).
+</sprogram>
+</slide>
+
+<slide>
+<continued>
+<sprogram>
+<comment># country (or countries) with smallest population</comment>
+
+smallestPop(P) :-
+   findall(Pop,country(_,_,Pop),Pops), min_list(Pops,P).
+
+q5(C) :- smallestPop(Min), country(C,_,Min).
+
+<comment># which airline(s) have their home in Britain</comment>
+
+q6(A) :- airline(A,_,C), country(C,'Britain',_).
+
+<comment># which airlines have home in small population country?</comment>
+
+q7(A) :- airline(A,_,C), q5(C).
+</sprogram>
+</slide>
+
+<slide>
+<heading>Object-oriented Languages and RDBMS
+Associating OO programs and RDBMS requires
+<itemize>
+<item> mapping between DB structures and objects
+<item> representation for connections, queries, result sets
+</itemize>
+Two major mapping approaches have been developed:
+<itemize>
+<item> record-based mapping (e.g. JDBC, PDO)
+<item> object-relational mapping (e.g. Hibernate, Active Record)
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Record-based Mapping:
+<itemize>
+<item> implement database using conventional methods
+<item> implement application code considering DB design
+<item> <green>good:</green> good DB design, can tune DB performance
+<item> <brown>bad:</brown> manual mapping between application/DB objects
+</itemize>
+Object-relational Mapping:
+<itemize>
+<item> provide data structures in OO <small>(possibly via wrapper)</small>
+<item> system builds DB access methods automatically
+<item> <green>good:</green> easy, maintainable, no SQL
+<item> <brown>bad:</brown> often leads to poor usage of the database
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Often DB access is packaged within a large OO framework
+<itemize>
+<item> e.g. Java, J2EE and its Data Access Objects (DAOs)
+</itemize>
+The idea behind this:
+<itemize>
+<item> business objects are represented by a collection of values
+<item> values may be spread across multiple tables
+<item> implement a business object class with operations
+<small>
+<itemize>
+<sitem> <@>create()</@> ... inserts new tuple(s), given object values
+<sitem> <@>getData()</@> ... fetch value of (typically) one attribute
+<sitem> <@>setData()</@> ... update value of (typically) one attribute
+</itemize>
+</small>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Persistence frameworks (e.g. Hibernate) simplify DAOs
+<itemize>
+<item> developer defines own database tables
+<item> developer gives mapping from tables to application objects
+<item> framework produces mapping methods
+<item> developer then programs solely with application objects
+</itemize>
+However, reference back to DB structures is needed
+<itemize>
+<item> if ORM produces poor execution performance
+<item> for some complex data manipulations
+	<small>(which are SQL-friendly)</small>
+</itemize>
+Unfortunately, solution is often <i>x</i>QL rather than SQL.
+</slide>
+
+<slide>
+<continued>
+Alternative approach: the <em>Active Record</em> design pattern.
+<p>
+Used in some strongly OO contexts <small>(e.g. Ruby-on-Rails)</small>
+<p>
+Treats tuples as core objects:
+<itemize>
+<item> requires user to follow conventions in defining tables
+<item> uses DBMS metadata to derive access methods
+<item> provides access to DB via objects, no SQL needed
+<item> automatically generates methods to access tables
+</itemize>
+<small>
+Similar to persistence framework, but uses convention rather than configuration.
+</small>
+</slide>
+
+<slide>
+<heading>PL/DB Interface
+Common pattern used by record-based libraries: 
+<program>
+<$>db</$> = connect_to_dbms(<$>DBname</$>,<$>User/Password</$>);
+<$>query</$> = build_SQL("<$>sql_statement_template</$>",<$>values</$>);
+<$>results</$> = execute_query(<$>db</$>,<$>query</$>);
+while (more_tuples_in(<$>results</$>))
+{
+   <$>tuple</$> = fetch_row_from(<$>results</$>);
+   // do something with values in tuple ...
+}
+</program>
+This pattern is used in many different libraries:
+<itemize>
+<item> Java/JDBC, PHP/PDO, Perl/DBI, Python/dbapi2, Tcl, ...
+</itemize>
+</slide>
+
+<slide>
+<continued>
+All record-based libraries have the same overall structure.
+<p>
+They differ in the details:
+<itemize>
+<item> whether specific to one database or generic
+<item> whether object-oriented or procedural flavour
+<item> function/method names and parameters
+<item> how to get data from program into SQL statements
+<item> how to get data from tuples to program variables
+</itemize>
+We use PHP and a simple, locally-developed library for this.
+</slide>
+
+<slide>
+<heading>DB/PL Mismatch
+There is a tension between PLs and DBMSs
+<itemize>
+<item> DBMSs deal efficiently with sets of tuples
+<item> PLs encourage dealing with single tuples/objects
+</itemize>
+If not handled carefully, can lead to inefficient use of DB.
+<p>
+Note: relative costs of DB access operations:
+<itemize>
+<item> establishing a DBMS connection ... very high
+<item> initiating an SQL query ... high
+<item> accessing individual tuple ... low
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Consider the PL/DBMS access method, phrased in a made-up DB/PL api
+<program>
+<comment>--  establish connection to DBMS</comment>
+db = dbAccess("DB");
+query = "select a,b from R,S where ... ";
+<comment>--  invoke query and get handle to result set</comment>
+results = runQuery(db, query);
+<comment>--  for each tuple in result set</comment>
+while (tuple = getNext(results)) {
+    <comment>--  process next tuple</comment>
+    process(tuple['a'], tuple['b']);
+}
+</program>
+</slide>
+
+<slide>
+<continued>
+Example database:
+<program>
+Students(id, name, ...)
+Marks(student, course, mark, ...)
+</program>
+where there are
+<itemize>
+<item> 1000 Students
+<item> 10000 Marks tuples
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Example: find mature-age students
+<program>
+query = "select * from Student";
+results = runQuery(db,query);
+while (tuple = getNext($results)) {
+    if (tuple['age'] >= 40) {
+        <comment>--  process mature-age student</comment>
+    }
+}
+</program>
+If 1000 students, and only 50 of them are over 40,
+<br>
+we transfer 950 unnecessary tuples from DB.
+</slide>
+
+<slide>
+<continued>
+E.g. should be implemented as:
+<program>
+query = "select * from Student where age >= 40";
+results = runQuery(db,query);
+while (tuple = getNext(results)) {
+    <comment>--  process mature-age student</comment>
+}
+</program>
+Transfers only the 50 tuples that are needed.
+</slide>
+
+<slide>
+<continued>
+Example: find info about all marks for all students
+<program>
+query1 = "select id,name from Student";
+res1 = runQuery(db,query1);
+while (tuple1 = getNext(res1)) {
+    query2 = "select course,mark from Marks"+
+              " where student = "+tuple1['id'];
+    res2 = runQuery(db,query2);
+    while (tuple2 = getNext(res2)) {
+        <comment>--  process student/course/mark info</comment>
+    }
+}
+</program>
+We invoke 1001 queries on database <small>(outer query + 1 per student)</small>
+<p>
+If average 10 Marks/Student, 10000 tuples transferred
+</slide>
+
+<slide>
+<continued>
+E.g. should be implemented as:
+<program>
+query = "select id,name,course,mark"+
+         " from Student s, Marks m"+
+         " where s.id = m.student";
+results = runQuery(db,query);
+while (tuple = getNext(results)) {
+    <comment>--  process student/course/mark info</comment>
+}
+</program>
+We invoke 1 query, and transfer 10000 tuples
+</slide>
+
+<slide>
+<heading>Exercise: DB/PL Mismatch
+Give two different approaches for producing a table of
+<itemize>
+<item> student ID and name
+<item> maximum mark they ever obtained for any course
+</itemize>
+Analyse the cost for each in terms of
+<itemize>
+<item> number of queries made on the database
+<item> number of tuples read
+</itemize>
+Assume 1000 student tuples with 10 marks per student (on average).
+</slide>
+
+<slide>
+<continued>
+Solution1: most work done by database
+<program>
+query = "
+select s.id, s.name, max(m.mark)
+from   Students s join Marks m on m.student = s.id
+group  by s.id, s.name
+";
+result = runQuery(db,query)
+while (tuple = getNext(result)
+	print(tuple['id'],tuple['max'])
+</program>
+Runs 1 query; tranfers 10000 tuples from DB to program
+</slide>
+
+<slide>
+<continued>
+Solution2: multiple queries
+<program>
+q1 = "select s.id, s.name from Students";
+res1 = runQuery(db,q1)
+while (tuple =getNext(result) {
+	tuple = getNext(res1)
+	sid = tuple['id']
+	max = -1
+	q2 = "select mark from Marks "+
+	     "where students = "+sid
+	res2 = dbQuery(db, q2)
+	while (tup2 = getNext(res2)) {
+		mark = tup2['mark']
+		if (mark > max) max = mark
+}	}		
+print(sid,max)
+</program>
+Runs 1001 queries; tranfers 10000 tuples from DB to program
+</slide>
+
+<slide>
+<continued>
+Solution3: inefficient strategy (no <@>where</@> clauses)
+<program>
+q1 = "select s.id, s.name from Students";
+res1 = runQuery(db,q1)
+while (tuple =getNext(result) {
+	tuple = getNext(res1)
+	sid = tuple['id']
+	max = -1
+	q2 = "select student, mark from Marks"
+	res2 = dbQuery(db, q2)
+	while (tup2 = getNext(res2)) {
+		if ($tup2['student'] != sid) continue
+		mark = tup2['mark']
+		if (mark > max) max = mark
+}	}		
+print(sid,max)
+</program>
+Runs 1001 queries; tranfers 100000 tuples from DB to program
+</slide>
+
+<slide>
+<section>Python and DB Access
+</slide>
+
+<slide>
+<heading>Python
+Python is a very popular programming language
+<itemize>
+<item> easy to learn/use <~><allegedly)</tiny>
+<item> with a wide range of useful libraries
+</itemize>
+We assume that you know enough Python to manipulate DBs
+<itemize>
+<item> the primary goal is Database, not Python programming
+</itemize>
+If you're not overly familiar with Python ...
+<itemize>
+<item> there will be many examples of Python code in this course
+<item> there are many excellent tutorials online
+</itemize>
+</slide>
+
+<slide>
+<heading>Psycopg2
+Psycopg2 is a Python module that provides
+<itemize>
+<item> a method to connect to PostgreSQL databases
+<item> a collection of DB-related exceptions
+<item> a collection of type and object constructors
+</itemize>
+In order to use Psycopg2 in a Python program
+<program>
+import psycopg2
+</program>
+<br>
+<small>
+Note:
+<itemize>
+<item> assumes that the Psycopg2 module is installed on your system
+<item> Psycopg2 is installed on Grieg for both python2 and python3
+</itemize>
+</small>
+</slide>
+
+<slide>
+<continued>
+Where <@>psycopg2</@> fits in the PL/DB architecture
+<p><br>
+<diagram>Pic/pldb/pypsy-arch
+</slide>
+
+<slide>
+<heading>Database <@>connection</@>s
+<@@>conn = psycopg2.connect(</@@><i>DB_connection_string</i><@@>)</@@>
+<itemize>
+<item> creates a <@>connection</@> object on a named database
+<item> effectively starts a session with the database <small>(cf <@>psql</@>)</small>
+<item> returns a <@>connection</@> object used to access DB
+<item> if can't connect, raises an exception
+</itemize>
+DB connection string components
+<itemize>
+<sitem> <@@>dbname</@@> ... name of database
+<sitem> <@@>user</@@> ... user name <small>(for authentication)</small>
+<sitem> <@@>password</@@> ... user password <small>(for authentication)</small>
+<sitem> <@@>host</@@> ... where is the server running <small>(default=localhost)</small>
+<sitem> <@@>port</@@> ... which port is server listening on <small>(default=5432)</small>
+</itemize>
+On Grieg, only <@>dbname</@> is required.
+</slide>
+
+<slide>
+<heading>Example: connecting to a database
+Simple script that connects and then closes connection
+<program>
+import psycopg2
+
+try:
+   conn = psycopg2.connect("dbname=mydb")
+   print(conn)  <comment># state of connection after opening</comment>
+   conn.close()
+   print(conn)  <comment># state of connection after closing</comment>
+except Exception as e:
+   print("Unable to connect to the database")
+</program>
+which, if <@>mydb</@> is accessible, produces output:
+<program>
+$ <b>python3 ex1.py</b>
+<<connection object at 0xf67186ec; dsn: 'dbname=mydb', closed: 0>>
+<<connection object at 0xf67186ec; dsn: 'dbname=mydb', closed: 1>>
+</program>
+</slide>
+
+<slide>
+<heading>Operations on <@>connection</@>s
+<@@>cur = conn.cursor()</@@>
+<itemize>
+<item> set up a handle for performing queries/updates on database
+<item> must create a <@>cursor</@> before performing any DB operations
+</itemize>
+<br>
+<@@>conn.close()</@@>
+<itemize>
+<item> close the database connection <@>conn</@>
+</itemize>
+<br>
+<@@>conn.commit()</@@>
+<itemize>
+<item> commit changes made to database since last <@>commit()</@>
+</itemize>
+<br>
+Plus many others ... see Psycopg2 documentation
+</slide>
+
+<slide>
+<heading>Database <@>Cursor</@>s
+<@>Cursor</@>s are "pipelines" to the database
+<p>
+<@>Cursor</@> objects allow you to ...
+<itemize>
+<item> execute queries, perform updates, change meta-data
+</itemize>
+Cursors are created from a database <@>connection</@>
+<itemize>
+<item> can create multiple cursors from the same connection
+<item> each cursor handles one DB operation at a time
+<item> but cursors are not isolated <small>(can see each others' changes)</small>
+</itemize>
+To set up a <@>cursor</@> object called <@>cur</@> ...
+<program>
+cur = conn.cursor()
+</program>
+</slide>
+
+<slide>
+<heading>Operations on <@>cursor</@>s
+<@@>cur.execute(</@@><i>SQL_statement</i><@@>, </@@><i>Values</i><@@>)</@@>
+<itemize>
+<item> if supplied, insert values into the SQL statement
+<item> then execute the SQL statement
+<item> results are available via the cursor's fetch methods
+</itemize>
+Examples:
+<program>
+<comment># run a fixed query</comment>
+cur.execute("select * from R where x = 1");
+
+<comment># run a query with values inserted</comment>
+cur.execute("select * from R where x = %s", (1,))
+cur.execute("select * from R where x = %s", [1])
+
+<comment># run a query stored in a variable</comment>
+query = "select * from Students where name ilike %s"
+pattern = "%mith%"
+cur.execute(query, [pattern])
+</program>
+</slide>
+
+<slide>
+<continued>
+<@@>cur.mogrify(</@@><i>SQL_statement</i><@@>, </@@><i>Values</i><@@>)</@@>
+<itemize>
+<item> return the SQL statement as a string, with values inserted
+<item> useful for checking whether <@>execute()</@> is doing what you want
+</itemize>
+Examples:
+<sprogram>
+query = "select * from R where x = %s"
+print(cur.mogrify(query, [1]))
+<i>Produces:</i> <brown>b'select * from R where x = 1'</brown>
+
+query = "select * from R where x = %s and y = %s"
+print(cur.mogrify(query, [1,5]))
+<i>Produces:</i> <brown>b'select * from R where x = 1 and y = 5'</brown>
+
+query = "select * from Students where name ilike %s"
+pattern = "%mith%"
+print(cur.mogrify(query, [pattern]))
+<i>Produces:</i> <brown>b"select * from Students where name ilike '%mith%'"</brown>
+
+query = "select * from Students where family = %s"
+fname = "O'Reilly"
+print(cur.mogrify(query, [fname]))
+<i>Produces:</i> <brown>b"select * from Students where family = 'O''Reilly'"</brown>
+</sprogram>
+</slide>
+
+<slide>
+<continued>
+<@@>list = cur.fetchall()</@@>
+<itemize>
+<item> gets all answers for a query and stores in a list of tuples
+<item> can iterate through list of results using Python's <@>for</@>
+</itemize>
+Example:
+<program>
+<comment># table R contains (1,2), (2,1), ...</comment>
+
+cur.execute("select * from R")
+for tup in cur.fetchall():
+   x,y = tup
+   print(x,y)   <comment># or print(tup[0],tup[1])</comment>
+
+<comment># prints</comment>
+<comment>1 2</comment>
+<comment>2 1</comment>
+<comment>...</comment>
+</program>
+</slide>
+
+<slide>
+<continued>
+<@@>tup = cur.fetchone()</@@>
+<itemize>
+<item> gets next result for a query and stores in a tuple
+<item> can iterate through list of results using Python's <@>while</@>
+</itemize>
+Example:
+<program>
+<comment># table R contains (1,2), (2,1), ...</comment>
+
+cur.execute("select * from R")
+while True:
+   tup = cur.fetchone()
+   if tup == None:
+      break
+   x,y = tup
+   print(x,y)
+
+<comment># prints</comment>
+<comment>1 2</comment>
+<comment>2 1</comment>
+<comment>...</comment>
+</program>
+</slide>
+
+<slide>
+<continued>
+<@@>tup = cur.fetchmany(</@@><i>nTuples</i><@@>)</@@>
+<itemize>
+<item> gets next <i>nTuples</i> results for a query
+<item> stores tuples in a list
+<item> when no results left, returns empty list
+</itemize>
+Example:
+<program>
+<comment># table R contains (1,2), (2,1), ...</comment>
+
+cur.execute("select * from R")
+while True:
+   tups = cur.fetchmany(3)
+   if tups == []:
+      break
+   for tup in tups:
+      x,y = tup
+      print(x,y)
+
+<comment># prints</comment>
+<comment>1 2</comment>
+<comment>2 1</comment>
+<comment>...</comment>
+</program>
+</slide>

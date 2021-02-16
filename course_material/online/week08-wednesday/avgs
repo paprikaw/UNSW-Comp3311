@@ -1,0 +1,84 @@
+#!/usr/local/bin/python3.7
+import sys
+import psycopg2
+subject = None
+term = None
+if len(sys.argv) == 3:
+   term = sys.agv[1]
+   subject = sys.argv[2]
+if len(sys.argv) == 2:
+   term = sys.argv[1]
+if len(sys.argv) == 1:
+   print("Usage:",sys.argv[0],"[ term [ subject ] ]")
+   exit(1)
+conn = None
+
+subjCheck = "select id,longname from Subjects where code = %s"
+termCheck = "select id from Terms where termName(id) = %s"
+offerCheck = "select * from Courses where subject = %s and term = %s"
+
+# if known subject code and term
+qry1 = """
+select c.id, avg(e.mark)
+from   Courses c 
+       join Course_enrolments e on (e.course=c.id)
+where  c.subject = %s and c.term = %s
+group  by c.id
+order  by s.code
+"""
+# if known term, all courses for that term
+qry2 = """
+select c.id, s.code, s.longname, avg(e.mark)
+from   Courses c 
+       join Subjects s on (c.subject=s.id)
+       join Terms t on (c.term=t.id)
+       join Course_enrolments e on (e.course=c.id)
+where  t.id = %s
+group  by c.id, s.code, s.longname
+order  by s.code
+"""
+# if neither term nor subject, do everything
+qry3 = """
+select c.id, s.code, termName(t.id), s.longname, avg(e.mark)
+from   Courses c 
+       join Subjects s on (c.subject=s.id)
+       join Terms t on (c.term=t.id)
+       join Course_enrolments e on (e.course=c.id)
+group  by c.id, s.code, s.longname
+order  by s.code
+"""
+try:
+   conn = psycopg2.connect(f"dbname=mymy2")
+   cur = conn.cursor()
+   if subject:
+      cur.execute(subjCheck, [subject]);
+      res = cur.fetchone()
+      if res is None:
+         print("Invalid subject",subject)
+         exit(1)
+      else:
+         subjID, subjName = res
+   if term:
+      cur.execute(termCheck, [term]);
+      res = cur.fetchone()
+      if res is None:
+         print("Invalid term",term)
+         exit(1)
+      else:
+         termID = res[0]
+   if subjID is not None and termID is not None:
+      cur.execute(offerCheck, [subjID,termID])
+      res = cur.fetchone()
+      if res is None:
+         print("No offering:",subject,term)
+         exit(1)
+
+   # ok ... command line args seem valid ...
+
+   # ... to be continued ...
+
+except psycopg2.Error as err:
+   print("database error: ", err)
+finally:
+   if conn :
+      conn.close()

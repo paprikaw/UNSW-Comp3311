@@ -1,0 +1,232 @@
+<title>Serializability
+<footer>COMP3311 20T3 <diamond> Serializability <diamond>
+
+<slide>
+<heading>Serializability
+<br>
+<em>Serializable</em> schedule:
+<itemize>
+<item> concurrent schedule for <$>T<sub>1</sub> ..T<sub>n</sub></$> with final state <$>S</$>
+<item> <$>S</$> <~>is also a final state of a possible
+	 serial schedule for <$>T<sub>1</sub> ..T<sub>n</sub></$>
+</itemize>
+<p>
+Abstracting this needs a notion of <em>schedule equivalence</em>.
+<p>
+Two common formulations of <em>serializability</em>:
+<itemize>
+<item> <em>conflict serializibility</em>
+	<~> <small>(read/write operations occur in the <q>right</q> order)</small>
+
+<item> <em>view serializibility</em>
+	<~> <small>(read operations <i>see</i> the correct version of data)</small>
+</itemize>
+</slide>
+
+<slide>
+<heading>Conflict Serializability
+Consider two transactions <$>T<sub>1</sub></$> and <$>T<sub>2</sub></$>
+acting on data item <$>X</$>.
+<p>
+Possible orders for read/write operations by  <$>T<sub>1</sub></$> and <$>T<sub>2</sub></$>:
+<p>
+<center>
+<table 5>
+<row>
+<col1><b><$>T<sub>1</sub></$> first</b></col1>
+<col2> <~> </col2>
+<col2><b><$>T<sub>2</sub></$> first</b></col2>
+<col2> <~> </col2>
+<col3>Equiv?</col3>
+</row>
+<row>
+<col1><$>R<sub>1</sub>(X) R<sub>2</sub>(X)</$></col1>
+<col2> <~> </col2>
+<col2><$>R<sub>2</sub>(X) R<sub>1</sub>(X)</$></col2>
+<col2> <~> </col2>
+<col3>yes</col3>
+</row>
+<row>
+<col1><$>R<sub>1</sub>(X) W<sub>2</sub>(X)</$></col1>
+<col2> <~> </col2>
+<col2><$>W<sub>2</sub>(X) R<sub>1</sub>(X)</$></col2>
+<col2> <~> </col2>
+<col3>no</col3>
+</row>
+<row>
+<col1><$>W<sub>1</sub>(X) R<sub>2</sub>(X)</$></col1>
+<col2> <~> </col2>
+<col2><$>R<sub>2</sub>(X) W<sub>1</sub>(X)</$></col2>
+<col2> <~> </col2>
+<col3>no</col3>
+</row>
+<row>
+<col1><$>W<sub>1</sub>(X) W<sub>2</sub>(X)</$></col1>
+<col2> <~> </col2>
+<col2><$>W<sub>2</sub>(X) W<sub>1</sub>(X)</$></col2>
+<col2> <~> </col2>
+<col3>no</col3>
+</row>
+</table>
+</center>
+<p>
+<small>
+If <$>T<sub>1</sub></$> and <$>T<sub>2</sub></$> act on different data items,
+result is always equivalent.
+</small>
+</slide>
+
+<slide>
+<continued>
+Two transactions have a potential <em>conflict</em> if
+<itemize>
+<item> they perform operations on the same data item
+<item> at least one of the operations is a write operation
+</itemize>
+In such cases, the order of operations affects the result.
+<p>
+If no conflict, can swap order without affecting the result.
+<p>
+If we can transform a schedule
+<itemize>
+<item> by swapping the order of non-conflicting operations
+<item> such that the result is a serial schedule
+</itemize>
+then we say that the schedule is <em>conflict serializible</em>.
+</slide>
+
+<slide>
+<continued>
+Example: transform a concurrent schedule to serial schedule
+<program>
+T1: R(A) W(A)      R(B)      W(B)
+T2:           R(A)      W(A)      R(B) W(B)
+<red>swap</red>
+T1: R(A) W(A) <green>R(B)</green>           W(B)
+T2:                <green>R(A)</green> W(A)      R(B) W(B)
+<red>swap</red>
+T1: R(A) W(A) R(B)      <green>W(B)</green>
+T2:                R(A)      <green>W(A)</green> R(B) W(B)
+<red>swap</red>
+T1: R(A) W(A) R(B) <green>W(B)</green>
+T2:                     <green>R(A)</green> W(A) R(B) W(B)
+</program>
+</slide>
+
+<slide>
+<continued>
+Checking for conflict-serializability:
+<itemize>
+<item> show that ordering in concurrent schedule
+<item> cannot be achieved in any serial schedule
+</itemize>
+Method for doing this:
+<itemize>
+<item> build a <em>precedence-graph</em>
+<item> nodes represent transactions
+<item> arcs represent order of action on shared data
+<item> arc from <$>T<sub>1</sub><rightarrow>T<sub>2</sub></$><~> means
+	<$>T<sub>1</sub></$><~> acts on <$>X</$><~> before <$>T<sub>2</sub></$>
+<item> a cycle indicates <i>not</i><~> conflict-serializable.
+</itemize>
+</slide>
+
+<slide>
+<heading>Conflict Serializability Example
+Example schedule which is not conflict serializable:
+<program>
+T1: R(X)           R(Y) W(X)      W(Y)
+T2:           R(X)           W(X)
+T3:      R(X)                          W(X)
+<red>attempted swaps</red>
+T1:           R(X) W(X)          R(Y) W(Y)
+T2:      R(X)           W(X)
+T3: R(X)                     W(X)
+</program>
+Precendence graph for the above schedule:
+<diagram>Pics/xact/prec-graph
+</slide>
+
+<slide>
+<heading>View Serializability
+<em>View Serializability</em> is
+<itemize>
+<item> an alternative formulation of serializability
+<item> that is less conservative than conflict serializability (CS) <br>
+	<small>(some safe schedules that are view serializable are not conflict serializable)</small>
+</itemize>
+As with CS, it is based on a notion of schedule equivalence
+<itemize>
+<item> a schedule is <q>safe</q> if <i>view equivalent</i> to a serial schedule
+</itemize>
+The idea: if, across the two schedules ...
+<itemize>
+<item> they read the same version of a shared object
+<item> they write the same final version of an object
+</itemize>
+then they are <em>view equivalent</em>
+</slide>
+
+<slide>
+<continued>
+Two schedules <$>S</$> and <$>S'</$> on <$>T<sub>1</sub> .. T<sub>n</sub></$>
+are <em>view equivalent</em> iff
+<itemize>
+<item> for each shared data item <$>X</$>
+<itemize>
+<item> if, in <$>S</$>, <$>T<sub>j</sub></$> reads the initial value of <$>X</$>, <br>
+	then, in <$>S'</$>, <$>T<sub>j</sub></$> also reads the initial value of <$>X</$>
+<item> if, in <$>S</$>, <$>T<sub>j</sub></$> reads <$>X</$> written by <$>T<sub>k</sub></$>,<br>
+then, in <$>S'</$> <$>T<sub>j</sub></$> also reads the value of <$>X</$> written by <$>T<sub>k</sub></$> in <$>S'</$>
+<item> if, in <$>S</$>, <$>T<sub>j</sub></$> performs the final write of <$>X</$>,<br>
+then, in <$>S'</$>, <$>T<sub>j</sub></$>  also performs the final write of <$>X</$>
+</itemize>
+</itemize>
+To check serializibilty of <$>S</$> ...
+<itemize>
+<item> find a serial schedule that is <i>view equivalent</i> to <$>S</$>
+<item> from among the <$>n!</$> possible serial schedules
+</itemize>
+</slide>
+
+<slide>
+<heading>View Serializability Example
+Example: consider the following concurrent schedule
+<program>
+T1: R(A) W(A)      R(B)      W(B)
+T2:           R(A)      W(A)      R(B) W(B)
+</program>
+If view serializable, the read/write behaviour must be like one of
+<enumerate>
+<item>
+<program>
+T1: R(A) W(A) R(B) W(B)
+T2:                     R(A) W(A) R(B) W(B)
+</program>
+<item>
+<program>
+T1:                     R(A) W(A) R(B) W(B)
+T2: R(A) W(A) R(B) W(B)
+</program>
+</enumerate>
+</slide>
+
+<slide>
+<continued>
+Reminder of concurrent schedule
+<program>
+T1: R(A) W(A)      R(B)      W(B)
+T2:           R(A)      W(A)      R(B) W(B)
+</program>
+In the concurrent schedule
+<itemize>
+<item> A: T1 reads initial, T2 reads T1's write, T2 writes final
+<item> B: T1 reads initial, T2 reads T1's write, T2 writes final
+</itemize>
+In T1;T2
+<itemize>
+<item> A: T1 reads initial, T2 reads T1's write, T2 writes final
+<item> B: T1 reads initial, T2 reads T1's write, T2 writes final
+</itemize>
+So, concurrent schedule is view equivalent to T1;T2
+</slide>

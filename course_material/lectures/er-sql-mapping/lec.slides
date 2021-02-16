@@ -1,0 +1,422 @@
+<title>Mapping ER to SQL
+<footer>COMP3311 21T1 <diamond> ER->SQL Mapping <diamond>
+
+<slide>
+<heading>Mapping ER to SQL
+<br>
+We have explored mapping ER designs to relational schemas
+<p>
+SQL schemas are essentially more detailed versions of relational schemas
+<p>
+The mapping is much the same, except that
+<itemize>
+<item> you need to provide more details on allowed values
+<item> you can map some ideas from ER that are not in relational schemas
+</itemize>
+There are also some ideas from ER than do not map to an SQL schema
+</slide>
+
+<slide>
+<heading>Reminder: SQL/Relational Model vs ER Model
+Correspondences between SQL/relational and ER data models:
+<itemize>
+<item> attribute<small>(ER)</small> <$><approx></$> attribute<small>(Rel)</small>,<~>
+entity<small>(ER)</small> <$><approx></$> row/tuple<small>(Rel)</small>
+<item> entity set<small>(ER)</small> <$><approx></$> table/relation<small>(Rel)</small>,<~>
+relationship<small>(ER)</small> <$><approx></$> table/relation<small>(Rel)</small>
+</itemize>
+Differences between SQL and ER models:
+<itemize>
+<item> SQL uses tables to model entities <i>and</i> relationships
+<item> SQL has no composite or multi-valued attributes <small>(only atomic)</small>
+<item> SQL has no object-oriented notions <small>(e.g. subclasses, inheritance)</small>
+</itemize>
+<small>
+Note that ...
+<itemize>
+<item> not all aspects of ER can be represented exactly in an SQL schema
+<item> some aspects of SQL schemas (e.g. domains) do not appear in ER
+</itemize>
+</small>
+</slide>
+
+<slide>
+<heading>Mapping ER to SQL
+Some conventions that we use in mapping ER to SQL
+<itemize>
+<item> stop using upper-case for SQL keywords <small>(use <~><@>table</@><~> vs <~><@>TABLE</@><~>)</small>
+<item> all tables based on entities are given plural names
+<item> attributes in entities are given the same name in ER and SQL
+<item> attributes in relationships are given the same name in ER and SQL
+<item> ER key attributes are defined using <@>primary key</@>
+<item> text-based attributes are defined with type <@>text</@>, <br>
+	unless there is a size which is obvious from the context
+<item> attribute domains can be PostgreSQL-specific types where useful
+<item> foreign keys within entity tables are named after the relationship
+<item> foreign keys in relationship tables are named <@><i>table</i>_id</@>
+</itemize>
+</slide>
+
+<slide>
+<heading>Mapping Strong Entities
+An entity set <$>E</$> with atomic attributes
+	<$>a<sub>1</sub>, a<sub>2</sub>, ... a<sub>n</sub></$>
+<p>
+maps to
+<p>
+A table <$>R</$> with attributes (columns)
+	<$>a<sub>1</sub>, a<sub>2</sub>, ... a<sub>n</sub></$>
+<p>
+Example:
+<diagram>Pics/er-sql/strongent.png
+<br>
+Note: the key is preserved in the mapping.
+</slide>
+
+<slide>
+<heading>Mapping Weak Entities
+Example:
+<diagram>Pics/er-sql/mapwkent.png
+</slide>
+
+<slide>
+<heading>Mapping N:M Relationships
+Example:
+<diagram>Pics/er-rel/mapnnrel.png
+</slide>
+
+<slide>
+<continued>
+<program90>
+<navy>create table</navy> Customers (
+    custNo  serial primary key,
+    name    text not null,
+    address text  <comment>-- don't need to know customer's address</comment>
+);
+<navy>create table</navy> Accounts (
+    acctNo   char(5) check (acctNo ~ '[A-Z]-[0-9]{3}'),
+    title    text not null,    <comment>-- acctNos are like 'A-123'</comment>
+    balance  float default 0.0,
+    primary key (acctNo)
+);
+<navy>create table</navy> Owns (
+    customer_id integer references Customers(custNo),
+    account_id  char(5) references Accounts(acctNo),
+    last_accessed timestamp,
+    primary key (customer_id, account_id)
+);
+</program>
+</slide>
+
+<slide>
+<heading>Mapping 1:N Relationships
+Example:
+<diagram>Pics/er-rel/map1nrel2.png
+</slide>
+
+<slide>
+<continued>
+<program90>
+<navy>create table</navy> Branches (
+    branchNo serial primary key,
+    address  text not null,
+    assets   currency
+);
+<navy>create table</navy> Customers (
+    custNo  serial primary key,
+    name    text not null,
+    address text,
+    hasHome integer not null, <comment>-- total participation</comment>
+    joined  date not null,
+    foreign key (hasHome) references Branches(branchNo)
+);
+</program>
+<small>
+<@>hasHome</@> implements the 1:n relationship; <~><@>not null</@><~> implements total participation
+</small>
+</slide>
+
+<slide>
+<heading>Mapping 1:1 Relationships
+Example:
+<diagram>Pics/er-rel/map11rel.png
+</slide>
+
+<slide>
+<continued>
+<program90>
+<navy>create table</navy> Branches (
+    branchNo serial primary key,
+    address  text not null,
+    assets   currency          <comment>-- a new branch</comment>
+);                             <comment>--    may have no accounts</comment>
+<navy>create table</navy> Managers (
+    empNo    serial primary key,
+    name     text not null,
+    salary   currency not null, <comment>-- when first employed, </comment>
+                                <comment>--    must have a salary</comment>
+    manages  integer not null,  <comment>-- total participation</comment>
+    foreign key (manages) references Branches(branchNo)
+);
+</program>
+<small>
+If both entities have total participation, cannot express this in SQL<br>
+except by putting a (redundant) <~><@>not null</@><~> foreign key in one table
+</small>
+</slide>
+
+<slide>
+<heading>Mapping n-way Relationships
+Example:
+<diagram>Pics/er-sql/map-n-way
+<p>
+A customer accesses one of their accounts at a specific ATM
+</slide>
+
+<slide>
+<continued>
+<program90>
+<navy>create table</navy> Customers (
+    custNo   serial primary key, ...
+);
+<navy>create table</navy> Accounts (
+    acctNo   char(5) ... primary key, ...
+);
+<navy>create table</navy> ATMs (
+    atmID    serial primary key,
+    cash     currency check (cash >= 0),
+    location text not null
+);
+<navy>create table</navy> Withdrawal (
+    customer_id  integer references Customers(custNo),
+    account_id   char(5) references Accounts(acctNo),
+    atm_id       integer references ATMs(atmID),
+    amount       currency not null,
+    when         timestamp default now(),
+    primary key  (customer_id,account_id,atm_id)
+);
+</program>
+</slide>
+
+<slide>
+<heading>Mapping Composite Attributes
+Composite attributes are mapped by concatenation or flattening.
+<p>
+Example:
+<diagram>Pics/er-rel/mapstrent.png
+</slide>
+
+<slide>
+<continued>
+<program90>
+<comment>-- Version 1: concatenated</comment>
+<navy>create table</navy> People (
+    ssn     integer primary key,
+    name    text not null,
+    address text not null
+);
+<comment>-- Version 2: flattened</comment>
+<navy>create table</navy> People (
+    ssn     integer primary key,
+    given   text not null,
+    family  text,
+    number  integer not null,
+    street  text not null,
+    suburb  text not null,
+    pcode   char(4) not null check (pcode ~ '[0-9]{4}')
+);
+</program>
+<small>
+<@>address</@> <~>=<~> <@>(number::text||' '||street||', '||suburb||' '||pcode)</@>
+<p>
+Searching: <~><@>suburb = 'Coogee'</@><~> vs <~><@>address like '%Coogee%'</@><~>
+<p>
+Sorting: <~><@> order by family</@><~> vs <~>can't be done (easily)
+</small>
+</slide>
+
+<slide>
+<heading>Mapping Multi-valued Attributes (MVAs)
+MVAs are mapped by a new table linking values to their entity.
+<p>
+Example:
+<diagram>Pics/er-rel/mapmva.png
+</slide>
+
+<slide>
+<continued>
+<br>
+<program>
+<navy>create table</navy> People (
+    ssn      integer primary key,
+    name     text not null,
+    birthday date
+);
+<navy>create table</navy> FavColour (
+    person_id integer references People(ssn),
+    colour    text,
+    primary key (person_id,colour)
+);
+</program>
+<small>
+Note that <~><@>colour</@><~> is implicitly <~><@>not null</@><~> because it is part of the primary key
+</small>
+</slide>
+
+<slide>
+<heading>Mapping Subclasses
+Three different approaches to mapping subclasses to tables:
+<itemize>
+<item> ER style
+<small>
+<itemize>
+<sitem> each entity becomes a separate table,
+<sitem> containing attributes of subclass + FK to superclass table
+</itemize>
+</small>
+<item> object-oriented
+<small>
+<itemize>
+<sitem> each entity becomes a separate table,
+<sitem> inheriting all attributes from all superclasses
+</itemize>
+</small>
+<item> single table with nulls
+<small>
+<itemize>
+<sitem> whole class hierarchy becomes one table,
+<sitem> containing all attributes of all subclasses (null, if unused)
+</itemize>
+</small>
+</itemize>
+Which mapping is best depends on how data is to be used.
+</slide>
+
+<slide>
+<continued>
+Example of ER-style mapping:
+<diagram>Pics/er-rel/mapsubclass.png
+</slide>
+
+<slide>
+<continued>
+<program90>
+<navy>create table</navy> People (
+    ssn     integer primary key,
+    name    text not null,
+    address text
+);
+<navy>create table</navy> Employees (
+    person_id integer primary key,
+    salary    currency not null,
+    position  text not null,
+    foreign key (person_id) references People(ssn)
+);
+<navy>create table</navy> Managers (
+    employee_id integer primary key,
+    bonus       currency,
+    foreign key (employee_id)
+                references Employees(person_id)
+);
+</program>
+</slide>
+
+<slide>
+<continued>
+Example of object-oriented mapping:
+<diagram>Pics/er-rel/mapsubclass2.png
+</slide>
+
+<slide>
+<continued>
+<program90>
+<navy>create table</navy> People (
+    ssn     integer primary key,
+    name    text not null,
+    address text
+);
+<navy>create table</navy> Employees (
+    ssn       integer primary key,
+    name      text not null,
+    address   text
+    salary    currency not null,
+    position  text not null,
+    foreign key (snn) references People(ssn)
+);
+<navy>create table</navy> Managers (
+    ssn       integer primary key,
+    name      text not null,
+    address   text
+    salary    currency not null,
+    position  text not null,
+    bonus     currency,
+    foreign key (snn) references People(ssn)
+);
+</program>
+</slide>
+
+<slide>
+<continued>
+Example of single-table-with-nulls mapping:
+<diagram>Pics/er-rel/mapsubclass3.png
+</slide>
+
+<slide>
+<continued>
+<program90>
+<navy>create table</navy> People (
+    ssn       integer primary key,
+    ptype     char(1)  not null 
+                       check (ptype in ('P','E','M')),
+    name      text not null,
+    address   text
+    salary    currency,
+    position  text,
+    bonus     currency,
+    constraint subclasses check
+               ((ptype = 'P' and salary is null
+                and position is null and bonus is null)
+               or
+                (ptype = 'E' and salary is not null
+                 and position is not null and bonus is null)
+               or
+                (ptype = 'M' and salary is not null
+                 and position is not null and bonus is not null))
+);
+</program>
+</slide>
+
+<slide>
+<continued>
+Example:
+<diagram>Pics/er-sql/map-disjoint
+<br>
+Every employee is either permanent or casual, but not both.
+</slide>
+
+<slide>
+<continued>
+ER-style mapping to SQL schema:
+<program90>
+<navy>create table</navy> Employees (
+    empID   serial primary key,
+    name    text not null,
+    address text not null
+);
+<navy>create table</navy> Permanents (
+    employee_id integer primary key,
+    salary      currency not null,
+    foreign key (employee_id) references Employees(empID)
+);
+<navy>create table</navy> Casuals (
+    employee_id integer primary key,
+    pay_rate    currency not null,
+    foreign key (employee_id) references Employees(empID)
+);
+</program>
+Does <i>not</i> capture either participation or disjoint-ness constraints!
+<p>
+<small>
+Would need to program a solution to this e.g web-form that requires user to enter both Employee and subclass info
+</small>
+</slide>

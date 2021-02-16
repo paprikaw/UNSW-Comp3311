@@ -1,0 +1,30 @@
+Minimal cover
+
+F = { AB -> CD, AC -> D, C -> E }
+key = AB
+
+Step 1
+
+F1 = AB->C AB->D AC->D C->E
+
+Step 2
+
+F2 = A->C AB->D AC->D C->E  ... B not redundant is AB->C
+F3 = AB->C A->D AC->D C->E  ... looks like B redundant in AB->D
+F4 = AB->C A->D C->D C->E   ... looks like A redundant in AC->D
+
+F1+ != F2+
+F1+ == F3+
+F1+ == F4+
+
+Step 3
+
+AB->C A->D C->D C->E
+
+AB->C C->D C->E   ... F_c not reduced
+
+AB->C C->DE       ... F_c reduced
+
+
+3NF =  ABC CDE    ... AB is the key and appears in a table
+

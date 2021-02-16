@@ -1,0 +1,1052 @@
+<title>Relational Data Model
+
+<slide>
+<heading>Relational Data Model
+The <em>relational data model</em> describes the world as:
+<itemize>
+<item> a collection of inter-related <em>relations</em> (or <em>tables</em>)
+</itemize>
+<p>
+Goal of relational model:
+<itemize>
+<item> a simple, general data modelling formalism
+<item> which maps easily to file structures <small>(i.e. implementable)</small>
+</itemize>
+<small>
+Can be viewed as an attempt to formalise the file organisations
+that were in common use at the time the model was developed.
+</small>
+</slide>
+
+<slide>
+<continued>
+The relational data model has existed for over 30 years.
+<p>
+<small>
+(The original description is Codd, <i>Communications of the ACM</i>, 13(6), 1970)
+</small>
+<p>
+The relational model has provided the basis for:
+<itemize>
+<item> research on the theory of data/relationships/constraints
+<item> numerous database design methodologies
+<item> the standard database access language SQL
+<item> almost all modern commercial database management systems
+</itemize>
+<small>
+It is a very influential development in CS, for which Codd received a Turing award.
+</small>
+</slide>
+
+<slide>
+<heading>Terminology
+A note on the terminology used in the relational model ...
+<p>
+The relational model is a mathematical theory; it has no <q>standard</q>.
+<p>
+However, it also has a close connection to file/data structures.
+<p>
+There are thus two kinds of terminology in use:
+<itemize>
+<item> mathematical: <~> relation, <~> tuple, <~> attribute, <~> ...
+<item> data-oriented: <~> table, <~> record, <~> field/column, <~> ...
+</itemize>
+<p>
+<small>
+Textbooks alternate between the two; treat them as synonyms.
+</small>
+</slide>
+
+<slide>
+<heading>Relations
+The relational model has one structuring mechanism ...
+<itemize>
+<item> a <em>relation</em> corresponds to a mathematical <q>relation</q>
+<item> a <em>relation</em> can also be viewed as a <q>table</q>
+</itemize>
+Each relation schema <small>(denoted <$>R,S,T,...</$>)</small> has:
+<itemize>
+<item> a <em>name</em> <~> <small>(unique within a given database)</small>
+<item> a set of <em>attributes</em> <~> <small>(which can be viewed as column headings)</small>
+</itemize>
+Each <em>attribute</em> <small>(denoted <$>A,B,...</$> or <$>a<sub>1</sub>,a<sub>2</sub>,...</$>)</small> has:
+<itemize>
+<item> a <em>name</em> <~> <small>(unique within a given relation)</small>
+<item> an associated <em>domain</em> <~> <small>(set of allowed values)</small>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Attribute values are <em>atomic</em> <~> <small>(no composite or multi-valued attributes)</small>.
+<p>
+Attribute domains are typically: numbers, strings, booleans.
+<p>
+There is a distinguished value <@>NULL</@> that belongs to all domains.
+<p>
+A <em>database</em> is a collection of associated relations.
+</slide>
+
+<slide>
+<continued>
+Example relation (bank accounts):
+<p>
+<diagram>Pic/er-rel/table.png
+</slide>
+
+<slide>
+<heading>Example Database
+<diagram>Pic/er-rel/db.png
+</slide>
+
+<slide>
+<continued>
+A <em>tuple</em> is a set of values; a relation is a set of tuples.
+<p>
+Since a relation is a set, there is no ordering on rows.
+<p>
+Normally, we define a standard ordering on components of a tuple.
+<p>
+The following are different presentations of the same relation:
+<p>
+<diagram>Pic/er-rel/tables.png
+</slide>
+
+<slide>
+<continued>
+Consider a relation <$>R</$> :
+<itemize>
+<item> which has <$>n</$> attributes <~> <$>a<sub>1</sub>, a<sub>2</sub>, ... a<sub>n</sub></$>
+<item> with corresponding domains <~> <$>D<sub>1</sub>, D<sub>2</sub>, ... D<sub>n</sub></$>
+</itemize>
+<$>R(a<sub>1</sub>, a<sub>1</sub>, ... a<sub>n</sub>)</$>
+<~> <small> (alternatively, <$>D<sub>1</sub> <times> D<sub>2</sub> <times> ... <times> D<sub>n</sub></$>) </small>
+<itemize>
+<item> is a <em>schema</em> for the relation <~> <small>(intensional)</small>
+</itemize>
+A particular subset <$>r</$> of <$>D<sub>1</sub> <times> D<sub>2</sub> <times> ... <times> D<sub>n</sub></$>
+<itemize>
+<item> is an <em>instance</em> of the schema <~> <small>(extensional)</small>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Schema names are typically unique within a given database.
+<p>
+So, we often use <$>R</$>
+as a synonym for <$>R(a<sub>1</sub>, a<sub>1</sub>, ... a<sub>n</sub>)</$>.
+<p>
+<$>r(R)</$> is used to denote that <$>r</$> is an instance of the schema <$>R</$>.
+<p>
+The number of attributes (<$>n</$>) in a schema is its <em>degree</em>
+(arity).
+<p>
+Note: the phrase <q> the relation <$>R</$> </q> can refer to either
+<itemize>
+<item> the schema for <$>R</$> <~~> <i>or</i>
+<item> the current instance of <$>R</$> stored in a DBMS
+</itemize>
+The intended usage is generally clear from the context.
+<p>
+</slide>
+
+<slide>
+<continued>
+E.g. the <@>Accounts</@> schema has type <$>String <times> String <times> Int</$> :
+<program>
+   Account(branchName, accountNo, balance)
+</program>
+<p>
+E.g. the <@>Account</@> instance (set of tuples) from the diagram:
+<sprogram>
+{
+  (Downtown, A-101, 500),   (Mianus, A-215, 700),
+  (Perryridge, A-102, 400), (Round Hill, A-305, 350),
+  (Brighton, A-201, 900),   (Redwood, A-222, 700),
+  (Brighton, A-217, 750)
+}
+</sprogram>
+<small>
+Notes:
+<itemize>
+<item> values in tuples are comma-separated, so we don't normally quote strings
+<item> choose an order for attributes/values in tuples and use that consistently
+<item> relations are sets <$><Rightarrow></$> no duplicates, order of tuples is not important
+</itemize>
+</small>
+</slide>
+
+<slide>
+<heading>Changing Relations
+In making changes to relations, it is ...
+<itemize>
+<item> easy to add new tuples (rows) <~> (relation update)
+<item> difficult to add new attributes (columns) <~> (schema update)
+</itemize>
+The reasons:
+<itemize>
+<item> relation update <$><Rightarrow></$> insertion of one new tuple into a set <br>
+	<small>(in file terms: writing one record to the end of a data file)</small>
+<item> schema update <$><Rightarrow></$> insertion of new data into every tuple <br>
+	<small>(in file terms: re-writing the entire file to modify each record)</small>
+</itemize>
+Schema update is a well-known and not well-solved problem in RDBMSs.
+</slide>
+
+<slide>
+<heading>Constraints on Relational Data
+</slide>
+
+<slide>
+<heading>Constraints
+A very important feature of the relational model:
+<itemize>
+<item> well-defined theory of constraints on attributes/tables
+</itemize>
+This is useful because it allows
+<itemize>
+<item> formal reasoning about databases and operations on them
+<item> designers to specify precisely the semantics of the data
+<item> DBMSs to check that new data satisfies the semantics
+</itemize>
+</slide>
+
+<slide>
+<heading>Integrity Constraints
+Relations allow us to represent data and associations.
+<p>
+Domains limit the values that attributes can take.
+<p>
+However, to fully represent the semantics of real-world problems,
+we need more detailed ways of specifying
+<itemize>
+<item> what values are/are not allowed
+<item> what combinations of values are/are not allowed
+</itemize> 
+<em>Integrity constraints</em> are logical statements about data
+that provide such information.
+<p>
+Some examples:
+<itemize>
+<sitem> employees must be over 16 and under 65 years of age
+<sitem> account numbers must be unique
+<sitem> each account is held at one particular branch
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Several kinds of constraints exist e.g.
+<p>
+<deftable 3>
+<row>
+  <col1> <em>key</em> </col1>
+  <col2> combination of attributes must be unique </col2>
+</row>
+<row>
+  <col1> <em>entity integrity</em> </col1>
+  <col2> no attribute in key may be <@>NULL</@> </col2>
+</row>
+<row>
+  <col1> <em>referential integrity</em> </col1>
+  <col2> references to tuples in other relations must be valid </col2>
+</row>
+<row>
+  <col1> <em>domain</em> </col1>
+  <col2> value of attribute must satisfy certain property </col2>
+</row>
+</deftable>
+<p>
+<em>Functional dependencies</em> are another important kind of constraint,
+related to database design; we cover them in considerable detail later.
+</slide>
+
+<slide>
+<continued>
+Associating an attribute to a domain restricts its possible values to
+a well-defined set (e.g. integer).
+<p>
+<em>Domain constraints</em> allow more <q>fine-grained</q> definition
+of potential attribute values.
+<p>
+Example:
+<p>
+An <@>age</@> attribute is typically defined as <@>integer</@> ...
+<itemize>
+<item> but integer values like <@>-5</@> and <@>199</@> are not valid ages
+<item> better modelled by adding a condition <@>(15 < age < 66)</@>
+</itemize>
+Note: the <@>NULL</@> value satisfies any domain constraint.
+</slide>
+
+<slide>
+<continued>
+Relational tuples have no notion of identity like OIDs.
+<p>
+Identity is value-based <small>(as in ER model)</small>
+<itemize>
+<item> <em>keys</em> are a way of uniquely identifying tuples.
+</itemize>
+Relational model supports same notions of key as ER model:
+<itemize>
+<item> superkey - set of attributes that distinguishes tuples
+<item> candidate key - minimal super-key <~> <small>(no unnecessary attributes)</small>
+<item> primary key - distinguished/chosen candidate key
+</itemize>
+Keys are often implemented by introducing an artificial attribute specifically
+for the purpose of being a key (e.g. student ID, account number).
+</slide>
+
+<slide>
+<continued>
+<em>Referential integrity constraints</em> are relevant for inter-relation references.
+<p>
+Example:
+<itemize>
+<item> the <@>Account</@> relation needs to take note of the branch where
+	each account is held
+<item> implemented by storing information in each <@>Account</@>
+	tuple to identify the associated branch (e.g. primary key <@>branchName</@>)
+<item> it would not make sense to store a <@>branchName</@> that did not
+	refer to one of the existing branches
+</itemize>
+The notion that the <@>branchName</@> must <em>refer</em> to a valid branch is a
+referential integrity constraint.
+</slide>
+
+<slide>
+<heading>Foreign Keys
+Referential integrity is related to the notion of a <em>foreign key</em>.
+<p>
+A set of attributes <$>FK</$> from a relation schema <$>R<sub>1</sub></$> is a foreign key if:
+<itemize>
+<item> the attributes in <$>FK</$> correspond to the attributes in the primary
+	key of another relation schema <$>R<sub>2</sub></$> 
+<item> the value for <$>FK</$> in each tuple of <$>R<sub>1</sub></$>
+<itemize>
+<item> either <~> occurs as a primary key in <$>R<sub>2</sub></$>
+<item> or <~> is entirely <@>NULL</@>
+</itemize>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Foreign keys are critical in relational databases
+<itemize>
+<item> they provide the <q>glue</q> that links individual relations
+	into a cohesive database structure
+<item> they provide the basis for <q>reconnecting</q> individual
+	relations to assemble query answers
+</itemize>
+Special notation for foreign/primary keys:
+<itemize>
+<item> each relation is a sequence of <q>attribute boxes</q>
+<item> attributes that are part of primary key are underlined
+<item> arrows are drawn from foreign key attributes to their
+	corresponding primary key attributes
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Foreign key examples:
+<p>
+<diagram>Pic/er-rel/fkeys.png
+</slide>
+
+<slide>
+<heading>Relational Databases
+Relations, keys, foreign keys, and integrity constraints provide
+a complete toolkit for building relational databases.
+<p>
+A <em>relational database schema</em> is
+<itemize>
+<item> a set of relation schemas
+	<~> <$>{ R<sub>1</sub>, <~> R<sub>2</sub>, <~>...<~> R<sub>n</sub> }</$> ,
+	<~> and
+<item> a set of integrity constraints
+</itemize>
+A <em>relational database instance</em> is
+<itemize>
+<item> a set of relation instances
+	<~> <$>{ r<sub>1</sub>(R<sub>1</sub>), <~> r<sub>2</sub>(R<sub>2</sub>), <~>...<~> r<sub>n</sub>(R<sub>n</sub>) }</$>
+<item> where all of the integrity constraints are satisfied
+</itemize>
+</slide>
+
+<slide>
+<heading>Constraint Checking
+If we have a database instance that satisfies all integrity constraints,
+what can go wrong?
+<p>
+The data might change <~> <$><Rightarrow></$> <~> constraints need to be re-checked.
+<p>
+Possible changes:
+<itemize>
+<item> <em>insert</em> (add) a new record
+<item> <em>delete</em> (remove) an existing record
+<item> <em>update</em> (modify) an existing record
+</itemize>
+</slide>
+
+<slide>
+<continued>
+For <em>domain</em> constraints ...
+<p>
+Insert:
+<itemize>
+<item> check each attribute value for type and additional domain constraints
+</itemize>
+Delete:
+<itemize>
+<item> no need to check any domain constraints
+</itemize>
+Update:
+<itemize>
+<item> check each modified attribute value for type and additional domain constraints
+</itemize>
+</slide>
+
+<slide>
+<continued>
+These changes satisfy domain constraints:
+<program>
+insert Account(Downtown, A-456, 600)
+insert Account(Perryridge, A-321, 200)
+insert Account(Perryridge, A-102, 750)
+   <comment># but note duplicate key value</comment>
+insert Account(Perryrige, A-131, 450)
+   <comment># value looks ok, but isn't correct</comment>
+</program>
+These changes do <b>not</b> satisfy domain constraints:
+<program>
+insert Account(Downtown, A-321, <red>money</red>)
+   <comment># 3rd attribute (<$>a<sub>3</sub></$>) fails type check</comment>
+insert Account(<brown>XYZZY</brown>, <brown>Hello</brown>, 300)
+   <comment># if we check for "lexically sensible" values on <$>a<sub>1</sub>,a<sub>2</sub></$></comment>
+insert Account(Brighton, A-402, <red>-500</red>)
+   <comment># if we check for positive opening balance</comment>
+</program>
+</slide>
+
+<slide>
+<continued>
+For <em>key</em> constraints ...
+<p>
+Insert:
+<itemize>
+<item> check that key does not occur in any tuple already in the relation
+</itemize>
+Delete:
+<itemize>
+<item> no need to check anything
+</itemize>
+Update:
+<itemize>
+<item> if key attributes modified, same check as for insertion
+</itemize>
+</slide>
+
+<slide>
+<continued>
+These changes satisfy key constraints:
+<program>
+insert Account(Downtown, A-456, 600)
+insert Depositor(A-101, 9876543)
+   <comment># ok, only part of key duplicated</comment>
+update Account(Downtown, A-101, 500)
+    to Account(Downtown, A-101, 600)
+   <comment># ok, key attributes were not changed</comment>
+insert Depositor(A-305, 8888888)
+   <comment># but no such customer</comment>
+</program>
+These changes do <b>not</b> satisfy key constraints:
+<program>
+insert Account(Perryridge, <red>A-102</red>, 750)
+   <comment># key A-102 already exists in relation</comment>
+update Account(Downtown, A-101, 500)
+    to Account(Downtown, <red>A-201</red>, 500)
+   <comment># key A-201 already exists in relation</comment>
+</program>
+</slide>
+
+<slide>
+<continued>
+For <em>referential integrity</em> constraints ...
+<p>
+Insert:
+<itemize>
+<item> check that any foreign keys occur as primary keys in their own relation
+</itemize>
+Delete:
+<itemize>
+<item> check all relations that have foreign keys referring to this relation <br>
+</itemize>
+Update:
+<itemize>
+<item> treat as delete-then-insert for constraint checking
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Example of deletion with foreign keys:
+<p>
+<diagram>Pic/er-rel/deletion.png
+</slide>
+
+<slide>
+<continued>
+How to handle violation of referential constraints on deletion?
+<p>
+One approach:
+<itemize>
+<item> simply disallow the deletion
+<item> user must then find referring tuples and
+<itemize>
+<item> either <~> remove each one manually
+<item> or <~> change their foreign keys to an acceptable value
+</itemize>
+</itemize>
+Another approaches:
+<itemize>
+<item> remove all referring tuples automatically (cascade)
+<item> set foreign key attributes to <@>NULL</@> in all referring tuples <br>
+	<small>(not possible if the foreign key also forms part of the primary key)</small>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+These changes satisfy referential integrity constraints:
+<program>
+insert Account(<green>Downtown</green>, A-456, 600)
+insert Depositor(<green>A-215</green>, <green>9876543</green>)
+update Account(Downtown, A-101, 500)
+    to Account(<green>Perryridge</green>, A-101, 500)
+   <comment># ok, <$>a<sub>1</sub></$> changed to valid FK</comment>
+</program>
+These changes do <b>not</b> satisfy referential integrity constraints:
+<program>
+insert Account(<red>Wombatville</red>, A-987, 500)
+   <comment># no such branch</comment>
+insert Depositor(A-305, <red>8888888</red>)
+   <comment># valid account, but no such customer</comment>
+update Account(Downtown, A-101, 500)
+    to Account(<red>Nowhere</red>, A-101, 500)
+   <comment># no such branch</comment>
+</program>
+</slide>
+
+<slide>
+<continued>
+These changes satisfy referential integrity constraints:
+<program>
+delete Depositor(<green>A-102</green>, <green>1234567</green>)
+delete Depositor(<green>A-101</green>, <green>1313131</green>)
+   <comment># although A-101 now has no "owner"</comment>
+delete Branch(<green>North Town</green>, Rye, 3700000)
+   <comment># ok, since no accounts or customers (but assets?)</comment>
+</program>
+These changes do <b>not</b> satisfy referential integrity constraints:
+<program>
+delete Branch(<red>Perryridge</red>, Horseneck, 1700000)
+   <comment># some accounts are held at Perryridge</comment>
+delete Customer(Smith, Rye, <red>1234567</red>, Mianus)
+   <comment># Depositor records become invalid</comment>
+</program>
+</slide>
+
+<slide>
+<heading>Mapping ER Designs to Relational Schemas
+</slide>
+
+<slide>
+<heading>ER to Relational Mapping
+As noted earlier, one useful strategy for database design:
+<itemize>
+<item> perform initial data modelling using ER or OO <br>
+	<small>(conceptual-level modelling)</small>
+<item> transform conceptual design into relational model <br>
+	<small>(implementation-level modelling)</small>
+</itemize>
+By examining semantic correspondences, a formal mapping between the ER and
+relational models has been developed.
+<p>
+Because it is formal, it can be automated, and commercial tools now exist
+to perform it.
+</slide>
+
+<slide>
+<continued>
+If we have tools, why worry about the mapping process itself?
+<p>
+It is still useful to understand how mapping occurs because:
+<itemize>
+<item> tools produce <em>correct</em> but (sometimes) <em>incomprehensible</em>
+	relational descriptions
+<item> to do performance tuning, you need to understand these descriptions
+<item> you may need to use a different mapping to improve DB performance
+</itemize>
+<p>
+<small>Also, you're CSE students and you like to know how things work.</small>
+</slide>
+
+<slide>
+<heading>Relational Model vs ER Model
+The relational and ER data models have some obvious correspondences:
+<p>
+<center>
+<table 2>
+<row>
+ <col1><b>Entity/Relationship</b></col1>
+ <col2><b>Relational</b></col2>
+</row>
+<row>
+ <col1> Attributes </col1>
+ <col2> Attributes <small>(atomic)</small> </col2>
+</row>
+<row>
+ <col1> Entity <br> Relationship </col1>
+ <col2> Relation schema </col2>
+</row>
+<row>
+ <col1> Entity instance <br> Relationship instance </col1>
+ <col2> Tuple <small>(row, record)</small> </col2>
+</row>
+<row>
+ <col1> Entity set <br> Relationship set </col1>
+ <col2> Relation instance </col2>
+</row>
+</table>
+</center>
+</slide>
+
+<slide>
+<continued>
+There are also differences between relational and ER models.
+<p>
+Compared to ER, the relational model:
+<itemize>
+<item> uses relations to model both entities <i>and</i> relationships
+<item> has no composite or multi-valued attributes <small>(only atomic-valued)</small>
+<item> has no object-oriented notions <small>(e.g. subclasses, inheritance)</small>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+At first glance, Relational looks less powerful than ER:
+<itemize>
+<item> less <q>mechanisms</q> and <q>weaker</q> data structuring tools
+</itemize>
+However, the relational model:
+<itemize>
+<item> can be used to represent any ER design <br>
+	<small>(although relational design may not be as "natural" as ER one)</small>
+<item> is simple, elegant and formal <br>
+	<$><Rightarrow></$> <~> provides a theory for evaluating relational designs
+<item> has a model for query processing <br>
+	<$><Rightarrow></$> <~> provides a basis for efficient implementations
+</itemize>
+</slide>
+
+<slide>
+<heading>Mapping Strong Entities
+An <em>entity</em> consists of:
+<itemize>
+<item> a collection of attributes; <br>
+	attributes can be simple, composite, multi-valued
+</itemize>
+A <em>relation schema</em> consists of:
+<itemize>
+<item> a collection of attributes; <br>
+	all attributes have atomic data values
+</itemize>
+So, even the mapping from entity to relation schema is not simple.
+</slide>
+
+<slide>
+<continued>
+In one special case, there is an obvious mapping:
+<itemize>
+<item> an entity set <$>E</$> with atomic attributes
+	 <$>a<sub>1</sub>, a<sub>2</sub>, ... a<sub>n</sub></$>
+</itemize>
+maps to
+<itemize>
+<item> a relation <$>R</$> with attributes (columns) <$>a<sub>1</sub>, a<sub>2</sub>, ... a<sub>n</sub></$>
+</itemize>
+Each row in the relation <$>R</$> corresponds to an entity in <$>E</$>.
+<p>
+The <em>key</em> for the relation is the same (set of attributes) as for the entity set.
+</slide>
+
+<slide>
+<continued>
+ER supports composite (hierarchical) attributes.
+<p>
+The relational model supports only atomic attributes.
+<p>
+Composite attributes consist of
+<itemize>
+<item> structuring attributes (non-leaf attributes)
+<item> data attributes (containing atomic values)
+</itemize>
+<diagram>Pic/er-rel/composite.png
+</slide>
+
+<slide>
+<continued>
+One approach to mapping composite attributes:
+<itemize>
+<item> remove structuring attributes
+<item> map atomic components to a set of atomic attributes
+	<~> <small>(possibly with renaming)</small>
+</itemize>
+<small>E.g. <~> <@>Struct A {W, Struct B {X,Y}, Z}</@> <$><rightarrow></$> <@>(W,X,Y,Z)</@></small>
+<p>
+It is common to retain structuring attribute as part of name
+to resolve name conflicts.
+<p>
+<small>
+E.g.  <@>Struct Addr {number,street,suburb,pcode}</@> <br>
+maps to <@>(AddrNumber,AddrStreet,AddrSuburb,AddrPcode)</@>
+</small>
+</slide>
+
+<slide>
+<continued>
+Alternative approach to mapping composite attributes:
+<itemize>
+<item> concatenate atomic attribute values into a string
+</itemize>
+<small>
+E.g. <~> <@>Struct name {"John","Smith"}</@> <$><rightarrow></$> <@>"John Smith"</@>
+</small>
+<p>
+However, this approach <q>hides</q> information from data manipulation languages:
+<itemize>
+<item> requires extra extraction effort if components <i>are</i> required
+<item> cannot exploit efficient query capabilities on components
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Example:
+<diagram>Pic/er-rel/mapstrent.png
+</slide>
+
+<slide>
+<heading>Mapping Weak Entities
+A weak entity set <$>W</$>
+<itemize>
+<item> has some attributes that form a <em>discriminator</em>, BUT
+<item> is dependent on some other entity set <$>E</$> to form a key
+</itemize>
+If we simply form a relation for <$>W</$> by mapping its attributes,
+it would not be a valid relation because it would not have a key.
+<p>
+The solution:
+<itemize>
+<item> map the weak entity set to a relation, BUT also
+<item> augment the relation by including <$>E</$>'s key
+</itemize>
+This always yields a relation with a valid key.
+</slide>
+
+<slide>
+<continued>
+More formally:
+<itemize>
+<item> let <$>W</$> be a weak entity set with attributes
+	<$>w<sub>1</sub>, w<sub>2</sub>, ... w<sub>n</sub></$>
+<item> let <$>E</$> be its strong entity set with key
+	<$>e<sub>1</sub>, e<sub>2</sub>, ... e<sub>m</sub></$>
+<item> represent <$>W</$> by a table with columns  <br>
+	<~~~> { <$>w<sub>1</sub>, w<sub>2</sub>, ... w<sub>n</sub></$> }
+	<$> <union> </$>
+	{ <$>e<sub>1</sub>, e<sub>2</sub>, ... e<sub>m</sub></$> }
+</itemize>
+The key is <$>E</$>'s key <small>(foreign key in <$>W</$>)</small> plus the discriminator of <$>W</$>.
+<p>
+The weak relationship set between <$>W</$> and <$>E</$> is not explicitly represented.
+</slide>
+
+<slide>
+<continued>
+Example:
+<diagram>Pic/er-rel/mapwkent.png
+</slide>
+
+<slide>
+<heading>Mapping N:M Relationships
+A <green>binary relationship set</green> <$>B</$>
+between entity sets <$>E</$> and <$>F</$>
+gives associations between pairs of entities in <$>E</$> and <$>F</$>
+<diagram>Pic/er-rel/nmrelationship.png
+<p>
+We can represent
+<itemize>
+<item> entity set <$>E</$> by relation <$>S</$>
+	<~> <small>(using attribute mappings as above)</small>
+<item> entity set <$>F</$> by relation <$>T</$>
+	<~> <small>(using attribute mappings as above)</small>
+</itemize>
+<p>
+But how to represent <$>B</$>?
+</slide>
+
+<slide>
+<continued>
+One possibility: represent the <green>relationship set</green> <$>B</$>
+explicitly by a <green>relation</green> <$>R</$>.
+<p>
+Each tuple (row) in <$>R</$> represents the <green>relationship</green>
+between a specific pair of entities from <$>E</$> and <$>F</$>.
+<p>
+For this to work, the tuple would need to contain information to identify
+the entities involved
+<p>
+This is achieved by storing the keys of the related entities.
+<p>
+It is somewhat like breaking the ER diagram up as follows:
+<diagram>Pic/er-rel/nmrelationship2.png
+</slide>
+
+<slide>
+<continued>
+A relationship set <$>B(E,F)</$> is represented by a relation <$>R</$> containing:
+<itemize>
+<item> all attributes from the primary keys of <$>S</$> and <$>T</$>
+<item> all attributes associated with the relationship set <$>B</$>
+</itemize>
+where <$>S</$> and <$>T</$> are relations representing entity sets <$>E</$> and <$>F</$>.
+<p>
+The <em>key</em> for <$>R</$> is the union of the key attributes for <$>S</$> and <$>T</$>.
+</slide>
+
+<slide>
+<continued>
+This approach for representing relationships works generally:
+<itemize>
+<item> relationship degree <$><geq> 2</$>
+<item> relationship multiplicity 1:1, 1:N, N:M
+<item> associated attributes are simply included in <$>R</$>
+</itemize>
+but requires a new relation to be created for each relationship set.
+<p>
+This can slow down query processing <em>considerably</em>.
+<p>
+In certain special cases, we do not need to create a new relation
+	<small> (see later). </small>
+</slide>
+
+<slide>
+<continued>
+Example:
+<diagram>Pic/er-rel/mapnnrel.png
+</slide>
+
+<slide>
+<heading>Mapping 1:N Relationships
+Consider a 1:N relationship <$>R</$> between entity sets <$>E</$> and <$>F</$>
+<itemize>
+<item> an entity in <$>F</$> is associated with at most one entity in <$>E</$>
+<item> an entity in <$>E</$> may be associated with many entities in <$>F</$>
+</itemize>
+As above, we represent <$>E</$> and <$>F</$> by relations <$>S</$> and <$>T</$>.
+<p>
+How to capture the association between an entity in <$>F</$> and the
+corresponding entity in <$>E</$>?
+<p>
+<small>
+We have already seen one solution: introduce a new relation for <$>R</$>.
+</small>
+</slide>
+
+<slide>
+<continued>
+Since there is (at most) one corresponding entity, add attributes in <$>F</$>:
+<itemize>
+<item> to identify the corresponding entity (i.e. <$>E</$>'s key)
+<item> to represent any attributes associated with <$>R</$>
+</itemize>
+In other words, we insert a foreign key for <$>E</$> into <$>F</$>, <br>
+along with any attributes for the relationship <$>R</$>.
+<p>
+If an entity in <$>F</$> has no relationship with <$>E</$> give 
+<@>NULL</@> values to the <q>extra</q> attributes in <$>F</$>.
+</slide>
+
+<slide>
+<continued>
+Example (generic mapping):
+<diagram>Pic/er-rel/map1nrel1.png
+</slide>
+
+<slide>
+<continued>
+Example (optimised mapping):
+<diagram>Pic/er-rel/map1nrel2.png
+</slide>
+
+<slide>
+<heading>Mapping 1:1 Relationships
+1:1 relationships are handled in a similar manner to 1:N relationships.
+<p>
+The difference is that we could choose either relation to hold the key
+of the other relation, to represent the correspondence.
+<p>
+Choose the entity set that participates totally, if only one of them does.
+<p>
+For a 1:1 relationship between entity sets <$>E</$> and <$>F</$> (<$>S</$> and <$>T</$>):
+<itemize>
+<item> choose one of <$>S</$> and <$>T</$> <~> (e.g. <$>S</$>)
+<item> add the attributes of <$>T</$>'s primary key to <$>S</$> as foreign key
+<item> add the relationship attributes as attributes of <$>S</$>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Example:
+<diagram>Pic/er-rel/map11rel.png
+</slide>
+
+<slide>
+<heading>Mapping Multi-valued Attributes
+An attribute in a relation may hold a single atomic value.
+<p>
+An attribute in an entity may hold multiple (structured) values.
+<p>
+A multi-valued attribute may be viewed as:
+<itemize>
+<item> a collection of values associated with an entity
+</itemize>
+so treat it like an N:M relationship between entities and values.
+<p>
+Create a new relation where each tuple contains:
+<itemize>
+<item> the primary key attributes from the entity
+<item> one value for the multi-valued attribute from the corresponding entity
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Example:
+<diagram>Pic/er-rel/mapmva.png
+</slide>
+
+<slide>
+<continued>
+This approach is like altering the ER diagram as follows:
+<diagram>Pic/er-rel/mapmva1.png
+</slide>
+
+<slide>
+<continued>
+Example: the two entities
+<sprogram>
+Person(12345, John, 12-feb-1990, <brown>[red,green,blue]</brown>)
+Person(54321, Jane, 25-dec-1990, <brown>[green,purple]</brown>)
+</sprogram>
+would be represented as
+<program>
+Person(12345, John, 12-feb-1990)
+Person(54321, Jane, 25-dec-1990)
+FavColour(12345, red)
+FavColour(12345, green)
+FavColour(12345, blue)
+FavColour(54321, green)
+FavColour(54321, purple)
+</program>
+</slide>
+
+<slide>
+<heading>Mapping Subclasses
+Each subclass is represented as a separate relation.
+<p>
+Each entity in the subclass:
+<itemize>
+<item> contains its own subclass-specific information (attributes)
+<item> needs to be associated with information in the superclass
+</itemize>
+<p>
+Use the superclass entity's primary key to capture the association.
+<p>
+Each tuple in the subclass relation contains:
+<itemize>
+<item> all of the attributes from the parent's key
+<item> all of the subclass-specific attributes
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Example:
+<diagram>Pic/er-rel/mapsubclass.png
+</slide>
+
+<slide>
+<continued>
+This approach is like transforming the ER as follows:
+<diagram>Pic/er-rel/mapsubclass1.png
+</slide>
+
+<slide>
+<continued>
+This approach to subclass mapping is called <q>ER style</q>
+<p>
+There are two other approaches to subclass mapping:
+<itemize>
+<item> object-oriented
+<small>
+<itemize>
+<item> each entity becomes a table, inheriting superclass attributes
+</itemize>
+</small>
+<item> single table with nulls
+<small>
+<itemize>
+<item> one table, with all attributes of all subclasses
+</itemize>
+</small>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Example of object-oriented mapping:
+<diagram>Pic/er-rel/mapsubclass2.png
+</slide>
+
+<slide>
+<continued>
+Example of single-table-with-nulls mapping:
+<diagram>Pic/er-rel/mapsubclass3.png
+</slide>
+
+<slide>
+<continued>
+Which mapping is best depends on other requirements ...
+<itemize>
+<item> ER-style good for queries like <q>find average salary</q>
+<small>
+<itemize>
+<item> need to look only in (relatively small) <@>Employee</@> table
+</itemize>
+</small>
+<item> OO-style good for queries like <q>find manager names and bonuses</q>
+<small>
+<itemize>
+<item> need to look only in <@>Manager</@> table
+</itemize>
+</small>
+<item> Single-table saves space, unless many NULL values
+</itemize>
+</slide>

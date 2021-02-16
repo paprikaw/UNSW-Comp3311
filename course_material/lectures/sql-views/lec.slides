@@ -1,0 +1,278 @@
+<title>SQL: Views
+<footer>COMP3311 20T3 <diamond> SQL: Views <diamond>
+
+<slide>
+<heading> Views
+A <em>view</em> is like a <q>virtual relation</q> defined via a query.
+<p>
+View definition and removal:
+<syntax>
+<@@>CREATE VIEW</@@> <$>ViewName</$> <@@>AS</@@> <$>Query</$>
+
+<@@>CREATE VIEW</@@> <$>ViewName</$> (<$>AttributeNames</$>) <@@>AS</@@> <$>Query</$>
+
+<@@>DROP VIEW</@@> <$>ViewName</$>
+</syntax>
+<br>
+<$>Query</$> may be any SQL query, involving: stored tables, other views
+<p>
+<@@>CREATE OR REPLACE</@@><~> replaces the <$>Query</$> associated with a view
+</slide>
+
+<slide>
+<continued>
+<br>
+The stored tables used by a view are referred to as <em>base tables</em>.
+<p>
+Views are defined only after their base tables are defined.
+<p>
+A view is valid only as long as its underlying query is valid.
+<p>
+Dropping a view has no effect on the base tables.
+<p>
+Views are a convenient abstraction mechanism 
+<itemize>
+<item> alow you to package and name complex queries
+<item> give you the "table that you wanted" to solve a more complex query
+</itemize>
+</slide>
+
+<slide>
+<continued>
+<b>Example:</b> defining/naming a complex query using a view:
+<program90>
+CREATE VIEW
+   CourseMarksAndAverages(course,term,student,mark,avg)
+AS
+SELECT s.code, termName(t.id), e.student, e.mark,
+       avg(mark) OVER (PARTITION BY course)
+FROM   CourseEnrolments e
+       JOIN Courses c on c.id = e.course
+       JOIN Subjects s on s.id = c.subject
+       JOIN Terms t on t.id = c.term
+;
+</program>
+which would make the following query easy to solve
+<program90>
+SELECT course, term, student, mark
+FROM   CourseMarksAndAverages
+WHERE  mark << avg;
+</program>
+</slide>
+
+<slide>
+<continued>
+<b>Example:</b>
+<small>
+An avid Carlton drinker might not be interested in other kinds of beer.
+</small>
+<program90>
+CREATE VIEW  MyBeers  AS
+   SELECT * FROM Beers WHERE brewer = 'Carlton';
+</program>
+which is used as
+<program90>
+SELECT * FROM MyBeers;
+
+       name       | brewer  | style 
+------------------+---------+-------
+ Crown Lager      | Carlton | Lager
+ Fosters Lager    | Carlton | Lager
+ Invalid Stout    | Carlton | Stout
+ Melbourne Bitter | Carlton | Lager
+ Victoria Bitter  | Carlton | Lager
+</program>
+</slide>
+
+<slide>
+<continued>
+A view might not use all attributes of the base relations.
+<p>
+<b>Example:</b> We don't really need the address of inner-city hotels.
+<program>
+CREATE VIEW  InnerCityHotels  AS
+   SELECT name, license
+   FROM   Bars
+   WHERE  addr in ('The Rocks','Sydney');
+
+SELECT * FROM InnerCityHotels;
+
+      name       | license 
+-----------------+---------
+ Australia Hotel |  123456
+ Lord Nelson     |  123888
+ Marble Bar      |  122123
+</program>
+</slide>
+
+<slide>
+<continued>
+A view might use computed attribute values.
+<p>
+<b>Example:</b> Number of beers produced by each brewer.
+<program>
+CREATE VIEW BeersBrewed AS
+   SELECT brewer, count(*) as nbeers
+   FROM   beers GROUP BY brewer;
+
+SELECT * FROM BeersBrewed;
+
+  brewer  | nbeers 
+----------+--------
+ 3 Ravens |      1
+ Akasha   |      1
+ Alesmith |      1
+ ...
+</program>
+</slide>
+
+<slide>
+<heading>Renaming View Attributes
+<br>
+This can be achieved in two different ways:
+<program>
+CREATE VIEW  InnerCityHotels  AS
+   SELECT <blue>name AS bar, license AS lic</blue>
+   FROM   Bars
+   WHERE  addr IN ('The Rocks', 'Sydney');
+
+CREATE VIEW  InnerCityHotels(<blue>bar, lic</blue>)  AS
+   SELECT name, license
+   FROM   Bars
+   WHERE  addr IN ('The Rocks', 'Sydney');
+</program>
+Both of the above produce the same view.
+</slide>
+
+<slide>
+<heading>Using Views
+<br>
+Views can be used in queries as if they were stored relations.
+<p>
+However, they differ from stored relations in two important respects:
+<itemize>
+<item> their <q>value</q> can change without being explicitly modified <br>
+	<small>(i.e. the result of a view may change whenever one of its base tables is updated)</small>
+<item> they may not be able to be explicitly modified (updated) <br>
+	<small>(only a certain simple kinds of views can be explicitly updated)</small>
+</itemize>
+<br>
+"Modifying a view" means changing the base tables via the view, e.g.
+<program80>
+insert into MyBeers values ('Zero','Carlton','No-alcohol');
+</program>
+would update the <@>Beers</@> table
+</slide>
+
+<slide>
+<continued>
+<b>Example:</b> of view changing when base table changes.
+<program90>
+SELECT * FROM InnerCityHotels;
+      name       | license 
+-----------------+---------
+ Australia Hotel |  123456
+ Lord Nelson     |  123888
+ Marble Bar      |  122123
+
+<comment>-- then the Lord Nelson goes broke</comment>
+DELETE FROM Bars WHERE name = 'Lord Nelson';
+
+<comment>-- no explict update has been made to InnerCityHotels</comment>
+SELECT * FROM InnerCityHotels;
+      name       | license 
+-----------------+---------
+ Australia Hotel |  123456
+ Marble Bar      |  122123
+</program>
+</slide>
+
+<slide>
+<heading>Updating Views
+Explicit updates are allowed on views satisfying the following:
+<itemize>
+<item> the view involves a single relation <@>R</@>
+<item> the <@>WHERE</@> clause does not involve <@>R</@> in a subquery
+<item> the <@>WHERE</@> clause only uses attributes from the <@>SELECT</@>
+</itemize>
+Attributes not in the view's <@>SELECT</@> will be set to <@>NULL</@>
+in the base relation after an insert into the view.
+</slide>
+
+<slide>
+<continued>
+<b>Example:</b> Our <@>InnerCityHotel</@> view is not updatable.
+<program>
+INSERT INTO InnerCityHotels
+VALUES ('Jackson''s on George', '9876543');
+</program>
+creates a new tuple in the <@>Bars</@> relation:
+<program>
+(Jackson's on George,  NULL,  9876543)
+</program>
+but this new tuple does not satisfy the view condition:
+<program>
+addr IN ('The Rocks', 'Sydney')
+</program>
+so it does not appear if we select from the view.
+</slide>
+
+<slide>
+<heading>Evaluating Views
+Two alternative ways of implementing views:
+<itemize>
+<item> re-writing rules (or macros)
+<itemize>
+<item> when a view is used in a query, the query is re-written
+<item> after rewriting, becomes a query only on base relations
+</itemize>
+<item> explicit stored relations (called <em>materialized views</em>)
+<itemize>
+<item> the view is stored as a real table in the database
+<item> updated appropriately when base tables are modified
+</itemize>
+</itemize>
+<small>
+The difference: underlying query evaluated either at query time or at update time.
+</small>
+</slide>
+
+<slide>
+<continued>
+<b>Example:</b> Using the <@>InnerCityHotels</@> view.
+<program90>
+CREATE VIEW  InnerCityHotels  AS
+   SELECT name, license
+   FROM   Bars
+   WHERE  addr IN ('The Rocks', 'Sydney');
+
+SELECT name
+FROM   InnerCityHotels
+WHERE  license = '123456';
+
+<comment>--is rewritten into the following form before execution</comment>
+
+SELECT name
+FROM   Bars
+WHERE  addr IN ('The Rocks', 'Sydney')
+       AND license = '123456';
+</program>
+</slide>
+
+<slide>
+<heading>Materialized Views
+<em>Materialized views</em> are implemented as stored tables
+<p>
+On each update to base tables, need to also update the view table.
+<p>
+Clearly this costs space and makes updates more expensive.
+<p>
+However, in a situation where
+<itemize>
+<item> updates are infrequent compared to queries on the view
+<item> the cost of <q>computing</q> the view is expensive
+</itemize>
+this approach provides substantial benefits.
+<p>
+Materialized views are used extensively in data warehouses.
+</slide>

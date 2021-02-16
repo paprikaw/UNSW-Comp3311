@@ -1,0 +1,46 @@
+<title>Overview - Addendum
+<footer>COMP3311 20T3 <diamond> Overview (ii) <diamond>
+
+<slide>
+<heading>Overview of the Databases Field
+<br>
+<diagram>Pics/intro/overview
+</slide>
+
+<slide>
+<heading>Database Application Development
+A variation on standard software engineering process:
+<enumerate>
+<item> <gray>analyse application requirements</gray>
+<item> develop a data model to meet these requirements
+<item> check data model for redundancy <smaller>(using relational theory)</smaller>
+<item> implement the data model as relational schema
+<item> <gray>define operations (transactions) on this model</gray>
+<item> implement operations via SQL and procedural PLs
+<item> construct a program interface to these operations
+<item> <gray>monitor performance and "tune" the schema/operations</gray>
+</enumerate>
+At some point, populate the database <small>(may be via interface)</small>
+<p>
+During the course, we consider these in the order 2, 4, 6, 7, 3
+</slide>
+
+<slide>
+<heading>Database System Architecture
+The typical environment for a modern DBMS is:
+<diagram>Pics/intro/dbms-arch
+<p>
+<small>SQL queries and results travel along the client<$><leftrightarrow></$>server links</small>
+</slide>
+
+<slide>
+<continued>
+<br>
+SQLite is not a client-server system:
+<p><br>
+<diagram>Pics/intro/dbms-arch2
+<p><br>
+<small>
+Although it does have an API for use from programming languages.
+</small>
+</slide>

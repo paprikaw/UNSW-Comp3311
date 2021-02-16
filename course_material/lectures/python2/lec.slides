@@ -1,0 +1,294 @@
+<title>Python (ii)
+<footer>COMP3311 20T3 <diamond> Python (ii) <diamond>
+
+<slide>
+<heading>Python + Psycopg2 (recap)
+<@>psycopg2</@> is a Python module providing access to PostgreSQL DBs
+<p>
+Standard usage:
+<program90>
+<green>import</green> psycopg2   <comment># include the module definitions</comment>
+<green>try</green>:
+   <brown>connnection</brown> = <navy>psycopg2.connect</navy>("dbname=<i>Datatase</i>")
+   <brown>cursor</brown> = <navy>connnection.cursor</navy>()
+   <navy>cursor.excute</navy>("<i>SQL Query</i>")
+   <green>for</green> <brown>tuple</brown> <green>in</green> <navy>cursor.fetchall</navy>():
+      <comment># do something with next tuple</comment>
+   <navy>cursor.close</navy>()
+   <navy>connection.close</navy>()
+<green>except</green>:
+   print("Database error")
+</program>
+These slides aim to give more details on how Pyscopg2 used in practice
+</slide>
+
+<slide>
+<continued>
+<br>
+<navy><@>connection</@></navy>
+<itemize>
+<item> handle giving authenticated access for a given user on a given DB
+<item> provides creation of <@>cursor</@>s to interact with database
+</itemize>
+<br>
+<navy><@>cursor</@></navy>
+<itemize>
+<item> pipeline between a Python program and a PostgreSQL DB
+<item> send SQL statements down pipeline as strings
+<item> read results up pipeline as Python (list of) tuples
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Python vs PostgreSQL data types ...
+<p>
+Strings:
+<itemize>
+<item> in Python: written with <@>"..."</@> or <@>'...'</@>, including <@>\<i>x</i></@>
+<item> converted to SQL strings <~>e.g. <@>"O'Reilly"</@> <rightarrow> <@>'O''Reilly'</@>
+<item> Python supports<~> <@>"""</@> ...... <@>"""</@> <~>multi-line strings <~><small>(useful for SQL queries)</small>
+</itemize>
+Tuples:
+<itemize>
+<item> n Python: contain multiple hetergenous values <~> <small>(cf. C <@>struct</@>)</small>
+<item> similar to PostgreSQL composite (tuple) types
+<item> written as: <@>(</@> <i>val<sub>1</sub></i>, <i>val<sub>2</sub></i>, ..., <i>val<sub>n</sub></i> <@>)</@>  <~~~> <smaller>(note that <@>( <i>val<sub>1</sub></i> )</@> is not a tuple)</smaller>
+<item> examples: <~><@>(1,2,3)</@>, <~><@>(1,"John",3.14)</@>, <~><@>(1,)</@>,
+</itemize>
+</slide>
+
+<slide>
+<heading>Examples
+Example database: <@>beers2</@>
+<program>
+Beers( <b>id</b>:int, name:text, <i>brewer</i>:int )
+
+Brewers( <b>id</b>:int, name:text, country:text )
+
+Bars( <b>id</b>:int, name:text, addr:text, license:int )
+
+Drinkers( <b>id</b>:int, name:text, addr:text, phone:text )
+
+Likes( <i>drinker</i>:int, <i>beer</i>:int )
+
+Sells( <i>bar</i>:int, <i>beer</i>:int, price:float )
+
+Frequents( <i>drinker</i>:int, <i>bar</i>:int )
+</program>
+</slide>
+
+<slide>
+<continued>
+<br>
+Assume that the following code samples are wrapped in
+<program>
+import sys
+import psycopg2
+conn = None
+try:
+   <brown>conn</brown> = psycopg2.connect("dbname=beers2")
+   <blue><i>... example code ...</i></blue>
+except psycopg2.Error as err:
+   print("database error:",err)
+finally:
+   if (conn):
+      conn.close()
+   print("finished with database")
+</program>
+</slide>
+
+<slide>
+<continued>
+Example: a list of brewers and their countries as <@>brewers.py</@>
+<program>
+cur = conn.cursor()
+cur.execute("""
+select name, country from Brewers order by name
+""")
+for tuple in cur.fetchall():
+   name, country = tuple
+   print(name + ", " + country)
+</program>
+<program>
+$ <b>python3 brewers.py</b>
+Brew Dog, Scotland
+Bridge Road Brewers, Australia
+Caledonian, Scotland
+Carlton, Australia
+Cascade, Australia
+...
+</program>
+</slide>
+
+<slide>
+<continued>
+Example: a list of brewers and their countries as <@>bfrom.py</@>
+<program>
+cur = conn.cursor()
+qry = "select name from Brewers where country = %s"
+country = sys.argv[1]
+cur.execute(qry, [country])
+for tuple in cur.fetchall():
+   print(tuple[0])
+</program>
+<program>
+$ <b>python3 bfrom.py Scotland</b>
+Caledonian
+Brew Dog
+</program>
+</slide>
+
+<slide>
+<continued>
+Example: print beers preceded by the brewer as <@>beers.py</@>
+<program>
+cur = conn.cursor()
+qry = """
+select b.name, r.name
+from   Brewers r join Beers b on (b.brewer=r.id)
+"""
+cur.execute(qry)
+for tuple in cur.fetchall():
+   print(tuple[1] + " " + tuple[0])
+</program>
+<program>
+$ <b>python3 beers.py</b>
+Caledonian 80/-
+James Squire Amber Ale
+Sierra Nevada Bigfoot Barley Wine
+...
+</program>
+</slide>
+
+<slide>
+<continued>
+Example: most expensive beer as <@>expensive.py</@>
+<program>
+cur = conn.cursor()
+qry = """
+select b.name, s.price
+from   Beers b join Sells s on (b.id = s.beer)
+where  s.price = (select max(price) from Sells)
+"""
+cur.execute(qry)
+for tuple in cur.fetchall():
+   print(tuple[0] + " @ " + str(tuple[1]))
+</program>
+<program>
+$ <b>python3 beers.py</b>
+Sink the Bismarck @ 25.0
+</program>
+</slide>
+
+<slide>
+<continued>
+Example: list beers, bar+price where sold, average price as <@>beers1.py</@>
+<program90>
+$ <b>python3 beers1.py</b>
+...
+New
+	Australia Hotel @ 3.0
+	Coogee Bay Hotel @ 2.25
+	Lord Nelson @ 3.0
+	Marble Bar @ 2.8
+	Regent Hotel @ 2.2
+	Royal Hotel @ 2.3
+	Average @ 2.591666666666667
+Nirvana Pale Ale
+	Not sold anywhere
+Old
+	Coogee Bay Hotel @ 2.5
+	Marble Bar @ 2.9
+	Royal Hotel @ 2.65
+	Average @ 2.6833333333333336
+Old Admiral
+	Lord Nelson @ 3.75
+	Average @ 3.75
+...
+</program90>
+</slide>
+
+<slide>
+<continued>
+<program>
+cur = conn.cursor()
+qry = "select id, name from Beers"
+cur.execute(qry)
+for tuple in cur.fetchall():
+   q2 = """select b.name, s.price
+        from Bars b join Sells s on (b.id=s.bar)
+        where s.beer = %s"""
+   print(tuple[1])
+   cur.execute(q2, [tuple[0]])
+   n, tot = 0, 0.0
+   for t in cur.fetchall():
+      print("\t"+t[0],"@",t[1])
+      n = n + 1
+      tot = tot + t[1]
+   if n > 0:
+      print("\tAverage @", tot/n)
+   else:
+      print("\tNot sold anywhere")
+</program>
+</slide>
+
+<slide>
+<heading>Poor Usage of Python+SQL
+Should generally avoid
+<program>
+cur.execute("select x,y from R")
+for tup in cur.fetchall():
+   q = "select * from S where id=%s"
+   cur.execute(q, [tup[0]])
+   for t in cur.fetchall():
+      <i>... process t ...</i>
+</program>
+More efficiently done as e.g.
+<program>
+qry = """
+select *
+from   R join S on (R.x = S.id)
+"""
+for tup in cur.fetchall():
+   <i>... process tup ...</i>
+</program>
+</slide>
+
+<slide>
+<heading>Calling PostgreSQL functions
+Two ways to call PostgreSQL functions
+<program>
+<comment># using a standard function call from SQL</comment>
+cur.<navy>execute</navy>("select * from brewer(5)")
+t = cur.<navy>fetchone</navy>()
+print(t[0])
+
+<comment># using special callproc() method</comment>
+<comment># parameters supplied as a list of values/vars</comment>
+cur.<navy>callproc</navy>("brewer",[5])
+t = cur.<navy>fetchone</navy>()
+print(t[0])
+</program>
+<br>
+<@>brewer(int) returns text</@> <~> returns a brewer's name, given their id
+</slide>
+
+<slide>
+<heading>Other Psycopg2 Tricks
+<@>cur.execute(<i>SQL Statement</i>)</@>
+<itemize>
+<item> clearly the SQL statement can be <~><@>SELECT</@>
+<item> can also be<~> <@>UPDATE</@> <~>or<~> <@>DELETE</@>
+<item> can also be a meta-data statement, e.g.
+<itemize>
+<item> <@>CREATE TABLE</@>, <~><@>DROP TABLE</@>, <~> <@>CREATE VIEW</@>, ...
+</itemize>
+</itemize>
+<@>cur.fetchmany(<i>#tuples</i>)</@>
+<itemize>
+<item> gets a list of the next <@><i>#tuples</i></@> <~>tuples
+<item> could replace PLpgSQL <@>LIMIT</@> in some contexts
+</itemize>
+For many more examples, see Psycopg2 documentation and tutorials
+</slide>

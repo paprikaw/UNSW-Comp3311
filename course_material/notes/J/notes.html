@@ -1,0 +1,366 @@
+<html>
+<head>
+<title>DBMS Architecture and Implementation</title>
+<link href='lib/notes.css' rel='stylesheet' type='text/css'>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML" async></script>
+<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js'></script>
+<link href='lib/prism.css' rel='stylesheet'>
+<script src='lib/sg.js'></script>
+</head>
+<body>
+<div class='heading'>DBMS Architecture and Implementation</div><p><ul class='indexUl'  style='font-size: 0.7em;'><li class="i"> <a href="#s1">DBMS Architecture and Implementation</a>
+<li class="i"> <a href="#s2">Database Application Performance</a>
+<li class="i"> <a href="#s8">Database Transaction Processing</a>
+<li class="i"> <a href="#s12">Data Representation</a>
+<li class="i"> <a href="#s16">DBMS Architecture</a>
+<li class="i"> <a href="#s17">DBMS Components</a>
+</ul><hr>
+<DIV id="s1">
+<div class='heading'>DBMS Architecture and Implementation</div>
+<p>
+<b>Aims:</b>
+<ul>
+<li> examine techniques used in implementation of DBMSs:
+<small>
+<ul>
+<li> query processing (QP), transaction processing (TP)
+</ul>
+</small>
+<li> use QP knowledge to make DB applications <font color='#0000BB'>efficient</font>
+<li> use TP knowledge to make DB applications <font color='#0000BB'>safe</font>
+</ul>
+<p><br><p>
+<small>
+COMP3311: overview of the above; how to use them in app development <br>
+COMP9315: explore the above in detail; implement (bits of) a DBMS.
+</small>
+</DIV>
+<hr>
+<DIV id="s2">
+<div class='heading'>Database Application Performance</div>
+<p>
+In order to make DB applications efficient, we need to know:
+<ul>
+<li> what operations on the data does the application require
+<p>
+<small>
+(which queries, updates, inserts and how frequently is each one performed)
+</small>
+<li> how these operations might be implemented in the DBMS
+<p>
+<small>
+(data structures and algorithms for select, project, join, sort, ...)
+</small>
+<li> how much each implementation will cost
+<p>
+<small>
+(in terms of the amount of data transferred between memory and disk)
+</small>
+</ul>
+and then, as much as the DBMS allows, "encourage" it to use the most
+efficient methods.
+</DIV>
+<hr>
+<DIV id="s3">
+<div class='heading'>Database Application Performance <span style="font-size:67%">(cont)</span></div>
+<p>
+Application programmer choices that affect query cost:
+<ul>
+<li> how queries are expressed
+<ul>
+<li> generally join is faster than subquery
+<li> especially if subquery is correlated
+<li> avoid producing large intermediate tables <i>then</i> filtering
+<li> avoid applying functions in where/group-by clasues
+</ul>
+<li> creating <font color='#0000BB'>indexes</font> on tables
+<ul>
+<li> index will speed-up filtering based on indexed attributes
+<li> indexes generally only effective for equality, gt/lt
+<li> indexes have update-time and storage overheads
+<li> only useful if filtering much more frequent than update
+</ul>
+</ul>
+</DIV>
+<hr>
+<DIV id="s4">
+<div class='heading'>Database Application Performance <span style="font-size:67%">(cont)</span></div>
+<p>
+Whatever you do as a DB application programmer
+<ul>
+<li> the DBMS will transform your query
+<li> to make it execute as efficiently as possible
+</ul>
+Transformation is carried out by <font color='#0000BB'>query optimiser</font>
+<ul>
+<li> which assesses possible query execution approaches
+<li> evaluates likely cost of each approach, chooses cheapest
+</ul>
+You have no control over the optimisation process
+<ul>
+<li> but choices you make can block certain options
+<li> limiting the query optimiser's chance to improve
+</ul>
+</DIV>
+<hr>
+<DIV id="s5">
+<div class='heading'>Database Application Performance <span style="font-size:67%">(cont)</span></div>
+<p>
+Example: query to find sales people earning more than $50K
+<p><pre>
+select name from Employee
+where  salary &gt; 50000 and
+       empid in (select empid from Worksin
+                 where  dept = 'Sales')
+</pre><p>
+A query optimiser might use the strategy
+<p><pre>
+SalesEmps = (select empid from WorksIn where dept='Sales')
+foreach e in Employee {
+    if (e.empid in SalesEmps && e.salary &gt; 50000)
+        add e to result set
+}
+</pre><p>
+Needs to examine <i>all</i> employees, even if not in Sales
+</DIV>
+<hr>
+<DIV id="s6">
+<div class='heading'>Database Application Performance <span style="font-size:67%">(cont)</span></div>
+<p>
+A different expression of the same query:
+<p><pre>
+select name
+from   Employee join WorksIn using (empid)
+where  Employee.salary &gt; 5000 and
+       WorksIn.dept = 'Sales'
+</pre><p>
+Query optimiser might use the strategy
+<p><pre>
+SalesEmps = (select * from WorksIn where dept='Sales')
+foreach e in (Employee join SalesEmps) {
+    if (e.salary &gt; 50000)
+        add e to result set
+}
+</pre><p>
+Only examines Sales employees, and uses a simpler test
+</DIV>
+<hr>
+<DIV id="s7">
+<div class='heading'>Database Application Performance <span style="font-size:67%">(cont)</span></div>
+<p>
+A very poor expression of the query <small>(correlated subquery)</small>:
+<p><pre>
+select name from Employee e
+where  salary &gt; 50000 and
+       'Sales' in (select dept from Worksin where empid=e.id)
+</pre><p>
+A query optimiser would be forced to use the strategy:
+<p><pre>
+foreach e in Employee {
+    Depts = (select dept from WorksIn where empid=e.empid)
+    if ('Sales' in Depts && e.salary &gt; 50000)
+        add e to result set
+}
+</pre><p>
+Needs to run a query for <i>every</i> employee ...
+</DIV>
+<hr>
+<DIV id="s8">
+<div class='heading'>Database Transaction Processing</div>
+<p>
+In most applications ...
+<ul>
+<li> application-level operations comprise multiple DB operations
+<li> multiple users interact with the database concurrently
+</ul>
+Example: bank funds transfer requires at least two operations
+<p><pre>
+Transfer(Amount, Source, Dest)
+<span class='comment'>-- deduct funds from source account</span>
+update Account set balance = balance - Amount
+where  account = Source
+<span class='comment'>-- add funds to destination account</span>
+update Account set balance = balance + Amount
+where  account = Dest
+</pre><p>
+<small>
+</small>
+May also require checks on validity of <large><code>Source</code></large> and <large><code>Dest</code></large> ...
+</DIV>
+<hr>
+<DIV id="s9">
+<div class='heading'>Database Transaction Processing <span style="font-size:67%">(cont)</span></div>
+<p>
+Where things can go wrong in the funds transfer example:
+<p><pre><small>
+(1) update Account set balance = balance - Amount where account = Source
+(2) update Account set balance = balance + Amount where account = Dest
+</small></pre><p>
+<ol>
+<li> system could crash after first operation but before second
+<ul>
+<li> money lost from source account
+<li> solution requires us to ensure 0 or 2 ops are completed
+</ul>
+<li> two users could do first operation simultaneously
+<ul>
+<li> only one deduction from source account
+<li> solution requires us to control "simultaneous" access
+</ul>
+</ol>
+</DIV>
+<hr>
+<DIV id="s10">
+<div class='heading'>Database Transaction Processing <span style="font-size:67%">(cont)</span></div>
+<p>
+DBMSs provide two inter-related mechanisms for transactions ...
+<ul>
+<li> <font color='#0000BB'>transactions</font> 
+<ul>
+<li> syntax: &nbsp;<large><code>BEGIN</code></large> ... <i>SQL statements</i> ... <large><code>END</code></large>
+<li> treats a group of DB operations as an atomic unit
+<li> all operations happen, or none do <small>(may requie rollback)</small>
+</ul>
+<li> <font color='#0000BB'>locking</font> 
+<ul>
+<li> syntax: &nbsp;<large><code>LOCK</code></large>&nbsp; <i>DBobject</i> &nbsp;(<large><code>SHARE|EXCLUSIVE</code></large>)
+<li> block second transaction trying to obtain exlcusive lock
+<li> transaction continues once lock released by first transaction
+</ul>
+</ul>
+</DIV>
+<hr>
+<DIV id="s11">
+<div class='heading'>Database Transaction Processing <span style="font-size:67%">(cont)</span></div>
+<p>
+Locking is critical in many contexts
+<ul>
+<li> but has overheads (lock objects, reduced concurrency)
+</ul>
+If need for locking can be reduced <i>&rArr;</i> better throughput
+<p>
+Many DBMSs provide MVCC <small>(<i>multi-version concurrency control</i>)</small>
+<ul>
+<li> stores multiple versions of each tuple
+<li> each transaction accesses "appropriate" version
+<li> reduces locking requirements <small>(and sometimes eliminates locking)</small>
+</ul>
+<small>
+Disadvantages: storage overhead, each tuple access requires relevance check
+</small>
+</DIV>
+<hr>
+<DIV id="s12">
+<div class='heading'>Data Representation</div>
+<p>
+A DBMS provides representations for:
+<ul>
+<li> values, tuples, tables, indexes &nbsp; <small>(native representation)</small>
+<li> transactions, locks &nbsp; <small>(native representations)</small>
+<li> functions, views, triggers &nbsp; <small>(via tuples in meta-data tables)</small>
+</ul>
+Value representations use underlying data types and byte arrays
+<ul>
+<li> e.g. <large><code>int</code></large> for <large><code>integer</code></large>, <large><code>char[</code></large><i>N</i><large><code>]</code></large> for <large><code>varchar(</code></large><i>N</i><large><code>)</code></large>
+</ul>
+Tuple representations are like <large><code>structs</code></large> with header info
+<ul>
+<li> values stored in a "chunk of bytes"
+<li> plus <large><code>oid</code></large>, MVCC values, attribute offsets
+<li> large data is stored out-of-band (TOAST tables)
+</ul>
+</DIV>
+<hr>
+<DIV id="s13">
+<div class='heading'>Data Representation <span style="font-size:67%">(cont)</span></div>
+<p>
+Many ways to represent database relations:
+<ul>
+<li> one relation = one file
+<li> one file contains data from many relations
+<li> one relation is implemented as multiple files
+</ul>
+Examples of the above:
+<ul>
+<li> MiniSQL: each relation+indexes stored in a single file
+<li> SQLite: all tables+indexes+metadata in one file
+<li> Oracle: all table+indexes+catalog in a set of large files
+<li> PostgreSQL: each relation+indexes in several files
+</ul>
+</DIV>
+<hr>
+<DIV id="s14">
+<div class='heading'>Data Representation <span style="font-size:67%">(cont)</span></div>
+<p>
+PostgreSQL's data layout:
+<ul>
+<li> all data held under <large><code>PGDATA/base</code></large> directory
+<li> each database is a subdirectory <small>(named after oid)</small>
+<li> each table or index is stored in a separate file
+<li> large data values are compressed and stored separately <br>
+	<small>(a TOAST file associated with each table containing large values)</small>
+<li> <large><code>pgsql_tmp</code></large> subdirectory holds temp query proc files <br>
+	<small>(used when intermediate results are too large to fit in mem buffers)</small>
+</ul>
+</DIV>
+<hr>
+<DIV id="s15">
+<div class='heading'>Data Representation <span style="font-size:67%">(cont)</span></div>
+<p>
+DB data is (obviously) persistent <i>&rArr;</i> resides on disk
+<p>
+To maximise efficiency of disk transfers
+<ul>
+<li> data is grouped into disk-friendly chunks (pages)
+<li> each page contains .e.g many tuples
+<li> all disk transfers are in units of pages
+</ul>
+To avoid disk reads/writes where possible, DBMSs typically have a very
+large in-memory cache of database pages.
+</DIV>
+<hr>
+<DIV id="s16">
+<div class='heading'>DBMS Architecture</div>
+<p>
+Layers in a DB Engine <small>(Ramakrishnan's View)</small>
+<p><div align='center'>
+<img alt="[Diagram:Pic/dbms/dbmsarch.png]" src="Pic/dbms/dbmsarch.png">
+</div><p>
+</DIV>
+<hr>
+<DIV id="s17">
+<div class='heading'>DBMS Components</div>
+<p>
+<p><table border='0' cellpadding='6'>
+<tr valign=top>
+<td><nobr>File manager</td>
+<td></td><td>manages allocation of disk space and data structures</td>
+</tr>
+<tr valign=top>
+<td><nobr>Buffer manager</td>
+<td></td><td>manages data transfer between disk and main memory</td>
+</tr>
+<tr valign=top>
+<td><nobr>Query optimiser</td>
+<td></td><td>translates queries into efficient sequence of relational ops</td>
+</tr>
+<tr valign=top>
+<td><nobr>Recovery manager</td>
+<td></td><td>ensures consistent database state after system failures</td>
+</tr>
+<tr valign=top>
+<td><nobr>Concurrency manager</td>
+<td></td><td>controls concurrent access to database</td>
+</tr>
+<tr valign=top>
+<td><nobr>Integrity manager</td>
+<td></td><td>verifies integrity constraints and user privileges</td>
+</tr>
+</table><p>
+</DIV>
+<p><hr><p>
+<span style='font-size:11px;color: grey;'>Produced: 13 Sep 2020</span>
+ <script src='lib/prism.js'></script>   
+ <script src='lib/sg.js'></script>   
+</body>
+</html>

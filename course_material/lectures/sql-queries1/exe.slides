@@ -1,0 +1,15 @@
+
+<slide>
+<continued>
+More queries on the Beer database:
+<p><ol start="10">
+<item> Bars where either Gernot or John drink.
+<item> Bars where both Gernot and John drink.
+<item> Find the beers sold at bars where John drinks.
+<item> Find bars that serve New at the same price <br>
+    as the Coogee Bay Hotel charges for VB.
+<item> Find the average price of common beers <br>
+    <small>(i.e. served in more than two hotels).</small>
+<item> Which bar sells 'New' cheapest?
+</ol>
+</slide>

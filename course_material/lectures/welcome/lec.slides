@@ -1,0 +1,115 @@
+<title>COMP3311 Course Welcome
+<footer>COMP3311 20T3 <diamond> Course Welcome <diamond>
+
+<slide>
+<vspace 1>
+<center style="font-size:48pt;color:#336699">COMP3311 20T3 <br>Database Systems</center>
+<vspace 1>
+<diagram>Pics/intro/pgsql.jpg
+<vspace 2>
+<center style="font-size:24pt;color:#6699CC">https://webcms3.cse.unsw.edu.au/COMP3311/20T3/
+</center>
+</center>
+</slide>
+
+<slide>
+<heading>Lecturer
+<img align="left" src="Pics/misc/jas.jpg">
+<deftable>
+<row><col1>Name:</col1><col2>John Shepherd</col2></row>
+<row><col1>Email:</col1><col2>cs3311<at>cse.unsw.edu.au<br>jas<at>cse.unsw.edu.au</col2></row>
+<row><col1>Consults:</col1><col2>TBA <~> in BBC</col2></row>
+<row><col1>Roles:</col1><col2>Convenor, COMP3311 20T3<br>Deputy Head of School (edu) </col2></row>
+<row><col1>Research:</col1><col2><small>
+Information Extraction <br>
+Information Retrieval <br>
+e-Learning Technologies <br>
+Multimedia Databases <br>
+</col2></row>
+<row><col1>About:</col1><col2>Craft beer, <~>AFL, <~>HYP</col2></row>
+</deftable>
+</slide>
+
+<slide>
+<continued>
+John's Beer ...
+<div style="margin:10px 40px">
+<img src="Pics/misc/johns-beer.jpg">
+</div>
+</slide>
+
+<slide>
+<heading>Course Admin
+<img align="left" src="Pics/misc/dylan.jpg">
+<deftable>
+<row><col1>Name:</col1><col2>Dylan Brotherston</col2></row>
+<row><col1>Email:</col1><col2>cs3311<at>cse.unsw.edu.au</col2></row>
+<row><col1>Consults:</col1><col2>still working out the details</col2></row>
+<row><col1>About:</col1><col2>Former UNSW CSE student.<br>
+Casual academic in CSE since 2017<br>
+Tutor for 1521, 2521, 2041<br>
+Admin for 1521, 2041, 9315<br>
+Has a cute dog</col2></row>
+</deftable>
+</slide>
+
+<slide>
+<continued>
+Dylan's Dog ...
+<div style="margin:20px 100px">
+<img align="center" src="Pics/misc/dylans-dog.jpg">
+</div>
+</slide>
+
+
+<slide>
+<heading>Tutors
+Many, many students <~><Rightarrow><~> many tutors ...
+<table cellpadding="12px">
+<tr valign="top">
+<td>
+<itemize>
+<item> Adam Yi
+<item> Ayda Valinezhad Orang
+<item> Carmelein Fernandez
+<item> Dominic Wong
+<item> Kris Choy
+<item> Luka Kerr
+<item> Nanway Chen
+</itemize>
+</td>
+<td><~~~></td>
+<td>
+<itemize>
+<item> Nathan Ellis
+<item> Rahat Masood
+<item> Sabine Lim
+<item> Sahil Punchhi
+<item> Tina Ji
+<item> Yi Zhuang
+</itemize>
+</td>
+</tr>
+</table>
+<div style="margin:0px 50px">
+<table><tr valign="top">
+<td> <img src="Pics/misc/adam.jpg"> </td>
+<td><~~~></td>
+<td> <img src="Pics/misc/kris.png"> </td>
+<td><~~~></td>
+<td> <img src="Pics/misc/dominic.jpg"> </td>
+<td><~~~></td>
+<td> <img src="Pics/misc/luka.jpg"> </td>
+<td><~~~></td>
+<td> <img src="Pics/misc/tina.jpg"> </td>
+</tr></table>
+</div>
+</slide>
+
+<slide>
+<heading>Studio 3311
+Where the "magic" happens ...
+<div style="margin:20px 80px">
+<img src="Pics/misc/studio.jpg">
+</div>
+</slide>

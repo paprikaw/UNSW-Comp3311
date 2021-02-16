@@ -1,0 +1,205 @@
+<title>Relational Database Management Systems
+<footer>COMP3311 20T3 <diamond> RDBMSs <diamond>
+
+
+<slide>
+<heading>What is an RDBMS?
+A <em>relational database management system</em> (RDBMS) is
+<small>
+<itemize>
+<item> software designed to support large-scale data-intensive applications
+<item> allowing high-level description of data (tables, constraints)
+<item> with high-level access to the data (relational model, SQL)
+<item> providing efficient storage and retrieval (disk/memory management)
+<item> supporting multiple simultaneous users  (privilege, protection)
+<item> doing multiple simultaneous operations (transactions, concurrency)
+<item> maintaining reliable access to the stored data (backup, recovery)
+</itemize>
+</small>
+Note: databases provide <em>persistent</em> storage of information
+</slide>
+
+<slide>
+<heading>RDBMSs in COMP3311
+PostgreSQL
+<itemize>
+<item> full-featured, client-server DBMS, resource intensive
+<item> applications communicate via server to DB
+<item> can run distributed and replicated
+<item> follows SQL standard closely, but not totally
+<item> extra data types (e.g. JSON), multiple procedural languages
+</itemize>
+SQLite
+<itemize>
+<item> full-featured, serverless DBMS, light user of resources
+<item> intended to be embedded in applications
+<item> follows SQL standard closely, but not totally
+<item> no stored procedures, add functions by embedding in apps
+</itemize>
+</slide>
+
+<slide>
+<heading>PostgreSQL Architecture
+PostgreSQL's client-server architecture:
+<p><br>
+<diagram>Pics/dbms/pgarch
+</slide>
+
+<slide>
+<heading>SQLite Architecture
+SQLite's serverless architecture:
+<p><br>
+<diagram>Pics/dbms/sqarch
+</slide>
+
+<slide>
+<heading>Using PostgreSQL in CSE
+Using your PostgreSQL server in CSE <small>(once installed)</small>:
+<itemize>
+<item> login to <tt>grieg</tt>, set up environment, start server
+<item> use <tt>psql</tt>, etc. to manipulate databases
+<item> stop server, log off <tt>grieg</tt>
+</itemize>
+<program>
+wagner$ ssh <i>YOU</i>@grieg
+grieg$ source /srvr/<i>YOU</i>/env
+grieg$ pg start
+grieg$ psql <i>myDatabase</i>
+<comment>... do stuff with your database ...</comment>
+grieg$ pg stop
+grieg$ exit
+</program>
+Need to run the command <~><@>priv srvr</@><~> once before the above will work
+</slide>
+
+<slide>
+<continued>
+PostgreSQL files <small>(helps to understand state of server)</small>
+<itemize>
+<item> PostgreSQL environment settings ... <@>/srvr/<i>YOU</i>/env</@>
+<item> PostgreSQL home directory ... <@>/srvr/<i>YOU</i>/pgsql/</@>
+<item> under the home directory ...
+<itemize>
+<item> <@>postgresql.conf</@> ... main configuration file
+<item> <@>base/</@> ... subdirectories containing database files
+<item> <@>postmaster.pid</@> ... process ID of server process
+<item> <@>.s.PGSQL.5432</@> ... socket for clients to connect to server
+<item> <@>.s.PGSQL.5432.lock</@> ... lock file for socket
+<item> <@>Log</@> ... log file to monitor server errors, etc.
+</itemize>
+</itemize>
+</slide>
+
+<slide>
+<heading>Managing Databases
+Shell commands to create/remove databases:
+<itemize>
+<item> <@@>createdb</@@> <$>dbname</$> ... create a new totally empty database
+<item> <@@>dropdb</@@> <$>dbname</$> ... remove <i>all</i> data associated with a DB
+</itemize>
+<small>(If no <$>dbname</$> supplied, assumes a database called <$>YOU</$><~>)</small>
+<p>
+Shell commands to dump/restore database contents:
+<itemize>
+<item> <@@>pg_dump</@@> <$>dbname</$> <@@>>></@@> <$>dumpfile</$>
+<item> <@@>psql</@@> <$>dbname</$> <@@>-f</@@> <$>dumpfile</$>
+</itemize>
+<small>(Database <$>dbname</$> is typically created just before restore)</small>
+<p>
+<small>
+Main SQL statements in <$>dumpfile</$>:
+<~~><@@>CREATE TABLE</@@>, <~~> <@@>ALTER TABLE</@@>, <~~> <@@>COPY</@@>
+</small>
+</slide>
+
+<slide>
+<heading>Managing Tables
+SQL statements:
+<itemize>
+<item> <@@>CREATE TABLE</@@> <~><$>table</$> <@@>(</@@> <$>Attributes+Constraints</$> <@@>)</@@>
+<item> <@@>ALTER TABLE</@@> <~><$>table</$> <~><$>TableSchemaChanges</$>
+<item> <@@>DROP TABLE</@@> <~><$>table(s)</$><~> [ <@@>CASCADE</@@> ]
+<item> <@@>TRUNCATE TABLE</@@> <~><$>table(s)</$><~> [ <@@>CASCADE</@@> ]
+</itemize>
+<small>(All conform to SQL standard, but all also have extensions)</small>
+<p>
+<@>DROP..CASCADE</@> also drops objects which depend on the table
+<itemize>
+<item> objects could be tuples or views, but <i>not</i> whole tables
+</itemize>
+<p>
+<@>TRUNCATE..CASCADE</@> truncates tables which refer to the table
+</slide>
+
+<slide>
+<heading>Managing Tuples
+SQL statements:
+<itemize>
+<item> <@@>INSERT INTO</@@> <~><$>table</$><~> <@@>(</@@> <$>Attrs</$> <@@>) VALUES</@@> <~><$>Tuple(s)</$>
+<item> <@@>DELETE FROM</@@> <~><$>table</$><~> <@@>WHERE</@@> <~><$>condition</$>
+<item> <@@>UPDATE</@@> <~><$>table</$><~> <@@>SET</@@> <~><$>AttrValueChanges</$><~> <@@>WHERE</@@> <~><$>condition</$>
+</itemize>
+<$>Attrs</$> = <@@>(</@@> <$>attr<sub>1</sub></$><@@>,</@@>, ... <$>attr<sub>n</sub></$> <@@>)</@@>
+<~~~> <~~~>
+<$>Tuple</$> = <@@>(</@@> <$>val<sub>1</sub></$><@@>,</@@>, ... <$>val<sub>n</sub></$> <@@>)</@@>
+<p>
+<$>AttrValueChanges</$> is a comma-separated list of:
+<itemize>
+<item> <$>attrname</$> <@@>=</@@> <$>expression</$>
+</itemize>
+Each list element assigns a new value to a given attribute.
+</slide>
+
+<slide>
+<heading>Table Definition Example
+Make a table to hold student data:
+<program>
+CREATE TABLE Student (
+    zid     serial,
+    family  varchar(40),
+    given   varchar(40) NOT null,
+    d_o_b   date NOT NULL,
+    gender  char(1) check (gender in ('M','F')),
+    degree  integer,
+    PRIMARY KEY (zid),
+    FOREIGN KEY (degree) REFERENCES Degrees(did)
+);
+</program>
+<br>
+<small>
+<@>serial</@> is a special type which automaticall generates unique integer values
+</small>
+</slide>
+
+<slide>
+<exercise>Creating/Populating Databases
+Do the following:
+<itemize>
+<item> create a database called <@>ex1</@>
+<item> create a table <@>T</@> with two integer fields <@>x</@> and <@>y</@>
+<item> examine the catalog definition of table <@>T</@>
+<item> use <@>insert</@> statements to load some tuples 
+<item> use <@>pg_dump</@> to make a copy of the database contents
+<item> remove the <@>ex1</@> database, then restore it from the dump
+</itemize>
+</slide>
+
+<slide>
+<heading>Managing Other DB Objects
+Databases contain objects other than tables and tuples:
+<itemize>
+<item> views, functions, sequences, types, indexes, roles, ...
+</itemize>
+Most have SQL statements for:
+<itemize>
+<item> <@@>CREATE</@@> <~><$>ObjectType</$> <~><$>name</$> ...
+<item> <@@>DROP</@@> <~><$>ObjectType</$> <~><$>name</$> ...
+</itemize>
+Views and functions also have available:
+<itemize>
+<item> <@@>CREATE OR REPLACE</@@> <~><$>ObjectType</$> <~><$>name</$> ...
+</itemize>
+<small>
+See PostgreSQL documentation Section VI, Chapter I for SQL statement details.
+</small>
+</slide>

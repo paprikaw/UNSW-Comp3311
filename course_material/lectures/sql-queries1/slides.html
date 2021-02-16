@@ -1,0 +1,253 @@
+<html>
+<head>
+<title>SQL: Queries on One Table</title>
+<link href='lib/slides.css' rel='stylesheet' type='text/css'>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML" async></script>
+<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js'></script>
+<link href='https://fonts.googleapis.com/css?family=Lato' rel='stylesheet'>
+<link href='lib/prism.css' rel='stylesheet'>
+<script src='lib/sg.js'></script>
+</head>
+<body>
+ <DIV class='slideCl1' id="s0"  >
+<div class='navCl1'><a href="#s1"><span class='nextArrowCl'>>></span></a> </div> <div class='heading'>SQL: Queries on One Table</div><p><ul class='indexUl'  style='font-size: 0.7em;'><li class="i"> <a href="#s1">Queries</a>
+<li class="i"> <a href="#s2">SQL Query Language</a>
+<li class="i"> <a href="#s7">Problem-solving in SQL</a>
+<li class="i"> <a href="#s10">Views</a>
+<li class="i"> <a href="#s11">Exercise: Queries on Beer Database</a>
+</ul></DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; SQL: Queries on One Table &#9826; [0/12]</div> <DIV class='slideCl1    ' id="s1"  >
+<div class='navCl1'> <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s2"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Queries</div></td><td align='right'></td></tr></table>
+<p>
+A <font color='#0000BB'>query</font> is a <font color='#0000BB'>declarative program</font> that retrieves
+data from a database.
+<p>
+declarative = say what we want, not method to get it
+<p>
+Queries are used in two ways in RDBMSs:
+<ul>
+<li> interactively &nbsp; <small>(e.g. in <large><code>psql</code></large>)</small>
+<small>
+<ul>
+<li> the entire result is displayed in tabular format on the output
+</ul>
+</small>
+<li> by a program &nbsp; <small>(e.g. in a PLpgSQL function)</small>
+<small>
+<ul>
+<li> the result tuples are consumed one-at-a-time by the program
+</ul>
+</small>
+</ul>
+<p><br>
+SQL is based on the <font color='#0000BB'>relational algebra</font>, which we discuss elsewhere
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; SQL: Queries on One Table &#9826; [1/12]</div> <DIV class='slideCl1    ' id="s2"  >
+<div class='navCl1'><a href="#s1"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s3"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; SQL Query Language</div></td><td align='right'></td></tr></table>
+<p>
+An SQL <font color='#0000BB'>query</font> consists of a sequence of clauses:
+<p><pre>
+SELECT   <i>projectionList</i>
+FROM     <i>relations/joins</i>
+WHERE    <i>condition</i>
+GROUP BY <i>groupingAttributes</i>
+HAVING   <i>groupCondition</i>
+</pre><p>
+<large><code>FROM</code></large>, &nbsp; <large><code>WHERE</code></large>, &nbsp; <large><code>GROUP BY</code></large>, &nbsp; <large><code>HAVING</code></large> &nbsp; clauses are optional.
+<p>
+Result of query: a relation, typically displayed as a table.
+<p>
+<small>
+Result could be just one tuple with one attribute (i.e. one value) or even empty
+</small>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; SQL: Queries on One Table &#9826; [2/12]</div> <DIV class='slideCl1    ' id="s3"  >
+<div class='navCl1'><a href="#s2"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s4"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; SQL Query Language <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Functionality provided by SQL ...
+<p>
+<font color='#0000BB'>Filtering</font>: extract attributes from tuples, extract tuples frm tables
+<p><pre>
+SELECT b,c FROM R(a,b,c,d) WHERE a > 5
+</pre><p>
+<font color='#0000BB'>Combining</font>: merging related tuples from different tables
+<p><pre>
+... FROM R(x,y,z) JOIN S(a,b,c) ON R.y = S.a
+</pre><p>
+<font color='#0000BB'>Summarising</font>: aggregating values in a single column
+<p><pre>
+SELECT avg(mark) FROM ...
+</pre><p>
+<font color='#0000BB'>Set operations</font>: union, intersection, difference
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; SQL: Queries on One Table &#9826; [3/12]</div> <DIV class='slideCl1    ' id="s4"  >
+<div class='navCl1'><a href="#s3"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s5"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; SQL Query Language <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+More functionality provided by SQL ...
+<p>
+<font color='#0000BB'>Grouping</font>: forming subsets of tuples sharing some property
+<p><pre>
+... GROUP BY R.a
+</pre><p>
+<small>
+(forms groups of tuples from <large><code>R</code></large> sharing the same value of <large><code>a</code></large>)
+</small>
+<p>
+<font color='#0000BB'>Group Filtering</font>: selecting only groups satisfying a condition
+<p><pre>
+... GROUP BY R.a HAVING max(R.a) &lt; 75
+</pre><p>
+<font color='#0000BB'>Renaming</font>: assign a name to a component of a query
+<p><pre>
+SELECT a as <font color="#0000EE">name</font>
+FROM Employee(a,b,c) <font color="#0000EE">e</font> WHERE e.b &gt; 50000
+</pre><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; SQL: Queries on One Table &#9826; [4/12]</div> <DIV class='slideCl1    ' id="s5"  >
+<div class='navCl1'><a href="#s4"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s6"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; SQL Query Language <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Schema:
+<ul>
+<li> <i>Students(id, name, ...)</i>
+<li> <i>Enrolments(student, course, mark, grade)</i>
+</ul>
+<p>
+Example SQL query on this schema:
+<p><pre>
+SELECT   s.id, s.name, avg(e.mark) as avgMark
+FROM     Students s
+         JOIN Enrolments e on (s.id = e.student)
+GROUP BY s.id, s.name
+<span class='comment'>-- or --</span>
+SELECT   s.id, s.name, avg(e.mark) as avgMark
+FROM     Students s, Enrolments e
+WHERE    s.id = e.student
+GROUP BY s.id, s.name
+</pre><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; SQL: Queries on One Table &#9826; [5/12]</div> <DIV class='slideCl1    ' id="s6"  >
+<div class='navCl1'><a href="#s5"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s7"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; SQL Query Language <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<br>
+How the example query is computed:
+<ul>
+<li> produce all pairs of <i>Students</i>,<i>Enrolments</i> &nbsp;tuples <br>
+	which satisfy condition <i>(Students.id = Enrolments.student)</i>
+<li> each tuple has <i>(<font color="#CC0000">id</font>,name,...,<font color="#CC0000">student</font>,course,mark,grade)</i>
+<li> form groups of tuples with same <i>(id,name)</i> values
+<li> for each group, compute average mark
+<li> form result tuples <i>(id,name,avgMark)</i>
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; SQL: Queries on One Table &#9826; [6/12]</div> <DIV class='slideCl1    ' id="s7"  >
+<div class='navCl1'><a href="#s6"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s8"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Problem-solving in SQL</div></td><td align='right'></td></tr></table>
+<p>
+Starts with an information request:
+<ul>
+<li> (informal) description of the information required from the database
+</ul>
+Ends with:
+<ul>
+<li> a list of tuples that meet the requirements in the request
+</ul>
+<p>
+Pre-req: &nbsp; <font color='#0000BB'>know your schema</font>
+<p>
+Look for keywords in request to identify required data :
+<ul>
+<li> tell me the <font color="#0000EE">names</font> of all <font color="#009900">students</font>...
+<li> <font color="#0000EE">how many</font> <font color="#009900">students</font> failed ...
+<li> what is the <font color="#0000EE">highest mark</font> in ...
+<li> which <font color="#009900">courses</font> are ... &nbsp; <small>(course codes?)</small>
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; SQL: Queries on One Table &#9826; [7/12]</div> <DIV class='slideCl1    ' id="s8"  >
+<div class='navCl1'><a href="#s7"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s9"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Problem-solving in SQL <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<br>
+Developing SQL queries ...
+<ul>
+<li> relate required data to <font color='#0000BB'>attributes</font> in schema
+<li> identify which <font color='#0000BB'>tables</font> contain these attributes
+<li> combine data from relevant tables (<font color='#0000BB'><large><code>FROM</code></large></font>, <font color='#0000BB'><large><code>JOIN</code></large></font>)
+<li> specify conditions to select relevant data (<font color='#0000BB'><large><code>WHERE</code></large></font>)
+<li> [optional] define grouping attributes (<font color='#0000BB'><large><code>GROUP BY</code></large></font>)
+<li> develop expressions to compute output values (<font color='#0000BB'><large><code>SELECT</code></large></font>)
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; SQL: Queries on One Table &#9826; [8/12]</div> <DIV class='slideCl1    ' id="s9"  >
+<div class='navCl1'><a href="#s8"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s10"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Problem-solving in SQL <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<br>
+<b>Example:</b> just the beers that John likes
+<ul>
+<li> which table contains info about beers that are liked?
+<li> <large><code>Likes(drinker,beers)</code></large>
+<li> only want tuples where drinker is John &nbsp;(<large><code>WHERE</code></large>)
+<li> only want beer names &nbsp;(<large><code>SELECT beer</code></large>)
+</ul>
+... giving ...
+<p><pre>
+select beer from Likes where drinker='John';
+</pre><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; SQL: Queries on One Table &#9826; [9/12]</div> <DIV class='slideCl1    ' id="s10"  >
+<div class='navCl1'><a href="#s9"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s11"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Views</div></td><td align='right'></td></tr></table>
+<p>
+A <font color='#0000BB'>view</font> associates a name with a query:
+<ul>
+<li> <large><font color=#009900><b><code>CREATE VIEW</code></b></font></large> &nbsp;<i>viewName</i>&nbsp; [ <large><font color=#009900><b><code>(</code></b></font></large> <i>attributes</i> <large><font color=#009900><b><code>)</code></b></font></large> ] &nbsp;<large><font color=#009900><b><code>AS</code></b></font></large> &nbsp;<i>Query</i>
+</ul>
+Each time the view is invoked (in a <large><code>FROM</code></large> clause):
+<ul>
+<li> the <i>Query</i> is evaluated, yielding a set of tuples
+<li> the set of tuples is used as the value of the view
+</ul>
+A view can be treated as a "virtual table".
+<p>
+Views are useful for "packaging" a complex query to use in other queries.
+<p>
+cf. writing functions to package computations in programs
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; SQL: Queries on One Table &#9826; [10/12]</div> <DIV class='slideCl1    ' id="s11"  >
+<div class='navCl1'><a href="#s10"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s12"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Exercise: Queries on Beer Database</div></td><td align='right'></td></tr></table>
+<p>
+ER design for Beer database:
+<p><div align='center'>
+<img alt="[Diagram:Pics/sql/beer-er.png]" src="Pics/sql/beer-er.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; SQL: Queries on One Table &#9826; [11/12]</div> <DIV class='slideCl1    ' id="s12"  >
+<div class='navCl1'><a href="#s11"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>   </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Exercise: Queries on Beer Database <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Answer these queries on the Beer database:
+<p><ol start="1">
+<li> What beers are made by Toohey's?
+<li> Show beers with headings "Beer", "Brewer".
+<li> How many different beers are there?
+<li> How many different brewers are there?
+<li> Which beers does John like? <br>
+<li> Find pairs of beers by the same manufacturer.
+<li> How many beers does each brewer make? <br>
+<li> Which brewers make only one beer? <br>
+<li> Which brewer makes the most beers?
+</ol>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; SQL: Queries on One Table &#9826; [12/12]</div><p><hr><p>
+<span style='font-size:11px;color: grey;'>Produced: 28 Sep 2020</span>
+ <script src='lib/prism.js'></script>   
+ <script src='lib/sg.js'></script>   
+</body>
+</html>

@@ -1,0 +1,159 @@
+<title>SQL: Sample Database
+<footer>COMP3311 20T3 <diamond> SQL: Sample DB <diamond>
+
+<slide>
+<heading>SQL Sample Database
+<br>
+It is easier to discuss SQL via concrete examples
+<p>
+We use a database about beer, people who drink it, ...
+<itemize>
+<item> beers have a name and style, and are made by a brewery
+<item> beer drinkers go to bars/hotels where they can drink beer
+<item> bars/hotels sell a variety of beers, at varying prices
+<item> drinkers have favourite beers and other beers they like
+</itemize>
+Many other aspects, e.g. ABV, ratings, notes, etc. could have been added
+<br><p>
+<smaller>
+This database is not autobiographical ...
+</smaller>
+</slide>
+
+<slide>
+<continued>
+ER design for beer database ...
+<p>
+<diagram>Pics/sql/beer-er
+</slide>
+
+<slide>
+<continued>
+Relational model for beer database ...
+<p>
+<diagram>Pics/sql/beer-rel
+</slide>
+
+<slide>
+<continued>
+SQL schema for beer database ...
+<p>
+<program90>
+<span class="comment">-- Some useful data "types"</span>
+
+create domain BeerName varchar(50);
+create domain BarName varchar(30);
+create domain DrinkerName varchar(20);
+
+<span class="comment">-- Tables based on entities </span>
+
+create table Beers (
+    name    BeerName,
+    brewer  varchar(40) not null,
+    style   varchar(40),
+    primary key (name)
+);
+
+create table Bars (
+    name    BarName,
+    addr    varchar(20),
+    license integer not null,
+    primary key (name) 
+);
+
+create table Drinkers (
+    name    DrinkerName,
+    addr    varchar(30) not null,
+    phone   char(10) not null,
+    primary key (name)
+);  
+
+<span class="comment">-- Tables based on relationships </span>
+
+create table Sells (
+    bar     BarName,
+    beer    BeerName,
+    price   float,
+    primary key (bar,beer),
+    foreign key (bar) references Bars(name),
+    foreign key (beer) references Beers(name)
+);
+
+create table Likes (
+    drinker DrinkerName,
+    beer    BeerName,
+    primary key (drinker,beer),
+    foreign key (drinker) references Drinkers(name),
+    foreign key (beer) references Beers(name)
+);
+
+create table Frequents (
+    drinker DrinkerName,
+    bar     BarName,
+    primary key (drinker,bar),
+    foreign key (drinker) references Drinkers(name),
+    foreign key (bar) references Bars(name)
+);
+</program>
+</slide>
+
+<slide>
+<continued>
+Sample beer data ...
+<program80>
+beer=# <b>select * from Beers order by name limit 15;</b>
+        name         |     brewer     |         style          
+---------------------+----------------+------------------------
+ 1750 Export Porter  | Kees           | 
+ 4D                  | Dainton        | Imperial Red Rye IPA
+ 80/-                | Caledonian     | Scotch Ale
+ Age of Aquarius     | Garage Project | NEIPA
+ Alexander           | Rodenbach      | Flanders Red Ale
+ Amber Ale           | James Squire   | Amber Ale
+ Apollo After Dark   | Hawkers        | Imperial Stout
+ Astrolabe           | Frenchies      | Red Biere de Garde
+ BBARIS              | Mismatch       | Russian Imperial Stout
+ Banana Pastry Stout | Hop Nation     | Pastry Stout
+ Barley Griffin      | Bentspoke      | Pale Ale
+ Berserker           | Ekim           | Amber IPA
+ Betelgeuse          | Kaiju          | Double Red Ale
+ Big Nut             | Bentspoke      | Dark IPA
+ Bigfoot             | Sierra Nevada  | Barleywine
+(15 rows)
+</program>
+</slide>
+
+<slide>
+<continued>
+Sample data about drinkers ...
+<program90>
+beer=# select * from Drinkers;
+  name  |    addr    |   phone    
+--------+------------+------------
+ Adam   | Randwick   | 9385-4444 
+ Gernot | Newtown    | 9415-3378 
+ John   | Alexandria | 9665-1234 
+ Andrew | Clovelly   | 9123-1234 
+ Justin | Mosman     | 9845-4321 
+ Helen  | Coogee     | 9876-5432 
+(6 rows)
+</program>
+</slide>
+
+<slide>
+<continued>
+Sample data about bars/hotels ...
+<program90>
+beer=# select * from Bars;
+       name       |     addr     | license 
+------------------+--------------+---------
+ Australia Hotel  | The Rocks    |  123456
+ Coogee Bay Hotel | Coogee       |  966500
+ Lord Nelson      | The Rocks    |  123888
+ Marble Bar       | Sydney       |  122123
+ Regent Hotel     | Kingsford    |  987654
+ Royal Hotel      | Randwick     |  938500
+ Local Taphouse   | Darlinghurst |  884488
+(7 rows)
+</program>
+</slide>

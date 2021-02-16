@@ -1,0 +1,68 @@
+#!/usr/local/bin/python3.7
+#!/usr/bin/python3
+
+import sys
+import psycopg2
+
+# set up some globals
+
+usage = "Usage: ts zID"
+db = None
+studentQ = """
+select name
+from   People p join Students s on (p.id = s.id)
+where  unswid = %s
+"""
+
+# the cheat's version ... get your q8() function to do
+# all of the calculation ... Python just does the formatting
+
+q8 = "select * from q8(%s)"
+
+# process command-line args
+
+argc = len(sys.argv)
+if argc < 2:
+	print(usage)
+	exit(1)
+else:
+	zid = sys.argv[1]
+	if zid.isnumeric():
+		zid = int(zid)
+	else:
+		print("Usage: ts zID")
+		exit(1)
+
+# manipulate database
+
+try:
+	db = psycopg2.connect("dbname=mymy2")
+	cur = db.cursor()
+	cur.execute(studentQ, [zid])
+	stu = cur.fetchone()
+	if not stu:
+		print("No such student")
+		exit(1)
+	cur.execute(q8, [zid])
+	records = cur.fetchall()
+	if len(records) == 1:
+		print("No transcript data")
+	else:
+		for rec in records:
+			code,term,prog,title,mark,grade,uoc = rec
+			# detect the final record via a record with no code
+			if code:
+				uoc = "" if (not uoc) else uoc
+				mark = "   " if (not mark) else f"{mark:3d}"
+				grade = "  " if not grade else f"{grade:2s}"
+				print(f"{code} {term} {prog} {title:20s} {mark} {grade} {uoc}")
+			elif title == "No WAM Available":
+				print("NO WAM Available")
+			else:
+				print(f"WAM = {mark} UOC = {uoc}")
+except psycopg2.Error as err:
+	print("DB error: ", err)
+finally:
+	if db:
+		db.close()
+

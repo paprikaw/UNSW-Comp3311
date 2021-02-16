@@ -1,0 +1,49 @@
+<html>
+<head><title>Data modelling and OO/ER data models (51)</title>
+<link href='slides.css' rel='stylesheet' type='text/css'>
+<script language="JavaScript">
+<!--
+function getKey(keyStroke) {
+	isNetscape = (navigator.appName.indexOf('Netscape') == 0)
+	eventChooser = (isNetscape) ? keyStroke.which : event.keyCode;
+	which = String.fromCharCode(eventChooser);
+	if (which == ' ') window.location = "slide052.html";
+	if (which == 'n') window.location = "slide052.html";
+	if (which == '') window.location = "slide050.html";
+	if (which == 'b') window.location = "slide050.html";
+}
+document.onkeypress = getKey;
+-->
+</script>
+
+</head>
+<body>
+<a href="slide050.html"><img border=0 alt="[prev]" src="icon/prev.gif"></a>
+<a href="index.html"><span style="font-size:14pt;">51</span></a>
+<a href="slide052.html"><img border=0 alt="[next]" src="icon/next.gif"></a>
+
+<div align='center'><table height='95%' width='92%'><tr><td valign='top'>
+<center><h3>Keys <span class="cont">(cont)</span>
+</h3></center>
+One approach to ensuring that attribute value sets are distinct:
+<ul>
+<li class="s"> add a new attribute to each entity
+<li class="s"> containing a unique value for each entity in the entity set
+</ul>
+<small>
+(like re-introducing OIDs, but they only need to be distinct within an entity set)
+</small>
+<p>
+This approach is used commonly in practice e.g.
+<ul>
+<li class="s"> social security number (SSN)
+	&nbsp; <small>(distinct for all residents of USA)</small>
+<li class="s"> tax file number (TFN)
+	&nbsp; <small>(distinct for all Australian taxpayers)</small>
+<li class="s"> UNSW student id
+	&nbsp; <small>(distinct for all students at UNSW)</small>
+</ul>
+This is a specific example of the more general notion of a <font color='#0000BB'>key</font>.
+</td></tr></table></div>
+</body>
+</html>

@@ -1,0 +1,12 @@
+
+<slide>
+<exercise>ER Design Choices
+The following two diagrams both represent
+<itemize>
+<item> a person has some types of food that they like
+</itemize>
+<diagram>Pics/exercises/liked-cuisines
+<p>
+Why might we favour one over the other?
+</slide>
+

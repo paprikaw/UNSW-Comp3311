@@ -1,0 +1,326 @@
+<title>DBMS Architecture and Implementation
+
+<slide>
+<heading>DBMS Architecture and Implementation
+<b>Aims:</b>
+<itemize>
+<item> examine techniques used in implementation of DBMSs:
+<small>
+<itemize>
+<item> query processing (QP), transaction processing (TP)
+</itemize>
+</small>
+<item> use QP knowledge to make DB applications <em>efficient</em>
+<item> use TP knowledge to make DB applications <em>safe</em>
+</itemize>
+<vspace 2>
+<small>
+COMP3311: overview of the above; how to use them in app development <br>
+COMP9315: explore the above in detail; implement (bits of) a DBMS.
+</small>
+</slide>
+
+<slide>
+<heading>Database Application Performance
+In order to make DB applications efficient, we need to know:
+<itemize>
+<item> what operations on the data does the application require
+<p>
+<small>
+(which queries, updates, inserts and how frequently is each one performed)
+</small>
+<item> how these operations might be implemented in the DBMS
+<p>
+<small>
+(data structures and algorithms for select, project, join, sort, ...)
+</small>
+<item> how much each implementation will cost
+<p>
+<small>
+(in terms of the amount of data transferred between memory and disk)
+</small>
+</itemize>
+and then, as much as the DBMS allows, <q>encourage</q> it to use the most
+efficient methods.
+</slide>
+
+<slide>
+<continued>
+Application programmer choices that affect query cost:
+<itemize>
+<item> how queries are expressed
+<itemize>
+<sitem> generally join is faster than subquery
+<sitem> especially if subquery is correlated
+<sitem> avoid producing large intermediate tables <i>then</i> filtering
+<sitem> avoid applying functions in where/group-by clasues
+</itemize>
+<item> creating <em>indexes</em> on tables
+<itemize>
+<sitem> index will speed-up filtering based on indexed attributes
+<sitem> indexes generally only effective for equality, gt/lt
+<sitem> indexes have update-time and storage overheads
+<sitem> only useful if filtering much more frequent than update
+</itemize>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Whatever you do as a DB application programmer
+<itemize>
+<item> the DBMS will transform your query
+<item> to make it execute as efficiently as possible
+</itemize>
+Transformation is carried out by <em>query optimiser</em>
+<itemize>
+<item> which assesses possible query execution approaches
+<item> evaluates likely cost of each approach, chooses cheapest
+</itemize>
+You have no control over the optimisation process
+<itemize>
+<item> but choices you make can block certain options
+<item> limiting the query optimiser's chance to improve
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Example: query to find sales people earning more than <dollar>50K
+<program>
+select name from Employee
+where  salary >> 50000 and
+       empid in (select empid from Worksin
+                 where  dept = 'Sales')
+</program>
+A query optimiser might use the strategy
+<program>
+SalesEmps = (select empid from WorksIn where dept='Sales')
+foreach e in Employee {
+    if (e.empid in SalesEmps && e.salary >> 50000)
+        add e to result set
+}
+</program>
+Needs to examine <i>all</i> employees, even if not in Sales
+</slide>
+
+<slide>
+<continued>
+A different expression of the same query:
+<program>
+select name
+from   Employee join WorksIn using (empid)
+where  Employee.salary >> 5000 and
+       WorksIn.dept = 'Sales'
+</program>
+Query optimiser might use the strategy
+<program>
+SalesEmps = (select * from WorksIn where dept='Sales')
+foreach e in (Employee join SalesEmps) {
+    if (e.salary >> 50000)
+        add e to result set
+}
+</program>
+Only examines Sales employees, and uses a simpler test
+</slide>
+
+<slide>
+<continued>
+A very poor expression of the query <small>(correlated subquery)</small>:
+<program>
+select name from Employee e
+where  salary >> 50000 and
+       'Sales' in (select dept from Worksin where empid=e.id)
+</program>
+A query optimiser would be forced to use the strategy:
+<program>
+foreach e in Employee {
+    Depts = (select dept from WorksIn where empid=e.empid)
+    if ('Sales' in Depts && e.salary >> 50000)
+        add e to result set
+}
+</program>
+Needs to run a query for <i>every</i> employee ...
+</slide>
+
+<slide>
+<heading>Database Transaction Processing
+In most applications ...
+<itemize>
+<item> application-level operations comprise multiple DB operations
+<item> multiple users interact with the database concurrently
+</itemize>
+Example: bank funds transfer requires at least two operations
+<program>
+Transfer(Amount, Source, Dest)
+<comment>-- deduct funds from source account</comment>
+update Account set balance = balance - Amount
+where  account = Source
+<comment>-- add funds to destination account</comment>
+update Account set balance = balance + Amount
+where  account = Dest
+</program>
+<small>
+</small>
+May also require checks on validity of <@>Source</@> and <@>Dest</@> ...
+</slide>
+
+<slide>
+<continued>
+Where things can go wrong in the funds transfer example:
+<sprogram>
+(1) update Account set balance = balance - Amount where account = Source
+(2) update Account set balance = balance + Amount where account = Dest
+</sprogram>
+<enumerate>
+<item> system could crash after first operation but before second
+<itemize>
+<sitem> money lost from source account
+<sitem> solution requires us to ensure 0 or 2 ops are completed
+</itemize>
+<item> two users could do first operation simultaneously
+<itemize>
+<item> only one deduction from source account
+<item> solution requires us to control "simultaneous" access
+</itemize>
+</enumerate>
+</slide>
+
+<slide>
+<continued>
+DBMSs provide two inter-related mechanisms for transactions ...
+<itemize>
+<item> <em>transactions</em> 
+<itemize>
+<sitem> syntax: <~><@>BEGIN</@> ... <i>SQL statements</i> ... <@>END</@>
+<sitem> treats a group of DB operations as an atomic unit
+<sitem> all operations happen, or none do <small>(may requie rollback)</small>
+</itemize>
+<item> <em>locking</em> 
+<itemize>
+<sitem> syntax: <~><@>LOCK</@><~> <i>DBobject</i> <~>(<@>SHARE|EXCLUSIVE</@>)
+<sitem> block second transaction trying to obtain exlcusive lock
+<sitem> transaction continues once lock released by first transaction
+</itemize>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Locking is critical in many contexts
+<itemize>
+<item> but has overheads (lock objects, reduced concurrency)
+</itemize>
+If need for locking can be reduced <$><Rightarrow></$> better throughput
+<p>
+Many DBMSs provide MVCC <small>(<i>multi-version concurrency control</i>)</small>
+<itemize>
+<sitem> stores multiple versions of each tuple
+<sitem> each transaction accesses "appropriate" version
+<sitem> reduces locking requirements <small>(and sometimes eliminates locking)</small>
+</itemize>
+<small>
+Disadvantages: storage overhead, each tuple access requires relevance check
+</small>
+</slide>
+
+<slide>
+<heading>Data Representation
+A DBMS provides representations for:
+<itemize>
+<sitem> values, tuples, tables, indexes <~> <small>(native representation)</small>
+<sitem> transactions, locks <~> <small>(native representations)</small>
+<sitem> functions, views, triggers <~> <small>(via tuples in meta-data tables)</small>
+</itemize>
+Value representations use underlying data types and byte arrays
+<itemize>
+<item> e.g. <@>int</@> for <@>integer</@>, <@>char[</@><i>N</i><@>]</@> for <@>varchar(</@><i>N</i><@>)</@>
+</itemize>
+Tuple representations are like <@>structs</@> with header info
+<itemize>
+<sitem> values stored in a "chunk of bytes"
+<sitem> plus <@>oid</@>, MVCC values, attribute offsets
+<sitem> large data is stored out-of-band (TOAST tables)
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Many ways to represent database relations:
+<itemize>
+<item> one relation = one file
+<item> one file contains data from many relations
+<item> one relation is implemented as multiple files
+</itemize>
+Examples of the above:
+<itemize>
+<item> MiniSQL: each relation+indexes stored in a single file
+<item> SQLite: all tables+indexes+metadata in one file
+<item> Oracle: all table+indexes+catalog in a set of large files
+<item> PostgreSQL: each relation+indexes in several files
+</itemize>
+</slide>
+
+<slide>
+<continued>
+PostgreSQL's data layout:
+<itemize>
+<item> all data held under <@>PGDATA/base</@> directory
+<item> each database is a subdirectory <small>(named after oid)</small>
+<item> each table or index is stored in a separate file
+<item> large data values are compressed and stored separately <br>
+	<small>(a TOAST file associated with each table containing large values)</small>
+<item> <@>pgsql_tmp</@> subdirectory holds temp query proc files <br>
+	<small>(used when intermediate results are too large to fit in mem buffers)</small>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+DB data is (obviously) persistent <$><Rightarrow></$> resides on disk
+<p>
+To maximise efficiency of disk transfers
+<itemize>
+<item> data is grouped into disk-friendly chunks (pages)
+<item> each page contains .e.g many tuples
+<item> all disk transfers are in units of pages
+</itemize>
+To avoid disk reads/writes where possible, DBMSs typically have a very
+large in-memory cache of database pages.
+</slide>
+
+<slide>
+<heading>DBMS Architecture
+Layers in a DB Engine <small>(Ramakrishnan's View)</small>
+<diagram>Pic/dbms/dbmsarch.png
+</slide>
+
+<slide>
+<heading>DBMS Components
+<deftable 8>
+<row>
+<col1>File manager</col1>
+<col2>manages allocation of disk space and data structures</col2>
+</row>
+<row>
+<col1>Buffer manager</col1>
+<col2>manages data transfer between disk and main memory</col2>
+</row>
+<row>
+<col1>Query optimiser</col1>
+<col2>translates queries into efficient sequence of relational ops</col2>
+</row>
+<row>
+<col1>Recovery manager</col1>
+<col2>ensures consistent database state after system failures</col2>
+</row>
+<row>
+<col1>Concurrency manager</col1>
+<col2>controls concurrent access to database</col2>
+</row>
+<row>
+<col1>Integrity manager</col1>
+<col2>verifies integrity constraints and user privileges</col2>
+</row>
+</deftable>
+</slide>

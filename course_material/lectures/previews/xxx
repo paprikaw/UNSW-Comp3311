@@ -1,0 +1,39 @@
+
+<slide>
+<heading>Famous DB Nerds #8
+<center>
+<small>The next in a series on famous database people ...</small>
+<p>
+<center>
+<img src="Pics/selinger1.jpg">
+</center>
+</center>
+</slide>
+
+<slide>
+<continued>
+<table>
+<tr valign=top>
+<td>
+<b><navy>Patricia Selinger</navy></b>
+<p>
+<img src="Pics/selinger2.jpg"></td>
+<td><~></td>
+<td>
+<itemize>
+<item> IBM San Jose Research Centre
+<item> Part of System R Team
+<item> Cost-based query optimisation
+<item> Awards:
+<itemize>
+<item> IBM Research Fellowship
+<item> ACM Innovations Award
+</itemize>
+<item> Director of DB Technology Institute <br>
+	at IBM Almaden Research Centre
+</itemize>
+</td>
+</tr>
+</table>
+</slide>
+

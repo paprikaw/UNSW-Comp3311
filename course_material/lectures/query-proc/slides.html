@@ -1,0 +1,277 @@
+<html>
+<head>
+<title>Query Evaluation</title>
+<link href='lib/slides.css' rel='stylesheet' type='text/css'>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML" async></script>
+<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js'></script>
+<link href='https://fonts.googleapis.com/css?family=Lato' rel='stylesheet'>
+<link href='lib/prism.css' rel='stylesheet'>
+<script src='lib/sg.js'></script>
+</head>
+<body>
+ <DIV class='slideCl1' id="s0"  >
+<div class='navCl1'><a href="#s1"><span class='nextArrowCl'>>></span></a> </div> <div class='heading'>Query Evaluation</div><p><ul class='indexUl'  style='font-size: 0.7em;'><li class="i"> <a href="#s1">DBMS Architecture</a>
+<li class="i"> <a href="#s4">Query Evaluation</a>
+<li class="i"> <a href="#s5">Mapping SQL to RA</a>
+<li class="i"> <a href="#s6">Mapping Example</a>
+<li class="i"> <a href="#s8">Query Cost Estimation</a>
+<li class="i"> <a href="#s10">Implementations of RA Ops</a>
+<li class="i"> <a href="#s11">Query Optimisation</a>
+</ul></DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Query Evaluation &#9826; [0/12]</div> <DIV class='slideCl1    ' id="s1"  >
+<div class='navCl1'> <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s2"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; DBMS Architecture</div></td><td align='right'></td></tr></table>
+<p>
+<br>
+COMP3311 is not a course on DBMS Architecture <span class="smaller">(that's COMP9315)</span>
+<p>
+But knowing just a little about how DBMSs work can help
+<ul>
+<li> to avoid/fix inefficiencies in database applications
+</ul>
+DBMSs attempt to handle this issue in modules for ...
+<ul>
+<li> query processing (QP) .. methods for evaluating queries
+</ul>
+As a programmer, you cede a lot of control to the DBMS, but can
+<ul>
+<li> use QP knowledge to make DB applications <font color='#0000BB'>efficient</font>
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Query Evaluation &#9826; [1/12]</div> <DIV class='slideCl1    ' id="s2"  >
+<div class='navCl1'><a href="#s1"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s3"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; DBMS Architecture <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Our view of the DBMS so far ...
+<p><br>
+<p><div align='center'>
+<img alt="[Diagram:Pics/qproc/qeval1.png]" src="Pics/qproc/qeval1.png">
+</div><p>
+<p><br>
+A machine to process SQL queries.
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Query Evaluation &#9826; [2/12]</div> <DIV class='slideCl1    ' id="s3"  >
+<div class='navCl1'><a href="#s2"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s4"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; DBMS Architecture <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+One view of DB engine: "<font color='#0000BB'>relational algebra</font> virtual machine"
+<p>
+Machine code for such a machine:
+<div align="center">
+<table border='0' cellpadding='4'>
+<tr valign=top>
+<td><nobr> selection (&sigma;) </td>
+<td></td><td> projection (&pi;) </td>
+<td></td><td> join (&#10781;, &times;) </td>
+</tr>
+<tr valign=top>
+<td><nobr> union (&cup;) </td>
+<td></td><td> intersection (&cap;) </td>
+<td></td><td> difference (-) </td>
+</tr>
+<tr valign=top>
+<td><nobr> sort </td>
+<td></td><td> insert </td>
+<td></td><td> delete </td>
+</tr>
+</table>
+</div>
+<p>
+For each of these operations:
+<ul>
+<li> various data structures and algorithms are available
+<li> DBMSs may provide only one, or may provide a choice
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Query Evaluation &#9826; [3/12]</div> <DIV class='slideCl1    ' id="s4"  >
+<div class='navCl1'><a href="#s3"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s5"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Query Evaluation</div></td><td align='right'></td></tr></table>
+<p>
+The path of a query through its evaluation:
+<p><br>
+<p><div align='center'>
+<img alt="[Diagram:Pics/dbms/qryeval.png]" src="Pics/dbms/qryeval.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Query Evaluation &#9826; [4/12]</div> <DIV class='slideCl1    ' id="s5"  >
+<div class='navCl1'><a href="#s4"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s6"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Mapping SQL to RA</div></td><td align='right'></td></tr></table>
+<p>
+Mapping SQL to relational algebra, e.g.
+<p><pre>
+<span class='comment'>-- schema: R(a,b) S(c,d)</span>
+select a as x
+from   R join S on (b=c)
+where  d = 100
+<span class='comment'>-- could be mapped to</span>
+Tmp1(a,b,c,d) = R Join[b=c] S
+Tmp2(a,b,c,d) = Sel[d=100](Tmp1)
+Tmp3(a)       = Proj[a](Tmp2)
+Res(x)        = Rename[Res(x)](Tmp3)
+</pre><p>
+In general:
+<ul>
+<li> <large><code>SELECT</code></large> clause becomes <i>projection</i>
+<li> <large><code>WHERE</code></large> condition becomes <i>selection</i> or <i>join</i>
+<li> <large><code>FROM</code></large> clause becomes <i>join</i>
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Query Evaluation &#9826; [5/12]</div> <DIV class='slideCl1    ' id="s6"  >
+<div class='navCl1'><a href="#s5"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s7"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Mapping Example</div></td><td align='right'></td></tr></table>
+<p>
+Consider the database schema:
+<p><pre style="font-size:90%">
+Person(pid, name, address, ...)
+Subject(sid, code, title, uoc, ...)
+Terms(tid, code, start, end, ...)
+Courses(cid, sid, tid, ...)
+Enrolments(cid, pid, mark, ..)
+</pre><p>
+<p>
+and the query: <i>Courses with more than 100 students in them?</i>
+<p>
+which can be expressed in SQL as
+<p><pre style="font-size:90%">
+select s.sid, s.code
+from   Course c join Subject s on (c.sid=s.sid)
+       join Enrolment e on (c.cid=e.cid)
+group  by s.sid, s.code
+having count(*) > 100;
+</pre><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Query Evaluation &#9826; [6/12]</div> <DIV class='slideCl1    ' id="s7"  >
+<div class='navCl1'><a href="#s6"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s8"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Mapping Example <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+The SQL might be compiled to
+<p>
+<p><pre style="font-size:90%">
+Tmp1(cid,sid,pid)   = Course Join[c.cid = e.cid] Enrolment
+Tmp2(cid,code,pid)  = Tmp1 Join[t1.sid = s.sid] Subject
+Tmp3(cid,code,nstu) = GroupCount[cid,code](Tmp2)
+Res(cid,code)       = Sel[nstu > 100](Tmp3)
+</pre><p>
+or, equivalently
+<p><pre style="font-size:90%">
+Tmp1(cid,code)      = Course Join[c.sid = s.sid] Subject
+Tmp2(cid,code,pid)  = Tmp1 Join[t1.cid = e.cid] Enrolment
+Tmp3(cid,code,nstu) = GroupCount[cid,code](Tmp2)
+Res(cid,code)       = Sel[nstu > 100](Tmp3)
+</pre><p>
+Which is better?
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Query Evaluation &#9826; [7/12]</div> <DIV class='slideCl1    ' id="s8"  >
+<div class='navCl1'><a href="#s7"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s9"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Query Cost Estimation</div></td><td align='right'></td></tr></table>
+<p>
+The cost of evaluating a query is determined by
+<ul>
+<li> the operations specified in the query execution plan
+<li> size of relations &nbsp; <small>(database relations and temporary relations)</small>
+<li> access mechanisms &nbsp; <small>(indexing, hashing, sorting, join algorithms)</small>
+<li> size/number of main memory buffers &nbsp; <small>(and replacement strategy)</small>
+</ul>
+Analysis of costs involves <i>estimating</i>:
+<ul>
+<li> the size of intermediate results
+<li> then, based on this, cost of secondary storage accesses
+</ul>
+<br>
+Accessing data from disk is the dominant cost in query evaluation
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Query Evaluation &#9826; [8/12]</div> <DIV class='slideCl1    ' id="s9"  >
+<div class='navCl1'><a href="#s8"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s10"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Query Cost Estimation <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+An <font color='#0000BB'>execution plan</font> is a sequence of relational operations.
+<p>
+Consider execution plans for:
+	&nbsp;&nbsp; <i> &sigma;<sub>c</sub> (R &nbsp;&#10781;<sub>d</sub>&nbsp; S &nbsp;&#10781;<sub>e</sub>&nbsp; T) </i>
+<p><pre>
+tmp1   :=  hash_join[d](R,S)
+tmp2   :=  sort_merge_join[e](tmp1,T)
+result :=  binary_search[c](tmp2)
+</pre><p>
+or
+<p><pre>
+tmp1   :=  sort_merge_join[e](S,T)
+tmp2   :=  hash_join[d](R,tmp1)
+result :=  linear_search[c](tmp2)
+</pre><p>
+or
+<p><pre>
+tmp1   :=  btree_search[c](R)
+tmp2   :=  hash_join[d](tmp1,S)
+result :=  sort_merge_join[e](tmp2)
+</pre><p>
+All produce same result, but have different costs.
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Query Evaluation &#9826; [9/12]</div> <DIV class='slideCl1    ' id="s10"  >
+<div class='navCl1'><a href="#s9"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s11"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Implementations of RA Ops</div></td><td align='right'></td></tr></table>
+<p>
+Sorting &nbsp; <font color="#777777"><small>(quicksort, etc. are not applicable)</small></font>
+<ul>
+<li> external merge sort &nbsp; <small>(cost <i>O(Nlog<sub>B</sub>N)</i> with <i>B</i> memory buffers)</small>
+</ul>
+Selection &nbsp; <font color="#777777"><small>(different techniques developed for different query types)</small></font>
+<ul>
+<li> sequential scan &nbsp; <small>(worst case, cost <i>O(N)</i>)</small>
+<li> index-based &nbsp; <small>(e.g. B-trees, cost <i>O(logN)</i>, tree nodes are pages)</small>
+<li> hash-based &nbsp; <small>(<i>O(1)</i> best case, only works for equality tests)</small>
+</ul>
+Join &nbsp; <font color="#777777"><small>(fast joins are critical to success of relational DBMSs)</small></font>
+<ul>
+<li> nested-loop join &nbsp; <small>(cost <i>O(N.M)</i>, buffering can reduce to <i>O(N+M)</i>)</small>
+<li> sort-merge join &nbsp; <small>(cost <i>O(NlogN+MlogM)</i>)</small>
+<li> hash-join &nbsp; <small>(best case cost <i>O(N+M.N/B)</i>, with <i>B</i> memory buffers)</small>
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Query Evaluation &#9826; [10/12]</div> <DIV class='slideCl1    ' id="s11"  >
+<div class='navCl1'><a href="#s10"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s12"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Query Optimisation</div></td><td align='right'></td></tr></table>
+<p>
+What is the "best" method for evaluating a query?
+<p>
+Generally, <i>best</i> = lowest cost = fastest evaluation time
+<p>
+<font color='#0000BB'>Cost</font> is measured in terms of pages read/written
+<ul>
+<li> data is stored in fixed-size blocks (e.g. 4KB)
+<li> data transferred disk&harr;>memory in whole blocks
+<li> cost of disk&harr;memory transfer is highest cost in system
+<li> processing in memory is very fast compared to I/O
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Query Evaluation &#9826; [11/12]</div> <DIV class='slideCl1    ' id="s12"  >
+<div class='navCl1'><a href="#s11"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>   </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Query Optimisation <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+A DBMS <font color='#0000BB'>query optimiser</font> works as follows:
+<p>
+<p><pre>
+Input: relational algebra expression
+Output: execution plan (sequence of RA ops)
+
+bestCost = INF; bestPlan = none
+while (more possible plans) {
+   plan = produce a new evaluation plan
+   cost = estimated_cost(plan)
+   if (cost < bestCost) {
+      bestCost = cost; bestPlan = plan
+   }
+}
+return bestPlan
+</pre><p>
+Typically, there are very many possible plans
+<ul>
+<li> smarter optimisers generate likely subset of possible plans
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Query Evaluation &#9826; [12/12]</div><p><hr><p>
+<span style='font-size:11px;color: grey;'>Produced: 12 Nov 2020</span>
+ <script src='lib/prism.js'></script>   
+ <script src='lib/sg.js'></script>   
+</body>
+</html>

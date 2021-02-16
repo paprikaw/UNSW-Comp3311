@@ -1,0 +1,202 @@
+<title>ER&rightarrow;Relational Mapping
+<footer>COMP3311 20T3 <diamond> ER&rightarrow;Rel Mapping <diamond>
+
+<slide>
+<heading>ER to Relational Mapping
+Reminder: a useful strategy for database design:
+<itemize>
+<item> perform initial data modelling using ER <br>
+	<small>(conceptual-level modelling)</small>
+<item> transform conceptual design into relational model <br>
+	<small>(implementation-level modelling)</small>
+</itemize>
+A formal mapping exists for ER model <$><rightarrow></$> Relational model.
+<p>
+This maps <q>structures</q>; but additional info is needed, e.g.
+<itemize>
+<item> concrete domains for attributes and other constraints
+</itemize>
+</slide>
+
+<slide>
+<heading>Relational Model vs ER Model
+Correspondences between relational and ER data models:
+<itemize>
+<item> attribute<small>(ER)</small> <$><approx></$> attribute<small>(Rel)</small>,<~>
+entity<small>(ER)</small> <$><approx></$> tuple<small>(Rel)</small>
+<item> entity set<small>(ER)</small> <$><approx></$> relation<small>(Rel)</small>,<~>
+relationship<small>(ER)</small> <$><approx></$> relation<small>(Rel)</small>
+</itemize>
+Differences between relational and ER models:
+<itemize>
+<item> Rel uses relations to model entities <i>and</i> relationships
+<item> Rel has no composite or multi-valued attributes <small>(only atomic)</small>
+<item> Rel has no object-oriented notions <small>(e.g. subclasses, inheritance)</small>
+</itemize>
+<br>
+<small>
+Note that ...
+<itemize>
+<item> not all aspects of ER cab be represented exactly in a relational schema
+<item> some aspects of relational schemas (e.g. domains) do not appear in ER
+</itemize>
+</small>
+</slide>
+
+<slide>
+<heading>Mapping Strong Entities
+An entity set <$>E</$> with atomic attributes
+	<$>a<sub>1</sub>, a<sub>2</sub>, ... a<sub>n</sub></$>
+<p>
+maps to
+<p>
+A relation <$>R</$> with attributes (columns)
+	<$>a<sub>1</sub>, a<sub>2</sub>, ... a<sub>n</sub></$>
+<p>
+Example:
+<diagram>Pics/er-rel/strongent.png
+<br>
+Note: the key is preserved in the mapping.
+</slide>
+
+<slide>
+<heading>Mapping Weak Entities
+Example:
+<diagram>Pics/er-rel/mapwkent.png
+</slide>
+
+<slide>
+<heading>Mapping N:M Relationships
+Example:
+<diagram>Pics/er-rel/mapnnrel.png
+</slide>
+
+<slide>
+<heading>Mapping 1:N Relationships
+Example:
+<diagram>Pics/er-rel/map1nrel2.png
+</slide>
+
+<slide>
+<heading>Mapping 1:1 Relationships
+Example:
+<diagram>Pics/er-rel/map11rel.png
+</slide>
+
+<slide>
+<continued>
+If there is no reason to favour one side of the relationship ...
+<p>
+<diagram>Pics/er-rel/map11rel3.png
+</slide>
+
+<slide>
+<heading>Mapping n-way Relationships
+Relationship mappings above assume binary relationship.
+<p>
+If multiple entities are involved:
+<itemize>
+<item> <$>n:m</$> generalises naturally to <$>n:m:p:q</$>
+<itemize>
+<sitem> include foreign key for each participating entity
+<sitem> include any other attributes of the relationship
+</itemize>
+<item> other multiplicities (e.g. <$>1:n:m</$>) ...
+<itemize>
+<sitem> need to be mapped the same as <$>n:m:p:q</$>
+<sitem> so not quite an accurate mapping of the ER
+</itemize>
+</itemize>
+Some people advocate converting n-way relationships into:
+<itemize>
+<item> a new entity, and a set of <$>n</$> binary relationships
+</itemize>
+</slide>
+
+<slide>
+<heading>Mapping Composite Attributes
+Composite attributes are mapped by concatenation or flattening.
+<p>
+Example:
+<diagram>Pics/er-rel/mapstrent.png
+</slide>
+
+<slide>
+<heading>Mapping Multi-valued Attributes (MVAs)
+MVAs are mapped by a new table linking values to their entity.
+<p>
+Example:
+<diagram>Pics/er-rel/mapmva.png
+</slide>
+
+<slide>
+<continued>
+Analogy:
+<diagram>Pics/er-rel/mapmva1.png
+</slide>
+
+<slide>
+<continued>
+Example: the two entities
+<sprogram>
+Person(12345, John, 12-feb-1990, <brown>[red,green,blue]</brown>)
+Person(54321, Jane, 25-dec-1990, <brown>[green,purple]</brown>)
+</sprogram>
+would be represented as
+<program>
+Person(12345, John, 12-feb-1990)
+Person(54321, Jane, 25-dec-1990)
+FavColour(12345, red)
+FavColour(12345, green)
+FavColour(12345, blue)
+FavColour(54321, green)
+FavColour(54321, purple)
+</program>
+</slide>
+
+<slide>
+<heading>Mapping Subclasses
+Three different approaches to mapping subclasses to tables:
+<itemize>
+<item> ER style
+<small>
+<itemize>
+<sitem> each entity becomes a separate table,
+<sitem> containing attributes of subclass + FK to superclass table
+</itemize>
+</small>
+<item> object-oriented
+<small>
+<itemize>
+<sitem> each entity becomes a separate table,
+<sitem> inheriting all attributes from all superclasses
+</itemize>
+</small>
+<item> single table with nulls
+<small>
+<itemize>
+<sitem> whole class hierarchy becomes one table,
+<sitem> containing all attributes of all subclasses (null, if unused)
+</itemize>
+</small>
+</itemize>
+Which mapping is best depends on how data is to be used.
+</slide>
+
+<slide>
+<continued>
+Example of ER-style mapping:
+<diagram>Pics/er-rel/mapsubclass.png
+</slide>
+
+<slide>
+<continued>
+Example of object-oriented mapping:
+<diagram>Pics/er-rel/mapsubclass2.png
+</slide>
+
+<slide>
+<continued>
+Example of single-table-with-nulls mapping:
+<diagram>Pics/er-rel/mapsubclass3.png
+</slide>

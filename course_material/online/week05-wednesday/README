@@ -1,0 +1,8 @@
+To build the MyMyUNSW database
+- run a PostgreSQL server
+- createdb mymy
+- bzcat /web/cs3311/20T3/online/week05-wednesday/mymy.dump.bz2 | psql mymy
+
+Will print messages like CREATE TABLE, COPY, ...
+
+And then you'll have a database to play with

@@ -1,0 +1,515 @@
+<title>COMP3311 Lecture Notices
+
+<slide>
+<~>
+<center style="font-size:32pt;color:#336699">COMP3311 Database Systems</center>
+<vspace 1>
+<diagram>Pics/intro/pgsql.jpg
+<vspace 1>
+<center>
+Lecturer: <~> <i>John Shepherd</i> <~> <small>(jas@cse.unsw.edu.au)</small>
+<p>
+Admin: <~> <i>Hayden Smith</i> <~> <small>(cs3311@cse.unsw.edu.au)</small>
+<p>
+Web Site: <~> <navy><a href="http://www.cse.unsw.edu.au/~cs3311/">http://www.cse.unsw.edu.au/<tilde>cs3311/</a></navy>
+<p>
+<small>(If WebCMS unavailable, use http://www.cse.unsw.edu.au/<tilde>cs3311/19T3/)</small>
+</center>
+</slide>
+
+<slide>
+<heading>Famous DB Nerds #1
+<center>
+<small>The first in a series on famous database people ...</small>
+<p><center>
+<img src="Pics/larryellison.jpg">
+</center><p>
+</center>
+</slide>
+
+<slide>
+<continued>
+<table>
+<tr valign=top>
+<td>
+<span class="nerd">Larry Ellison</span>
+<p>
+<img src="Pics/larryellison2.jpg">
+</td>
+<td><~><~><~></td>
+<td>
+<itemize>
+<item> CEO of Oracle Corporation
+<itemize>
+<item> Founded in 1977
+<item> First product 1979
+<item> Now, world's #1 DB supplier <br>
+	<small>(also acquired: Java, Peoplesoft, MySQL)</small>
+</itemize>
+<item> Currently worth ~$30 billion <small>(was $50B)</small>
+<item> Eccentric, opinionated, flamboyant
+</itemize>
+</td>
+</tr>
+</table>
+<p>
+Old Silicon Valley Joke:
+<p>
+<b><red>Q:</red></b> What's the difference between God and Larry Ellison?
+<p>
+<b><red>A:</red></b> God doesn't think he's Larry Ellison.
+</slide>
+
+<slide>
+<heading>Famous DB Nerds #2
+<center>
+<small>The next in a series on famous database people ...</small>
+<p><center><img src="Pics/peterchen.jpg"></center><p>
+</center>
+</slide>
+
+<slide>
+<continued>
+<table>
+<tr valign=top>
+<td>
+<span class="nerd">Peter Chen</span>
+<p>
+<img src="Pics/peterchen1.jpg"></td>
+<td><~~></td>
+<td>
+<itemize>
+<item> Invented ER Data Model
+<item> Original paper in 1976
+<item> One of the most-cited papers in CS
+<item> ER provided foundation for:
+<itemize>
+<sitem> design methodologies (e.g. UML)
+<sitem> CASE tools <small>(e.g. Oracle Designer/2000)</small>
+</itemize>
+<item> Fellow of ACM and IEEE
+<item> Professor at Louisiana SU
+</itemize>
+</td>
+</tr>
+</table>
+</slide>
+
+<slide>
+<heading>Famous DB Nerds #3
+<center>
+<small>The next in a series on famous database people ...</small>
+<p><center><img src="Pics/chamberlin.gif"></center><p>
+</center>
+</slide>
+
+<slide>
+<continued>
+<table>
+<tr valign=top>
+<td>
+<span class="nerd">Don Chamberlin</span>
+<p>
+<img src="Pics/don.chamberlin.jpg"></td>
+<td><~~~></td>
+<td>
+<itemize>
+<item> IBM Almaden Research Lab
+<item> Member of System R team
+<item> Designed SQL <small>(with Ray Boyce)</small>
+<item> ACM Fellow
+<item> Current research:
+<itemize>
+<item> <a href='http://www.almaden.ibm.com/cs/people/chamberlin/quilt.html'>query languages for XML DBs</a>
+</itemize>
+</itemize>
+</td>
+</tr>
+</table>
+<p>
+<center>
+System R <small>(1975)</small> = the original prototype relational DBMS
+</center>
+</slide>
+
+<slide>
+<heading>Famous DB Nerds #4
+<center>
+<small>The next in a series on famous database people ...</small>
+<p><center>
+<img src="Pics/ullman5.jpg">
+</center><p>
+</center>
+</slide>
+
+<slide>
+<continued>
+<table>
+<tr valign=top>
+<td>
+<span class="nerd">Jeff Ullman</span>
+<p>
+<img src="Pics/ullman.gif"> 
+</td>
+<td><~></td>
+<td>
+<itemize>
+<item> DB Professor at Stanford U <small>(1980...)</small>
+<item> Very well-known database researcher
+<item> Published over 200 articles + 10 textbooks <br>
+	<small>(DB, theory, data-structs, compilers, ...)</small>
+<item> Research areas include:
+<itemize>
+<sitem> deductive databases (NAIL)
+<sitem> information itegration (TSIMMIS)
+<sitem> information extraction (MIDAS)
+</itemize>
+<item> PhD supervisor of Sergey Brin, Larry Page
+</itemize>
+</td>
+</tr>
+</table>
+</slide>
+
+<slide>
+<heading>Famous DB Nerds #5
+<center>
+<small>The next in a series on famous database people ...</small>
+<p><center><img src="Pics/ted-codd1.jpg"><p>
+</center>
+</slide>
+
+<slide>
+<continued>
+<table>
+<tr valign=top>
+<td>
+<span class="nerd">Ted Codd</span>
+<p>
+<img src="Pics/ted-codd2.jpg">
+<td><~~~></td>
+<td>
+<itemize>
+<item> Researcher at IBM San Jose Lab
+<item> Invented relational model (RM)
+<small>
+<itemize>
+<sitem> Original paper in 1970
+<sitem> Proposed <em>Alpha</em> query language
+<sitem> Very influential on DB research/practice
+</itemize>
+</small>
+<item> ACM Turing Award 1981
+<item> Died April 2003
+</itemize>
+</td>
+</tr>
+</table>
+<small>
+<b>Turing Award Citation:</b> <br>
+For his fundamental and continuing contributions to the theory and
+practice of database management systems. He originated the relational
+approach to database management in a series of research papers published
+commencing in 1970. His paper "A Relational Model of Data for Large
+Shared Data Banks" was a seminal paper, in a continuing and carefully
+developed series of papers. Dr. Codd built upon this space and in doing
+so has provided the impetus for widespread research into numerous related
+areas, including database languages, query subsystems, database semantics,
+locking and recovery ...
+</small>
+</slide>
+
+<slide>
+<heading>Famous DB Nerds #6
+<center>
+<small>The next in a series on famous database people ...</small>
+<p><~><p>
+<center>
+<img src="Pics/stonebraker.gif">
+</center>
+<p>
+</center>
+</slide>
+
+<slide>
+<continued>
+<table>
+<tr valign=top>
+<td>
+<span class="nerd">Michael<br>Stonebraker</span>
+<p>
+<img src="Pics/stonebraker.jpg">
+</td>
+<td>
+<itemize>
+<item> Professor, UC Berkeley <small>(1971-2000)</small>
+<item> Developed/commercialised three major systems:
+<small>
+<itemize>
+<sitem> Ingres - relational DBMS
+<sitem> <b>Postgres</b>(Illustra) - object-relational DBMS
+<sitem> Mariposa - federated data system
+</itemize>
+</small>
+<item> ACM System Software Award 1992
+<item> Famous opinion paper on OS vs DBMS
+<item> Proponent of object-relational DBMS
+<item> Currently Adjunct Professor at MIT
+</itemize>
+</td>
+</tr>
+</table>
+</slide>
+
+<slide>
+<heading>Famous DB Nerds #7
+<center>
+<small>The next in a series on famous database people ...</small>
+<p>
+<center>
+<img src="Pics/selinger1a.jpg">
+<img src="Pics/selinger3.jpg">
+</center>
+</center>
+</slide>
+
+<slide>
+<continued>
+<table>
+<tr valign=top>
+<td>
+<b><navy>Patricia Selinger</navy></b>
+<p>
+<img src="Pics/selinger2a.jpg"></td>
+<td><~></td>
+<td>
+<itemize>
+<item> IBM San Jose Research Centre
+<item> Part of System R Team
+<item> Cost-based query optimisation
+<item> Awards:
+<itemize>
+<item> IBM Research Fellowship
+<item> ACM Innovations Award
+</itemize>
+<item> Director of DB Technology Institute <br>
+	at IBM Almaden Research Centre
+</itemize>
+</td>
+</tr>
+</table>
+</slide>
+
+<slide>
+<heading>Famous DB Nerds #8
+<center>
+<small>The next in a series on famous database people ...</small>
+<p>
+<center><img src="Pics/lindsay3.jpg"></center>
+</center>
+</slide>
+
+<slide>
+<continued>
+<table>
+<tr valign=top>
+<td>
+<span class="nerd">Bruce Lindsay</span>
+<p>
+<img src="Pics/lindsay4.jpg"></td>
+<td>
+<itemize>
+<item> IBM Almaden Research Centre
+<item> Part of System R Team
+<itemize>
+<sitem> buffer pool manager, ...
+</itemize>
+<item> Since System R:
+<itemize>
+<sitem> distributed databases (R*)
+<sitem> transactions/concurrency control
+<sitem> query optimisation
+<sitem> composite objects in RDBMS
+<sitem> web caching
+</itemize>
+<item> IBM Research Fellow
+</itemize>
+</td>
+</tr>
+</table>
+</slide>
+
+<slide>
+<heading>Famous DB Nerds #9
+<center>
+<small>The next in a series on famous database people ...</small>
+<p><center>
+<img src="Pics/jennifer-widom0.jpg">
+</center><p>
+</center>
+</slide>
+
+<slide>
+<continued>
+<table>
+<tr valign=top>
+<td>
+<span class="nerd">Jennifer Widom</span>
+<p>
+<img src="Pics/jennifer-widom1.jpg">
+</td>
+<td><~~~></td>
+<td>
+Professor at Stanford University
+<p>
+Database Researcher:
+<small>
+<itemize>
+<sitem> Active Databases (triggers/rules)
+<sitem> Stream Query Processing
+<sitem> Data Provenance, Uncertain Data
+<sitem> XML and Semistructured Data
+<sitem> Graph data (large-scale)
+<sitem> etc. etc. etc.
+</itemize>
+</small>
+<p>
+Database Educator:
+<small>
+<itemize>
+<sitem> Runs MOOC on Introduction to Databases
+<sitem> Database Systems: The Complete Book <br>
+	<small>(with Jeff Ullman and Hector Garcia-Molina)</small>
+<sitem> Active Database Systems: Triggers and Rules <br>
+	<small>(with Stefano Ceri)</small>
+</itemize>
+</small>
+</td>
+</tr>
+</table>
+</slide>
+
+<slide>
+<heading>Famous DB Nerds #10
+<center>
+<small>The next in a series on famous DB-ish people ...</small>
+<p><center>
+<img src="Pics/lerdorf3.jpg">
+</center><p>
+</center>
+</slide>
+
+<slide>
+<continued>
+<table>
+<tr valign=top>
+<td>
+<span class="nerd">Rasmus Lerdorf</span>
+<p>
+<img src="Pics/lerdorf2.jpg">
+</td>
+<td><~></td>
+<td>
+<itemize>
+<item> Born on Disco Island <small>(off Greenland)</small>
+<item> Graduated 1993 Uni of Waterloo <small>(Canada)</small>
+<item> Invented idea of mixed code+HTML
+<item> Developed the PHP language
+<item> Devised the <@>LIMIT</@> clause <small>(mSQL)</small>
+<item> Worked on: PHP, Apache, DB2, ...
+<item> Currently working for Jelastic <small>(cloud)</small>
+<item> Speaker at open-source conferences
+</itemize>
+</td>
+</tr>
+</table>
+</slide>
+
+<slide>
+<heading>Famous DB Nerds #11
+<table>
+<tr valign=top>
+<td>
+<span class="nerd">Rudolf<~>Bayer</span>
+<br>
+<img src="Pics/bayer.jpg">
+<p>
+<span class="nerd">Eric<~>McCreight</span>
+<br>
+<img src="Pics/mccreight.jpg">
+</td>
+<td><~></td>
+<td>
+<itemize>
+<item> Together, they invented the <em>B-tree</em> (1972)
+<item> <b>Bayer</b>
+<itemize>
+<item> Extensive database research career
+<itemize>
+<sitem> access methods (B-tree, UB-tree, ...)
+<sitem> deductive and XML databases
+<sitem> query processing in digital libraries
+</itemize>
+<item> <nobr>Professor, Technische Universitat Munchen</nobr>
+</itemize>
+<item> <b>McCreight</b>
+<itemize>
+<item> Carnegie-Mellon University
+<item> Now works for Adobe Systems
+</itemize>
+</itemize>
+</td>
+</tr>
+</table>
+</slide>
+
+<slide>
+<heading>Famous DB Nerds #12
+<center>
+<small>The next in a series on famous database people ...</small>
+<p><center>
+<img src="Pics/jimgray.jpg">
+</center><p>
+</center>
+</slide>
+
+<slide>
+<continued>
+<table>
+<tr valign=top>
+<td>
+<span class="nerd">Jim Gray</span>
+<p>
+<img src="Pics/jimgray.gif">
+</td>
+<td><~></td>
+<td>
+<itemize>
+<item> Pioneered <em>transaction processing</em>
+<item> 1969 PhD from UC Berkeley
+<item> 1970-1995 IBM, Tandem, DEC
+<item> 1995- Microsoft Research Lab
+<item> 1999 Turing Award <~> <small>(for <em>tp</em> research)</small>
+<item> Most recent work:
+<itemize>
+<sitem> scientific databases
+<sitem> sensor networks + databases
+</itemize>
+<sitem> Disappeared at sea, 27 Jan 2007
+</itemize>
+</td>
+</tr>
+</table>
+</center>
+</slide>
+
+<slide>
+<heading>Famous DB Nerds ...
+<center>
+<small>The next in a series on famous database people ...</small>
+<p><center>
+<img height=550 src="Pics/jas-at-oracle.jpg">
+</center><p>
+Ok ... so it's obvious who it is ... but where is he?
+</center>
+</slide>

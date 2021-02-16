@@ -1,0 +1,373 @@
+<title>Triggers
+<footer>COMP3311 20T3 <diamond> Triggers <diamond>
+
+<slide>
+<heading>Triggers
+<em>Triggers</em> are
+<itemize>
+<item> procedures stored in the database
+<item> activated in response to database events
+	<~> <small>(e.g. updates)</small>
+</itemize>
+Examples of uses for triggers:
+<itemize>
+<item> maintaining summary data 
+<item> checking schema-level constraints (assertions) on update
+<item> performing multi-table updates <small>(to maintain assertions)</small>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Triggers provide event-condition-action (ECA) programming:
+<itemize>
+<item> an <em>event</em> activates the trigger
+<item> on activation, the trigger checks a <em>condition</em>
+<item> if the condition holds, a procedure is executed
+	<small>(the <em>action</em>)</small>
+</itemize>
+Some typical variations within this:
+<itemize>
+<item> execute the action <b>before</b>, <b>after</b> or <b>instead of</b> the triggering event
+<item> can refer to both <b>old</b> and <b>new</b> values of updated tuples
+<item> can limit updates to a particular set of attributes
+<item> perform action: <b>for each</b> modified tuple, <b>once for all</b> modified tuples
+</itemize>
+</small>
+</slide>
+
+<slide>
+<continued>
+SQL <q>standard</q> syntax for defining triggers:
+<syntax>
+CREATE TRIGGER <$>TriggerName</$>
+{AFTER|BEFORE}  <$>Event1</$> [ OR <$>Event2</$> ... ]
+[ FOR EACH ROW ]
+ON <$>TableName</$>
+[ WHEN ( <$>Condition</$> ) ]
+<$>Block of Procedural/SQL Code</$> ;
+</syntax>
+Possible <$>Events</$> are <@>INSERT</@>, <@>DELETE</@>, <@>UPDATE</@>.
+<p>
+<@>FOR EACH ROW</@> clause ...
+<itemize>
+<item> if present, code is executed on each modified tuple
+<item> if not present, code is executed once after all tuples are modified,
+	just before changes are finally <@>COMMIT</@>ed
+</itemize>
+</slide>
+
+<slide>
+<heading>Trigger Semantics
+Triggers can be activated <@>BEFORE</@> or <@>AFTER</@> the event.
+<p>
+If activated <@>BEFORE</@>, can affect the change that occurs:
+<itemize>
+<sitem> <@>NEW</@> contains <q>proposed</q> value of changed tuple <br>
+<sitem> modifying <@>NEW</@> causes a different value to be placed in DB
+</itemize>
+If activated <@>AFTER</@>, the effects of the event are visible:
+<itemize>
+<sitem> <@>NEW</@> contains the current value of the changed tuple
+<sitem> <@>OLD</@> contains the previous value of the changed tuple
+<sitem> constraint-checking has been done for <@>NEW</@>
+</itemize>
+Note: <@>OLD</@> does not exist for insertion; <@>NEW</@> does not exist for deletion.
+</slide>
+
+<slide>
+<continued>
+Sequence of activities during database update:
+<p>
+<diagram>Pics/dbms/trigger-seq
+<p><br>
+Reminder: <@>BEFORE</@> trigger can modify value of new tuple
+</slide>
+
+<slide>
+<continued>
+Consider two triggers and an INSERT statement
+<program>
+create trigger X before insert on T Code1;
+create trigger Y after insert on T Code2;
+insert into T values (a,b,c,...);
+</program>
+Sequence of events:
+<itemize>
+<sitem> execute <@>Code1</@> for trigger <@>X</@>
+<sitem> code has access to <@>(a,b,c,...)</@> via <@>NEW</@>
+<sitem> code typically checks the values of <@>a,b,c,..</@>
+<sitem> code can modify values of <@>a,b,c,..</@> in <@>NEW</@>
+<sitem> DBMS does constraint checking as if <@>NEW</@> is inserted
+<sitem> if fails any checking, abort insertion and rollback
+<sitem> execute <@>Code2</@> for trigger <@>Y</@>
+<sitem> code has access to final version of tuple via <@>NEW</@>
+<sitem> code typically does final checking, or modifies other
+	tables in database to ensure assertions are satisfied
+</itemize>
+<small>
+Reminder: there is no <@>OLD</@> tuple for an <@>INSERT</@> trigger.
+</small>
+</slide>
+
+<slide>
+<continued>
+Consider two triggers and an UPDATE statement
+<program>
+create trigger X before update on T Code1;
+create trigger Y after update on T Code2;
+update T set b=j,c=k where a=m;
+</program>
+Sequence of events:
+<itemize>
+<sitem> execute <@>Code1</@> for trigger <@>X</@>
+<sitem> code has access to current version of tuple via <@>OLD</@>
+<sitem> code has access to updated version of tuple via <@>NEW</@>
+<sitem> code typically checks new values of <@>b,c,..</@>
+<sitem> code can modify values of <@>a,b,c,..</@> in <@>NEW</@>
+<sitem> do constraint checking as if <@>NEW</@> has replaced <@>OLD</@>
+<sitem> if fails any checking, abort update and rollback
+<sitem> execute <@>Code2</@> for trigger <@>Y</@>
+<sitem> code has access to final version of tuple via <@>NEW</@>
+<sitem> code typically does final checking, or modifies other
+	tables in database to ensure constraints are satisfied
+</itemize>
+<small>
+Reminder: both <@>OLD</@> and <@>NEW</@> exist in UPDATE triggers.
+</small>
+</slide>
+
+<slide>
+<continued>
+Consider two triggers and an DELETE statement
+<program>
+create trigger X before delete on T Code1;
+create trigger Y after delete on T Code2;
+delete from T where a=m;
+</program>
+Sequence of events:
+<itemize>
+<sitem> execute <@>Code1</@> for trigger <@>X</@>
+<sitem> code has access to <@>(a,b,c,...)</@> via <@>OLD</@>
+<sitem> code typically checks the values of <@>a,b,c,..</@>
+<sitem> DBMS does constraint checking as if <@>OLD</@> is removed
+<sitem> if fails any checking, abort deletion (restore <@>OLD</@>)
+<sitem> execute <@>Code2</@> for trigger <@>Y</@>
+<sitem> code has access to about-to-be-deleted tuple via <@>OLD</@>
+<sitem> code typically does final checking, or modifies other
+	tables in database to ensure constraints are satisfied
+</itemize>
+<small>
+Reminder: tuple <@>NEW</@> does not exist in DELETE triggers.
+</small>
+</slide>
+
+<slide>
+<heading>Triggers in PostgreSQL
+PostgreSQL triggers provide a mechanism for
+<itemize>
+<item> <@>INSERT</@>, <@>DELETE</@> or <@>UPDATE</@> events
+<item> to automatically activate PLpgSQL functions
+</itemize>
+Syntax for PostgreSQL trigger definition:
+<program>
+<@@>CREATE TRIGGER</@@> <$>TriggerName</$>
+{<@@>AFTER</@@>|<@@>BEFORE</@@>}  <$>Event1</$> [<@@>OR</@@> <$>Event2</$> ...]
+<@@>ON</@@> <$>TableName</$>
+[ <@@>WHEN</@@> ( <$>Condition</$> ) ]
+<@@>FOR EACH</@@> {ROW|STATEMENT}
+<@@>EXECUTE PROCEDURE</@@> <$>FunctionName</$>(<$>args...</$>);
+</program>
+</slide>
+
+<slide>
+<continued>
+There is no restriction on what code can go in the function.
+<p>
+However a <@>BEFORE</@> function must contain one of:
+<program>
+RETURN old;    <comment>or</comment>    RETURN new;
+</program>
+depending on which version of the tuple is to be used.
+<p>
+If <@>BEFORE</@> trigger returns <@>OLD</@>, no change occurs.
+<p>
+If exception is raised in trigger function, no change occurs.
+</slide>
+
+<slide>
+<heading>Trigger Example #1
+Consider a database of people in the USA:
+<program>
+create table Person (
+   id      integer primary key,
+   ssn     varchar(11) unique,
+   <comment>... e.g. family, given, street, town ...</comment>
+   state   char(2), ...
+);
+create table States (
+   id      integer primary key,
+   code    char(2) unique,
+   <comment>... e.g. name, area, population, flag ... </comment>
+);
+</program>
+<small>
+Constraint: <~><@>Person.state</@> <elem> <@>(select code from States)</@>, <~>or<br>
+<@>exists (select id from States where code=Person.state)</@>
+</small>
+</slide>
+
+<slide>
+<continued>
+<b>Example:</b> ensure that only valid state codes are used:
+<program80>
+create trigger checkState before insert or update
+on Person for each row execute procedure checkState();
+
+create function checkState() returns trigger as $$
+begin
+   <comment>-- normalise the user-supplied value</comment>
+   new.state = upper(trim(new.state));
+   if (new.state !~ '^[A-Z][A-Z]$') then
+      raise exception 'Code must be two alpha chars';
+   end if;
+   <comment>-- implement referential integrity check</comment>
+   select * from States where code=new.state;
+   if (not found) then
+      raise exception 'Invalid code %',new.state;
+   end if;
+   return new;
+end;
+$$ language plpgsql;
+</program>
+</slide>
+
+<slide>
+<continued>
+Examples of how this trigger would behave:
+<program90>
+insert into Person
+   values('John',...,'Calif.',...);
+<comment>-- fails with 'Statecode must be two alpha chars'</comment>
+
+insert into Person
+   values('Jane',...,'NY',...);
+<comment>-- insert succeeds; Jane lives in New York</comment>
+
+update Person
+   set town='Sunnyvale',state='CA'
+	 where name='Dave';
+<comment>-- update succeeds; Dave moves to California</comment>
+
+update Person
+   set state='OZ' where name='Pete';
+<comment>-- fails with 'Invalid state code OZ'</comment>
+</program>
+</slide>
+
+<slide>
+<heading>Trigger Example #2
+<b>Example:</b> department salary totals
+<p>
+Scenario:
+<program90>
+Employee(id, name, address, dept, <blue>salary</blue>, ...)
+Department(id, name, manager, <blue>totSal</blue>, ...)
+</sprogram>
+An assertion that we wish to maintain:
+<program90>
+create assertion TotalSalary check (
+   not exists (
+       select * from Department d
+       where  d.totSal <<>> (select sum(e.salary)
+                             from Employee e
+                             where e.dept = d.id)
+    )
+)
+</program>
+</slide>
+
+<slide>
+<continued>
+Events that might affect the validity of the database
+<itemize>
+<item> a new employee starts work in some department
+<item> an employee gets a rise in salary 
+<item> an employee changes from one department to another
+<item> an employee leaves the company
+</itemize>
+A single assertion could check for this after each change.
+<p>
+With triggers, we have to program each case separately.
+<p>
+Each program implements updates to <i>ensure</i> assertion holds.
+</slide>
+
+<slide>
+<continued>
+Implement the Employee update triggers from above in PostgreSQL:
+<p>
+Case 1: new employees arrive
+<program90>
+create trigger TotalSalary1
+after insert on Employees
+for each row execute procedure totalSalary1();
+
+create function totalSalary1() returns trigger
+as $$
+begin
+    if (new.dept is not null) then
+        update Department
+        set    totSal = totSal + new.salary
+        where  Department.id = new.dept;
+    end if;
+    return new;
+end;
+$$ language plpgsql;
+</program>
+</slide>
+
+<slide>
+<continued>
+Case 2: employees change departments/salaries
+<program90>
+create trigger TotalSalary2
+after update on Employee
+for each row execute procedure totalSalary2();
+
+create function totalSalary2() returns trigger
+as $$
+begin
+    update Department
+    set    totSal = totSal + new.salary
+    where  Department.id = new.dept;
+    update Department
+    set    totSal = totSal - old.salary
+    where  Department.id = old.dept;
+    return new;
+end;
+$$ language plpgsql;
+</program>
+</slide>
+
+<slide>
+<continued>
+Case 3: employees leave
+<program90>
+create trigger TotalSalary3
+after delete on Employee
+for each row execute procedure totalSalary3();
+
+create function totalSalary3() returns trigger
+as $$
+begin
+    if (old.dept is not null) then
+        update Department
+        set    totSal = totSal - old.salary
+        where  Department.id = old.dept;
+    end if;
+    return old;
+end;
+$$ language plpgsql;
+</program>
+</slide>

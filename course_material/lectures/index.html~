@@ -1,0 +1,117 @@
+<html>
+<head>
+<title>Slides - COMP3311 20T3</title>
+<link rel='stylesheet' type='text/css' href='../course.css'>
+</head>
+<body>
+<h3><a href="../index.html">COMP3311 20T3</a> Lectures</h3>
+<table cellpadding="10px">
+<tr>
+<td>All Weeks</td>
+<td>
+<a target="_new" href="exercises/slides.html">Exercises</a>
+... <a target="_new" href="previews/slides.html">Weekly Previews</a>
+</tr>
+<tr>
+<td>Week 00</td>
+<td>
+<a target="_new" href="welcome/slides.html">Course Welcome</a>
+... <a target="_new" href="overview/slides.html">Course Overview</a>
+... <a target="_new" href="overview-2/slides.html">Overview addendum</a>
+</td>
+</tr>
+<td>Week 01</td>
+<td>
+<a target="_new" href="data-models/slides.html">Data Models</a>
+... <a target="_new" href="er-model/slides.html">ER Model</a>
+... <a target="_new" href="rel-model/slides.html">Relational Model</a>
+... <a target="_new" href="er-rel-mapping/slides.html">ER&rightarrow;Rel Mapping</a>
+</td>
+</tr>
+<tr>
+<td>Week 02</td>
+<td>
+<a target="_new" href="sql-intro/slides.html">SQL Intro</a>
+... <a target="_new" href="rdbms/slides.html">RDBMSs</a>
+... <a target="_new" href="sql-expr/slides.html">SQL Expressions</a>
+... <a target="_new" href="sql-ddl/slides.html">SQL DDL</a>
+... <a target="_new" href="er-sql-mapping/slides.html">ER&rightarrow;SQL Mapping</a>
+</td>
+</tr>
+<tr>
+<td>Week 03</td>
+<td>
+SQL
+... <a target="_new" href="sql-sample-db/slides.html">Sample DB</a>
+... <a target="_new" href="sql-updating/slides.html">Updating</a>
+... <a target="_new" href="sql-queries1/slides.html">Querying (i)</a>
+... <a target="_new" href="sql-views/slides.html">Views</a>
+... <a target="_new" href="sql-queries2/slides.html">Querying (ii)</a>
+</td>
+</tr>
+<tr>
+<td>Week 04</td>
+<td>
+SQL
+... <a target="_new" href="sql-queries3/slides.html">Sets (iii)</a>
+... <a target="_new" href="sql-queries4/slides.html">Groups (iv)</a>
+... <a target="_new" href="sql-queries5/slides.html">Abstraction (iv)</a>
+... <a target="_new" href="stored-proc/slides.html">Stored Procedures</a>
+... <a target="_new" href="plpgsql1/slides.html">PLpgSQL (i)</a>
+</td>
+</tr>
+<tr>
+<td>Week 05</td>
+<td>
+<a target="_new" href="plpgsql2/slides.html">PLpgSQL (ii)</a>
+... <a target="_new" href="plpgsql3/slides.html">PLpgSQL (iii)</a>
+... <a target="_new" href="constraints/slides.html">Constraints</a>
+... <a target="_new" href="triggers/slides.html">Triggers</a>
+... <a target="_new" href="aggregates/slides.html">Aggregates</a>
+</td>
+</tr>
+<tr>
+<td>Week 06</td>
+<td>
+<span style="color:#999999">Flexibility Week ... no new content</span>
+</td>
+</tr>
+<tr>
+<td>Week 07</td>
+<td>
+<a target="_new" href="pl-vs-dbms/slides.html">Programming with DBMSs</a>
+... <a target="_new" href="python1/slides.html">Python (i)</a>
+... <a target="_new" href="psycopg2/slides.html">Psycopg2</a>
+... <a target="_new" href="python2/slides.html">Python (ii)</a>
+</td>
+</tr>
+<tr>
+<td>Week 08</td>
+<td>
+<a target="_new" href="rel-design/slides.html">Relational Design</a>
+... <a target="_new" href="func-depend/slides.html">Functional Dependency</a>
+... <a target="_new" href="fd-inference/slides.html">Closures/Covers</a>
+... <a target="_new" href="normal-forms/slides.html">Normal Forms</a>
+... <a target="_new" href="normalisation/slides.html">Normalisation</a>
+</td>
+</tr>
+<tr>
+<td>Week 09</td>
+<td>
+<a target="_new" href="rel-algebra/slides.html">Relational Algebra</a>
+... <a target="_new" href="ra-set-ops/slides.html">Set Operations</a>
+... <a target="_new" href="ra-join-ops/slides.html">Join Operations</a>
+... <a target="_new" href="query-eval/slides.html">Query Execution</a>
+... <a target="_new" href="query-perf/slides.html">Performance Tuning</a>
+</td>
+</tr>
+<tr>
+<td>Week 10</td>
+<td>
+<a target="_new" href="Soon.html">Transactions</a>
+... <a target="_new" href="Soon.html">Course Wrap-up</a>
+</td>
+</tr>
+</table>
+</body>
+</html>

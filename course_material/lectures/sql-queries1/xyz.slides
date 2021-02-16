@@ -1,0 +1,954 @@
+
+<slide>
+<heading>SELECT Example
+The question <q>What beers are made by Toohey's?</q>, can be phrased:
+<sprogram>
+SELECT name FROM Beers WHERE brewer = 'Toohey''s';
+</sprogram>
+This gives a subset of the <@>Beers</@> relation, displayed as:
+<sprogram>
+    name     
+-------------
+ New
+ Old
+ Red
+ Sheaf Stout
+</sprogram>
+<p>
+<small>
+Notes:
+<itemize>
+<sitem> upper- and lower-case are not distinguished, except in strings.
+<sitem> quotes are escaped by doubling them (<@>''''</@> is like C <@>'\''</@>)
+</itemize>
+</small>
+</slide>
+
+<slide>
+<heading>Semantics of SELECT
+Semantics of the SQL statement:
+<program>
+SELECT <i>Attributes</i> FROM <i>R</i> WHERE <i>Condition</i>
+</program>
+Operationally, we can think in terms of a <i>tuple variable</i>
+ranging over all tuples of the relation.
+<program>
+FOR EACH tuple T in R DO
+    check whether T satisfies the condition
+                        in the WHERE clause
+    IF it does THEN
+        print the attributes of T that are
+            specified in the SELECT clause
+    END
+END
+</program>
+</slide>
+
+<slide>
+<heading>Projection in SQL
+For a relation <$>R</$> and attributes <$>X <subseteq> R</$>,
+<program>
+SELECT <$>X</$> FROM <$>R</$>
+</program>
+<b>Example:</b> Names of drinkers = <$>Drinkers(name,addr,phone)</$>
+<program>
+SELECT Name FROM Drinkers;
+
+  name  
+--------
+ Adam
+ Gernot
+ John
+ Justin
+</program>
+</slide>
+
+<slide>
+<continued>
+<b>Example:</b> Names/addresses of drinkers = <$><proj><sub>Name,Addr</sub>(Drinkers)</$>
+<program>
+SELECT Name, Addr FROM Drinkers;
+
+  name  |   addr   
+--------+----------
+ Adam   | Randwick
+ Gernot | Newtown
+ John   | Clovelly
+ Justin | Mosman
+</program>
+</slide>
+
+<slide>
+<continued>
+The symbol <@>*</@> denotes a list of <em>all</em> attributes.
+<p>
+<b>Example:</b> All information about drinkers = <$>Drinkers(name,addr,phone)</$>
+<program>
+SELECT * FROM Drinkers;
+
+  name  |   addr   |   phone    
+--------+----------+------------
+ Adam   | Randwick | 9385-4444 
+ Gernot | Newtown  | 9415-3378 
+ John   | Clovelly | 9665-1234 
+ Justin | Mosman   | 9845-4321 
+</program>
+</slide>
+
+<slide>
+<heading>Renaming via <tt>AS</tt>
+<p>
+SQL implements renaming via the <@>AS</@> clause within <@>SELECT</@>.
+<p>
+<b>Example:</b> rename Beers(name,manf) to Beers(beer,brewer)
+<program>
+SELECT name AS beer, manf AS Brewer
+FROM Beers;
+
+        beer         |    brewer     
+---------------------+---------------
+ 80/-                | Caledonian
+ Bigfoot Barley Wine | Sierra Nevada
+ Burragorang Bock    | George IV Inn
+ Crown Lager         | Carlton
+ Fosters Lager       | Carlton
+...
+</program>
+</slide>
+
+<slide>
+<heading>Expressions as Values in Columns
+<@>AS</@> can also be used to introduce <em>computed</em> values
+<small>(generalised projection)</small>
+<p>
+<b>Example:</b> display beer prices in Yen, rather than dollars
+<sprogram>
+SELECT bar, beer, price*120 AS PriceInYen  FROM Sells;
+
+       bar        |       beer       |    priceinyen    
+------------------+------------------+------------------
+ Australia Hotel  | Burragorang Bock |              420
+ Coogee Bay Hotel | New              |              270
+ Coogee Bay Hotel | Old              |              300
+ Coogee Bay Hotel | Sparkling Ale    | 335.999994277954
+ Coogee Bay Hotel | Victoria Bitter  | 275.999994277954
+ Lord Nelson      | Three Sheets     |              450
+ Lord Nelson      | Old Admiral      |              450
+ ...
+</sprogram>
+</slide>
+
+<slide>
+<heading>Text in Result Table
+Trick: to put specific text in output columns
+<itemize>
+<item> use string constant expression with <@>AS</@>
+</itemize>
+<b>Example:</b> using Likes(drinker, beer)
+<sprogram>
+SELECT drinker, 'likes Cooper''s' AS WhoLikes
+FROM   Likes
+WHERE  beer = 'Sparkling Ale';
+
+ drinker |    wholikes    
+---------+----------------
+ Gernot  | likes Cooper's
+ Justin  | likes Cooper's
+</sprogram>
+</slide>
+
+<slide>
+<heading>Selection in SQL
+<program>
+SELECT * FROM Rel WHERE Cond
+</program>
+<b>Example:</b> All about the bars at The Rocks
+<sprogram>
+SELECT * FROM Bars WHERE Addr='The Rocks';
+
+      name       |   addr    | license 
+-----------------+-----------+---------
+ Australia Hotel | The Rocks |  123456
+ Lord Nelson     | The Rocks |  123888
+(2 rows)
+</sprogram>
+The condition can be an arbitrarily complex boolean-valued
+expression using the operators mentioned previously.
+</slide>
+
+<slide>
+<continued>
+<b>Example:</b> Find the price that The Regent charges for New
+<sprogram>
+SELECT price
+FROM   Sells
+WHERE  bar = 'Regent Hotel' AND beer = 'New';
+
+ price 
+-------
+   2.2
+</sprogram>
+This can be formatted better via <@>to_char</@>, e.g.
+<sprogram>
+SELECT to_char(price,'$99.99') AS price
+FROM   Sells
+WHERE  bar = 'Regent Hotel' AND beer = 'New';
+
+  price  
+---------
+ $  2.20
+</sprogram>
+<@>to_char()</@> supports a wide range of conversions.
+</slide>
+
+<slide>
+<continued>
+<b>Example:</b> Find the brewers whose beers John likes.
+<program>
+SELECT Manf as brewer
+FROM   Likes, Beers
+WHERE  beer = name AND drinker = 'John';
+
+    brewer     
+---------------
+ Caledonian
+ Sierra Nevada
+ Sierra Nevada
+ Lord Nelson
+</program>
+Note: duplicates could be eliminated by using <@>DISTINCT</@>.
+</slide>
+
+<slide>
+<continued>
+<b>Example:</b> Find pairs of beers by the same manufacturer.
+<sprogram>
+SELECT b1.name, b2.name
+FROM   Beers b1, Beers b2
+WHERE  b1.manf = b2.manf AND b1.name << b2.name;
+
+        name         |       name       
+---------------------+------------------
+ Crown Lager         | Fosters Lager
+ Crown Lager         | Invalid Stout
+ Crown Lager         | Melbourne Bitter
+ Crown Lager         | Victoria Bitter
+ Fosters Lager       | Invalid Stout
+ Fosters Lager       | Melbourne Bitter
+ ...
+</sprogram>
+<small>
+The second part of the condition is used to avoid:
+<itemize>
+<sitem> pairing a beer with itself <~> e.g. <@>(New,New)</@>
+<sitem> same pairs with different order <~> e.g. <@>(New,Old) (Old,New)</@>
+</itemize>
+</small>
+</slide>
+
+<slide>
+<continued>
+A common alternative syntax for
+<program>
+SELECT r1.a, r2.b
+FROM   R r1, R r2
+WHERE  r1.a = r2.a
+</program>
+uses the <@>as</@> keyword
+<program>
+SELECT r1.a, r2.b
+FROM   R <b>as</b> r1, R <b>as</b> r2
+WHERE  r1.a = r2.a
+</program>
+</slide>
+
+<slide>
+<heading> Subqueries
+The result of a <@>SELECT-FROM-WHERE</@> query can be used in the
+<@>WHERE</@> clause of another query.
+<p>
+<b>Simplest Case:</b> Subquery returns a single, unary tuple
+<p>
+Can treat the result as a single constant value and use in expressions.
+<p>
+Syntax:
+<program>
+SELECT *
+FROM   R
+WHERE  R.a = (SELECT x FROM S WHERE Cond)
+             <comment>-- assume only one result</comment>
+</program>
+</slide>
+
+<slide>
+<continued>
+<b>Example:</b>
+Find bars that serve New at the same price as the Coogee Bay Hotel
+charges for VB.
+<sprogram>
+SELECT bar
+FROM   Sells
+WHERE  beer = 'New' AND
+       price =
+          (SELECT price
+           FROM   Sells
+           WHERE  bar = 'Coogee Bay Hotel'
+                  AND beer = 'Victoria Bitter');
+
+     bar     
+-------------
+ Royal Hotel
+</sprogram>
+<small>
+The inner query finds the price of VB at the CBH, and uses
+this as an argument to a test in the outer query.
+</small>
+</slide>
+
+<slide>
+<continued>
+Note the potential ambiguity in references to attributes of <@>Sells</@>
+<sprogram>
+SELECT <b>bar</b>
+FROM   Sells
+WHERE  <b>beer</b> = 'New' AND
+       price =
+          (SELECT price
+           FROM   Sells
+           WHERE  <b><blue>bar</blue></b> = 'Coogee Bay Hotel'
+                  AND <b><blue>beer</blue></b> = 'Victoria Bitter');
+</sprogram>
+This introduces notions of scope: an attribute refers to the most
+closely nested relation with that attribute.
+<p>
+Parentheses around the subquery are required (and set the scope).
+</slide>
+
+<slide>
+<continued>
+Note also that the query could be answered via:
+<sprogram>
+SELECT s1.bar
+FROM   Sells as s1, Sells as s2
+WHERE  s1.beer = 'New'
+       AND s1.price = s2.price 
+       AND s2.bar = 'Coogee Bay Hotel'
+       AND s2.beer = 'Victoria Bitter';
+</sprogram>
+In general, expressing a query via joins will be much more
+efficient than expressing it with sub-queries.
+</slide>
+
+<slide>
+<continued>
+<b>Complex Case:</b> Subquery returns multiple unary tuples.
+<p>
+Treat it as a list of values, and use the various operators
+on lists/sets (e.g. <@>IN</@>).
+<p>
+<b>Complex Case:</b> Subquery returns a relation.
+<p>
+Most of the <q>list operators</q> also work on relations.
+<p>
+
+</slide>
+
+<slide>
+<heading> The <@>IN</@> Operator
+Tests whether a specified tuple is contained in a relation.
+<p>
+<i>tuple</i> <@>IN</@> <i>relation</i> <~> is true iff the tuple
+is contained in the relation.
+<p>
+Conversely for <~> <i>tuple</i> <@>NOT IN</@> <i>relation</i>.
+<p>
+Syntax:
+<program>
+SELECT *
+FROM   R
+WHERE  R.a IN (SELECT x FROM S WHERE Cond)
+              <comment>-- assume multiple results</comment>
+</program>
+</slide>
+
+<slide>
+<continued>
+<b>Example:</b>
+Find the name and brewer of beers that John likes.
+<program>
+SELECT *
+FROM   Beers
+WHERE  name IN
+          (SELECT beer
+           FROM   Likes
+           WHERE  drinker = 'John');
+
+        name         |     manf      
+---------------------+---------------
+ 80/-                | Caledonian
+ Bigfoot Barley Wine | Sierra Nevada
+ Pale Ale            | Sierra Nevada
+ Three Sheets        | Lord Nelson
+</program>
+The subexpression answers the question "What are the names
+of the beers that John likes?"
+</slide>
+
+<slide>
+<heading> The <@>EXISTS</@> Function
+<@>EXISTS(</@><i>relation</i><@>)</@> is true iff the relation is non-empty.
+<p>
+<b>Example:</b>
+Find the beers that are the unique beer by their manufacturer.
+<program>
+SELECT name, manf
+FROM   Beers b1
+WHERE  NOT EXISTS
+          (SELECT *
+           FROM   Beers
+           WHERE  manf = b1.manf
+                  AND name != b1.name);
+</program>
+Note the scoping rule: to refer to outer <@>Beers</@> in the
+inner subquery, we need to define a named tuple variable
+(in this example <@>b1</@>).
+<p>
+A subquery that refers to values from a surrounding query
+is called a <b>correlated subquery</b>.
+</slide>
+
+<slide>
+<heading> Quantifiers
+<@>ANY</@> and <@>ALL</@> behave as existential and universal quantifiers
+respectively.
+<p>
+<b>Example:</b> Find the beers sold for the highest price.
+<program>
+SELECT beer
+FROM   Sells
+WHERE  price >>=
+          ALL(SELECT price FROM sells);
+</program>
+Beware: in common use, "any" and "all" are often synonyms.
+<p>
+E.g. "I'm better than any of you" vs. "I'm better than all of you".
+</slide>
+
+<slide>
+<heading> Union, Intersection, Difference
+SQL implements the standard set operations on <q>union-compatible</q>
+relations:
+<deftable 6>
+<row>
+<col1><i>R1</i> <@>UNION</@> <i>R2</i></col1>
+<col2>set of tuples in either <i>R1</i> or <i>R2</i></col2>
+</row>
+<row>
+<col1><i>R1</i> <@>INTERSECT</@> <i>R2</i></col1>
+<col2>set of tuples in both <i>R1</i> and <i>R2</i></col2>
+</row>
+<col1><i>R1</i> <@>EXCEPT</@> <i>R2</i></col1>
+<col2>set of tuples in <i>R1</i> but not <i>R2</i></col2>
+</row>
+</deftable>
+<small>
+Oracle deviates from the SQL standard and uses <@>MINUS</@>
+for <@>EXCEPT</@>; PostgreSQL follows the standard.
+</small>
+</slide>
+
+<slide>
+<heading> Bag Semantics of SQL
+An SQL relation is really a <b>bag</b> (<b>multiset</b>):
+<itemize>
+<item> it may contain the same tuple more than once
+<item> unlike lists, there is no specified order on the elements
+<item> example: <$>{1, 2, 1, 3}</$> is a bag and is not a set
+</itemize>
+This changes the semantics of the "set" operators
+<@>UNION</@>, <@>INTERSECT</@> and <@>MINUS</@>.
+</slide>
+
+<slide>
+<continued>
+<b>Bag Union</b>
+<p>
+Sum the times an element appears in the two bags
+<itemize>
+<item> example: <~> <$>{1,2,1} <~> <union> <~> {1,2,3} <~> = <~> {1,1,1,2,2,3}</$>
+</itemize>
+<b>Bag Intersection</b>
+<p>
+Take the minimum number of occurrences from each bag.
+<itemize>
+<item> example: <~> <$>{1,2,1} <~> <intersect> <~> {1,2,3} <~> = <~> {1,2}</$>
+</itemize>
+<b>Bag Difference</b>
+<p>
+Proper-subract the number of occurrences in the two bags.
+<itemize>
+<item> example: <~> <$>{1,2,1} <~> - <~> {1,2,3} <~> = <~> {1}</$>
+</itemize>
+</slide>
+
+<slide>
+<heading> Forcing Bag/Set Semantics
+Default result for <@>SELECT-FROM-WHERE</@> is a bag.
+<p>
+Default result for <@>UNION</@>, <@>INTERSECT</@>, <@>MINUS</@> is a set.
+<p>
+Why the difference?
+<p>
+A bag can be produced faster because no need to worry about eliminating
+duplicates (which typically requires sorting).
+<p>
+Can force set semantics with <~> <@>SELECT DISTINCT</@>.
+<p>
+Can force bag semantics with <~> <@>UNION ALL</@>, ...
+</slide>
+
+<slide>
+<continued>
+<b>Example:</b> What beer manufacturers are there?
+<program>
+SELECT DISTINCT manf FROM Beers;
+
+     manf      
+---------------
+ Caledonian
+ Carlton
+ Cascade
+ Cooper's
+ George IV Inn
+ Lord Nelson
+ Sierra Nevada
+ Toohey's
+</program>
+Note that the result is sorted.
+<p>
+If we omit <@>DISTINCT</@>, we get many unsorted tuples in the result.
+</slide>
+
+<slide>
+<heading>Selection with Aggregation
+Selection clauses can contain aggregation operations.
+<p>
+<b>Example:</b> What is the average price of New?
+<program>
+SELECT AVG(price)
+FROM   Sells
+WHERE  beer = 'New';
+
+       avg        
+------------------
+ 2.38749998807907
+</program>
+<small>
+Note:
+<itemize>
+<sitem> the bag semantics of SQL gives the correct result here
+<sitem> the price for New in all hotels will be included, even if two hotels sell
+it at the same price
+<sitem> if we used set semantics, we'd get the average of all the
+<em>different</em> prices for New.
+</itemize>
+</small>
+</slide>
+
+<slide>
+<continued>
+If we want set semantics, we can force using <@>DISTINCT</@>.
+<p>
+<b>Example:</b> How many different bars sell beer?
+<program>
+SELECT COUNT(DISTINCT bar)
+FROM   Sells;
+
+ count 
+-------
+     6
+</program>
+Without <@>DISTINCT</@>, the result is 15 ... the number of
+entries in the <@>Sells</@> table.
+</slide>
+
+<slide>
+<heading> Aggregation operators
+The following operators apply to a list (bag) of
+<em>numeric</em> values in one column of a relation:
+<program>
+SUM   AVG   MIN   MAX   COUNT
+</program>
+The notation <@>COUNT(*)</@> gives the number of tuples in a relation.
+<p>
+<b>Example:</b> How many different beers are there?
+<program>
+SELECT COUNT(*) FROM Beers;
+
+ count 
+-------
+    18
+</program>
+</slide>
+
+<slide>
+<heading>Grouping
+<@>SELECT-FROM-WHERE</@> can be followed by <@>GROUP BY</@> to:
+<itemize>
+<item> partition result relation into groups
+	<br><small>(according to values of specified attribute)</small>
+<item> summarise some (several) aspects of each group
+<item> output relation contains one tuple per group
+</itemize>
+<p>
+<b>Example:</b> How many beers does each brewer make?
+<p>
+There is one entry for each beer by each brewer in the
+<@>Beers</@> table ...
+</slide>
+
+<slide>
+<continued>
+The following gives us a list of brewers:
+<program>
+SELECT manf FROM Beers;
+</program>
+The number of occurrences of each brewer is the number of
+beers that they make.
+<p>
+Ordering the list makes it much easier to work out:
+<program>
+SELECT manf FROM Beers ORDER BY manf;
+</program>
+but we still need to count length of runs by hand.
+</slide>
+
+<slide>
+<continued>
+If we <em>group</em> the runs, we can <@>count(*)</@> them:
+<program>
+SELECT   manf, COUNT(manf)
+FROM     Beers
+GROUP BY manf;
+
+     manf      | count 
+---------------+-------
+ Caledonian    |     1
+ Carlton       |     5
+ Cascade       |     1
+ Cooper's      |     2
+ George IV Inn |     1
+ Lord Nelson   |     2
+ Sierra Nevada |     2
+ Toohey's      |     4
+</program>
+</slide>
+
+<slide>
+<continued> Semantics of <@>GROUP BY</@>
+<@>GROUP BY</@> is used as follows:
+<program>
+   SELECT   <i>attributes/aggregations</i>
+   FROM     <i>relations</i>
+   WHERE    <i>condition</i>
+   GROUP BY <i>attribute</i>
+</program>
+Semantics:
+<enumerate>
+<item> apply product and selection as for <@>SELECT-FROM-WHERE</@>
+<item> partition result into groups based on values of <i>attribute</i>
+<item> apply any aggregation separately to each group
+</enumerate>
+</slide>
+
+<slide>
+<continued>
+The query
+<sprogram>
+select manf,count(manf) from Beers group by manf;
+</sprogram>
+first produces a partitioned relation 
+and then counts the number of tuples in each partition:
+<p>
+<diagram>Pic/sql/groupby.png
+</slide>
+
+<slide>
+<continued>
+Grouping is typically used in queries involving the phrase
+<q>for each</q>.
+<p>
+<b>Example:</b>
+For each drinker, find the average price of New at the bars they go to.
+<sprogram>
+SELECT   drinker, AVG(price) as "Avg.Price"
+FROM     Frequents, Sells
+WHERE    beer = 'New'
+         AND Frequents.bar = Sells.bar
+GROUP BY drinker;
+
+ drinker | Avg.Price 
+---------+-----------
+ Adam    |      2.25
+ John    |      2.25
+ Justin  |       2.5
+</sprogram>
+</slide>
+
+<slide>
+<heading> Restrictions on <@>SELECT</@> Lists
+When using grouping, every attribute in the <@>SELECT</@> list must:
+<itemize>
+<item> have an aggregation operator applied to it <~~> OR
+<item> appear in the <@>GROUP-BY</@> clause
+</itemize>
+<b>Incorrect Example:</b>
+Find the hotel that sells 'New' cheapest.
+<program>
+SELECT bar, MIN(price)
+FROM   Sells
+WHERE  beer = 'New';
+</program>
+PostgreSQL's response to this query:
+<program>
+ERROR: Attribute sells.bar must be GROUPed
+        or used in an aggregate function
+</program>
+</slide>
+
+<slide>
+<continued>
+How to answer the query: Which bar sells 'New' cheapest?
+<program>
+SELECT bar
+FROM   Sells
+WHERE  beer = 'New' AND
+       price <= (SELECT MIN(price)
+                 FROM   Sells
+                 WHERE  beer = 'New');
+
+     bar      
+--------------
+ Regent Hotel
+</program>
+</slide>
+
+<slide>
+<continued>
+Also, cannot use grouping to simply re-order results.
+<p>
+<b>Incorrect Example:</b>
+Print beers grouped by their manufacturer.
+<program>
+SELECT name, manf FROM Beers
+GROUP BY manf;
+
+ERROR: Attribute beers.name must be GROUPed
+       or used in an aggregate function
+</program>
+</slide>
+
+<slide>
+<continued>
+How to print beers grouped by their manufacturer?
+<program>
+SELECT name, manf FROM Beers
+ORDER BY manf;
+
+        name         |     manf      
+---------------------+---------------
+ 80/-                | Caledonian
+ Crown Lager         | Carlton
+ Fosters Lager       | Carlton
+ Invalid Stout       | Carlton
+ Melbourne Bitter    | Carlton
+ Victoria Bitter     | Carlton
+ Premium Lager       | Cascade
+...
+</program>
+<@>ORDER BY</@> can be applied to multiple attributes.
+</slide>
+
+<slide>
+<heading> Eliminating Groups
+In some queries, you can use the <@>WHERE</@> condition to
+eliminate groups.
+<p>
+<b>Example:</b> Average beer price by suburb excluding hotels in The Rocks.
+<program>
+SELECT   Bars.addr, AVG(Sells.price)
+FROM     Sells, Bars
+WHERE    Bars.addr != 'The Rocks'
+         AND Sells.bar = Bars.name
+GROUP BY Bars.addr;
+</program>
+For more complex conditions on groups, use the <@>HAVING</@> clause.
+</slide>
+
+<slide>
+<continued>
+<@>HAVING</@> is used to qualify a <@>GROUP-BY</@> clause:
+<program>
+SELECT   <i>attributes/aggregations</i>
+FROM     <i>relations</i>
+WHERE    <i>condition</i> (on tuples)
+GROUP BY <i>attribute</i>
+HAVING   <i>condition</i> (on group);
+</program>
+Semantics of <@>HAVING</@>:
+<enumerate>
+<sitem> generate the groups as for <@>GROUP-BY</@>
+<sitem> eliminate groups <em>not</em> satisfying <@>HAVING</@> condition
+<sitem> apply aggregations to remaining groups
+</enumerate>
+<small>
+Note: <@>HAVING</@> condition can use relations/variables from <@>FROM</@>
+just like <@>WHERE</@> condition, but variables range over each group.
+</small>
+</slide>
+
+<slide>
+<continued>
+<b>Example:</b> Find the average price of common beers  (i.e.
+those that are served in more than one hotel).
+<program>
+SELECT   beer,
+         to_char(AVG(price),'9.99')
+           as "$$$"
+FROM     Sells
+GROUP BY beer
+HAVING   COUNT(bar) > 1;
+
+      beer       |  $$$   
+-----------------+-------
+ New             |  2.39
+ Old             |  2.53
+ Victoria Bitter |  2.40
+</program>
+</slide>
+
+<slide>
+<continued>
+The <@>HAVING</@> condition can have components that do not
+use aggregation.
+<p>
+<b>Example:</b> Find the average price of beers that are either
+commonly served (in more than one hotel) or are manufactured by Cooper's.
+<program>
+SELECT beer, AVG(price)
+FROM   Sells
+GROUP BY beer
+HAVING COUNT(bar) > 1
+       OR beer in
+           (SELECT name
+            FROM   beers
+            WHERE  manf = 'Cooper''s');
+
+      beer       |       avg        
+-----------------+------------------
+ New             | 2.38749998807907
+ Old             | 2.53333330154419
+ Sparkling Ale   | 2.79999995231628
+ Victoria Bitter | 2.39999997615814
+</program>
+</slide>
+
+<slide>
+<continued>
+GROUP-BY and HAVING also provide an alternative formulation
+for division.
+<p>
+<b>Example:</b> Find bars that each sell all of the beers Justin likes.
+<program>
+SELECT DISTINCT S.bar
+FROM   Sells S, Likes L
+WHERE  S.beer = L.beer
+       AND L.drinker = 'Justin'
+GROUP BY bar
+HAVING count(S.beer) =
+           (SELECT count(beer) FROM Likes
+            WHERE drinker = 'Justin');
+</program>
+</slide>
+
+<slide>
+<heading>Partitions and Window Functions
+Sometimes it is useful to
+<itemize>
+<item> partition a table into groups
+<item> compute results that apply to each group
+<item> use these results with individual tuples in the group
+</itemize>
+Comparison with <@>GROUP-BY</@>
+<itemize>
+<item> <@>GROUP-BY</@> produces one tuple for each group
+<item> <@>PARTITION</@> augments each tuple with group-based value(s)
+<item> can use other functions than aggregates <small>(e.g. ranking)</small>
+<item> can use attributes other than the partitioning ones
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Syntax for <@>PARTITION</@>:
+<syntax>
+SELECT <$>attr<sub>1</sub></$>, <$>attr<sub>2</sub></$>, ...,
+       <$>aggregate<sub>1</sub></$> OVER (PARTITION BY <$>attr<sub>i</sub></$>),
+       <$>aggregate<sub>2</sub></$> OVER (PARTITION BY <$>attr<sub>j</sub></$>), ...
+FROM   <$>Table</$>
+WHERE  <$>condition on attributes</$>
+</syntax>
+Note: the <$>condition</$> cannot include the <$>aggregate</$> value(s)
+</slide>
+
+<slide>
+<continued>
+Example: show each city with daily temperature and temperature range
+<p>
+Schema: <$>Weather(city,date,temperature)</$>
+<program>
+SELECT  city,  date,  temperature as temp,
+        min(temperature) OVER (PARTITION BY city) as lowest,
+        max(temperature) OVER (PARTITION BY city) as highest
+FROM    Weather;
+</program>
+Output: <$>Result(city, date, temp, lowest, highest)</$>
+</slide>
+
+<slide>
+<continued>
+Example showing <@>GROUP BY</@> and <@>PARTITION</@> difference:
+<program>
+SELECT city, min(temperature) max(temperature)
+FROM   Weather  GROUP BY city
+</program>
+Result: one tuple for each city <~> <$>Result(city,min,max)</$>
+<program>
+SELECT city,  date,  temperature as temp,
+       min(temperature) OVER (PARTITION BY city),
+       max(temperature) OVER (PARTITION BY city)
+FROM   Weather;
+</program>
+Result: one tuple for each temperature measurement.
+</slide>
+
+<slide>
+<continued>
+Example: get a list of low-scoring students in each course
+<br> <small>(low-scoring = mark is less than average mark for class)</small>
+<p>
+Schema: <$>Enrolment(course,student,mark)</$>
+<p>
+Approach:
+<itemize>
+<sitem> generate tuples containing <$>(student,mark,classAvg)</$>
+<sitem> select just those tuples satisfying <$>(mark << classAvg)</$>
+</itemize>
+Implementation of first step via window function
+<program>
+SELECT course, student, mark,
+       avg(mark) OVER (PARTITION BY course)
+FROM   Enrolments;
+</program>
+We now look at several ways to complete this data request ...
+</slide>

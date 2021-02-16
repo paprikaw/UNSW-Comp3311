@@ -1,0 +1,51 @@
+Schedule 1
+T1: R(X)      W(X)      R(Y) W(Y)
+T2:      R(X)      W(X)
+
+T1:      R(X)      W(X) R(Y) W(Y)
+T2: R(X)      W(X)
+
+
+Schedule2
+T1: R(X) W(X)      R(Y)      W(Y)
+T2:           R(X)      W(X)
+
+T1: R(X) W(X) R(Y) W(Y)
+T2:                     R(X) W(X)
+
+
+
+Schedule 1
+T1: R(X)      W(X)      R(Y) W(Y)
+T2:      R(X)      W(X)
+
+X: T1,T2 read initial X, T2 writes the final X
+
+
+T1: R(X) W(X) R(Y) W(Y)
+T2:                     R(X) W(X)
+
+X: T1 reads initial X, T2 reads X written by T1 ... FAILS
+   T2 writes final X
+
+
+T1:           R(X) W(X) R(Y) W(Y)
+T2: R(X) W(X)
+
+X: T2 reads initial X, T1 writes final X ... FAILS
+
+
+
+
+Schedule2
+T1: R(X) W(X)      R(Y)      W(Y)
+T2:           R(X)      W(X)
+
+X: T1 reads initial X, T2 reads X written by T1, T2 writes final X
+
+
+T1: R(X) W(X) R(Y) W(Y)
+T2:                     R(X) W(X)
+
+X: T1 reads initial X, T2 reads X written by T1, T2 writes final X
+

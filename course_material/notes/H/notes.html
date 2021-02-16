@@ -1,0 +1,1590 @@
+<html>
+<head>
+<title>Database Administration</title>
+<link href='lib/notes.css' rel='stylesheet' type='text/css'>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML" async></script>
+<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js'></script>
+<link href='lib/prism.css' rel='stylesheet'>
+<script src='lib/sg.js'></script>
+</head>
+<body>
+<div class='heading'>Database Administration</div><p><ul class='indexUl'  style='font-size: 0.7em;'><li class="i"> <a href="#s1">Database Administration</a>
+<li class="i"> <a href="#s4">Your PostgreSQL DBMSs</a>
+<li class="i"> <a href="#s5">Catalogs</a>
+<li class="i"> <a href="#s6">Catalogs</a>
+<li class="i"> <a href="#s12">Access to System Catalog</a>
+<li class="i"> <a href="#s13">PostgreSQL Catalog</a>
+<li class="i"> <a href="#s26">Security, Privilege, Authorisation</a>
+<li class="i"> <a href="#s27">Database Security</a>
+<li class="i"> <a href="#s29">Database Access Control</a>
+<li class="i"> <a href="#s33">Database Access Control in PostgreSQL</a>
+<li class="i"> <a href="#s40">SQL Access Control</a>
+<li class="i"> <a href="#s47">SQL Access Control in PostgreSQL</a>
+<li class="i"> <a href="#s48">Problems with SQL Access Control</a>
+<li class="i"> <a href="#s49">Mandatory Access Control</a>
+<li class="i"> <a href="#s51">Security in Statistical Databases</a>
+<li class="i"> <a href="#s54">Performance Tuning</a>
+<li class="i"> <a href="#s55">Performance Tuning</a>
+<li class="i"> <a href="#s58">Denormalisation</a>
+<li class="i"> <a href="#s60">Indexes</a>
+<li class="i"> <a href="#s63">Query Tuning</a>
+<li class="i"> <a href="#s65">PostgreSQL Query Tuning</a>
+<li class="i"> <a href="#s66">EXPLAIN Examples</a>
+</ul><hr>
+<DIV id="s1">
+<div class='heading'>Database Administration</div>
+<p>
+Database installations are typically ...
+<ul>
+<li> used by <font color='#0000BB'>many</font> casual users &nbsp; <small>(typically via a web interface)</small>
+<li> used by <font color='#0000BB'>few</font> developers &nbsp; <small>(who build schemas and applications)</small>
+<li> managed by <font color='#0000BB'>one</font> DB administrator &nbsp; <small>(or a small team of DBAs)</small>
+</ul>
+<p><div align='center'>
+<img alt="[Diagram:Pic/dbms/usage.png]" src="Pic/dbms/usage.png">
+</div><p>
+</DIV>
+<hr>
+<DIV id="s2">
+<div class='heading'>Database Administration <span style="font-size:67%">(cont)</span></div>
+<p>
+Tasks of the database administrator:
+<ul>
+<li> manage the database installation <br>
+	<small>(including configuring system parameters, running the server, back-ups, ...)</small>
+<li> create users and specify what they can/cannot do <br>
+	<small>(according to the security poilicies of the organisation running the DBMS)</small>
+<li> tune performance of applications and overall system
+<li> act as the owner of the system meta-data <small>(e.g. catalog)</small>
+<li> back-up the contents of the database <small>(in case of disasters)</small>
+</ul>
+</DIV>
+<hr>
+<DIV id="s3">
+<div class='heading'>Database Administration <span style="font-size:67%">(cont)</span></div>
+<p>
+The DBMS itself assists DB administration by:
+<ul>
+<li> maintaining a database of schemas in the system &nbsp; <small>(catalog)</small>
+<li> maintaining a database of users/groups and their privileges <br>
+	<small>(which determines who can perform which operations on which objects)</small>
+<li> maintaining statistical information about database instances <br>
+	<small>(used by the query optimiser in determining best query execution strategy)</small>
+</ul>
+</DIV>
+<hr>
+<DIV id="s4">
+<div class='heading'>Your PostgreSQL DBMSs</div>
+<p>
+In the PostgreSQL installations on <b>grieg</b> you are the DBA <br>
+<small>(aka PostgreSQL super-user, owner of postmaster process)</small>
+<p>
+Data/files associated with server live under <large><code>/srvr/</code></large>YOU<large><code>/pgsql903/</code></large>
+<p>
+Some things that you could potentially do:
+<ul>
+<li> change configuration parameters of your sever <br>
+	<small>(e.g. more run-time buffers, more connections, <large><code>postgresql.conf</code></large>)</small>
+<li> add new users of the database and set their privileges <br>
+	<small>(SQL commands: <large><code>CREATE USER</code></large>, <large><code>CREATE ROLE</code></large>, <large><code>GRANT</code></large>, <large><code>REVOKE</code></large>)</small>
+<li> modify accessibility of the databases <br>
+	<small>(<large><code>pg_hba.conf</code></large>, who can access what from where and authentication)</small>
+</ul>
+</DIV>
+<hr>
+<DIV id="s5">
+<div class='section'>&#8750; Catalogs</div>
+<p>
+</DIV>
+<hr>
+<DIV id="s6">
+<div class='heading'>Catalogs</div>
+<p>
+An RDBMS maintains a collection of relation instances.
+<p>
+To do this, it also needs information <font color='#0000BB'>about</font> relations:
+<ul>
+<li> name, owner, primary key of each relation
+<li> name, data type, constraints for each attribute
+<li> authorisation for operations on each relation
+</ul>
+Similarly for other DBMS objects <small>(e.g. views, functions, triggers, ...)</small>
+<p>
+This information is stored in the <font color='#0000BB'>system catalog</font>.
+<p>
+<small>
+(The "system catalog" is also called "data dictionary" or "system view")
+</small>
+</DIV>
+<hr>
+<DIV id="s7">
+<div class='heading'>Catalogs <span style="font-size:67%">(cont)</span></div>
+<p>
+DBMSs typically use a hierarchy of namespaces to manage names:
+<p>
+<b>Database</b> <small>(or <b>Catalog</b>)</small>
+<small>
+<ul>
+<li> top-level namespace, contains a collection of schemas
+<li> users typically connect to and work with a current database
+</ul>
+</small>
+<b>Schema</b>
+<small>
+<ul>
+<li> second-level namespace, contains a collection of tables, views, etc.
+<li> users typically work with current schema, but can qualify names
+</ul>
+</small>
+<b>Table</b>
+<small>
+<ul>
+<li> lowest-level namespace, contains a collection of attributes
+<li> SELECT queries set a context for names; qualification often required
+</ul>
+</small>
+</DIV>
+<hr>
+<DIV id="s8">
+<div class='heading'>Catalogs <span style="font-size:67%">(cont)</span></div>
+<p>
+DBMSs store the catalog data in a collection of special tables:
+<p>
+<p><div align='center'>
+<img alt="[Diagram:Pic/dbms/catalog-er.png]" src="Pic/dbms/catalog-er.png">
+</div><p>
+<p>
+<small>(A small fragment of the meta-data tables in a typical RDBMS)</small>
+</DIV>
+<hr>
+<DIV id="s9">
+<div class='heading'>Catalogs <span style="font-size:67%">(cont)</span></div>
+<p>
+SQL:2003 standard view of metadata: <large><code>INFORMATION_SCHEMA</code></large>.
+<p>
+The <large><code>INFORMATION_SCHEMA</code></large> is available globally and includes:
+<p>
+<b>Schemata</b>(catalog_name, schema_name, schema_owner, ...)
+<p>
+<b>Tables</b>(table_catalog, table_schema, table_name, table_type, ...)
+<p>
+<b>Columns</b>(table_catalog, table_schema, table_name, column_name, <br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; ordinal_position, column_default, data_type, ...)
+<p>
+<b>Views</b>(table_catalog, table_schema, table_name, view_definition, ...)
+<p>
+<b>Table_Constraints</b>(..., constraint_name, ..., constraint_type, ...)
+<p>
+<small>etc. etc. etc.</small>
+</DIV>
+<hr>
+<DIV id="s10">
+<div class='heading'>Catalogs <span style="font-size:67%">(cont)</span></div>
+<p>
+DBMS internal meta-data is often different to standard, e.g.
+<p><pre><small>
+Users(id:int, name:string, ...)
+Databases(id:int, name:string, owner:ref(User), ...)
+Schemas(id:int, name:string, owner:ref(User), ...)
+Types(id:int, name:string, defn:string, size:int, ...)
+Tables(id:int, name:string, owner:ref(User),
+                                inSchema:ref(Schema), ...)
+Attributes(id:int, name:string, table:ref(Table),
+                           type:ref(Type), pkey:bool, ...)
+TableConstraints(id:int, name:string, table:ref(Table),
+                                         defn:string, ...)
+AttrConstraints(id:int, name:string, attr:ref(Attribute),
+                                         defn:string, ...)
+<span class='comment'>-- etc. etc. etc.</span>
+</small></pre><p>
+</DIV>
+<hr>
+<DIV id="s11">
+<div class='heading'>Catalogs <span style="font-size:67%">(cont)</span></div>
+<p>
+SQL DDL operations such as
+<p><pre><small>
+create table Abc (
+    x integer primary key,
+    y integer);
+</small></pre><p>
+are implemented internally as operations on meta-data, e.g.
+<p><pre><small>
+userID := current_user();
+schemaID := current_schema();
+tabID := nextval('tab_id_seq');
+select into intID id
+from Types where name='integer';
+insert into Tables(id,name,owner,inSchema,...)
+       values (tabID, 'abc', userID, schema, ...)
+attrID := nextval('attr_id_seq');
+insert into Attributes(id,name,table,type,pkey,...)
+       values (attrID, 'x', tabID, intID, true, ...)
+attrID := nextval('attr_id_seq');
+insert into Attributes(id,name,table,type,pkey,...)
+       values (attrID, 'y', tabID, intID, false, ...)
+</small></pre><p>
+</DIV>
+<hr>
+<DIV id="s12">
+<div class='heading'>Access to System Catalog</div>
+<p>
+Users typically have access to the system catalog via
+<ul>
+<li> special commands &nbsp;
+	(e.g. PostgreSQL's <large><code>\d</code></large>, <large><code>\df</code></large>, etc.)
+<li> query-able views &nbsp;
+	(e.g. Oracle's <large><code>select * from tab</code></large>)
+</ul>
+How much is visible to each user depends on their role
+<ul>
+<li> DBA can see/change anything in system catalog via SQL
+<li> ordinary user can see only some of the system catalog <br>
+	and can change it only via SQL DDL statements
+</ul>
+</DIV>
+<hr>
+<DIV id="s13">
+<div class='heading'>PostgreSQL Catalog</div>
+<p>
+PostgreSQL stores catalog information as regular tables.
+<p>
+The <large><code>\d?</code></large> special commands in <large><code>psql</code></large> are just
+wrappers around queries on those tables, e.g.
+<p>
+<p><table border='0' cellpadding='6'>
+<tr valign=top>
+<td><nobr>
+<large><code>\dt</code></large>
+</td>
+<td></td><td>
+list information about tables
+</td>
+</tr>
+<tr valign=top>
+<td><nobr>
+<large><code>\dv</code></large>
+</td>
+<td></td><td>
+list information about views
+</td>
+</tr>
+<tr valign=top>
+<td><nobr>
+<large><code>\df</code></large>
+</td>
+<td></td><td>
+list information about functions
+</td>
+</tr>
+<tr valign=top>
+<td><nobr>
+<large><code>\dp</code></large>
+</td>
+<td></td><td>
+list table access privileges
+</td>
+</tr>
+<tr valign=top>
+<td><nobr>
+<large><code>\dT</code></large>
+</td>
+<td></td><td>
+list information about data types
+</td>
+</tr>
+<tr valign=top>
+<td><nobr>
+<large><code>\dd</code></large>
+</td>
+<td></td><td>
+shows comments attached to DB objects
+</td>
+</tr>
+</table><p>
+</DIV>
+<hr>
+<DIV id="s14">
+<div class='heading'>PostgreSQL Catalog <span style="font-size:67%">(cont)</span></div>
+<p>
+A PostgreSQL installation typically has several databases.
+<p>
+Some catalog information is global, e.g.
+<ul>
+<li> databases, users, ...
+<small>
+<li> there is one copy of each "global" table for the whole PostgreSQL installation
+<li> this copy is shared by all databases in the installation
+</small>
+</ul>
+Other catalog information is local to each database, e.g
+<ul>
+<li> schemas, tables, attributes, functions, types, ...
+<small>
+<li> there is a separate copy of each "local" table in each database
+<li> a copy of each "local" table is made when a new database is created
+</small>
+</ul>
+</DIV>
+<hr>
+<DIV id="s15">
+<div class='heading'>PostgreSQL Catalog <span style="font-size:67%">(cont)</span></div>
+<p>
+<large><font color=#009900><b><code>pg_authid</code></b></font></large> contains information about database users:
+<p>
+<p><table border='0' cellpadding='6'>
+<tr valign=top>
+<td><nobr><large><code>oid</code></large></td>
+<td></td><td>
+integer key to reference user
+</td>
+</tr>
+<tr valign=top>
+<td><nobr><large><code>rolname</code></large></td>
+<td></td><td>
+symbolic user name (e.g. <large><code>jas</code></large>)
+</td>
+</tr>
+<tr valign=top>
+<td><nobr><large><code>rolpasswd</code></large></td>
+<td></td><td>
+md5-encrypted password
+</td>
+</tr>
+<tr valign=top>
+<td><nobr><large><code>rolcreatedb</code></large></td>
+<td></td><td>
+can create new databases
+</td>
+</tr>
+<tr valign=top>
+<td><nobr><large><code>rolsuper</code></large></td>
+<td></td><td>
+is a superuser (owns server process)
+</td>
+</tr>
+<tr valign=top>
+<td><nobr><large><code>rolcatupdate</code></large></td>
+<td></td><td>
+can update system catalogs
+</td>
+</tr>
+</table><p>
+</DIV>
+<hr>
+<DIV id="s16">
+<div class='heading'>PostgreSQL Catalog <span style="font-size:67%">(cont)</span></div>
+<p>
+<large><font color=#009900><b><code>pg_database</code></b></font></large> contains information about databases:
+<p>
+<p><table border='0' cellpadding='6'>
+<tr valign=top>
+<td><nobr><large><code>datname</code></large></td>
+<td></td><td>
+database name (e.g. <large><code>nssis</code></large>)
+</td>
+</tr>
+<tr valign=top>
+<td><nobr><large><code>datdba</code></large></td>
+<td></td><td>
+database owner <small>(refs <large><code>pg_auth.oid</code></large>)</small>
+</td>
+</tr>
+<tr valign=top>
+<td><nobr><large><code>datpath</code></large></td>
+<td></td><td>
+where files for database are stored <br> <small>(if not in the PG_DATA directory)</small>
+</td>
+</tr>
+<tr valign=top>
+<td><nobr><large><code>datacl</code></large></td>
+<td></td><td>
+access permissions
+</td>
+</tr>
+</table><p>
+</DIV>
+<hr>
+<DIV id="s17">
+<div class='heading'>PostgreSQL Catalog <span style="font-size:67%">(cont)</span></div>
+<p>
+<large><font color=#009900><b><code>pg_class</code></b></font></large> contains information about tables:
+<p>
+<p><table border='0' cellpadding='6'>
+<tr valign=top>
+<td><nobr><large><code>relname</code></large></td>
+<td></td><td>
+name of table (e.g. <large><code>employee</code></large>)
+</td>
+</tr>
+<tr valign=top>
+<td><nobr><large><code>relnamespace</code></large></td>
+<td></td><td>
+schema in which table defined <br>
+<small>(refs <large><code>pg_namespace.oid</code></large>)</small>
+</td>
+</tr>
+<tr valign=top>
+<td><nobr><large><code>reltype</code></large></td>
+<td></td><td>
+data type corresponding to table <br>
+<small>(refs <large><code>pg_type.oid</code></large>)</small>
+</td>
+</tr>
+<tr valign=top>
+<td><nobr><large><code>relowner</code></large></td>
+<td></td><td>
+owner <small>(refs <large><code>pg_authid.oid</code></large>)</small>
+</td>
+</tr>
+<tr valign=top>
+<td><nobr><large><code>reltuples</code></large></td>
+<td></td><td>
+# tuples in table
+</td>
+</tr>
+<tr valign=top>
+<td><nobr><large><code>relacl</code></large></td>
+<td></td><td>
+access permissions
+</td>
+</tr>
+</table><p>
+<small>
+Also holds info about objects other than tables, e.g. views, sequences, indexes.
+</small>
+</DIV>
+<hr>
+<DIV id="s18">
+<div class='heading'>PostgreSQL Catalog <span style="font-size:67%">(cont)</span></div>
+<p>
+<large><font color=#009900><b><code>pg_class</code></b></font></large> also holds various flags/counters for each
+table:
+<p>
+<p><table border='0' cellpadding='6'>
+<tr valign=top>
+<td><nobr><large><code>relkind</code></large></td>
+<td></td><td>
+what kind of object <br>
+<small>
+'r' = ordinary table, 'i' = index, 'v' = view <br>
+'c' = composite type, 'S' = sequence, 's' = special
+</small>
+</td>
+</tr>
+<tr valign=top>
+<td><nobr><large><code>relnatts</code></large></td>
+<td></td><td>
+# attributes in table <br>
+<small>(how many entries in <large><code>pg_attribute</code></large> table)</small>
+</td>
+</tr>
+<tr valign=top>
+<td><nobr><large><code>relchecks</code></large></td>
+<td></td><td>
+# of constraints on table <br>
+<small>(how many entries in <large><code>pg_constraint</code></large> table)</small>
+</td>
+</tr>
+<tr valign=top>
+<td><nobr><large><code>relhasindex</code></large></td>
+<td></td><td>
+table has/had an index?
+</td>
+</tr>
+<tr valign=top>
+<td><nobr><large><code>relhaspkey</code></large></td>
+<td></td><td>
+table has/had a primary key?
+</td>
+</tr>
+</table><p>
+etc.
+</DIV>
+<hr>
+<DIV id="s19">
+<div class='heading'>PostgreSQL Catalog <span style="font-size:67%">(cont)</span></div>
+<p>
+<large><font color=#009900><b><code>pg_type</code></b></font></large> contains information about data types:
+<p>
+<p><table border='0' cellpadding='6'>
+<tr valign=top>
+<td><nobr><large><code>typname</code></large></td>
+<td></td><td>
+name of type (e.g. <large><code>integer</code></large>)
+</td>
+</tr>
+<tr valign=top>
+<td><nobr><large><code>typnamespace</code></large></td>
+<td></td><td>
+schema in which type defined <br>
+<small>(refs <large><code>pg_namespace.oid</code></large>)</small>
+</td>
+</tr>
+<tr valign=top>
+<td><nobr><large><code>typowner</code></large></td>
+<td></td><td>
+owner <small>(refs <large><code>pg_authid.oid</code></large>)</small>
+</td>
+</tr>
+<tr valign=top>
+<td><nobr><large><code>typtype</code></large></td>
+<td></td><td>
+what kind of data type <br>
+<small> 'b' = base type, 'c' = complex (row) type, ... </small>
+</td>
+</tr>
+<tr valign=top>
+<td><nobr><large><code>typlen</code></large></td>
+<td></td><td>
+how much storage used for type values <br>
+<small>(-1 for variable-length types, e.g. <large><code>text</code></large>)</small>
+</td>
+</tr>
+<tr valign=top>
+<td><nobr><large><code>typrelid</code></large></td>
+<td></td><td>
+table associated to complex type <br>
+<small>(refs <large><code>pg_class.oid</code></large>)</small>
+</td>
+</tr>
+</table><p>
+etc.
+</DIV>
+<hr>
+<DIV id="s20">
+<div class='heading'>PostgreSQL Catalog <span style="font-size:67%">(cont)</span></div>
+<p>
+<large><font color=#009900><b><code>pg_attribute</code></b></font></large> contains information about attributes:
+<p>
+<p><table border='0' cellpadding='6'>
+<tr valign=top>
+<td><nobr><large><code>attname</code></large></td>
+<td></td><td>
+name of attribute (e.g. <large><code>id</code></large>)
+</td>
+</tr>
+<tr valign=top>
+<td><nobr><large><code>attrelid</code></large></td>
+<td></td><td>
+table this attribute belongs to <br>
+<small>(refs <large><code>pg_class.oid</code></large>)</small>
+</td>
+</tr>
+<tr valign=top>
+<td><nobr><large><code>atttypid</code></large></td>
+<td></td><td>
+data type of this attribute <br>
+<small>(refs <large><code>pg_type.oid</code></large>)</small>
+</td>
+</tr>
+<tr valign=top>
+<td><nobr><large><code>attlen</code></large></td>
+<td></td><td>
+storage space required by attribute <br>
+<small>(a copy of <large><code>pg_type.typlen</code></large> for data type)</small>
+</td>
+</tr>
+<tr valign=top>
+<td><nobr><large><code>attnum</code></large></td>
+<td></td><td>
+attribute position <small>(1..n, sys attrs are -ve)</small>
+</td>
+</tr>
+</table><p>
+</DIV>
+<hr>
+<DIV id="s21">
+<div class='heading'>PostgreSQL Catalog <span style="font-size:67%">(cont)</span></div>
+<p>
+<large><font color=#009900><b><code>pg_attribute</code></b></font></large> also holds constraint/status information:
+<p>
+<p><table border='0' cellpadding='6'>
+<tr valign=top>
+<td><nobr><large><code>attnotnull</code></large></td>
+<td></td><td>
+attribute may not be null?
+</td>
+</tr>
+<tr valign=top>
+<td><nobr><large><code>atthasdef</code></large></td>
+<td></td><td>
+attribute has a default values <br>
+<small>(value is held in <large><code>pg_attrdef</code></large> table)</small>
+</td>
+</tr>
+<tr valign=top>
+<td><nobr><large><code>attisdropped</code></large></td>
+<td></td><td>
+attribute has been dropped from table
+</td>
+</tr>
+</table><p>
+plus others related to strage properties of attribute.
+</DIV>
+<hr>
+<DIV id="s22">
+<div class='heading'>PostgreSQL Catalog <span style="font-size:67%">(cont)</span></div>
+<p>
+<large><font color=#009900><b><code>pg_proc</code></b></font></large> contains information about functions:
+<p>
+<p><table border='0' cellpadding='6'>
+<tr valign=top>
+<td><nobr><large><code>proname</code></large></td>
+<td></td><td>
+name of function (e.g. <large><code>substr</code></large>)
+</td>
+</tr>
+<tr valign=top>
+<td><nobr><large><code>pronamespace</code></large></td>
+<td></td><td>
+schema in which function defined <br>
+<small>(refs <large><code>pg_namespace.oid</code></large>)</small>
+</td>
+</tr>
+<tr valign=top>
+<td><nobr><large><code>proowner</code></large></td>
+<td></td><td>
+owner <small>(refs <large><code>pg_authid.oid</code></large>)</small>
+</td>
+</tr>
+<tr valign=top>
+<td><nobr><large><code>prolang</code></large></td>
+<td></td><td>
+what language function written in
+</td>
+</tr>
+<tr valign=top>
+<td><nobr><large><code>proacl</code></large></td>
+<td></td><td>
+access control
+</td>
+</tr>
+</table><p>
+etc.
+</DIV>
+<hr>
+<DIV id="s23">
+<div class='heading'>PostgreSQL Catalog <span style="font-size:67%">(cont)</span></div>
+<p>
+<large><font color=#009900><b><code>pg_proc</code></b></font></large> contains information about arguments:
+<p>
+<p><table border='0' cellpadding='6'>
+<tr valign=top>
+<td><nobr><large><code>pronargs</code></large></td>
+<td></td><td>
+how many arguments
+</td>
+</tr>
+<tr valign=top>
+<td><nobr><large><code>prorettype</code></large></td>
+<td></td><td>
+return type <small>(refs <large><code>pg_type.oid</code></large>)</small>
+</td>
+</tr>
+<tr valign=top>
+<td><nobr><large><code>proargtypes</code></large></td>
+<td></td><td>
+argument types <small>(vector of refs <large><code>pg_type.oid</code></large>)</small>
+</td>
+</tr>
+<tr valign=top>
+<td><nobr><large><code>proisstrict</code></large></td>
+<td></td><td>
+returns null if any arg is null
+</td>
+</tr>
+<tr valign=top>
+<td><nobr><large><code>prosrc</code></large></td>
+<td></td><td>
+source code if interpreted <small>(e.g. PLpgSQL)</small>
+</td>
+</tr>
+</table><p>
+</DIV>
+<hr>
+<DIV id="s24">
+<div class='heading'>PostgreSQL Catalog <span style="font-size:67%">(cont)</span></div>
+<p>
+<large><font color=#009900><b><code>pg_constraints</code></b></font></large> contains information about constraints:
+<p>
+<p><table border='0' cellpadding='6'>
+<tr valign=top>
+<td><nobr><large><code>conname</code></large></td>
+<td></td><td>
+name of constraint <small>(not unique)</small>
+</td>
+</tr>
+<tr valign=top>
+<td><nobr><large><code>connamespace</code></large></td>
+<td></td><td>
+schema containing this constraint
+</td>
+</tr>
+<tr valign=top>
+<td><nobr><large><code>contype</code></large></td>
+<td></td><td>
+kind of constraint <br>
+<small>
+'c' = check, 'u' = unique, <br>
+'p' = primary key, 'f' = foreign key
+</small>
+</td>
+</tr>
+<tr valign=top>
+<td><nobr><large><code>conrelid</code></large></td>
+<td></td><td>
+which table <small>(refs <large><code>pg_class.oid</code></large>)</small>
+</td>
+</tr>
+<tr valign=top>
+<td><nobr><large><code>conkey</code></large></td>
+<td></td><td>
+which attributes <br>
+<small>(vector of values from <large><code>pg_attribute.attnum</code></large>)</small>
+</td>
+</tr>
+<tr valign=top>
+<td><nobr><large><code>consrc</code></large></td>
+<td></td><td>
+check constraint expression
+</td>
+</tr>
+</table><p>
+</DIV>
+<hr>
+<DIV id="s25">
+<div class='heading'>PostgreSQL Catalog <span style="font-size:67%">(cont)</span></div>
+<p>
+For full details on PostgreSQL catalogs:
+<p>
+<font color="#000099">PostgreSQL 9.0.3 Developer's Guide</font>
+<p>
+Part VII, Chapter 45, System Catalogs
+<p>
+Part IV, Chapter 34, The Information Schema
+</DIV>
+<hr>
+<DIV id="s26">
+<div class='section'>&#8750; Security, Privilege, Authorisation</div>
+<p>
+</DIV>
+<hr>
+<DIV id="s27">
+<div class='heading'>Database Security</div>
+<p>
+Database security has to meet the following objectives:
+<ul>
+<li>
+<font color='#0000BB'>Secrecy</font>:
+	information not disclosed to unauthorised users <br>
+	<small>e.g. a student should <b>not</b> be able to examine other students' marks</small>
+<li>
+<font color='#0000BB'>Integrity</font>:
+ 	only authorised users are allowed to modify data <br>
+	<small>e.g. a student should not be able to modify anybody's marks</small>
+<li>
+<font color='#0000BB'>Availability</font>:
+	authorised users should not be denied access <br>
+	<small>e.g. the LIC should be able to read/changes marks for their course</small>
+</ul>
+<small>
+Goal: prevent unauthorised use/alteration/destruction of mission-critical data.
+</small>
+</DIV>
+<hr>
+<DIV id="s28">
+<div class='heading'>Database Security <span style="font-size:67%">(cont)</span></div>
+<p>
+Security mechanisms operate at a number of levels
+<ul>
+<li> within the database system &nbsp; (SQL-level privileges) <br>
+	<small>e.g. specific users can query/modify/update only specified database objects</small>
+<li> accessing the database system &nbsp; (users/passwords) <br>
+	<small>e.g. users are required to authenticate themselves at connection-time</small>
+<li> operating system &nbsp; (access to DB clients) <br>
+	<small>e.g. users should not obtain access to the DBMS superuser account</small>
+<li> network &nbsp; (most DB access nowadays is via network) <br>
+	<small>e.g. results should not be transmitted unencrypted to Web browsers</small>
+<li> human/physical &nbsp; (conventional security mechanisms) <br>
+	<small>e.g. no unauthorised physical access to server hosting the DBMS</small>
+</ul>
+</DIV>
+<hr>
+<DIV id="s29">
+<div class='heading'>Database Access Control</div>
+<p>
+Access to DBMSs involves two aspects:
+<ul>
+<li> having execute permission for a DBMS client <small>(e.g. <large><code>psql</code></large>)</small>
+<li> having a username/password registered in the DBMS
+</ul>
+Establishing a <font color='#0000BB'>connection</font> to the database:
+<ul>
+<li> user supplies <font color="#CC0000">database</font>/<font color="#009900">username</font>/<font color="#000099">password</font> to client
+<li> client passes these to server, which validates them
+<li> if valid, user is "logged in" to the specified database
+</ul>
+</DIV>
+<hr>
+<DIV id="s30">
+<div class='heading'>Database Access Control <span style="font-size:67%">(cont)</span></div>
+<p>
+Note: we don't need to supply username/password to <large><code>psql</code></large>
+<ul>
+<li> <large><code>psql</code></large> works out which user by who ran the client process
+<li> we're all PostgreSQL super-users on our own servers
+<li> servers are configured to allow super-user direct access
+</ul>
+<p>
+Note: access to databases via the Web involves:
+<ul>
+<li> running a script on a Web server
+<li> using the Web server's access rights on the DBMS
+</ul>
+</DIV>
+<hr>
+<DIV id="s31">
+<div class='heading'>Database Access Control <span style="font-size:67%">(cont)</span></div>
+<p>
+Database <font color='#0000BB'>users</font> are set up by the DBA via the command:
+<p><pre>
+CREATE USER <i>Name</i> IDENTIFIED BY '<i>Password</i>'
+</pre><p>
+Various privileges can be assigned at user-creation time, e.g.
+<ul>
+<li> ability to create new users or databases or tables
+</ul>
+User properties may be subsequently changed via:
+<p><pre>
+ALTER USER <i>Name</i> IDENTIFIED BY '<i>NewPassword</i>'
+</pre><p>
+This command is also used to change privileges, quotas, etc.
+</DIV>
+<hr>
+<DIV id="s32">
+<div class='heading'>Database Access Control <span style="font-size:67%">(cont)</span></div>
+<p>
+A user may be associated with a <font color='#0000BB'>role</font> or <font color='#0000BB'>group</font>
+<ul>
+<li> which typically gives them additional specific privileges
+</ul>
+Roles are also set up by the DBA via the command:
+<p><pre>
+CREATE ROLE <i>RoleName</i>
+</pre><p>
+Examples of roles:
+<ul>
+<li> AcademicStaff ... has privileges to read/modify marks
+<li> OfficeStaff ... has privilege to read all marks
+<li> Student ... has privilege to read own marks only
+</ul>
+</DIV>
+<hr>
+<DIV id="s33">
+<div class='heading'>Database Access Control in PostgreSQL</div>
+<p>
+In older versions of PostgreSQL ...
+<ul>
+<li> <large><code>USER</code></large>s and <large><code>GROUP</code></large>s were distinct kinds of objects
+<li> <large><code>USER</code></large>s were added via &nbsp;<large><code>CREATE USER</code></large> <i>UserName</i>
+<li> <large><code>GROUP</code></large>s were added via &nbsp;<large><code>CREATE GROUP</code></large> <i>GroupName</i>
+<li> <large><code>GROUP</code></large>s were built via &nbsp;<large><code>ALTER GROUP ... ADD USER ...</code></large>
+</ul>
+In recent versions, <large><code>USER</code></large>s and <large><code>GROUP</code></large>s are unified by <large><code>ROLE</code></large>s
+<p>
+Older syntax is retained for backward compatibility.
+</DIV>
+<hr>
+<DIV id="s34">
+<div class='heading'>Database Access Control in PostgreSQL <span style="font-size:67%">(cont)</span></div>
+<p>
+PostgreSQL has two ways to create users ...
+<p>
+From the Unix command line, via the command
+<p><pre>
+createuser [ -a | -d ] <i>Name</i> 
+</pre><p>
+<small>
+(<large><code>-a</code></large> allows user to create other users, &nbsp; <large><code>-d</code></large> allows user to create databases)
+</small>
+<p>
+From SQL, via the statement:
+<p><pre>
+CREATE ROLE <i>UserName</i> <i>Options</i>
+<span class='comment'>-- where <i>Options</i> include ...</span>
+PASSWORD '<i>Password</i>'
+CREATEDB | NOCREATEDB
+CREATEUSER | NOCREATEUSER
+IN GROUP <i>GroupName</i>
+VALID UNTIL '<i>TimeStamp</i>'
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s35">
+<div class='heading'>Database Access Control in PostgreSQL <span style="font-size:67%">(cont)</span></div>
+<p>
+Groups are created as <large><code>ROLE</code></large>s via
+<p><pre>
+CREATE ROLE <i>GroupName</i>
+<span class='comment'>--or--</span>
+CREATE ROLE <i>GroupName</i>
+WITH USER <i>UserName1</i>, <i>UserName2</i>, ...
+</pre><p>
+and may be subsequently modified by
+<p><pre>
+GRANT <i>GroupName</i> TO <i>UserName1</i>, <i>UserName2</i>, ...
+<span class='comment'>--and</span>
+REVOKE <i>GroupName</i> FROM <i>UserName1</i>, <i>UserName2</i>, ...
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s36">
+<div class='heading'>Database Access Control in PostgreSQL <span style="font-size:67%">(cont)</span></div>
+<p>
+PostgreSQL stores user information in a table <large><code>pg_authid</code></large>.
+<p>
+Each user is associated with a unique identifying number.
+<p>
+Every PostgreSQL is created with a default user (id=1, superuser).
+<p>
+Some fields in the <large><code>pg_authid</code></large> table:
+<ul>
+<li> <large><code>oid</code></large>: unqiue user id (e.g. 1, 100, ...)
+<li> <large><code>rolname</code></large>: string for user name (e.g. <large><code>jas</code></large>)
+<li> <large><code>rolpassword</code></large>: encrypted version of user's password
+</ul>
+</DIV>
+<hr>
+<DIV id="s37">
+<div class='heading'>Database Access Control in PostgreSQL <span style="font-size:67%">(cont)</span></div>
+<p>
+PostgreSQL uses a file called <large><code>pg_hba.conf</code></large> to determine
+how to authenticate users
+<small>(<large><code>hba</code></large> stands for host-based authentication)</small>.
+<p>
+This file contains a sequence of entries where each entry has:
+<ul>
+<li> connection method <small>(Unix-domain socket, TCP/IP, encrypted)</small>
+<li> list of databases (or <large><code>all</code></large>)
+<li> user/group name (or <large><code>all</code></large>)
+<li> IP address and IP mask
+<li> authentication method (plus options)
+</ul>
+PostgreSQL uses first four items to determine authentication method.
+</DIV>
+<hr>
+<DIV id="s38">
+<div class='heading'>Database Access Control in PostgreSQL <span style="font-size:67%">(cont)</span></div>
+<p>
+Possible authentication methods:
+<ul>
+<li> <large><code>md5</code></large>: get password from user, check against <large><code>pg_shadow</code></large>
+<li> <large><code>krb5</code></large>: use Kerberos-based authentication
+<li> <large><code>reject</code></large>: do not allow the user to access DBMS this way
+<li> <large><code>trust</code></large>: allow them to log in as any user without password
+<li> <large><code>ident</code></large>: allow them access based on Unix user name info
+<ul>
+<li> <large><code>ident</code></large>+map: see if UnixName is member of map list
+<li> <large><code>ident</code></large>+<large><code>sameuser</code></large>: log in as user with name UnixName
+</ul>
+</ul>
+</DIV>
+<hr>
+<DIV id="s39">
+<div class='heading'>Database Access Control in PostgreSQL <span style="font-size:67%">(cont)</span></div>
+<p>
+Examples from <large><code>pg_hba.conf</code></large> file:
+<p><pre><small>
+# Allow any user on the local system to connect to any database
+# as any user if accessing from local machine via Unix socket.
+#
+#<font color="#777777">TYPE  DATABASE USER IP-ADDRESS    IP-MASK          METHOD</font>
+<b><font color="#CC0000">local  all      all                                 trust</font></b>
+
+# Reject all connection from 192.168.54.1
+# 
+#<font color="#777777">TYPE  DATABASE  USER IP-ADDRESS    IP-MASK          METHOD</font>
+<b><font color="#CC0000">host   all       all  192.168.54.1  255.255.255.255  reject</font></b>
+
+# Allow any user from any host with IP address 192.168.93.x
+# to connect to database "mydb" as the same user name that
+# ident reports for the connection (typically Unix user name).
+# 
+#<font color="#777777">TYPE  DATABASE USER IP-ADDRESS    IP-MASK        METHOD</font>
+<b><font color="#CC0000">host   mydb     all  192.168.93.0  255.255.255.0  ident sameuser</font></b>
+
+# Allow a user from host 192.168.12.10 to connect to database
+# "mydb" only if the user's password is correctly supplied.
+# 
+#<font color="#777777">TYPE  DATABASE USER IP-ADDRESS    IP-MASK          METHOD</font>
+<b><font color="#CC0000">host   mydb     all  192.168.12.10 255.255.255.255  md5</font></b>
+</small></pre><p>
+</DIV>
+<hr>
+<DIV id="s40">
+<div class='heading'>SQL Access Control</div>
+<p>
+SQL access control deals with
+<ul>
+<li> privileges on database objects
+	<small>(e.g. tables, view, functions, ...)</small>
+<li> allocating such privileges to users and/or roles
+</ul>
+The user who creates an object is automatically assigned:
+<ul>
+<li> ownership of that object
+<li> a privilege to modify (<large><code>ALTER</code></large>) the object
+<li> a privilege to remove (<large><code>DROP</code></large>) the object
+<li> along with all other privileges specified below
+</ul>
+</DIV>
+<hr>
+<DIV id="s41">
+<div class='heading'>SQL Access Control <span style="font-size:67%">(cont)</span></div>
+<p>
+The owner of an object can assign privileges on that object
+to other users.
+<p>
+Accomplished via the command:
+<p><pre>
+GRANT <i>Privileges</i> ON <i>Object</i>
+TO <i>list of</i> (<i>Users</i>|<i>Roles</i>) | PUBLIC
+[ WITH GRANT OPTION ]
+</pre><p>
+<p>
+<i>Privileges</i> can be <large><code>ALL</code></large>
+	<small>(giving everything but <large><code>ALTER</code></large> and <large><code>DROP</code></large>)</small>
+<p>
+<large><code>WITH GRANT OPTION</code></large> allows a user who has been granted a privilege
+to pass the privilege on to any other user.
+</DIV>
+<hr>
+<DIV id="s42">
+<div class='heading'>SQL Access Control <span style="font-size:67%">(cont)</span></div>
+<p>
+Effects of privilege granting
+<ul>
+<li> are sometimes subtle (possible conflicts?)
+<li> can be represented by an <font color='#0000BB'>authorisation graph</font>
+</ul>
+<p><div align='center'>
+<img alt="[Diagram:Pic/dbms/auth-graph.png]" src="Pic/dbms/auth-graph.png">
+</div><p>
+</DIV>
+<hr>
+<DIV id="s43">
+<div class='heading'>SQL Access Control <span style="font-size:67%">(cont)</span></div>
+<p>
+Privileges can be withdrawn via the command:
+<p><pre>
+REVOKE <i>Privileges</i> ON <i>Object</i>
+FROM <i>ListOf</i> (<i>Users</i>|<i>Roles</i>) | PUBLIC
+CASCADE | RESTRICT
+</pre><p>
+Normally withdraws Privileges from just specified users/roles.
+<p>
+<large><code>CASCADE</code></large> ... also withdraws from users they had granted to.
+<p>
+E.g. revoking from U1 also revokes U5 and U6
+<p>
+<large><code>RESTRICT</code></large> ... fails if users had granted privileges to others.
+<p>
+E.g. revoking from U1 fails, revoking U5 or U2 succeeds
+</DIV>
+<hr>
+<DIV id="s44">
+<div class='heading'>SQL Access Control <span style="font-size:67%">(cont)</span></div>
+<p>
+Privileges available for users on database objects:
+<p>
+<large><code>SELECT</code></large>:
+<ul>
+<li> user can read all rows and columns of table/view
+<li> this includes columns added later via <large><code>ALTER TABLE</code></large>
+</ul>
+<large><code>INSERT</code></large> &nbsp; or &nbsp; <large><code>INSERT(</code></large><i>ColName</i><large><code>)</code></large>:
+<ul>
+<li> user can insert rows into table
+<li> if <i>ColName</i> specified, can only set value of that column
+</ul>
+</DIV>
+<hr>
+<DIV id="s45">
+<div class='heading'>SQL Access Control <span style="font-size:67%">(cont)</span></div>
+<p>
+More privileges available for users on database objects:
+<p>
+<large><code>UPDATE</code></large> &nbsp; or &nbsp; <large><code>UPDATE(</code></large><i>ColName</i><large><code>)</code></large>:
+<ul>
+<li> user can modify values stored in the table
+<li> if <i>ColName</i> specified, can only set value of that column
+</ul>
+<large><code>DELETE</code></large>:
+<ul>
+<li> user can delete rows from the table
+<li> this does <i>not</i> imply permission to remove table itself <br>
+	<small>(this is the <large><code>DROP</code></large> privilege automatically assigned to the object creator)</small>
+</ul>
+</DIV>
+<hr>
+<DIV id="s46">
+<div class='heading'>SQL Access Control <span style="font-size:67%">(cont)</span></div>
+<p>
+More privileges available for users on database objects:
+<p>
+<large><code>REFERENCES(</code></large><i>ColName</i><large><code>)</code></large>:
+<ul>
+<li> user can use <i>ColName</i> as foreign key in their tables
+</ul>
+<large><code>EXECUTE</code></large>:
+<ul>
+<li> user can execute the specified function
+</ul>
+<large><code>TRIGGER</code></large>:
+<ul>
+<li> user is allowed to create triggers on a table
+<li> note that tiggers always execute with creator's privileges
+</ul>
+</DIV>
+<hr>
+<DIV id="s47">
+<div class='heading'>SQL Access Control in PostgreSQL</div>
+<p>
+PostgreSQL follows the above with some minor variations:
+<ul>
+<li> group names must be preceded by <large><code>GROUP</code></large>
+<li> there is an additional privilege for <large><code>RULE</code></large>s
+</ul>
+See the PostgreSQL manual for full details.
+</DIV>
+<hr>
+<DIV id="s48">
+<div class='heading'>Problems with SQL Access Control</div>
+<p>
+Allowing users to assign privileges to others can be exploited.
+<p>
+Example: student S wants access to table of marks M 
+<ul>
+<li> M is owned by lecturer L, S has no SELECT privilege on M
+<li> S creates a new table SS and grants INSERT privilege to L
+<li> S modifies code of some PLpgSQL function F used by L
+<li> the modifications to F copy the data from M into SS
+<li> S restores F to its original state
+	<small>(in case L gets suspicious)</small>
+<li> S now has access to the data from M in table SS
+</ul>
+</DIV>
+<hr>
+<DIV id="s49">
+<div class='heading'>Mandatory Access Control</div>
+<p>
+Above approach is called <font color='#0000BB'>discretionary access control</font>
+<ul>
+<li> relies on individual users to assign privileges
+<li> very fine-grained <i>&rArr;</i> tedious to specify privileges
+</ul>
+An alternative approach: <font color='#0000BB'>manadatory access control</font> <small>(MAC)</small>
+<ul>
+<li> global approach to access control; simple to specify
+<li> currently under development &nbsp; <small>(not yet available in DBMSs)</small>
+<li> a popular MAC model is Bell-LaPadula
+	&nbsp; <small>(see next page)</small>
+</ul>
+</DIV>
+<hr>
+<DIV id="s50">
+<div class='heading'>Mandatory Access Control <span style="font-size:67%">(cont)</span></div>
+<p>
+Access control is described in terms of ...
+<ul>
+<li> <font color='#0000BB'>objects</font>
+	<small>(e.g. tables, rows, views, columns, ...)</small>
+<li> <font color='#0000BB'>subjects</font>
+	<small>(e.g. users, programs, ...)</small>
+<li> <font color='#0000BB'>security classes</font>
+	<small>(an ordered collection, least to most secure)</small>
+</ul>
+Example: <i>Unclassified &lt; Confidential &lt; Secret &lt; Top Secret</i>
+<p>
+Subjects and objects are assigned to security classes.
+<p>
+Impose these restrictions on every data access:
+<ul>
+<li> subject S can read object O only if class(S) <i>&ge;</i> class(O)
+<li> subject S can write object O only if class(S) <i>&le;</i> class(O)
+</ul>
+</DIV>
+<hr>
+<DIV id="s51">
+<div class='heading'>Security in Statistical Databases</div>
+<p>
+<font color='#0000BB'>Statistical databases</font>
+<ul>
+<li> contain data about a group of individuals
+<li> but allow access only to summary data
+<li> also provide controls to select subsets of data
+</ul>
+Example of such a database: population census
+<ul>
+<li> information is stored about individuals
+<li> users are only allowed to examine trends/summaries
+<li> e.g. can find out average age of people living in Sydney <br>
+but cannot ask the question "How old is John?"
+</ul>
+Privacy is protected, but useful information is still available.
+</DIV>
+<hr>
+<DIV id="s52">
+<div class='heading'>Security in Statistical Databases <span style="font-size:67%">(cont)</span></div>
+<p>
+Consider: anonymous surveys in an on-line survey system
+<ul>
+<li> can see overall results &nbsp; <small>(e.g. tutorials rated at 7/10)</small>
+<li> but do not have access to individual student responses
+<li> can also summarize results for subgroups <br>
+	<small>(e.g. CE students rated tutorials at 6/10, CS students rated tutorials at 8/10)</small>
+</ul>
+Problem: subset controls may allow selection of individuals, e.g.
+<ul>
+<li> we know that there's only one Law student in the class
+<li> ask for a "summary" of responses given by Law students
+</ul>
+</DIV>
+<hr>
+<DIV id="s53">
+<div class='heading'>Security in Statistical Databases <span style="font-size:67%">(cont)</span></div>
+<p>
+How to solve this problem?
+<ul>
+<li> restrict subsets to being larger than a minimum size <i>N</i>
+</ul>
+But still doesn't quite work, e.g.
+<ul>
+<li> system gives summaries for several groups (e.g. SE+CE)
+<li> get summary for Law+CE &nbsp; <small>(presumably with <i>&gt;N</i> responses)</small>
+<li> get summary just for CE &nbsp; <small>(assume count of reponses given)</small>
+<li> determine Law response from the "difference"
+</ul>
+<small>
+Security is difficult to enforce in statistical databases, but activity can be logged.
+</small>
+</DIV>
+<hr>
+<DIV id="s54">
+<div class='section'>&#8750; Performance Tuning</div>
+<p>
+</DIV>
+<hr>
+<DIV id="s55">
+<div class='heading'>Performance Tuning</div>
+<p>
+Schema design:
+<ul>
+<li> devise data structures to <font color='#0000BB'>represent application information</font>
+</ul>
+Performance tuning:
+<ul>
+<li> devise data structures to <font color='#0000BB'>achieve good performance</font>
+</ul>
+Good performance may involve any/all of:
+<ul>
+<li> making applications run faster
+<li> lowering response time of queries/transactions
+<li> improving overall transaction throughput
+</ul>
+</DIV>
+<hr>
+<DIV id="s56">
+<div class='heading'>Performance Tuning <span style="font-size:67%">(cont)</span></div>
+<p>
+Tuning requires us to consider the following:
+<ul>
+<li> which queries and transactions will be used? <br>
+	&nbsp; <small>(e.g. check balance for payment, display recent transaction history)</small>
+<li> how frequently does each query/transaction occur? <br>
+	&nbsp; <small>(e.g. 99% of transactions are EFTPOS payments; 1% are print balance)</small>
+<li> are there time constraints on queries/transactions? <br>
+	&nbsp; <small>(e.g. payment at EFTPOS terminals must be approved within 7 seconds)</small>
+<li> are there uniqueness constraints on any attributes? <br>
+	&nbsp; <small>(therefore, define index on attributes to speed up insertion uniqueness check)</small>
+<li> how frequently do updates occur? <br>
+	&nbsp; <small>(indexes slow down updates, because must update table <i>and</i> index)</small>
+</ul>
+</DIV>
+<hr>
+<DIV id="s57">
+<div class='heading'>Performance Tuning <span style="font-size:67%">(cont)</span></div>
+<p>
+Performance can be considered at two times:
+<ul>
+<li> <i>during</i> schema design
+<ul>
+<li> typically towards the end of schema design process
+<li> requires schema transformations such as denormalisation
+</ul>
+<li> <i>after</i> schema design
+<ul>
+<li> requires adding extra data structures such as indexes
+</ul>
+</ul>
+</DIV>
+<hr>
+<DIV id="s58">
+<div class='heading'>Denormalisation</div>
+<p>
+Normalisation structures data to minimise storage redundancy.
+<ul>
+<li> achieves this by "breaking up" the data into logical chunks
+<li> requires minimal "maintenance" to ensure data consistency
+</ul>
+Problem: queries that need to put data back together.
+<ul>
+<li> need to use a (potentially expensive) join operation
+<li> if an expensive join is frequent, system performance suffers
+</ul>
+Solution: store some data redundantly
+<ul>
+<li> benefit: queries needing expensive join are now cheap
+<li> trade-off: extra maintenance effort to maintain consistency
+<li> worthwhile if joins are frequent and updates are rare
+</ul>
+</DIV>
+<hr>
+<DIV id="s59">
+<div class='heading'>Denormalisation <span style="font-size:67%">(cont)</span></div>
+<p>
+Example: Courses = Course <i><img src="lib/join-small.gif"></i> Subject <i><img src="lib/join-small.gif"></i> Term
+<p>
+If we frequently need to refer to course "standard" name
+<ul>
+<li> add extra <large><code>courseName</code></large> column into <large><code>Course</code></large> table
+<li> cost: trigger before insert on <large><code>Course</code></large> to construct name
+<li> trade-off likely to be worthwhile: <large><code>Course</code></large> insertions infrequent
+</ul>
+<p><pre><small>
+<span class='comment'>-- can now replace a query like:</span>
+select s.code||t.year||t.sess, e.grade, e.mark
+from   Course c, CourseEnrolment e, Subject s, Term t
+where  e.course = c.id and c.subject = s.id and c.term = t.id
+<span class='comment'>-- by a query like:</span>
+select c.courseName, e.grade, e.mark
+from   Course c, CourseEnrolment e
+where  e.course = c.id 
+</small></pre><p>
+</DIV>
+<hr>
+<DIV id="s60">
+<div class='heading'>Indexes</div>
+<p>
+Indexes provide efficient content-based access to tuples.
+<p>
+Can build indexes on any (combination of) attributes.
+<p>
+Definining indexes:
+<p><pre>
+CREATE INDEX <i>name</i> ON <i>table</i> ( <i>attr<sub>1</sub></i>, <i>attr<sub>2</sub></i>, ... )
+</pre><p>
+<i>attr<sub>i</sub></i> can be an arbitrary expression (e.g. <large><code>upper(name)</code></large>).
+<p>
+<large><code>CREATE INDEX</code></large> also allows us to specify
+<ul>
+<li> that the index is on <large><code>UNIQUE</code></large> values
+<li> an access method (<large><code>USING</code></large> btree, hash, rtree, or gist)
+</ul>
+</DIV>
+<hr>
+<DIV id="s61">
+<div class='heading'>Indexes <span style="font-size:67%">(cont)</span></div>
+<p>
+Indexes can make a huge difference to query processing cost.
+<p>
+On the other hand, they introduce overheads (storage, updates).
+<p>
+Creating indexes to maximise performance benefits:
+<ul>
+<li> apply to attributes used in equality/range conditions, e.g.
+<p><pre><small>
+select * from Employee where <font color="#CC0000">id</font> = 12345
+select * from Employee where <font color="#CC0000">age</font> &gt; 60
+select * from Employee where <font color="#CC0000">salary</font> between 10000 and 20000
+</small></pre><p>
+<li> but only in queries that are frequently used
+<li> and on tables that are not updated frequently
+</ul>
+</DIV>
+<hr>
+<DIV id="s62">
+<div class='heading'>Indexes <span style="font-size:67%">(cont)</span></div>
+<p>
+Considerations in applying indexes:
+<ul>
+<li> is an attribute used in frequent/expensive queries? <br>
+	&nbsp; <small>(note that some kinds of queries can be answered from index alone)</small>
+<li> should we create an index on a collection of attributes? <br>
+	&nbsp; <small>(yes, if the collection is used in a frequent/expensive query)</small>
+<li> can we exploit a clustered index? <small>(only one per table)</small>
+<li> should we use B-tree or Hash index?
+<p><pre><small>
+<span class='comment'>-- use hashing for (unique) attributes in equality tests, e.g.</span>
+select * from Employee where <font color="#CC0000">id</font> = 12345
+<span class='comment'>-- use B-tree for attributes in range tests, e.g.</span>
+select * from Employee where <font color="#CC0000">age</font> &gt; 60
+</small></pre><p>
+</ul>
+</DIV>
+<hr>
+<DIV id="s63">
+<div class='heading'>Query Tuning</div>
+<p>
+Sometimes, a query can be re-phrased to affect performance:
+<ul>
+<li> by helping the optimiser to make use of indexes
+<li> by avoiding (unnecessary) operations that are expensive
+</ul>
+Examples which <i>may</i> prevent optimiser from using indexes:
+<p><pre>
+select name from Employee where <font color="#CC0000">salary</font>/365 &gt; 10.0
+       <span class='comment'>-- fix by re-phrasing condition to (salary &gt; 3650)</span>
+select name from Employee where <font color="#CC0000">name</font> like '%ith%'
+select name from Employee where <font color="#CC0000">birthday</font> is null
+       <span class='comment'>-- above two are difficult to "fix"</span>
+select name from Employee
+where  dept in (select id from Dept where ...)
+       <span class='comment'>-- fix by using Employee join Dept on (e.dept=d.id)</span>
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s64">
+<div class='heading'>Query Tuning <span style="font-size:67%">(cont)</span></div>
+<p>
+Other factors to consider in query tuning:
+<ul>
+<li> <large><code>select distinct</code></large> requires a sort; is <large><code>distinct</code></large> necessary?
+<li> if multiple join conditions are available ... <br>
+	choose join attributes that are indexed, avoid joins on strings
+<p><pre><small>
+select ... Employee join Customer on (s.<font color="#0000EE">name</font> = p.<font color="#0000EE">name</font>)
+<span class='comment'>vs</span>
+select ... Employee join Customer on (s.<font color="#CC0000">ssn</font> = p.<font color="#CC0000">ssn</font>)
+</small></pre><p>
+<li> sometimes <large><code>or</code></large> in condition prevents index from being used ... <br>
+	replace the <large><code>or</code></large> condition by a union of non-<large><code>or</code></large> clauses
+<p><pre><small>
+select name from Employee where dept=1 or dept=2
+<span class='comment'>vs</span>
+(select name from Employee where <font color="#CC0000">dept</font>=1)
+union
+(select name from Employee where <font color="#CC0000">dept</font>=2)
+</small></pre><p>
+</ul>
+</DIV>
+<hr>
+<DIV id="s65">
+<div class='heading'>PostgreSQL Query Tuning</div>
+<p>
+PostgreSQL provides the <large><font color=#009900><b><code>explain</code></b></font></large> statement to
+<ul>
+<li> give a representation of the query execution plan
+<li> with information that may help to tune query performance
+</ul>
+Usage:
+<p><pre>
+EXPLAIN [ANALYZE] <i>Query</i>
+</pre><p>
+Without <large><code>ANALYZE</code></large>, <large><code>EXPLAIN</code></large> shows plan with estimated costs.
+<p>
+With <large><code>ANALYZE</code></large>, <large><code>EXPLAIN</code></large> executes query and prints real costs.
+<p>
+<small>
+Note that runtimes may show considerable variation due to buffering.
+</small>
+</DIV>
+<hr>
+<DIV id="s66">
+<div class='heading'>EXPLAIN Examples</div>
+<p>
+Example: Select on indexed attribute
+<p><pre><small>
+ass2=# explain select * from student where id=100250;
+                                 QUERY PLAN                                  
+-----------------------------------------------------------------------------
+ Index Scan using student_pkey on student  (cost=0.00..5.94 rows=1 width=17)
+   Index Cond: (id = 100250)
+
+ass2=# explain analyze select * from student where id=100250;
+                                 QUERY PLAN 
+-----------------------------------------------------------------------------
+ Index Scan using student_pkey on student  (cost=0.00..5.94 rows=1 width=17)
+                                 (actual time=31.209..31.212 rows=1 loops=1)
+   Index Cond: (id = 100250)
+ Total runtime: 31.252 ms
+
+</small></pre><p>
+</DIV>
+<hr>
+<DIV id="s67">
+<div class='heading'>EXPLAIN Examples <span style="font-size:67%">(cont)</span></div>
+<p>
+Example: Select on non-indexed attribute
+<p><pre><small>
+ass2=# explain select * from student where stype='local';
+                        QUERY PLAN                        
+----------------------------------------------------------
+ Seq Scan on student  (cost=0.00..70.33 rows=18 width=17)
+   Filter: ((stype)::text = 'local'::text)
+
+ass2=# explain analyze select * from student where stype='local';
+                              QUERY PLAN 
+--------------------------------------------------------------------
+ Seq Scan on student  (cost=0.00..70.33 rows=18 width=17)
+             (actual time=0.061..4.784 rows=2512 loops=1)
+   Filter: ((stype)::text = 'local'::text)
+ Total runtime: 7.554 ms
+</small></pre><p>
+</DIV>
+<hr>
+<DIV id="s68">
+<div class='heading'>EXPLAIN Examples <span style="font-size:67%">(cont)</span></div>
+<p>
+Example: Join on a primary key (indexed) attribute
+<p><pre><small>
+ass2=# explain
+ass2-# select s.sid,p.name from Student s, Person p where s.id=p.id;
+                               QUERY PLAN                                
+-------------------------------------------------------------------------
+ Hash Join  (cost=70.33..305.86 rows=3626 width=52)
+   Hash Cond: ("outer".id = "inner".id)
+   ->  Seq Scan on person p  (cost=0.00..153.01 rows=3701 width=52)
+   ->  Hash  (cost=61.26..61.26 rows=3626 width=8)
+         ->  Seq Scan on student s  (cost=0.00..61.26 rows=3626 width=8)
+</small></pre><p>
+</DIV>
+<hr>
+<DIV id="s69">
+<div class='heading'>EXPLAIN Examples <span style="font-size:67%">(cont)</span></div>
+<p>
+Join on a primary key (indexed) attribute:
+<p><pre><small>
+ass2=# explain anaylze
+ass2-# select s.sid,p.name from Student s, Person p where s.id=p.id;
+                                QUERY PLAN
+-------------------------------------------------------------------------
+ Hash Join  (cost=70.33..305.86 rows=3626 width=52)
+            (actual time=11.680..28.242 rows=3626 loops=1)
+   Hash Cond: ("outer".id = "inner".id)
+   ->  Seq Scan on person p  (cost=0.00..153.01 rows=3701 width=52)
+                       (actual time=0.039..5.976 rows=3701 loops=1)
+   ->  Hash  (cost=61.26..61.26 rows=3626 width=8)
+             (actual time=11.615..11.615 rows=3626 loops=1)
+         ->  Seq Scan on student s  (cost=0.00..61.26 rows=3626 width=8)
+                            (actual time=0.005..5.731 rows=3626 loops=1)
+ Total runtime: 32.374 ms
+</small></pre><p>
+</DIV>
+<p><hr><p>
+<span style='font-size:11px;color: grey;'>Produced: 13 Sep 2020</span>
+ <script src='lib/prism.js'></script>   
+ <script src='lib/sg.js'></script>   
+</body>
+</html>

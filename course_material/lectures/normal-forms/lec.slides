@@ -1,0 +1,204 @@
+<title>Normal Forms
+<footer>COMP3311 20T3 <diamond> Normal Forms <diamond>
+
+<slide>
+<heading>Normalisation
+<br>
+<em>Normalisation</em>: branch of relational theory providing design insights.
+<p>
+The goals of normalisation:
+<itemize>
+<item> be able to characterise the level of redundancy in a relational schema
+<item> provide mechanisms for transforming schemas to remove redundancy
+</itemize>
+<p>
+Normalisation draws heavily on the theory of functional dependencies.
+<p>
+Normalisation algorithms reduce the amount of redundancy in a schema
+<itemize>
+<item> by decomposition <~> (break schema into connected pieces)
+</itemize>
+</slide>
+
+<slide>
+<heading>Normal Forms
+Normalisation theory defines six <em>normal forms</em> (NFs).
+<itemize>
+<item> First,Second,Third Normal Forms (1NF,2NF,3NF) <small>(Codd 1972)</small>
+<item> Boyce-Codd Normal Form (BCNF) <small>(1974)</small>
+<item> Fourth Normal Form (4NF) <small>(Zaniolo 1976, Fagin 1977)</small>
+<item> Fifth Normal Form (5NF) <small>(Fagin 1979)</small>
+</itemize>
+<p>
+We say that "a schema is in xNF", which ...
+<itemize>
+<item> tells us something about the level of redundancy in the schema
+</itemize>
+<p>
+1NF allows most redundancy; <~> 5NF allows least redundancy.
+<p>
+For most practical purposes, BCNF (or 3NF) are acceptable NFs.
+</slide>
+
+<slide>
+<continued>
+<br>
+<center>
+<deftable 3>
+<row>
+  <col1>1NF</col1>
+  <col2>
+    all attributes have atomic values <br>
+    we assume this as part of relational model, <br>
+    so <i>every</i> relation schema is in 1NF
+  </col2>
+</row>
+<row>
+  <col1>2NF</col1>
+  <col2>
+    all non-key attributes fully depend on key <br>
+    (i.e. no partial dependencies) <br>
+    avoids much redundancy <br>
+  </col2>
+</row>
+<row>
+  <col1>3NF<br>BCNF</col1>
+  <col2>
+    no attributes dependent on non-key attrs<br>
+    (i.e. no transitive dependencies) <br>
+    avoids most remaining redundancy <br>
+  </col2>
+</row>
+</deftable>
+</center>
+</slide>
+
+<slide>
+<continued>
+In practice, BCNF and 3NF are the most important. <br>
+<p>
+<br>
+Boyce-Codd Normal Form (BCNF):
+<itemize>
+<item> eliminates all redundancy due to functional dependencies
+<item> but may not preserve original functional dependencies
+</itemize>
+<br>
+Third Normal Form (3NF):
+<itemize>
+<item> eliminates most (but not all) redundancy due to <$>fd</$>s
+<item> guaranteed to preserve all functional dependencies
+</itemize>
+</slide>
+
+<slide>
+<heading>Boyce-Codd Normal Form
+A relation schema <$>R</$> is in BCNF w.r.t a set <$>F</$> of functional dependencies iff:
+<p>
+for all <$>fd</$>s <$>X <rightarrow> Y</$> in <$>F<sup>+</sup></$>
+<itemize>
+<item> either <$>X <rightarrow> Y</$> is trivial (i.e. <$>Y <subset> X</$>)
+<item> or <$>X</$> is a superkey  <small>(i.e. non-strict superset of attributes in key)</small>
+</itemize>
+<br>
+A DB schema is in BCNF if all of its relation schemas are in BCNF.
+<p>
+<small>
+Observations:
+<itemize>
+<sitem> any two-attribute relation is in BCNF
+<sitem> any relation with key <$>K</$>, other attributes <$>Y</$>, and <$>K <rightarrow> Y</$> is in BCNF
+</itemize>
+</small>
+</slide>
+
+<slide>
+<continued>
+If we transform a schema into BCNF, we are guaranteed:
+<itemize>
+<item> no update anomalies due to <$>fd</$>-based redundancy
+<item> lossless join decomposition
+</itemize>
+However, we are <em>not</em> guaranteed:
+<itemize>
+<item> the new schema preserves all <$>fd</$>s from the original schema
+</itemize>
+<p>
+This may be a problem if the <$>fd</$>s contain significant semantic
+information about the problem domain <~> <small>(use 3NF to preserve dependencies)</small>
+<p>
+<small>
+A dependency <$>A <rightarrow> C</$> is not preserved if, e.g.
+<itemize>
+<item> <$>X = ABC</$> and <$>ABC</$> are all in relation <$>R</$>
+<item> after decomposition into <$>S</$> and <$>T</$>, <~><$>AB</$> is in <$>S</$> <~>and<~> <$>BC</$> is in <$>T</$>
+</itemize>
+</small>
+</slide>
+
+<slide>
+<continued>
+<br>
+Example: schema in BCNF
+<p>
+<$>R = ABCD</$>, <~><$>F = { A <rightarrow> B, A <rightarrow> C, A <rightarrow> D }</$>
+<p>
+<$>key(R) = A</$>, <~> all fds have key on RHS
+<p><br>
+Example: schema <i>not</i> in BCNF
+<p>
+<$>R = ABCD</$>, <~><$>F = { A <rightarrow> BCD, D <rightarrow> B, BC <rightarrow> AD }</$>
+<p>
+if <~><$>key(R) = A</$>, <~> <$>D <rightarrow> B</$> does not have key on LHS
+<p>
+if <~><$>key(R) = BC</$>, <~> <$>D <rightarrow> B</$> does not have key on LHS
+</slide>
+
+<slide>
+<heading>Third Normal Form
+<br>
+A relation schema <$>R</$> is in 3NF w.r.t a set <$>F</$> of functional dependencies iff:
+<p>
+for all <$>fd</$>s <$>X <rightarrow> Y</$> in <$>F<sup>+</sup></$>
+<itemize>
+<item> either <$>X <rightarrow> Y</$> is trivial (i.e. <$>Y <subset> X</$>)
+<item> or <$>X</$> is a superkey
+<item> or <$>Y</$> is a single attribute from a key
+</itemize>
+A DB schema is in 3NF if all relation schemas are in 3NF.
+<p>
+<small>The extra condition represents a slight weakening of BCNF requirements.</small>
+</slide>
+
+<slide>
+<continued>
+<br>
+If we transform a schema into 3NF, we are guaranteed:
+<itemize>
+<item> lossless join decomposition
+<item> the new schema preserves all of the <$>fd</$>s from the original schema
+</itemize>
+However, we are <em>not</em> guaranteed:
+<itemize>
+<item> no update anomalies due to <$>fd</$>-based redundancy
+</itemize>
+<p>
+Whether to use BCNF or 3NF depends on overall design considerations.
+</slide>
+
+<slide>
+<continued>
+<br>
+Example: schema in 3NF
+<p>
+<$>R = ABCDE</$>, <~><$>F = { B <rightarrow> ACDE, E <rightarrow> B }</$>
+<p>
+<$>key(R) = B</$>, <~>in <$>E <rightarrow> B</$>, <$>E</$><~> is not a key, but <$>B</$><~> is
+<p>
+Example: schema <i>not</i> in 3NF
+<p>
+<$>R = ABCDE</$>, <~><$>F = { B <rightarrow> ACDE, E <rightarrow> D }</$>
+<p>
+<$>key(R) = B</$>, <~>in <$>E <rightarrow> D</$>, <$>E</$><~> is not a key, neither is <$>D</$>
+
+</slide>

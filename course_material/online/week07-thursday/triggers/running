@@ -1,0 +1,4 @@
+
+ BEFORE triggers run
+ "regular" constraint checking happens
+ AFTER triggers run

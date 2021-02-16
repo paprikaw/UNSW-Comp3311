@@ -1,0 +1,1329 @@
+<html>
+<head>
+<title>Transactions and Concurrency</title>
+<link href='lib/notes.css' rel='stylesheet' type='text/css'>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML" async></script>
+<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js'></script>
+<link href='lib/prism.css' rel='stylesheet'>
+<script src='lib/sg.js'></script>
+</head>
+<body>
+<div class='heading'>Transactions and Concurrency</div><p><ul class='indexUl'  style='font-size: 0.7em;'><li class="i"> <a href="#s1">Transactions, Concurrency, Recovery</a>
+<li class="i"> <a href="#s3">Transaction Processing</a>
+<li class="i"> <a href="#s5">Example Transaction</a>
+<li class="i"> <a href="#s9">Transaction Concepts</a>
+<li class="i"> <a href="#s13">Transaction Consistency</a>
+<li class="i"> <a href="#s14">ACID Properties</a>
+<li class="i"> <a href="#s16">Transaction Anomalies</a>
+<li class="i"> <a href="#s17">Serial Schedules</a>
+<li class="i"> <a href="#s22">Concurrent Schedules</a>
+<li class="i"> <a href="#s23">Valid Concurrent Transaction</a>
+<li class="i"> <a href="#s24">Lost Update Problem</a>
+<li class="i"> <a href="#s26">Temporary Update Problem</a>
+<li class="i"> <a href="#s27">Temporary Update - Case 1</a>
+<li class="i"> <a href="#s28">Temporary Update - Case 2</a>
+<li class="i"> <a href="#s29">Temporary Update - Case 3</a>
+<li class="i"> <a href="#s30">Valid Schedules</a>
+<li class="i"> <a href="#s31">Serializability</a>
+<li class="i"> <a href="#s32">Conflict Serializability</a>
+<li class="i"> <a href="#s36">View Serializability</a>
+<li class="i"> <a href="#s38">Testing Serializability</a>
+<li class="i"> <a href="#s41">Serializability Test Examples</a>
+<li class="i"> <a href="#s45">Concurrency Control</a>
+<li class="i"> <a href="#s47">Lock-based Concurrency Control</a>
+<li class="i"> <a href="#s48">Two-Phase Locking</a>
+<li class="i"> <a href="#s49">Problems with Locking</a>
+<li class="i"> <a href="#s50">Deadlock</a>
+<li class="i"> <a href="#s52">Locking and Starvation</a>
+<li class="i"> <a href="#s53">Locking and Performance</a>
+<li class="i"> <a href="#s54">Multi-version Concurrency Control</a>
+<li class="i"> <a href="#s55">MVCC and Transactions</a>
+<li class="i"> <a href="#s56">PostgreSQL and MVCC</a>
+<li class="i"> <a href="#s58">Concurrency Control in SQL</a>
+<li class="i"> <a href="#s63">PostgreSQL, Transactions, Concurrency</a>
+</ul><hr>
+<DIV id="s1">
+<div class='heading'>Transactions, Concurrency, Recovery</div>
+<p>
+DBMSs provide access to valuable information resources in
+an environment that is:
+<ul>
+<li> <font color='#0000BB'>shared</font> - concurrent access by multiple users
+<li> <font color='#0000BB'>unstable</font> - potential for hardware/software failure
+</ul>
+Each user should see the system as:
+<ul>
+<li> unshared - their work is not inadvertantly affected by others
+<li> stable - the data survives in the face of system failures
+</ul>
+Goal: data integrity is maintained at all times.
+</DIV>
+<hr>
+<DIV id="s2">
+<div class='heading'>Transactions, Concurrency, Recovery <span style="font-size:67%">(cont)</span></div>
+<p>
+Transaction processing
+<ul>
+<li> techniques for describing "logical units of work"
+	in applications in terms of underlying DBMS operations
+</ul>
+Concurrency control
+<ul>
+<li> techniques for ensuring that multiple concurrent
+	transactions do not interfere with each other
+</ul>
+Recovery mechanisms
+<ul>
+<li> techniques to restore information to a consistent
+	state, even after major hardware shutdowns/failures
+</ul>
+</DIV>
+<hr>
+<DIV id="s3">
+<div class='heading'>Transaction Processing</div>
+<p>
+A <font color='#0000BB'>transaction</font> is a "logical <font color='#0000BB'>unit</font> of work" in a DB application.
+<p>
+Examples:
+<ul>
+<li> booking an airline or concert ticket
+<li> transferring funds between bank accounts
+<li> updating stock levels via point-of-sale terminal
+<li> enrolling in a course or class
+</ul>
+A transaction typically comprises multiple DBMS operations.
+<p>
+E.g. &nbsp; select ... update ... insert ... select ... insert ...
+</DIV>
+<hr>
+<DIV id="s4">
+<div class='heading'>Transaction Processing <span style="font-size:67%">(cont)</span></div>
+<p>
+Transaction processing (TP) systems can be viewed as highly dynamic
+database applications.
+<p>
+Common characteristics of transaction-processing systems:
+<ul>
+<li> multiple concurrent updates
+	&nbsp; <small>(<i>10<sup>2</sup> .. 10<sup>4</sup></i> operations per second)</small>
+<li> real-time response requirement
+	&nbsp; <small>(preferably <i>&lt;</i> 1 sec; max 5 secs)</small>
+<li> high availability (24 <i>&times;</i> 7)
+	&nbsp; <small>(especially for e.g. ecommerce systems)</small>
+</ul>
+&nbsp;<br>
+TP benchmarks: important measure of DBMS performance.
+</DIV>
+<hr>
+<DIV id="s5">
+<div class='heading'>Example Transaction</div>
+<p>
+<b>Problem:</b> transfer funds between two accounts in same bank.
+<p>
+Possible implementation in PLpgSQL:
+<p><pre><small>
+create or replace function
+    transfer(src int, dest int, amount float) returns void
+as $$
+declare
+    oldBalance float;
+    newBalance float;
+begin
+    <span class='comment'>-- error checking</span>
+    <font color="#0000EE">select * from Accounts where id=src;</font>
+    if (not found) then
+        raise exception 'Invalid Withdrawal Account';
+    end if;
+    <font color="#0000EE">select * from Accounts where id=dest;</font>
+    if (not found) then
+        raise exception 'Invalid Deposit Account';
+    end if;
+...
+</small></pre><p>
+</DIV>
+<hr>
+<DIV id="s6">
+<div class='heading'>Example Transaction <span style="font-size:67%">(cont)</span></div>
+<p>
+<p><pre><small>
+...
+    <span class='comment'>-- action</span>
+(A) <font color="#0000EE">select balance into oldBalance
+    from Accounts where id=src;</font>
+    if (oldBalance < amount) then
+        raise exception 'Insufficient funds';
+    end if;
+    newBalance := oldBalance - amount;
+(B) <font color="#CC0000">update Accounts
+    set    balance := newBalance
+    where  id = src;</font>
+    <span class='comment'>-- partial completion of transaction</span>
+(C) <font color="#CC0000">update Accounts
+    set    balance := balance + amount
+    where  id = dest;</font>
+    commit; <span class='comment'>-- redundant; function = transaction</span>
+end;
+$$ language plpgsql;
+</small></pre><p>
+</DIV>
+<hr>
+<DIV id="s7">
+<div class='heading'>Example Transaction <span style="font-size:67%">(cont)</span></div>
+<p>
+Consider two simultaneous transfers between accounts, e.g.
+<ul>
+<li> T1 transfers $200 from account X to account Y
+<li> T2 transfers $300 from account X to account Y
+</ul>
+<p>
+If the sequence of events is like:
+<p><pre>
+T1:  ...  A  B  C  ...
+T2:                ...  A  B  C  ...
+</pre><p>
+everything works correctly, i.e.
+<ul>
+<li> overall, account X is reduced by $500
+<li> overall, account Y is increased by $500
+</ul>
+</DIV>
+<hr>
+<DIV id="s8">
+<div class='heading'>Example Transaction <span style="font-size:67%">(cont)</span></div>
+<p>
+What if the sequence of events is like?
+<p><pre>
+T1:  ...  A   B        C  ...
+T2:    ...  A   B   C  ...
+</pre><p>
+In terms of database operations, this is what happens:
+<ul>
+<li> T1 gets balance from X ($A)
+<li> T2 gets same balance from X ($A)
+<li> T1 decrements balance in X ($A - 200)
+<li> T2 decrements balance in X ($A - 300)
+<li> T2 increments balance in Y ($B + 300)
+<li> T1 increments balance in Y ($B + 300 + 200)
+</ul>
+Final balance of Y is ok; final balance of X is wrong.
+</DIV>
+<hr>
+<DIV id="s9">
+<div class='heading'>Transaction Concepts</div>
+<p>
+A transaction must always terminate, either:
+<ul>
+<li> successfully (<large><code>COMMIT</code></large>), with all changes preserved
+<li> unsuccessfully (<large><code>ABORT</code></large>), with database unchanged
+</ul>
+<p><div align='center'>
+<img alt="[Diagram:Pic/xact/trans-states.png]" src="Pic/xact/trans-states.png">
+</div><p>
+</DIV>
+<hr>
+<DIV id="s10">
+<div class='heading'>Transaction Concepts <span style="font-size:67%">(cont)</span></div>
+<p>
+To describe transaction effects, we consider:
+<ul>
+<li> <large><code>READ</code></large> - transfer data from disk to memory
+<li> <large><code>WRITE</code></large> - transfer data from memory to disk
+<li> <large><code>ABORT</code></large> - terminate transaction, unsuccessfully
+<li> <large><code>COMMIT</code></large> - terminate transaction, successfully
+</ul>
+&nbsp;<br>
+<large><code>SELECT</code></large> produces <large><code>READ</code></large> operations on the database.
+<p>
+<large><code>INSERT</code></large>, <large><code>UPDATE</code></large>, <large><code>DELETE</code></large> produce <large><code>WRITE</code></large>/<large><code>READ</code></large> operations.
+</DIV>
+<hr>
+<DIV id="s11">
+<div class='heading'>Transaction Concepts <span style="font-size:67%">(cont)</span></div>
+<p>
+The <large><code>READ</code></large>, <large><code>WRITE</code></large>, <large><code>ABORT</code></large>, <large><code>COMMIT</code></large> operations:
+<ul>
+<li> occur in the context of some transaction <i>T</i>
+<li> involve manipulation of data items <i>X, Y, ...</i>
+	&nbsp; <small>(<tt>READ</tt> and <tt>WRITE</tt>)</small>
+</ul>
+The operations are typically denoted as:
+<p><table border='0' cellpadding='6'>
+<tr valign=top>
+<td><nobr> <i>R<sub>T</sub>(X)</i> </td>
+<td></td><td> read item <i>X</i> in transaction <i>T</i> </td>
+</tr>
+<tr valign=top>
+<td><nobr> <i>W<sub>T</sub>(X)</i> </td>
+<td></td><td> write item <i>X</i> in transaction <i>T</i> </td>
+</tr>
+<tr valign=top>
+<td><nobr> <i>A<sub>T</sub></i> </td>
+<td></td><td> abort transaction <i>T</i> </td>
+</tr>
+<tr valign=top>
+<td><nobr> <i>C<sub>T</sub></i> </td>
+<td></td><td> commit transaction <i>T</i> </td>
+</tr>
+</table><p>
+</DIV>
+<hr>
+<DIV id="s12">
+<div class='heading'>Transaction Concepts <span style="font-size:67%">(cont)</span></div>
+<p>
+Execution of the above funds transfer example can be described as
+<p><pre>
+T: READ(S);  READ(D);  <span class='comment'>-- S = source tuple, D = dest tuple</span>
+   READ(S);  S.bal := S.bal-amount;  WRITE(S)
+   READ(D);  D.bal := D.bal+amount;  WRITE(D)
+   COMMIT;
+</pre><p>
+or simply as
+<p>
+<div class='center'>
+<i> R<sub>T</sub>(S) &nbsp; R<sub>T</sub>(D) &nbsp; R<sub>T</sub>(S) &nbsp; W<sub>T</sub>(S) &nbsp; R<sub>T</sub>(D) &nbsp; W<sub>T</sub>(D) &nbsp; C<sub>T</sub> </i>
+</div>
+<p>
+&nbsp;<br>
+This is known as a <font color='#0000BB'>schedule</font> for the transaction.
+</DIV>
+<hr>
+<DIV id="s13">
+<div class='heading'>Transaction Consistency</div>
+<p>
+Transactions typically have intermediate states
+that are inconsistent.
+<p>
+However, states <font color='#0000BB'>before</font> and <font color='#0000BB'>after</font> transaction
+must be consistent.
+&nbsp;<br>&nbsp;<br>
+<p><div align='center'>
+<img alt="[Diagram:Pic/xact/trans-consis.png]" src="Pic/xact/trans-consis.png">
+</div><p>
+</DIV>
+<hr>
+<DIV id="s14">
+<div class='heading'>ACID Properties</div>
+<p>
+Data integrity is assured if transactions satisfy the following:
+<p>
+<b><font color="#CC0000">A</font></b>tomicity <br>
+<small>
+<ul>
+<li> Either all operations of transaction are reflected in database
+or none are.
+</ul>
+</small>
+<b><font color="#CC0000">C</font></b>onsistency <br>
+<small>
+<ul>
+<li> Execution of a transaction in isolation preserves data consistency.
+</ul>
+</small>
+<b><font color="#CC0000">I</font></b>solation <br>
+<small>
+<ul>
+<li> Each transaction is "unaware" of other transactions executing
+concurrently in the system.
+</ul>
+</small>
+<b><font color="#CC0000">D</font></b>urability <br>
+<small>
+<ul>
+<li> After a transaction completes successfully, its changes persist
+even after subsequent system failure.
+</ul>
+</small>
+</DIV>
+<hr>
+<DIV id="s15">
+<div class='heading'>ACID Properties <span style="font-size:67%">(cont)</span></div>
+<p>
+<font color="#CC0000">A</font>tomicity is handled by the <font color='#0000BB'>commit</font> and <font color='#0000BB'>rollback</font> mechanisms.
+<ul>
+<li> <b>commit</b> saves all changes and ends the transaction
+<li> <b>rollback</b> <i>undoes</i> changes already made by the transaction
+</ul>
+<p>
+<font color="#CC0000">D</font>urability is handled by implementing <font color='#0000BB'>stable storage</font>, via
+<ul>
+<li> redundancy, to deal with hardware failures
+<li> logging/checkpoint mechanisms, to recover state
+</ul>
+Here, we consider primarily <font color="#CC0000">c</font>onsistency and <font color="#CC0000">i</font>solation.
+</DIV>
+<hr>
+<DIV id="s16">
+<div class='heading'>Transaction Anomalies</div>
+<p>
+If <font color='#0000BB'>concurrent</font> transactions access <font color='#0000BB'>shared</font> data objects,
+various anomalies can arise.
+<p>
+We give examples using the following two transactions:
+<p><pre>
+T1: read(X)           T2: read(X)
+    X := X + N            X := X + M
+    write(X)              write(X)
+    read(Y)
+    Y := Y - N
+    write(Y)
+</pre><p>
+and initial DB state <large><code>X=100</code></large>, <large><code>Y=50</code></large>, <large><code>N=5</code></large>, <large><code>M=8</code></large>.
+</DIV>
+<hr>
+<DIV id="s17">
+<div class='heading'>Serial Schedules</div>
+<p>
+<font color='#0000BB'>Serial</font> execution means no overlap of transaction operations.
+<p>
+If <large><code>T1</code></large> and <large><code>T2</code></large> transactions are executed serially:
+<p><pre>
+T1: R(X) W(X) R(Y) W(Y)
+T2:                     R(X) W(X)
+</pre><p>
+or
+<p><pre>
+T1:           R(X) W(X) R(Y) W(Y)
+T2: R(X) W(X)
+</pre><p>
+the database is left in a consistent state.
+</DIV>
+<hr>
+<DIV id="s18">
+<div class='heading'>Serial Schedules <span style="font-size:67%">(cont)</span></div>
+<p>
+The basic idea behind serial schedules:
+<ul>
+<li> each transaction is correct <br>
+	<small>(leaves the database in a consistent state if run to completion individually)</small>
+<li> the database starts in a consistent state
+<li> the first transaction completes, leaving the DB consistent
+<li> the next transaction completes, leaving the DB consistent
+</ul>
+As would occur e.g. in a single-user database system.
+</DIV>
+<hr>
+<DIV id="s19">
+<div class='heading'>Serial Schedules <span style="font-size:67%">(cont)</span></div>
+<p>
+For the first schedule in our example:
+<p>
+<p><pre>
+Database   T1                   T2
+---------  -------------------  --------------
+X    Y               X    Y               X
+100  50              ?    ?               ?
+           read(X)   100
+           X:=X+N    105
+105        write(X)
+           read(Y)        50
+           Y:=Y-N         45
+     45    write(Y)
+                                read(X)   105
+                                X:=X+M    113
+113                             write(X)
+---------
+113  45
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s20">
+<div class='heading'>Serial Schedules <span style="font-size:67%">(cont)</span></div>
+<p>
+For the second schedule in our example:
+<p>
+<p><pre>
+Database   T1                   T2
+---------  -------------------  --------------
+X    Y               X    Y               X
+100  50              ?    ?               ?
+                                read(X)   100
+                                X:=X+M    108
+108                             write(X)
+           read(X)   108
+           X:=X+N    113
+113        write(X)
+           read(Y)        50
+           Y:=Y-N         45
+     45    write(Y)
+---------
+113  45
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s21">
+<div class='heading'>Serial Schedules <span style="font-size:67%">(cont)</span></div>
+<p>
+Note that serial execution doesn't mean that each transaction
+will get the same results, regardless of the order.
+<p>
+Consider the following two transactions:
+<p><pre>
+T1: select sum(salary)
+    from Employee where dept='Sales'
+
+T2: insert into Employee
+    values (....,'Sales',...)
+</pre><p>
+If we execute <large><code>T1</code></large> then <large><code>T2</code></large>,
+we get a smaller salary total than if we execute <large><code>T2</code></large> then <large><code>T1</code></large>.
+<p>
+In both cases, however, the salary total is <font color='#0000BB'>consistent</font> with the state
+of the database <font color='#0000BB'>at the time</font> the query is executed.
+</DIV>
+<hr>
+<DIV id="s22">
+<div class='heading'>Concurrent Schedules</div>
+<p>
+A serial execution of consistent transactions is always consistent.
+<p>
+If transactions execute under a concurrent (nonserial) schedule,
+the potential exists for conflict among their effects.
+<p>
+In the worst case, the effect of executing the transactions ...
+<ul>
+<li> is to leave the database in an inconsistent state
+<li> even though each transaction, by itself, <i>is</i> consistent
+</ul>
+So why don't we observe such problems in real DBMSs? ...
+<ul>
+<li> <font color='#0000BB'>concurrency control</font> mechanisms handle them
+	&nbsp; <small>(see later)</small>.
+</ul>
+</DIV>
+<hr>
+<DIV id="s23">
+<div class='heading'>Valid Concurrent Transaction</div>
+<p>
+Not all concurrent executions cause problems.
+<p>
+For example, the schedules
+<p><pre>
+T1: R(X) W(X)           R(Y) W(Y)
+T2:           R(X) W(X)
+</pre><p>
+or
+<p><pre>
+T1: R(X) W(X)      R(Y)      W(Y)
+T2:           R(X)      W(X)
+</pre><p>
+or ...
+<p>
+leave the database in a consistent state.
+</DIV>
+<hr>
+<DIV id="s24">
+<div class='heading'>Lost Update Problem</div>
+<p>
+Consider the following schedule where the transactions execute in parallel:
+<p><pre>
+T1: R(X)      W(X) R(Y)      W(Y)
+T2:      R(X)           W(X)
+</pre><p>
+In this scenario:
+<ul>
+<li> <large><code>T2</code></large> reads data (<large><code>X</code></large>) that <large><code>T1</code></large> is currently operating on
+<li> then makes changes to <large><code>X</code></large> and overwrites <large><code>T1</code></large>'s result
+</ul>
+This is called a <font color='#0000BB'>Write-Read (WR) Conflict</font> or <font color='#0000BB'>dirty read</font>. 
+<p>
+The result: <large><code>T1</code></large>'s update to <large><code>X</code></large> is lost.
+</DIV>
+<hr>
+<DIV id="s25">
+<div class='heading'>Lost Update Problem <span style="font-size:67%">(cont)</span></div>
+<p>
+Consider the states in the WR Conflict schedule:
+<p>
+<p><pre>
+Database   T1                   T2
+---------  -------------------  --------------
+X    Y               X    Y               X
+100  50              ?    ?               ?
+           read(X)   100
+           X:=X+N    105
+                                read(X)   100
+                                X:=X+M    108
+105        write(X)
+           read(Y)        50
+108                             write(X)
+           Y:=Y-N         45
+     45    write(Y)
+---------
+108  45
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s26">
+<div class='heading'>Temporary Update Problem</div>
+<p>
+Consider the following schedule where one transaction fails:
+<p><pre>
+T1: R(X) W(X) A
+T2:             R(X) W(X)
+</pre><p>
+Transaction <large><code>T1</code></large> aborts after writing <large><code>X</code></large>.
+<p>
+The abort <i>will</i> undo the changes to <large><code>X</code></large>,
+but where the undo occurs can affect the results.
+<p>
+Consider three places where undo might occur:
+<p><pre>
+T1: R(X) W(X) A <font color="#009900">[1]</font>     <font color="#009900">[2]</font>     <font color="#009900">[3]</font>
+T2:                 R(X)    W(X)
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s27">
+<div class='heading'>Temporary Update - Case 1</div>
+<p>
+This scenario is ok. &nbsp; <large><code>T1</code></large>'s effects have been eliminated.
+<p>
+<p><pre>
+Database   T1                   T2
+---------  -------------------  --------------
+X    Y               X    Y               X
+100  50              ?    ?               ?
+           read(X)   100
+           X:=X+N    105
+105        write(X)
+           abort
+100        undo
+                                read(X)   100
+                                X:=X+M    108
+108                             write(X)
+---------
+108  50
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s28">
+<div class='heading'>Temporary Update - Case 2</div>
+<p>
+In this scenario, some of <large><code>T1</code></large>'s effects have been retained.
+<p>
+<p><pre>
+Database   T1                   T2
+---------  -------------------  --------------
+X    Y               X    Y               X
+100  50              ?    ?               ?
+           read(X)   100
+           X:=X+N    105
+105        write(X)
+           abort
+                                read(X)   105
+                                X:=X+M    113
+100        undo
+113                             write(X)
+---------
+113  50
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s29">
+<div class='heading'>Temporary Update - Case 3</div>
+<p>
+In this scenario, <large><code>T2</code></large>'s effects have been lost, even after commit.
+<p>
+<p><pre>
+Database   T1                   T2
+---------  -------------------  --------------
+X    Y               X    Y               X
+100  50              ?    ?               ?
+           read(X)   100
+           X:=X+N    105
+105        write(X)
+           abort
+                                read(X)   105
+                                X:=X+M    113
+113                             write(X)
+100        undo
+---------
+100  50
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s30">
+<div class='heading'>Valid Schedules</div>
+<p>
+For ACID, we must ensure that schedules are:
+<ul>
+<li> <font color='#0000BB'>serializable</font>
+<p>
+<small>
+The effect of executing <i>n</i> concurrent transactions 
+is the same as the effect of executing them serially in some order.
+<p>
+For assessing the correctness of concurrency control methods,
+need a test to check whether it produces serializable schedules.
+</small>
+<li> <font color='#0000BB'>recoverable</font>
+<p>
+<small>
+A failed transaction should not affect the ability to recover the
+system to a consistent state.
+<p>
+This can be ensured if transactions commit only <font color='#0000BB'>after</font> all
+transactions whose changes they read commit.
+</small>
+</ul>
+</DIV>
+<hr>
+<DIV id="s31">
+<div class='heading'>Serializability</div>
+<p>
+If a concurrent schedule for transactions <i>T<sub>1</sub> ..T<sub>n</sub></i>
+acts like a serial schedule for <i>T<sub>1</sub> ..T<sub>n</sub></i>,
+then consistency is guaranteed.
+<p>
+To determine this requires a notion of <font color='#0000BB'>schedule equivalence</font>.
+<p>
+<small>
+Note: we are not attempting to determine equivalence of entire
+computations, simply of the interleaved sequences of read/write
+operations.
+</small>
+<p>
+A <font color='#0000BB'>serializable schedule</font> is a concurrent schedule that
+produces a final state that is the same as that produced by
+some serial schedule.
+<p>
+There are two primary formulations of serializability:
+<ul>
+<li> <font color='#0000BB'>conflict serializibility</font>
+	&nbsp; <small>(read/write operations occur in the "right" order)</small>
+
+<li> <font color='#0000BB'>view serializibility</font>
+	&nbsp; <small>(read operations <i>see</i> the correct version of data)</small>
+</ul>
+</DIV>
+<hr>
+<DIV id="s32">
+<div class='heading'>Conflict Serializability</div>
+<p>
+Consider two transactions <i>T<sub>1</sub></i> and <i>T<sub>2</sub></i>
+acting on data item <i>X</i>.
+<p>
+Considering only read/write operations, the possibilities are:
+<p>
+<div class='center'>
+<table border='0' cellpadding='4'>
+<tr valign=top>
+<td><nobr><b><i>T<sub>1</sub></i> first</b></td>
+<td></td><td> &nbsp; </td>
+<td></td><td><b><i>T<sub>2</sub></i> first</b></td>
+<td></td><td> &nbsp; </td>
+<td></td><td>Equiv?</td>
+</tr>
+<tr valign=top>
+<td><nobr><i>R<sub>1</sub>(X) R<sub>2</sub>(X)</i></td>
+<td></td><td> &nbsp; </td>
+<td></td><td><i>R<sub>2</sub>(X) R<sub>1</sub>(X)</i></td>
+<td></td><td> &nbsp; </td>
+<td></td><td>yes</td>
+</tr>
+<tr valign=top>
+<td><nobr><i>R<sub>1</sub>(X) W<sub>2</sub>(X)</i></td>
+<td></td><td> &nbsp; </td>
+<td></td><td><i>W<sub>2</sub>(X) R<sub>1</sub>(X)</i></td>
+<td></td><td> &nbsp; </td>
+<td></td><td>no</td>
+</tr>
+<tr valign=top>
+<td><nobr><i>W<sub>1</sub>(X) R<sub>2</sub>(X)</i></td>
+<td></td><td> &nbsp; </td>
+<td></td><td><i>R<sub>2</sub>(X) W<sub>1</sub>(X)</i></td>
+<td></td><td> &nbsp; </td>
+<td></td><td>no</td>
+</tr>
+<tr valign=top>
+<td><nobr><i>W<sub>1</sub>(X) W<sub>2</sub>(X)</i></td>
+<td></td><td> &nbsp; </td>
+<td></td><td><i>W<sub>2</sub>(X) W<sub>1</sub>(X)</i></td>
+<td></td><td> &nbsp; </td>
+<td></td><td>no</td>
+</tr>
+</table>
+</div>
+<p>
+<small>
+If <i>T<sub>1</sub></i> and <i>T<sub>2</sub></i> act on different data items,
+result is equivalent regardless of order.
+</small>
+</DIV>
+<hr>
+<DIV id="s33">
+<div class='heading'>Conflict Serializability <span style="font-size:67%">(cont)</span></div>
+<p>
+Two transactions have a potential <font color='#0000BB'>conflict</font> if
+<ul>
+<li> they perform operations on the same data item
+<li> at least one of the operations is a write operation
+</ul>
+In such cases, the order of operations affects the result.
+<p>
+Conversely, if two operations in a schedule don't conflict, <br>
+we can swap their order without affecting the overall result.
+<p>
+This gives a basis for determining equivalence of schedules.
+</DIV>
+<hr>
+<DIV id="s34">
+<div class='heading'>Conflict Serializability <span style="font-size:67%">(cont)</span></div>
+<p>
+If we can transform a schedule
+<ul>
+<li> by swapping the orders of non-conflicting operations
+<li> such that the result is a serial schedule
+</ul>
+then we say that the schedule is <font color='#0000BB'>conflict serializible</font>.
+<p>
+If a concurrent schedule is equivalent to some (any) serial schedule,
+then we have a consistency guarantee.
+</DIV>
+<hr>
+<DIV id="s35">
+<div class='heading'>Conflict Serializability <span style="font-size:67%">(cont)</span></div>
+<p>
+Example: transform a concurrent schedule to serial schedule
+<p><pre>
+T1: R(A) W(A)      R(B)      W(B)
+T2:           R(A)      W(A)      R(B) W(B)
+<font color="#CC0000">swap</font>
+T1: R(A) W(A) <font color="#009900">R(B)</font>           W(B)
+T2:                <font color="#009900">R(A)</font> W(A)      R(B) W(B)
+<font color="#CC0000">swap</font>
+T1: R(A) W(A) R(B)      <font color="#009900">W(B)</font>
+T2:                R(A)      <font color="#009900">W(A)</font> R(B) W(B)
+<font color="#CC0000">swap</font>
+T1: R(A) W(A) R(B) <font color="#009900">W(B)</font>
+T2:                     <font color="#009900">R(A)</font> W(A) R(B) W(B)
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s36">
+<div class='heading'>View Serializability</div>
+<p>
+<font color='#0000BB'>View Serializability</font> is
+<ul>
+<li> an alternative formulation of serializability
+<li> that is less conservative than conflict serializability (CS) <br>
+	<small>(some safe schedules that are view serializable are not conflict serializable)</small>
+</ul>
+As with CS, it is based on a notion of schedule equivalence
+<ul>
+<li> a schedule is "safe" if <i>view equivalent</i> to a serial schedule
+</ul>
+The idea: if all the read operations in two schedules ...
+<ul>
+<li> always read the result of the same write operations
+<li> then the schedules must produce the same result
+</ul>
+</DIV>
+<hr>
+<DIV id="s37">
+<div class='heading'>View Serializability <span style="font-size:67%">(cont)</span></div>
+<p>
+Two schedules <i>S</i> and <i>S'</i> on <i>T<sub>1</sub> .. T<sub>n</sub></i>
+are <font color='#0000BB'>view equivalent</font> iff
+<ul>
+<li> for each shared data item <i>X</i>
+<ul>
+<li> if <i>T<sub>j</sub></i> reads the initial value of <i>X</i> in <i>S</i>,
+	then it also reads the initial value of <i>X</i> in <i>S'</i>
+<li> if <i>T<sub>j</sub></i> reads <i>X</i> in <i>S</i> and <i>X</i> was produced by <i>T<sub>k</sub></i>,
+then <i>T<sub>j</sub></i> must also read the value of <i>X</i> produced by <i>T<sub>k</sub></i> in <i>S'</i>
+<li> if <i>T<sub>j</sub></i> performs the final write of <i>X</i> in <i>S</i>,
+then it must also perform the final write of <i>X</i> in <i>S'</i>
+</ul>
+</ul>
+<small>
+To check serializibilty of <i>S</i>, find a serial schedule that is view equivalent to <i>S</i>
+</small>
+</DIV>
+<hr>
+<DIV id="s38">
+<div class='heading'>Testing Serializability</div>
+<p>
+In practice, we don't test specific schedules for serializability.
+<p>
+However, in designing concurrency control schemes, we need a
+way of checking whether they produce "safe" schedules.
+<p>
+This is typically achieved by a demonstration that the scheme generates only
+serializable schedules, and we need a serializability test for this.
+<p>
+There is a simple and efficient test for conflict serializability; <br>
+there is a more complex test for view serializablity.
+<p>
+Both tests are based on notions of
+<ul>
+<li> building a graph to represent transaction interactions
+<li> testing properties of this graph <small>(checking for cycles)</small>
+</ul>
+</DIV>
+<hr>
+<DIV id="s39">
+<div class='heading'>Testing Serializability <span style="font-size:67%">(cont)</span></div>
+<p>
+A <font color='#0000BB'>precedence graph</font> <i>G = (V,E)</i> for a schedule <i>S</i> consists of
+<ul>
+<li> a vertex in <i>V</i> for each transaction from <i>T<sub>1</sub> .. T<sub>n</sub></i>
+<li> an edge in <i>E</i> for each pair <i>T<sub>j</sub></i>
+	and <i>T<sub>k</sub></i>, such that
+<ul>
+<li> there is a pair of conflicting operations between <i>T<sub>j</sub></i> &amp; <i>T<sub>k</sub></i>
+<li> the <i>T<sub>j</sub></i> operation occurs before the <i>T<sub>k</sub></i> operation
+</ul>
+</ul>
+Note: the edge is directed from <i>T<sub>j</sub> &nbsp; &rarr; &nbsp; T<sub>k</sub></i>
+</DIV>
+<hr>
+<DIV id="s40">
+<div class='heading'>Testing Serializability <span style="font-size:67%">(cont)</span></div>
+<p>
+If an edge <i>T<sub>j</sub> &rarr; T<sub>k</sub></i> exists in
+the precedence graph
+<ul>
+<li> then <i>T<sub>j</sub></i> must appear before <i>T<sub>k</sub></i> in any serial schedule
+</ul>
+Implication: if the precedence graph has cycles, then <i>S</i> can't be serialized.
+<p>
+Thus, the serializability test is reduced to cycle-detection
+<p>
+<small>(and there are cycle-detection algorithms available in many algorithms textbooks)</small>
+</DIV>
+<hr>
+<DIV id="s41">
+<div class='heading'>Serializability Test Examples</div>
+<p>
+Serializable schedule
+	&nbsp; <small>(with conflicting operations shown in <font color="#CC0000">red</font>)</small>:
+<p><pre>
+T1: R(A) <font color="#CC0000">W(A)</font>      R(B)      <font color="#CC0000">W(B)</font>
+T2:           <font color="#CC0000">R(A)</font>      W(A)      <font color="#CC0000">R(B)</font> W(B)
+</pre><p>
+Precedence graph for this schedule:
+<p><div align='center'>
+<img alt="[Diagram:Pic/xact/pg1.png]" src="Pic/xact/pg1.png">
+</div><p>
+No cycles <i>&rArr;</i> serializable
+	&nbsp;<small>(as we already knew)</small>
+</DIV>
+<hr>
+<DIV id="s42">
+<div class='heading'>Serializability Test Examples <span style="font-size:67%">(cont)</span></div>
+<p>
+Consider this schedule:
+<p><pre>
+T1: <font color="#CC0000">R(A)</font>                W(A) R(B) <font color="#CC0000">W(B)</font>
+T2:      R(A) <font color="#CC0000">W(A)</font> <font color="#CC0000">R(B)</font>                W(B)
+</pre><p>
+Precedence graph for this schedule:
+<p><div align='center'>
+<img alt="[Diagram:Pic/xact/pg2.png]" src="Pic/xact/pg2.png">
+</div><p>
+Has a cycle <i>&rArr;</i> not serializable
+</DIV>
+<hr>
+<DIV id="s43">
+<div class='heading'>Serializability Test Examples <span style="font-size:67%">(cont)</span></div>
+<p>
+Consider this 3-transaction schedule:
+<p><pre>
+T1: R(A)R(C)<font color="#0000EE">W(A)</font>    <font color="#CC0000">W(C)</font>
+T2:             R(B)    <font color="#0000EE">R(A)</font>    <font color="#009900">W(B)</font>        W(A)
+T3:                         <font color="#CC0000">R(C)</font>    <font color="#009900">R(B)</font>W(C)    W(B)
+</pre><p>
+Precedence graph for this schedule:
+<p><div align='center'>
+<img alt="[Diagram:Pic/xact/pg3.png]" src="Pic/xact/pg3.png">
+</div><p>
+No cycles <i>&rArr;</i> serializable
+</DIV>
+<hr>
+<DIV id="s44">
+<div class='heading'>Serializability Test Examples <span style="font-size:67%">(cont)</span></div>
+<p>
+Consider this 3-transaction schedule:
+<p><pre>
+T1: R(A)                <font color="#0000EE">W(A)</font>        <font color="#CC0000">R(C)</font>    W(C)
+T2:     R(B)    <font color="#009900">W(B)</font>            <font color="#0000EE">R(A)</font>    W(A)
+T3:         R(C)    <font color="#CC0000">W(C)</font>    <font color="#009900">R(B)</font>                W(B)
+</pre><p>
+Precedence graph for this schedule:
+<p><div align='center'>
+<img alt="[Diagram:Pic/xact/pg4.png]" src="Pic/xact/pg4.png">
+</div><p>
+Has a cycle <i>&rArr;</i> not serializable
+</DIV>
+<hr>
+<DIV id="s45">
+<div class='heading'>Concurrency Control</div>
+<p>
+Having serializability tests is useful theoretically, but they do not
+provide a practical tool for organising schedules.
+<p>
+Why not practical?
+<ul>
+<li> the # possible schedules for <i>n</i> transactions is <i>O(n!)</i>
+<li> the cost of testing for serializability via graphs is <i>O(n<sup>2</sup>)</i>
+</ul>
+What is required are methods
+<ul>
+<li> that can be applied to each transaction individually
+<li> which guarantee that any combination of transactions is serializable
+</ul>
+</DIV>
+<hr>
+<DIV id="s46">
+<div class='heading'>Concurrency Control <span style="font-size:67%">(cont)</span></div>
+<p>
+Approaches to ensuring AC<font color="#000099">I</font>D transactions:
+<ul>
+<li> lock-based
+<p>
+<small>Synchronise transaction execution via locks on some portion 
+of the database.</small>
+<li> version-based
+<p>
+<small>Allow multiple consistent versions of the data to exist, and
+allow each transaction exclusive access to one version.</small>
+<li> timestamp-based
+<p>
+<small>Organise transaction execution in advance by assigning timestamps to
+operations.</small>
+<li> validation-based &nbsp; <small>(optimistic concurrency control)</small>
+<p>
+<small>Exploit typical execution-sequence properties of transactions to determine safety dynamically.</small>
+</ul>
+</DIV>
+<hr>
+<DIV id="s47">
+<div class='heading'>Lock-based Concurrency Control</div>
+<p>
+Synchronise access to shared data items via following rules:
+<ul>
+<li> before reading <i>X</i>, get shared (read) lock on <i>X</i>
+<li> before writing <i>X</i>, get exclusive (write) lock on <i>X</i>
+<li> an attempt to get a shared lock on <i>X</i> is blocked
+	if another transaction already has exclusive lock on <i>X</i>
+<li> an attempt to get an exclusive lock on <i>X</i> is blocked
+	if another transaction has any kind of lock on <i>X</i>
+</ul>
+These rules alone do not guarantee serializability.
+</DIV>
+<hr>
+<DIV id="s48">
+<div class='heading'>Two-Phase Locking</div>
+<p>
+To guarantee serializability, we require an additional constraint
+on how locks are applied:
+<ul>
+<li> no transaction can request a lock after it has released one of its locks
+</ul>
+Each transaction is then structured as:
+<ul>
+<li> <font color='#0000BB'>growing</font> phase where locks are acquired
+<li> <font color='#0000BB'>action</font> phase where "real work" is done
+<li> <font color='#0000BB'>shrinking</font> phase where locks are released
+</ul>
+</DIV>
+<hr>
+<DIV id="s49">
+<div class='heading'>Problems with Locking</div>
+<p>
+Appropriate locking can guarantee correctness.
+<p>
+However, it also introduces potential undesirable effects:
+<ul>
+<li> deadlock
+<p>
+<small>No transactions can proceed; each waiting on lock held by another.</small>
+<li> starvation
+<p>
+<small>One transaction is permanently "frozen out" of access to data.</small>
+<li> reduced performance
+<p>
+<small>Locking introduces delays while waiting for locks to be released.</small>
+</ul>
+</DIV>
+<hr>
+<DIV id="s50">
+<div class='heading'>Deadlock</div>
+<p>
+<p>
+Deadlock occurs when two transactions are waiting
+for a lock on an item held by the other.
+<p>
+Example:
+<p><pre>
+T1              T2
+--------------  ---------------
+write_lock(X)
+read(X)
+                write_lock(Y)
+                read(Y)
+write_lock(Y)
+<font color="#CC0000">waiting for Y</font>   write_lock(X)
+<font color="#CC0000">waiting for Y</font>   <font color="#CC0000">waiting for X</font>
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s51">
+<div class='heading'>Deadlock <span style="font-size:67%">(cont)</span></div>
+<p>
+Handling deadlock involves forcing a transaction to "back off".
+<ul>
+<li> select a process to "back off"
+<small>
+<ul>
+<li> choose on basis of how far transaction has progressed, # locks held, ...
+</ul>
+</small>
+<li> roll back the selected process
+<small>
+<ul>
+<li> how far does this it need to be rolled back? (less roll-back is better)
+</ul>
+</small>
+<li> prevent starvation
+<small>
+<ul>
+<li> need methods to ensure that same transaction isn't always chosen
+</ul>
+</small>
+</ul>
+</DIV>
+<hr>
+<DIV id="s52">
+<div class='heading'>Locking and Starvation</div>
+<p>
+<font color='#0000BB'>Starvation</font> occurs when one transaction
+<ul>
+<li> waits on a lock indefinitely
+<li> while other transactions continue normally
+</ul>
+Whether it occurs depends on the lock wait/release strategy.
+<p>
+Multiple locks <i>&rArr;</i> need to decide which to release first.
+<p>
+Solutions:
+<ul>
+<li> implement a fair wait/release strategy
+	<small>(e.g. first-come-first-served)</small>
+<li> use deadlock prevention schemes, such as "wait-die"
+</ul>
+</DIV>
+<hr>
+<DIV id="s53">
+<div class='heading'>Locking and Performance</div>
+<p>
+Locking typically reduces concurrency <i>&rArr;</i> reduces throughput.
+<p>
+Granularity of locking can impact performance:
+<p>
+<font color="#009900"><b>+</b></font>
+lock a small item <i>&rArr;</i> more of database accessible
+<p>
+<font color="#009900"><b>+</b></font>
+lock a small item <i>&rArr;</i> quick update <i>&rArr;</i> quick lock release
+<p>
+<font color="#CC0000"><b>-</b></font>
+lock small items <i>&rArr;</i> more locks <i>&rArr;</i> more lock management
+<p>
+Granularity levels: field, row (tuple), table, whole database
+<p>
+Multiple lock-granularities give best scope for optimising performance.
+</DIV>
+<hr>
+<DIV id="s54">
+<div class='heading'>Multi-version Concurrency Control</div>
+<p>
+One approach to reducing the requirement for locks is to
+<ul>
+<li> provide multiple (consistent) versions of the database
+<li> give each transaction access to an "appropriate" version <br>
+	<small>(i.e. a version that will mantain the serializability of the transaction)</small>
+</ul>
+This approach is called <font color='#0000BB'>multi-version concurrency control</font> <small>(MVCC)</small>.
+<p>
+The primary difference between MVCC and standard locking models:
+<ul>
+<li> read locks do not conflict with write locks, so that
+<li> reading never blocks writing, and writing never blocks reading
+</ul>
+</DIV>
+<hr>
+<DIV id="s55">
+<div class='heading'>MVCC and Transactions</div>
+<p>
+Database systems using MVCC ensure
+<ul>
+<li> statement-level read consistency <br>
+	<small>(i.e. once an SQL SELECT statement starts, its view of the data is "frozen")</small>
+<li> readers do not wait for writers or other readers of the same data
+<li> writers do not wait for readers of the same data
+<li> writers only wait for other writers if they attempt to update
+	 identical rows in concurrent transactions 
+</ul>
+With this behaviour:
+<ul>
+<li> a SELECT statement sees a consistent view of the database
+<li> but it may not see the "current" view of the database
+<p>
+<small>
+E.g. <i>T1</i> does a select and then concurrent <i>T2</i> deletes some of <i>T1</i>'s selected tuples
+</small>
+</ul>
+</DIV>
+<hr>
+<DIV id="s56">
+<div class='heading'>PostgreSQL and MVCC</div>
+<p>
+PostgreSQL uses MVCC to reduce locking requirements.
+<p>
+Consequences:
+<ul>
+<li> several versions of each tuple may exist <i>&rArr;</i> uses more storage
+<li> each transaction needs to check each tuple's <font color='#0000BB'>visibility</font>
+<li> periodically, clean up "old" tuples &nbsp; (<large><code>vacuum</code></large>)
+</ul>
+An "old" tuple is one that is no longer visible to any transaction.
+<p>
+Concurrency control is still needed (via implicit locking):
+<ul>
+<li> amount of locking is determined by user-chosen <font color='#0000BB'>isolation level</font>
+<li> the system then applies appropriate locking automatically
+</ul>
+</DIV>
+<hr>
+<DIV id="s57">
+<div class='heading'>PostgreSQL and MVCC <span style="font-size:67%">(cont)</span></div>
+<p>
+A transaction sees a consistent view of the database, but it may
+not see the "current" view of the database.
+<p>
+<small>
+E.g. <i>T1</i> does a select and then concurrent <i>T2</i> deletes some of <i>T1</i>'s selected tuples
+</small>
+<p>
+This is not a problem unless the transactions communicate
+outside the database system.
+<p>
+For applications that require that every transaction accesses the
+current consistent version of the data, explicit locking must be used.
+</DIV>
+<hr>
+<DIV id="s58">
+<div class='heading'>Concurrency Control in SQL</div>
+<p>
+Transactions in SQL are specified by
+<ul>
+<li> <large><font color=#009900><b><code>BEGIN</code></b></font></large> ... start a transaction
+<li> <large><font color=#009900><b><code>COMMIT</code></b></font></large> ... successfully complete a transaction
+<li> <large><font color=#009900><b><code>ROLLBACK</code></b></font></large> ... undo changes made by transaction + abort
+</ul>
+In PostgreSQL, other actions that cause rollback:
+<ul>
+<li> <b>raise exception</b> during execution of a function
+<li> returning null from a <b>before</b> trigger
+</ul>
+</DIV>
+<hr>
+<DIV id="s59">
+<div class='heading'>Concurrency Control in SQL <span style="font-size:67%">(cont)</span></div>
+<p>
+More fine-grained control of "undo" via savepoints:
+<ul>
+<li> <large><font color=#009900><b><code>SAVEPOINT</code></b></font></large> ... marks point in transaction
+<li> <large><font color=#009900><b><code>ROLLBACK TO SAVEPOINT</code></b></font></large> ... undo changes, continue transaction
+</ul>
+Example:
+<p><pre>
+begin;
+  insert into numbersTable values (1);
+  <font color="#0000EE">savepoint my_savepoint;</font>
+  insert into numbersTable values (2);
+  <font color="#CC0000">rollback to savepoint my_savepoint;</font>
+  insert into numbersTable values (3);
+commit;
+</pre><p>
+will insert 1 and 3 into the table, but not 2.
+</DIV>
+<hr>
+<DIV id="s60">
+<div class='heading'>Concurrency Control in SQL <span style="font-size:67%">(cont)</span></div>
+<p>
+SQL standard defines four levels of <font color='#0000BB'>transaction isolation</font>.
+<ul>
+<li> <font color='#0000BB'>serializable</font> - strongest isolation, most locking
+<li> <font color='#0000BB'>repeatable read</font>
+<li> <font color='#0000BB'>read committed</font>
+<li> <font color='#0000BB'>read uncommitted</font> - weakest isolation, less locking
+</ul>
+The weakest level allows dirty reads, phantom reads, etc.
+<p>
+<small>
+PostgreSQL implements:
+repeatable-read = serializable,
+read-uncommitted = read-committed
+</small>
+</DIV>
+<hr>
+<DIV id="s61">
+<div class='heading'>Concurrency Control in SQL <span style="font-size:67%">(cont)</span></div>
+<p>
+Using the serializable isolation level, a <large><code>select</code></large>:
+<ul>
+<li> sees only data committed before the transaction began
+<li> never sees changes made by concurrent transactions 
+</ul>
+Using the serializable isolation level, an update fails:
+<ul>
+<li> if it tries to modify an "active" data item <br>
+<small>(active = affected by some other transaction, either committed or uncommitted)</small>
+</ul>
+The transaction containing the failed update will rollback and re-start.
+</DIV>
+<hr>
+<DIV id="s62">
+<div class='heading'>Concurrency Control in SQL <span style="font-size:67%">(cont)</span></div>
+<p>
+Explicit control of concurrent access is available, e.g.
+<p>
+Table-level locking: <large><font color=#009900><b><code>LOCK TABLE</code></b></font></large>
+<ul>
+<li> various kinds of shared/exclusive locks are available
+<ul>
+<li> <b>access share</b> allows others to read, and some writes
+<li> <b>exclusive</b> allows others to read, but not to write
+<li> <b>access exclusive</b> blocks all other access to table
+</ul>
+<li> SQL commands automatically acquire appropriate locks
+<ul>
+<li> e.g. <large><font color=#009900><b><code>ALTER TABLE</code></b></font></large> acquires an <b>access exclusive</b> lock
+</ul>
+</ul>
+<p>
+Row-level locking: <large><font color=#009900><b><code>SELECT FOR UPDATE</code></b></font></large>, <large><font color=#009900><b><code>UPDATE</code></b></font></large>, <large><font color=#009900><b><code>DELETE</code></b></font></large>
+<ul>
+<li> allows others to read, but blocks write on selected rows
+</ul>
+All locks are released at end of transaction <small>(no explicit unlock)</small>
+</DIV>
+<hr>
+<DIV id="s63">
+<div class='heading'>PostgreSQL, Transactions, Concurrency</div>
+<p>
+For more details on PostgreSQL's handling of these:
+<ul>
+<li> Chapter 12: Concurrency Control
+<li> SQL commands: BEGIN, COMMIT, ROLLBACK, LOCK, etc.
+</ul>
+</DIV>
+<p><hr><p>
+<span style='font-size:11px;color: grey;'>Produced: 13 Sep 2020</span>
+ <script src='lib/prism.js'></script>   
+ <script src='lib/sg.js'></script>   
+</body>
+</html>

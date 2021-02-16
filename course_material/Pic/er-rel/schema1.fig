@@ -1,0 +1,16 @@
+#FIG 3.2
+Landscape
+Center
+Metric
+A4      
+175.00
+Single
+-2
+1200 2
+2 1 0 1 0 7 50 0 -1 0.000 0 0 -1 0 0 2
+	 1350 495 3420 495
+2 1 0 1 0 7 50 0 -1 0.000 0 0 -1 0 0 2
+	 1485 945 2655 945
+4 0 0 50 0 16 12 0.0000 4 180 5445 450 450 Employee(name:string, birthday:date, worksIn:integer, salary:real)\001
+4 0 0 50 0 16 12 0.0000 4 180 6780 450 900 Department(deptID:integer, name:string, managerName:string, managerBday:date)\001
+4 2 9 50 0 1 12 0.0000 4 180 375 2340 675 Keys\001

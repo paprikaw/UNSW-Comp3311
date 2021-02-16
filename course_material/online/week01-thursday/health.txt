@@ -1,0 +1,24 @@
+
+Entities ...
+
+Person(+SSN, name)
+Patient(*SSN, address, date_of_birth, ?age)
+Doctor(*SSN, specialty, years_of_experience)
+Pharmacist(*SSN, qualification)
+
+Pharmacy(+pID, name, address, phone)
+Drug(+dID, tradeName, formula)
+Prescription(+pID, date)
+
+DrugPackaging(*dID,type,weight,...)
+
+
+Relationships ...
+
+Pharmacy -- managed_by --> Pharmacist
+Pharmacist -- works_in --> Pharmacy
+Patient -- has_primary --> Doctor
+Doctor -- treats -- Patient
+Pharmacy -- sells(price) -- Drug
+Doctor -- writes -- Prescription -- for -- Patient
+Prescription -- has(quantity) -- Drug

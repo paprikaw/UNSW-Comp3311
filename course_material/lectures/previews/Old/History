@@ -1,0 +1,250 @@
+http://www.csuchico.edu/acms/mpattins/Skip_Lees_DB1.htm
+
+                              DATABASE DESIGN
+                         Overview of DB Processing
+                                  Outline
+
+     * "Why Database?"
+     * Information Management Systems
+          + File Processing vs. Database Processing vs. ERP Systems
+     * Database Definitions
+     * Sources of DBMS Development
+     * Brief History of DBMS
+     * Advantages of DB Processing
+     * Disadvantages of DB Processing
+     * Major Functions of a DBMS
+
+                              DATABASE DESIGN
+                         Overview of DB Processing
+                              "Why Database ?"
+
+     * Recognition  that data are an important corporate asset and that a
+       DBMS is an appropriate tool for effective use and protection
+     * Requirement for flexibility and adaptability
+     * Need to share data resources within the organization
+     * Desire to improve productivity of both the company's users and its
+       programmers
+
+                              DATABASE DESIGN
+                         Overview of DB Processing
+                          File Processing Systems
+
+Accounting Information Systems
+
+                              DATABASE DESIGN
+                         Overview of DB Processing
+                          File Processing Systems
+
+Production Information Systems
+
+                              DATABASE DESIGN
+                         Overview of DB Processing
+                        Database Processing Systems
+
+Business Functional Area Systems
+
+                              DATABASE DESIGN
+                         Overview of DB Processing
+                                ERP Systems
+
+Enterprise Resource Planning Systems
+
+                              DATABASE DESIGN
+                         Overview of DB Processing
+                         Information Mgmt. Systems
+
+     * File  Processing  Vs.  Database  Processing  Vs.  ERP  (Enterprise
+       Resource Planning) Processing
+     * In File Processing Systems:
+          + Data  is  partitioned  into  separate  files  with  different
+            formats
+          + Each application has its own separate program
+     * In Database Processing Systems:
+          + Data is integrated into a central database with common format
+          + Each application has its own separate program
+     * In ERP Processing Systems:
+          + Data is integrated into a central database with common format
+          + All  applications  are integrated into one (huge) coordinated
+            system
+
+                              DATABASE DESIGN
+                         Overview of DB Processing
+                            Database Definitions
+
+     * Levels of Data:
+
+Bit
+
+Byte = Character
+
+Field
+
+Record
+
+File
+
+Database
+
+     * A database is a self-describing collection of integrated files.
+
+   A  DBMS  is  a complex computer program that acts as a data librarian,
+   supervising  the  transfer  of  data  between  the  end  user  and the
+   database. 
+
+                              DATABASE DESIGN
+                         Overview of DB Processing
+                        Sources of DBMS Development
+
+     * Hardware  vendors -- to stimulate sales of mainframe computers and
+       related equipment
+          + IBM: IMS, SQL/DS, DB2
+          + HP: Image, Allbase
+          + GE / Honeywell: IDS
+          + DEC: DBMS-10, RDB
+          + Sperry: DMS 1100
+     * University  and  government  labs -- as part of technical research
+       projects
+          + UC, Berkley: INGRES
+          + Univ. of Texas: TDMS, System 2000 (Intel Corp.)
+          + NASA: GUAM (IBM), RIM (Boeing Aerospace)
+
+                              DATABASE DESIGN
+                         Overview of DB Processing
+                        Sources of DBMS Development
+
+     * Software  houses  and  computing  service  companies  --  as their
+       primary business
+          + Cullinet Software: IDMS (mainframe)
+          + Oracle Corp.: Oracle (originally, minicomputer)
+          + Ashton-Tate: dBase (microcomputer)
+          + Microrim: R:BASE
+          + Borland: Paradox
+          + Microsoft: Access
+
+                              DATABASE DESIGN
+                         Overview of DB Processing
+                           Brief History of DBMS
+
+1964: NASA's Apollo moon project led to the development of GUAM (Generalized
+Update Access Method) by IBM
+
+1966: IBM released the first commercially avail-able DBMS - IMS (Information
+Management System) based on the hierarchical data model
+
+1967: GE developed IDS (Integrated Data System) based on the network data
+model; later, Honeywell produced IDS-2
+
+1969: CODASYL Database Task Group Report set standards for network database
+products
+
+1970: Dr. E. F. Codd, IBM researcher, proposed the relational data model in
+theoretical paper
+
+                              DATABASE DESIGN
+                         Overview of DB Processing
+                           Brief History of DBMS
+
+1970s: Proliferation of hierarchical and network model products and
+installations
+
+1976: IBM (San Jose Research Lab) developed a relational model prototype -
+System R
+
+1977: Larry Ellison founded Oracle Corp.
+
+1981: IBM released first commercially available DB product based on the
+relational model - SQL/DS (Structured Query Language / Data System) for its
+mainframes (interactive OS)
+
+1981: IBM brought PCs to market
+
+1981: Ashton-Tate released dBase II for micros
+
+                              DATABASE DESIGN
+                         Overview of DB Processing
+                           Brief History of DBMS
+
+1982: IBM produced DB2 (SQL-based) for its mainframes with batch operating
+system
+
+1983: Microrim created R:BASE based on NASA's mainframe product RIM using SQL
+
+1985: ANSI adopted SQL as the query language standard
+
+1987: Borland produced Paradox
+
+1991: Borland bought Ashton-Tate (dBase)
+
+1992: Microsoft bought Fox Pro Software
+
+1993: Microsoft released Access
+
+1994: SAP R/3 for client/server environment
+
+1996: Chico State becomes SAP's first university partner
+
+                              DATABASE DESIGN
+                         Overview of DB Processing
+                                 Advantages
+
+     * More information from the same data
+          + Due to integration of files
+     * Reduction of data duplication
+          + Yields data consistency
+          + Eases database maintenance
+     * Improved data integrity
+          + Through the use of data integrity rules and naming standards
+     * Programs are independent of the data format
+          + Yields flexibility when modifications are needed
+
+                              DATABASE DESIGN
+                         Overview of DB Processing
+                                 Advantages
+
+     * Better service to business users
+          + New and one-time requests can be accommodated
+          + Customized, menu-driven interfaces can be easily developed
+     * Sharing of data resources
+          + Concurrent access to the data is provided to multiple users
+     * Increased productivity of IS personnel
+          + 4th generation languages (4GLs)
+          + Application code generators
+
+     * Natural language processors (with some products)
+
+                              DATABASE DESIGN
+                         Overview of DB Processing
+                               Disadvantages
+
+     * DBMS software can be expensive
+          + Few $100s up to $500,000
+     * Additional hardware often required
+          + Faster CPU
+          + More memory and disk space
+     * High impact of failure
+          + Due to centralization and non-duplication of data
+     * Sophisticated design and programming required
+          + Need experienced MIS staff
+
+                              DATABASE DESIGN
+                         Overview of DB Processing
+                               Disadvantages
+
+     * Additional user training may be needed
+          + Due to added system capabilities
+     * Backup and recovery are more difficult
+          + Due to concurrency and complexity
+     * Security is more critical and complicated
+          + Due to shared usage of central database
+
+                              DATABASE DESIGN
+                         Overview of DB Processing
+                         Major Functions of a DBMS
+
+     * Define and store the DB structure (schema)
+     * Load the initial database data
+     * Provide a variety of access methods
+     * Maintain the DB: add, modify, delete data
+     * Provide multiple views of the data
+     * Provide security features
+     * Facilitate backup and recovery

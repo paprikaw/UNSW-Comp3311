@@ -1,0 +1,235 @@
+<html>
+<head>
+<title>Normal Forms</title>
+<link href='lib/slides.css' rel='stylesheet' type='text/css'>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML" async></script>
+<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js'></script>
+<link href='https://fonts.googleapis.com/css?family=Lato' rel='stylesheet'>
+<link href='lib/prism.css' rel='stylesheet'>
+<script src='lib/sg.js'></script>
+</head>
+<body>
+ <DIV class='slideCl1' id="s0"  >
+<div class='navCl1'><a href="#s1"><span class='nextArrowCl'>>></span></a> </div> <div class='heading'>Normal Forms</div><p><ul class='indexUl'  style='font-size: 0.7em;'><li class="i"> <a href="#s1">Normalisation</a>
+<li class="i"> <a href="#s2">Normal Forms</a>
+<li class="i"> <a href="#s5">Boyce-Codd Normal Form</a>
+<li class="i"> <a href="#s8">Third Normal Form</a>
+</ul></DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Normal Forms &#9826; [0/10]</div> <DIV class='slideCl1    ' id="s1"  >
+<div class='navCl1'> <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s2"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Normalisation</div></td><td align='right'></td></tr></table>
+<p>
+<br>
+<font color='#0000BB'>Normalisation</font>: branch of relational theory providing design insights.
+<p>
+The goals of normalisation:
+<ul>
+<li> be able to characterise the level of redundancy in a relational schema
+<li> provide mechanisms for transforming schemas to remove redundancy
+</ul>
+<p>
+Normalisation draws heavily on the theory of functional dependencies.
+<p>
+Normalisation algorithms reduce the amount of redundancy in a schema
+<ul>
+<li> by decomposition &nbsp; (break schema into connected pieces)
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Normal Forms &#9826; [1/10]</div> <DIV class='slideCl1    ' id="s2"  >
+<div class='navCl1'><a href="#s1"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s3"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Normal Forms</div></td><td align='right'></td></tr></table>
+<p>
+Normalisation theory defines six <font color='#0000BB'>normal forms</font> (NFs).
+<ul>
+<li> First,Second,Third Normal Forms (1NF,2NF,3NF) <small>(Codd 1972)</small>
+<li> Boyce-Codd Normal Form (BCNF) <small>(1974)</small>
+<li> Fourth Normal Form (4NF) <small>(Zaniolo 1976, Fagin 1977)</small>
+<li> Fifth Normal Form (5NF) <small>(Fagin 1979)</small>
+</ul>
+<p>
+We say that "a schema is in xNF", which ...
+<ul>
+<li> tells us something about the level of redundancy in the schema
+</ul>
+<p>
+1NF allows most redundancy; &nbsp; 5NF allows least redundancy.
+<p>
+For most practical purposes, BCNF (or 3NF) are acceptable NFs.
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Normal Forms &#9826; [2/10]</div> <DIV class='slideCl1    ' id="s3"  >
+<div class='navCl1'><a href="#s2"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s4"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Normal Forms <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<br>
+<div class='center'>
+<p><table border='0' cellpadding='6'>
+<tr valign=top>
+  <td><nobr>1NF</td>
+  <td></td><td>
+    all attributes have atomic values <br>
+    we assume this as part of relational model, <br>
+    so <i>every</i> relation schema is in 1NF
+  </td>
+</tr>
+<tr valign=top>
+  <td><nobr>2NF</td>
+  <td></td><td>
+    all non-key attributes fully depend on key <br>
+    (i.e. no partial dependencies) <br>
+    avoids much redundancy <br>
+  </td>
+</tr>
+<tr valign=top>
+  <td><nobr>3NF<br>BCNF</td>
+  <td></td><td>
+    no attributes dependent on non-key attrs<br>
+    (i.e. no transitive dependencies) <br>
+    avoids most remaining redundancy <br>
+  </td>
+</tr>
+</table><p>
+</div>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Normal Forms &#9826; [3/10]</div> <DIV class='slideCl1    ' id="s4"  >
+<div class='navCl1'><a href="#s3"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s5"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Normal Forms <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+In practice, BCNF and 3NF are the most important. <br>
+<p>
+<br>
+Boyce-Codd Normal Form (BCNF):
+<ul>
+<li> eliminates all redundancy due to functional dependencies
+<li> but may not preserve original functional dependencies
+</ul>
+<br>
+Third Normal Form (3NF):
+<ul>
+<li> eliminates most (but not all) redundancy due to <i>fd</i>s
+<li> guaranteed to preserve all functional dependencies
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Normal Forms &#9826; [4/10]</div> <DIV class='slideCl1    ' id="s5"  >
+<div class='navCl1'><a href="#s4"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s6"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Boyce-Codd Normal Form</div></td><td align='right'></td></tr></table>
+<p>
+A relation schema <i>R</i> is in BCNF w.r.t a set <i>F</i> of functional dependencies iff:
+<p>
+for all <i>fd</i>s <i>X &rarr; Y</i> in <i>F<sup>+</sup></i>
+<ul>
+<li> either <i>X &rarr; Y</i> is trivial (i.e. <i>Y &sub; X</i>)
+<li> or <i>X</i> is a superkey  <small>(i.e. non-strict superset of attributes in key)</small>
+</ul>
+<br>
+A DB schema is in BCNF if all of its relation schemas are in BCNF.
+<p>
+<small>
+Observations:
+<ul>
+<li> any two-attribute relation is in BCNF
+<li> any relation with key <i>K</i>, other attributes <i>Y</i>, and <i>K &rarr; Y</i> is in BCNF
+</ul>
+</small>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Normal Forms &#9826; [5/10]</div> <DIV class='slideCl1    ' id="s6"  >
+<div class='navCl1'><a href="#s5"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s7"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Boyce-Codd Normal Form <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+If we transform a schema into BCNF, we are guaranteed:
+<ul>
+<li> no update anomalies due to <i>fd</i>-based redundancy
+<li> lossless join decomposition
+</ul>
+However, we are <font color='#0000BB'>not</font> guaranteed:
+<ul>
+<li> the new schema preserves all <i>fd</i>s from the original schema
+</ul>
+<p>
+This may be a problem if the <i>fd</i>s contain significant semantic
+information about the problem domain &nbsp; <small>(use 3NF to preserve dependencies)</small>
+<p>
+<small>
+A dependency <i>A &rarr; C</i> is not preserved if, e.g.
+<ul>
+<li> <i>X = ABC</i> and <i>ABC</i> are all in relation <i>R</i>
+<li> after decomposition into <i>S</i> and <i>T</i>, &nbsp;<i>AB</i> is in <i>S</i> &nbsp;and&nbsp; <i>BC</i> is in <i>T</i>
+</ul>
+</small>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Normal Forms &#9826; [6/10]</div> <DIV class='slideCl1    ' id="s7"  >
+<div class='navCl1'><a href="#s6"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s8"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Boyce-Codd Normal Form <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<br>
+Example: schema in BCNF
+<p>
+<i>R = ABCD</i>, &nbsp;<i>F = { A &rarr; B, A &rarr; C, A &rarr; D }</i>
+<p>
+<i>key(R) = A</i>, &nbsp; all fds have key on RHS
+<p><br>
+Example: schema <i>not</i> in BCNF
+<p>
+<i>R = ABCD</i>, &nbsp;<i>F = { A &rarr; BCD, D &rarr; B, BC &rarr; AD }</i>
+<p>
+if &nbsp;<i>key(R) = A</i>, &nbsp; <i>D &rarr; B</i> does not have key on LHS
+<p>
+if &nbsp;<i>key(R) = BC</i>, &nbsp; <i>D &rarr; B</i> does not have key on LHS
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Normal Forms &#9826; [7/10]</div> <DIV class='slideCl1    ' id="s8"  >
+<div class='navCl1'><a href="#s7"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s9"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Third Normal Form</div></td><td align='right'></td></tr></table>
+<p>
+<br>
+A relation schema <i>R</i> is in 3NF w.r.t a set <i>F</i> of functional dependencies iff:
+<p>
+for all <i>fd</i>s <i>X &rarr; Y</i> in <i>F<sup>+</sup></i>
+<ul>
+<li> either <i>X &rarr; Y</i> is trivial (i.e. <i>Y &sub; X</i>)
+<li> or <i>X</i> is a superkey
+<li> or <i>Y</i> is a single attribute from a key
+</ul>
+A DB schema is in 3NF if all relation schemas are in 3NF.
+<p>
+<small>The extra condition represents a slight weakening of BCNF requirements.</small>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Normal Forms &#9826; [8/10]</div> <DIV class='slideCl1    ' id="s9"  >
+<div class='navCl1'><a href="#s8"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s10"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Third Normal Form <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<br>
+If we transform a schema into 3NF, we are guaranteed:
+<ul>
+<li> lossless join decomposition
+<li> the new schema preserves all of the <i>fd</i>s from the original schema
+</ul>
+However, we are <font color='#0000BB'>not</font> guaranteed:
+<ul>
+<li> no update anomalies due to <i>fd</i>-based redundancy
+</ul>
+<p>
+Whether to use BCNF or 3NF depends on overall design considerations.
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Normal Forms &#9826; [9/10]</div> <DIV class='slideCl1    ' id="s10"  >
+<div class='navCl1'><a href="#s9"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>   </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Third Normal Form <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<br>
+Example: schema in 3NF
+<p>
+<i>R = ABCDE</i>, &nbsp;<i>F = { B &rarr; ACDE, E &rarr; B }</i>
+<p>
+<i>key(R) = B</i>, &nbsp;in <i>E &rarr; B</i>, <i>E</i>&nbsp; is not a key, but <i>B</i>&nbsp; is
+<p>
+Example: schema <i>not</i> in 3NF
+<p>
+<i>R = ABCDE</i>, &nbsp;<i>F = { B &rarr; ACDE, E &rarr; D }</i>
+<p>
+<i>key(R) = B</i>, &nbsp;in <i>E &rarr; D</i>, <i>E</i>&nbsp; is not a key, neither is <i>D</i>
+
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Normal Forms &#9826; [10/10]</div><p><hr><p>
+<span style='font-size:11px;color: grey;'>Produced: 5 Nov 2020</span>
+ <script src='lib/prism.js'></script>   
+ <script src='lib/sg.js'></script>   
+</body>
+</html>

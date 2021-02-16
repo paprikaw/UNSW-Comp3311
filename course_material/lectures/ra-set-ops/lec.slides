@@ -1,0 +1,148 @@
+<title>RA Set Operations
+<footer>COMP3311 20T3 <diamond> RA Set Operations <diamond>
+
+<slide>
+<heading>RA Set Operations
+<br>
+Relational algebra defines three set operations
+<itemize>
+<item> union  <~> ... <~> R <union> S  <~> ... <~> (Query<sub>1</sub>) <@>UNION</@> (Query<sub>2</sub>)
+<item> intersection  <~> ... <~> R <intersect> S  <~> ... <~> (Query<sub>1</sub>) <@>INTERSECT</@> (Query<sub>2</sub>)
+<item> difference  <~> ... <~> R - S  <~> ... <~> (Query<sub>1</sub>) <@>EXCEPT</@> (Query<sub>2</sub>)
+
+</itemize>
+All relations involved must have the same schema <~> <small>(union-compatible)</small>
+<p>
+All operations give a <i>set</i> of results <~> <small>(i.e. no duplicates)</small>
+<p>
+To get <i>bag</i> semantics, use <@>UNION ALL</@>, etc.
+</slide>
+
+<slide>
+<heading>Union
+<br>
+<em>Union</em> combines two <em>compatible</em> relations into
+a single relation via set union of sets of tuples.
+<p>
+<center>
+<$>r<sub>1</sub> <union> r<sub>2</sub></$> <~> = <~> { <$>t</$> <~>|<~> <$>t <in> r<sub>1</sub> <or> t <in> r<sub>2</sub></$> }, <~~~> where <$>r<sub>1</sub>(R), r<sub>2</sub>(R)</$>
+</center>
+<p>
+Result size: <~> |<$>r<sub>1</sub> <union> r<sub>2</sub></$>| <~> <$><leq></$> <~>
+|<$>r<sub>1</sub></$>| + |<$>r<sub>2</sub></$>|
+<~~~>
+Result schema: <$>R</$>
+<p>
+Algorithmic view:
+<program>
+<$>result</$> = <$>r<sub>1</sub></$>
+for each tuple <$>t</$> in relation <$>r<sub>2</sub></$>
+    <$>result</$> = <$>result <union> {t}</$>
+</program>
+</slide>
+
+<slide>
+<heading>Intersection
+<br>
+<em>Intersection</em> combines two <em>compatible</em>
+relations into a single relation via set intersection of sets of tuples.
+<p>
+<center>
+<$>r<sub>1</sub> <intersect> r<sub>2</sub></$> <~> = <~> { <$>t</$> <~>|<~> <$>t <in> r<sub>1</sub> <and> t <in> r<sub>2</sub></$> }, <~~~> where <$>r<sub>1</sub>(R), r<sub>2</sub>(R)</$>
+</center>
+<p>
+Result size: <~> |<$>r<sub>1</sub> <intersect> r<sub>2</sub></$>| <~> <$><leq></$> <~>
+min(|<$>r<sub>1</sub></$>|,|<$>r<sub>2</sub></$>|)
+<~~~>
+Result schema: <$>R</$>
+<p>
+Algorithmic view:
+<program>
+<$>result</$> = {}
+for each tuple <$>t</$> in relation <$>r<sub>1</sub></$>
+    if (<$>t <in> r<sub>2</sub></$>) { <$>result</$> = <$>result <union> {t}</$> }
+</program>
+</slide>
+
+<slide>
+<continued>
+Examples of union and intersection:
+<p>
+<diagram>Pics/relalg/setops
+</slide>
+
+<slide>
+<continued>
+Querying with relational algebra (set operations)...
+<itemize>
+<br>
+<item> Bars where either John or Gernot drinks
+<program90>
+JohnBars = Proj[bar](Sel[drinker=John](Frequents))
+GernotBars = Proj[bar](Sel[drinker=Gernot](Frequents))
+
+Result = JohnBars union GernotBars
+</program>
+<br>
+<item> Bars where both John and Gernot drink
+<program90>
+Result = JohnBars  intersect  GernotBars
+</program>
+</itemize>
+</slide>
+
+<slide>
+<heading>Difference
+<em>Difference</em> finds the set of tuples that exist in
+one relation but do not occur in a second <em>compatible</em> relation.
+<p>
+<center>
+<$>r<sub>1</sub> - r<sub>2</sub></$> <~> = <~> { <$>t</$> <~>|<~> <$>t <in> r<sub>1</sub> <and> t <not><in> r<sub>2</sub></$> }, <~~~> where <$>r<sub>1</sub>(R), r<sub>2</sub>(R)</$>
+</center>
+<p>
+Uses same notion of relation compatibility as union.
+<p>
+Note:
+tuples in <$>r<sub>2</sub></$> but not <$>r<sub>1</sub></$> do not appear in the result
+<itemize>
+<sitem> i.e. set difference != complement of set intersection
+</itemize>
+Algorithmic view:
+<program>
+<$>result</$> = {}
+for each tuple <$>t</$> in relation <$>r<sub>1</sub></$>
+    if (!(<$>t <in> r<sub>2</sub></$>)) { <$>result</$> = <$>result <union> {t}</$> }
+</program>
+</slide>
+
+<slide>
+<continued>
+Examples of difference:
+<p>
+<diagram>Pics/relalg/difference2
+<~><p>
+Clearly, difference is not symmetric.
+</slide>
+
+<slide>
+<continued>
+Querying with relational algebra (difference) ...
+<itemize>
+<br>
+<item> Bars where John drinks and Gernot doesn't
+<program90>
+JohnBars = Proj[bar](Sel[drinker=John](Frequents))
+GernotBars = Proj[bar](Sel[drinker=Gernot](Frequents))
+
+Result = JohnBars - GernotBars
+</program>
+<item> Bars that sell VB but not New
+<program90>
+VBBars = Proj[bar](Sel[beer=VB](Sells))
+NewBars = Proj[bar](Sel[beer=New](Sells))
+
+Result = VBBars - NewBars
+</program>
+</itemize>
+</slide>
+

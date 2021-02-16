@@ -1,0 +1,9 @@
+
+select * from R where f()
+
+select * from R where x = 5
+
+select * from R where x = (select y from S where y < R.x)
+
+for each tuple t in R:
+   run the query (select y from S where y < t.x)

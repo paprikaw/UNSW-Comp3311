@@ -1,0 +1,319 @@
+<title>PLpgSQL (i)
+<footer>COMP3311 20T3 <diamond> PLpgSQL (i) <diamond>
+
+<slide>
+<heading>PLpgSQL
+<term>PLpgSQL</term> = <b>P</b>rocedural <b>L</b>anguage extensions to <b>P</b>ost<b>g</b>re<b>SQL</b>
+<p>
+A PostgreSQL-specific language integrating features of:
+<itemize>
+<item> procedural programming and SQL programming
+</itemize>
+<p>
+Provides a means for <em>extending DBMS functionality</em>, e.g.
+<itemize>
+<sitem> implementing constraint checking <small>(triggered functions)</small>
+<sitem> complex query evaluation <small>(e.g. recursive)</small>
+<sitem> complex computation of column values
+<sitem> detailed control of displayed results
+</itemize>
+Details: PostgreSQL Documentation, Chapter 42
+</slide>
+
+<slide>
+<heading>Defining PLpgSQL Functions
+PLpgSQL functions are created (and inserted into db) via:
+<syntax>
+<green>CREATE OR REPLACE</green>
+   <$>funcName</$>(<$>param1</$>, <$>param2</$>, ....)
+   <green>RETURNS</green> <$>rettype</$>
+<green>AS $$</green>
+<blue>DECLARE</blue>
+   <$>variable</$> <$>declarations</$>
+<blue>BEGIN</blue>
+   <$>code</$> <$>for</$> <$>function</$>
+<blue>END;</blue>
+<green>$$ LANGUAGE</green> plpgsql;
+</syntax>
+<p><br>
+Note: the entire function body is a single SQL string <~> (<@>$$</@>...<@>$$</@>)
+</slide>
+
+<slide>
+<heading>PLpgSQL Examples
+<b>Example:</b> function to compute <$>x / y</$><~> "safely"
+<program>
+<green>create or replace function</green>
+   div(x integer, y integer) <green>returns</green> integer
+<green>as $$</green>
+<blue>declare</blue>
+   result integer;    <comment>-- variable</comment>
+<blue>begin</blue>
+   <blue>if</blue> (y <> 0) <blue>then</blue>   <comment>-- conditional</comment>
+      result := x/y;  <comment>-- assignment</comment>
+   <blue>else</blue>
+      result := 0;    <comment>-- assignment</comment>
+   <blue>end if</blue>;
+   <blue>return</blue> result;
+<blue>end;</blue>
+<green>$$ language</green> plpgsql;
+</program>
+</slide>
+
+<slide>
+<continued>
+<b>Example:</b> function to compute n!
+<program>
+<green>create or replace function</green>
+   factorial(n integer) <green>returns</green> integer
+<green>as $$</green>
+<blue>declare</blue>
+   i integer;
+   fac integer := 1;
+<blue>begin</blue>
+   <blue>for</blue> i <blue>in</blue> 1..n <blue>loop</blue>
+      fac := fac * i;
+   <blue>end loop</blue>;
+   <blue>return</blue> fac;
+<blue>end;</blue>
+<green>$$ language</green> plpgsql;
+</program>
+</slide>
+
+<slide>
+<continued>
+<b>Example:</b> function to compute n! recursively
+<program>
+<green>create function</green>
+   factorial(n integer) <green>returns</green> integer
+<green>as $$</green>
+<blue>begin</blue>
+   <blue>if</blue> n << 2 <blue>then</blue>
+      <blue>return</blue> 1;
+   <blue>else</blue>
+      <blue>return</blue> n * factorial(n-1);
+   <blue>end if</blue>;
+<blue>end;</blue>
+<green>$$ language</green> plpgsql;
+</program>
+Usage: <~> <@>select factorial(5);</@>
+</slide>
+
+<slide>
+<continued>
+<b>Example:</b> handle withdrawl from account and return status message
+<program80>
+<green>create function</green>
+    withdraw(acctNum text, amount integer) <green>returns</green> text
+<green>as $$</green>
+<blue>declare</blue> bal integer;
+<blue>begin</blue>
+    <brown>select balance into</brown> bal
+    <brown>from   Accounts
+    where  acctNo =</brown> acctNum;
+    <blue>if</blue> bal << amount <blue>then</blue>
+        <blue>return</blue> 'Insufficient Funds';
+    <blue>else</blue>
+        <brown>update Accounts
+        set    balance = balance -</brown> amount
+        <brown>where  acctNo =</brown> acctNum;
+        <brown>select balance into</brown> bal
+        <brown>from   Accounts
+        where  acctNo =</brown> acctNum;
+        <blue>return</blue> 'New Balance: ' || bal;
+    <blue>end if</blue>;
+<blue>end;</blue>
+<green>$$ language</green> plpgsql;
+</program>
+</slide>
+
+<slide>
+<heading>PLpgSQL Gotchas
+Some things to beware of:
+<itemize>
+<item> doesn't provide any i/o facilities  <~> <small>(except <@>RAISE NOTICE</@>)</small>
+<small>
+<itemize>
+<item> the aim is to build computations on tables that SQL alone can't do
+</itemize>
+</small>
+<item> functions are not syntax-checked when loaded into DB
+<small>
+<itemize>
+<item> you don't find out about the syntax error until "run-time"
+</itemize>
+</small>
+<item> error messages are sometimes not particularly helpful
+<item> functions are defined as strings
+<small>
+<itemize>
+<sitem> change of <q>lexical scope</q> can sometimes be confusing
+</itemize>
+</small>
+<item> giving params/variables the same names as attributes
+<itemize>
+<item> can avoid by starting all param/var names with underscore
+</itemize>
+</itemize>
+<p>
+Summary: debugging PLpgSQL can sometimes be tricky.
+</slide>
+
+<slide>
+<heading>Data Types
+PLpgSQL constants and variables can be defined using:
+<itemize>
+<item> standard SQL data types <~> <small>(<@>CHAR, DATE, NUMBER, ...</@>)</small>
+<item> user-defined PostgreSQL data types <~> <small>(e.g. <@>Point</@>)</small>
+<item> a special structured record type <~> <small>(<@>RECORD</@>)</small>
+<item> table-row types <~> <small>(e.g. <@>Branches%ROWTYPE</@> or simply <@>Branches</@>)</small>
+<item> types of existing variables <~> <small>(e.g. <@>Branches.location%TYPE</@>)</small>
+</itemize>
+There is also a <@>CURSOR</@> type for interacting with SQL.
+</slide>
+
+<slide>
+<continued>
+Variables can also be defined in terms of:
+<itemize>
+<item> the type of an existing variable or table column
+<item> the type of an existing table row (implict <@>RECORD</@> type)
+</itemize>
+<b>Examples:</b>
+<program>
+quantity    INTEGER;
+start_qty   quantity%TYPE;
+
+employee    Employees%ROWTYPE;
+<comment>-- or</comment>
+employee    Employees;
+
+name        Employees.name%TYPE;
+</program>
+</slide>
+
+<slide>
+<heading>Syntax/Control Structures
+Typical set of control structures, with extensions:
+<br>
+<deftable>
+<row>
+<col1>Assignment</col1>
+<col2> <$>var</$> <@>:=</@> <$>expr</$> <br> <@>SELECT</@> <$>expr</$> <@>INTO</@> <$>var</$> </col2>
+</row>
+<row>
+<col1>Selection</col1>
+<col2>
+<syntax>
+IF <$>Cond<sub>1</sub></$> THEN <$>S<sub>1</sub></$>
+ELSIF <$>Cond<sub>2</sub></$> THEN <$>S<sub>2</sub></$> ...
+ELSE <$>S</$> END IF
+</syntax>
+</col2>
+</row>
+<row>
+<col1>Iteration</col1>
+<col2>
+<syntax>
+LOOP <$>S</$> END LOOP
+WHILE <$>Cond</$> LOOP <$>S</$> END LOOP
+FOR <$>rec_var</$> IN <$>Query</$> LOOP ...
+FOR <$>int_var</$> IN <$>lo</$>..<$>hi</$> LOOP ...
+</syntax>
+</col2>
+</row>
+</deftable>
+<p>
+<tt><i>S<sub>i</sub></i></tt><~> = list of PLpgSQL statements, each terminated by semi-colon
+</slide>
+
+<slide>
+<heading>SELECT...INTO
+Can capture query results via:
+<syntax>
+SELECT <$>Exp<sub>1</sub></$>,<$>Exp<sub>2</sub></$>,...,<$>Exp<sub>n</sub></$>
+INTO   <$>Var<sub>1</sub></$>,<$>Var<sub>2</sub></$>,...,<$>Var<sub>n</sub></$>
+FROM   <$>TableList</$>
+WHERE  <$>Condition</$> ...
+</syntax>
+The semantics:
+<itemize>
+<item> execute the query as usual
+<item> return <q>projection list</q> (<$>Exp<sub>1</sub></$>,<$>Exp<sub>2</sub></$>,...) as usual
+<item> assign each <$>Exp<sub>i</sub></$><~> to corresponding <$>Var<sub>i</sub></$>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Assigning a simple value via <@>SELECT...INTO</@>:
+<program>
+<comment>-- cost is local var, price is attr</comment>
+select price into cost
+from   StockList
+where  item = 'Cricket Bat';
+cost := cost * (1+tax_rate);
+total := total + cost;
+</program>
+The current PostgreSQL parser also allows this syntax:
+<program>
+select into cost price
+from   StockList
+where  item = 'Cricket Bat';
+</program>
+</slide>
+
+<slide>
+<continued>
+Assigning whole rows via <@>SELECT...INTO</@>:
+<program>
+<green>declare</green>
+   emp    Employees%ROWTYPE;
+   <comment>-- alternatively,  emp  RECORD;</comment>
+   eName  text;
+   pay    real;
+<green>begin</green>
+   select * into emp
+   from Employees where id = 966543;
+   eName := emp.name;
+   ...
+   select name,salary into eName,pay
+   from Employees where id = 966543;
+<green>end</green>;
+</program>
+</slide>
+
+<slide>
+<continued>
+In the case of a PLpgSQL statement like
+<program>
+select a into b from R where ...
+</program>
+If the selection returns no tuples
+<itemize>
+<item> the variable <@>b</@> gets the value <@>NULL</@>
+</itemize>
+If the selection returns multiple tuples
+<itemize>
+<item> the variable <@>b</@> gets the value from the first tuple
+</itemize>
+</slide>
+
+<slide>
+<continued>
+An alternative to check for "no data found"
+<p>
+Use the special variable <@>FOUND</@> ...
+<itemize>
+<item> local to each function, set false at start of function
+<item> set true if a <@>SELECT</@> finds at least one tuple
+<item> set true if <@>INSERT/DELETE/UPDATE</@> affects at least one tuple
+<item> otherwise, remains as <@>FALSE</@>
+</itemize>
+Example of use:
+<program>
+select a into b from R where ...
+if (not found) then
+    <comment>-- handle case where no matching tuples b</comment>
+</program>
+</slide>

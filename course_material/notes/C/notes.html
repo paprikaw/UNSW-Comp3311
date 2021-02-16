@@ -1,0 +1,1437 @@
+<html>
+<head>
+<title>Relational Algebra</title>
+<link href='lib/notes.css' rel='stylesheet' type='text/css'>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML" async></script>
+<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js'></script>
+<link href='lib/prism.css' rel='stylesheet'>
+<script src='lib/sg.js'></script>
+</head>
+<body>
+<div class='heading'>Relational Algebra</div><p><ul class='indexUl'  style='font-size: 0.7em;'><li class="i"> <a href="#s1">Relational Algebra</a>
+<li class="i"> <a href="#s4">Notation</a>
+<li class="i"> <a href="#s7">Sample Relations</a>
+<li class="i"> <a href="#s10">Selection</a>
+<li class="i"> <a href="#s13">Projection</a>
+<li class="i"> <a href="#s16">Union</a>
+<li class="i"> <a href="#s18">Intersection</a>
+<li class="i"> <a href="#s20">Difference</a>
+<li class="i"> <a href="#s23">Product</a>
+<li class="i"> <a href="#s30">Rename</a>
+<li class="i"> <a href="#s32">Natural Join</a>
+<li class="i"> <a href="#s38">Theta Join</a>
+<li class="i"> <a href="#s41">Outer Join</a>
+<li class="i"> <a href="#s46">Division</a>
+<li class="i"> <a href="#s52">Aggregation</a>
+<li class="i"> <a href="#s54">Generalised Projection</a>
+</ul><hr>
+<DIV id="s1">
+<div class='heading'>Relational Algebra</div>
+<p>
+<font color='#0000BB'>Relational algebra</font> (RA) can be viewed as ...
+<ul>
+<li> mathematical system for manipulating relations, or
+<li> data manipulation language (DML) for the relational model
+</ul>
+Relational algebra consists of:
+<ul>
+<li> <font color='#0000BB'>operands</font>: relations, or variables representing relations
+<li> <font color='#0000BB'>operators</font> that map relations to relations
+<li> rules for combining operands/operators into expressions
+<li> rules for evaluating such expressions
+</ul>
+RA can be viewed as the "machine language" for RDBMSs
+</DIV>
+<hr>
+<DIV id="s2">
+<div class='heading'>Relational Algebra <span style="font-size:67%">(cont)</span></div>
+<p>
+Core relational algebra operations:
+<ul>
+<li> <font color='#0000BB'>selection</font>: choosing a subset of rows
+<li> <font color='#0000BB'>projection</font>: choosing a subset of columns
+<li> <font color='#0000BB'>product</font>, <font color='#0000BB'>join</font>: combining relations
+<li> <font color='#0000BB'>union</font>, <font color='#0000BB'>intersection</font>, <font color='#0000BB'>difference</font>: combining relations
+<li> <font color='#0000BB'>rename</font>: change names of relations/attributes
+</ul>
+Common extensions include:
+<ul>
+<li> <font color='#0000BB'>aggregation</font>, <font color='#0000BB'>projection++</font>, <font color='#0000BB'>division</font>
+</ul>
+</DIV>
+<hr>
+<DIV id="s3">
+<div class='heading'>Relational Algebra <span style="font-size:67%">(cont)</span></div>
+<p>
+Select, project, join provide a powerful set of operations for
+constructing relations and extracting relevant data from them.
+<p>
+<p><div align='center'>
+<img alt="[Diagram:Pic/relalg/spj.png]" src="Pic/relalg/spj.png">
+</div><p>
+<p>
+Adding set operations and renaming makes RA <font color='#0000BB'>complete</font>.
+</DIV>
+<hr>
+<DIV id="s4">
+<div class='heading'>Notation</div>
+<p>
+Standard treatments of relational algebra use Greek symbols.
+<p>
+We use the following notation <small>(because it is easier to reproduce)</small>:
+<p><table border='0' cellpadding='6'>
+<tr valign=top>
+  <td><nobr><b>Operation</b></td>
+  <td></td><td><b>Standard<br>Notation</b></td>
+  <td></td><td><b>Our<br>Notation</b></td>
+</tr>
+<tr valign=top>
+  <td><nobr>Selection</td>
+  <td></td><td><i><span style="font-size:150%">&sigma;</span><sub>expr</sub>(Rel)</i></td>
+  <td></td><td><i>Sel[expr](Rel)</i></td>
+</tr>
+<tr valign=top>
+  <td><nobr>Projection</td>
+  <td></td><td><i><span style="font-size:150%">&pi;</span><sub>A,B,C</sub>(Rel)</i></td>
+  <td></td><td><i>Proj[A,B,C](Rel)</i></td>
+</tr>
+<tr valign=top>
+  <td><nobr>Join</td>
+  <td></td><td><i>Rel<sub>1</sub> <img src="lib/join-small.gif"><sub>expr</sub> Rel<sub>2</sub></i></td>
+  <td></td><td><i>Rel<sub>1</sub> &nbsp;Join[expr]&nbsp; Rel<sub>2</sub></i></td> 
+</tr>
+<tr valign=top>
+  <td><nobr>Rename</td>
+  <td></td><td><i>&rho;<sub>schema</sub>Rel</i></td>
+  <td></td><td><i>Rename[schema](Rel)</i></td> 
+</tr>
+</table><p>
+<small>
+For other operations (e.g. set operations) we adopt the standard notation.
+</small>
+</DIV>
+<hr>
+<DIV id="s5">
+<div class='heading'>Notation <span style="font-size:67%">(cont)</span></div>
+<p>
+We define the semantics of RA operations using
+<ul>
+<li> regular "conditional set" expressions &nbsp; e.g. <i>{ X | condition }</i>
+<p>
+(<font color='#0000BB'>tuple relational calculus</font> ... cf. Haskell list comprehensions)
+<li> tuple notations:
+<ul>
+<li> <i>t[AB]</i> &nbsp; <small>(extracts attributes <i>A</i> and <i>B</i> from tuple <i>t</i>)</small>
+<li> <i>(x,y,z)</i> &nbsp; <small>(enumerated tuples; specify attribute values)</small>
+</ul>
+<li> quantifiers, set operations, boolean operators
+</ul>
+</DIV>
+<hr>
+<DIV id="s6">
+<div class='heading'>Notation <span style="font-size:67%">(cont)</span></div>
+<p>
+All RA operators return a result relation <small>(no DB updates)</small>.
+<p>
+For convenience, we can name a result and use it later.
+<p>
+E.g.
+<p><pre>
+Temp = R <i>op<sub>1</sub></i> S <i>op<sub>2</sub></i> T
+Res  = Temp <i>op<sub>3</sub></i> Z
+<span class='comment'>-- which is equivalent to</span>
+Res  = (R <i>op<sub>1</sub></i> S <i>op<sub>2</sub></i> T) <i>op<sub>3</sub></i> Z
+</pre><p>
+<small>
+Each "intermediate result" has a well-defined schema.
+</small>
+</DIV>
+<hr>
+<DIV id="s7">
+<div class='heading'>Sample Relations</div>
+<p>
+Example database #0 to demonstrate RA operators:
+<p><div align='center'>
+<img alt="[Diagram:Pic/relalg/db0.png]" src="Pic/relalg/db0.png">
+</div><p>
+</DIV>
+<hr>
+<DIV id="s8">
+<div class='heading'>Sample Relations <span style="font-size:67%">(cont)</span></div>
+<p>
+Example database #1 to demonstrate RA operators:
+<p><div align='center'>
+<img alt="[Diagram:Pic/relalg/db1.png]" src="Pic/relalg/db1.png">
+</div><p>
+</DIV>
+<hr>
+<DIV id="s9">
+<div class='heading'>Sample Relations <span style="font-size:67%">(cont)</span></div>
+<p>
+Example database #2 to demonstrate RA operators:
+<p><div align='center'>
+<img alt="[Diagram:Pic/relalg/db2.png]" src="Pic/relalg/db2.png">
+</div><p>
+</DIV>
+<hr>
+<DIV id="s10">
+<div class='heading'>Selection</div>
+<p>
+<font color='#0000BB'>Selection</font> returns a subset of the tuples
+in a relation <i>r</i> that satisfy a specified condition <i>C</i>.
+<p>
+<div class='center'>
+<i><span style="font-size:150%">&sigma;</span><sub>C</sub>(r)</i> &nbsp; = &nbsp; <i>Sel[C](r)</i> &nbsp; = &nbsp; { <i>t</i> &nbsp;|&nbsp; <i>t &isin; r &and; C(t)</i> }, &nbsp;&nbsp;&nbsp; where <i>r(R)</i>
+</div>
+<p>
+<i>C</i> is a boolean expression on attributes in <i>R</i>.
+<p>
+Result size: &nbsp; |<i><span style="font-size:150%">&sigma;</span><sub>C</sub>(r)</i>| <i>&le;</i> |<i>r</i>|
+<p>
+Result schema: &nbsp; same as the schema of <i>r</i> &nbsp; (i.e. <i>R</i>)
+<p>
+Programmer's view:
+<p><pre>
+<i>result</i> = {}
+for each tuple <i>t</i> in relation <i>r</i>
+    if (<i>C(t)</i>) { <i>result</i> = <i>result &cup; {t}</i> }
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s11">
+<div class='heading'>Selection <span style="font-size:67%">(cont)</span></div>
+<p>
+Example selections:
+<p>
+<div class='center'>
+<table cellspacing='10'>
+<tr valign='top'>
+<td>
+<i>Sel [B = 1] (r1)</i> <p>
+<p><table border='1' cellpadding='2'>
+<tr align=center><td>&nbsp;&nbsp;<b>A</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>B</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>C</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>D</b>&nbsp;&nbsp;</td></tr>
+<tr align=center><td>a</td><td>1</td><td>x</td><td>4</td></tr>
+<tr align=center><td>e</td><td>1</td><td>y</td><td>4</td></tr>
+</table><p>
+</td>
+<td>&nbsp;</td>
+<td>
+<i>Sel [A=b &or; A=c] (r1)</i> <p>
+<p><table border='1' cellpadding='2'>
+<tr align=center><td>&nbsp;&nbsp;<b>A</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>B</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>C</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>D</b>&nbsp;&nbsp;</td></tr>
+<tr align=center><td>b</td><td>2</td><td>y</td><td>5</td></tr>
+<tr align=center><td>c</td><td>4</td><td>z</td><td>4</td></tr>
+</table><p>
+</td>
+</tr>
+<tr valign='top'>
+<td>
+<i>Sel [B &ge; D] (r1)</i> <p>
+<p><table border='1' cellpadding='2'>
+<tr align=center><td>&nbsp;&nbsp;<b>A</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>B</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>C</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>D</b>&nbsp;&nbsp;</td></tr>
+<tr align=center><td>c</td><td>4</td><td>z</td><td>4</td></tr>
+<tr align=center><td>d</td><td>8</td><td>x</td><td>5</td></tr>
+</table><p>
+</td>
+<td>&nbsp;</td>
+<td>
+<i>Sel [A = C] (r1)</i> <p>
+<p><table border='1' cellpadding='2'>
+<tr align=center><td>&nbsp;&nbsp;<b>A</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>B</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>C</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>D</b>&nbsp;&nbsp;</td></tr>
+</table><p>
+</td>
+</tr>
+</table>
+</div>
+</DIV>
+<hr>
+<DIV id="s12">
+<div class='heading'>Selection <span style="font-size:67%">(cont)</span></div>
+<p>
+Example queries:
+<ul>
+<li> Find details about the Perryridge branch?
+<ul>
+<li> <i>Sel [branchName=Perryridge] (Branch)</i>
+</ul>
+<li> Which accounts are overdrawn?
+<ul>
+<li> <i>Sel [balance&lt;0] (Account)</i>
+</ul>
+<li> Which Round Hill accounts are overdrawn?
+<ul>
+<li> <i>Sel [branchName=Round Hill &and; balance&lt;0] (Account)</i>
+</ul>
+</ul>
+</DIV>
+<hr>
+<DIV id="s13">
+<div class='heading'>Projection</div>
+<p>
+<font color='#0000BB'>Projection</font> returns a set of tuples containing
+a subset of the attributes in the original relation.
+<p>
+<div class='center'>
+<i><span style="font-size:150%">&pi;</span><sub>X</sub>(r)</i> &nbsp; = &nbsp; <i>Proj[X](r)</i> &nbsp; = &nbsp; { <i>t[X]</i> &nbsp;|&nbsp; <i>t &isin; r</i> }, &nbsp;&nbsp;&nbsp; where <i>r(R)</i>
+</div>
+<p>
+<i>X</i> specifies a subset of the attributes of <i>R</i>.
+<p>
+Note that removing key attributes can produce duplicates.
+<p>
+In RA, duplicates are removed from the result <font color='#0000BB'>set</font>.
+<br>
+<small><font color="#777777">(In many RDBMS's, duplicates are retained &nbsp; (i.e. they use bag, not set, semantics)</small>)</font></small>
+<p>
+Result size: &nbsp; |<i><span style="font-size:150%">&pi;</span><sub>X</sub>(r)</i>| <i>&le;</i> |<i>r</i>|
+&nbsp;&nbsp;&nbsp;
+Result schema: &nbsp; <i>R'(X)</i>
+<p>
+Programmer's view:
+<p><pre>
+<i>result</i> = {}
+for each tuple <i>t</i> in relation <i>r</i>
+    <i>result</i> = <i>result &cup; {t[X]}</i>
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s14">
+<div class='heading'>Projection <span style="font-size:67%">(cont)</span></div>
+<p>
+Example projections:
+<p>
+<div class='center'>
+<table border=0 cellpadding=10>
+<tr>
+<td valign=top align=center>
+<i>Proj [A,B,D] (r1)</i> <p>
+<p><table border='1' cellpadding='2'>
+<tr align=center><td>&nbsp;&nbsp;<b>A</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>B</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>D</b>&nbsp;&nbsp;</td></tr>
+<tr align=center><td>a</td><td>1</td><td>4</td></tr>
+<tr align=center><td>b</td><td>2</td><td>5</td></tr>
+<tr align=center><td>c</td><td>4</td><td>4</td></tr>
+<tr align=center><td>d</td><td>8</td><td>5</td></tr>
+<tr align=center><td>e</td><td>1</td><td>4</td></tr>
+<tr align=center><td>f</td><td>2</td><td>5</td></tr>
+</table><p>
+</td>
+<td>&nbsp;&nbsp;&nbsp;</td>
+<td valign=top align=center>
+<i>Proj [B,D] (r1)</i> <p>
+<p><table border='1' cellpadding='2'>
+<tr align=center><td>&nbsp;&nbsp;<b>B</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>D</b>&nbsp;&nbsp;</td></tr>
+<tr align=center><td>1</td><td>4</td></tr>
+<tr align=center><td>2</td><td>5</td></tr>
+<tr align=center><td>4</td><td>4</td></tr>
+<tr align=center><td>8</td><td>5</td></tr>
+</table><p>
+</td>
+<td>&nbsp;&nbsp;&nbsp;</td>
+<td valign=top align=center>
+<i>Proj [D] (r1)</i> <p>
+<p><table border='1' cellpadding='2'>
+<tr align=center><td>&nbsp;&nbsp;<b>D</b>&nbsp;&nbsp;</td></tr>
+<tr align=center><td>4</td></tr>
+<tr align=center><td>5</td></tr>
+</table><p>
+</td>
+</tr>
+</table>
+</div>
+</DIV>
+<hr>
+<DIV id="s15">
+<div class='heading'>Projection <span style="font-size:67%">(cont)</span></div>
+<p>
+Example queries:
+<li> <i>Proj [branchName] (Branch)</i>
+</ul>
+<li> Which branches actually hold accounts?
+<ul>
+<li> <i>Proj [branchName] (Account)</i>
+</ul>
+<li> What are the names and addresses of all customers?
+<ul>
+<li> <i>Proj [name,address] (Customer)</i>
+</ul>
+<li> Generate a list of all the account numbers
+<ul>
+<li> <i>Proj [accountNo] (Account)</i> &nbsp;&nbsp; <font color="#777777">or</font>
+<li> <i>Proj [account] (Depositor)</i> &nbsp;&nbsp; <small><font color="#777777">(if we assume every account has a depositor)</font></small>
+</ul>
+</ul>
+</DIV>
+<hr>
+<DIV id="s16">
+<div class='heading'>Union</div>
+<p>
+<font color='#0000BB'>Union</font> combines two <font color='#0000BB'>compatible</font> relations into
+a single relation via set union of sets of tuples.
+<p>
+<div class='center'>
+<i>r<sub>1</sub> &cup; r<sub>2</sub></i> &nbsp; = &nbsp; { <i>t</i> &nbsp;|&nbsp; <i>t &isin; r<sub>1</sub> &or; t &isin; r<sub>2</sub></i> }, &nbsp;&nbsp;&nbsp; where <i>r<sub>1</sub>(R), r<sub>2</sub>(R)</i>
+</div>
+<p>
+Compatibility = both relations have the same schema
+<p>
+Result size: &nbsp; |<i>r<sub>1</sub> &cup; r<sub>2</sub></i>| &nbsp; <i>&le;</i> &nbsp;
+|<i>r<sub>1</sub></i>| + |<i>r<sub>2</sub></i>|
+&nbsp;&nbsp;&nbsp;
+Result schema: <i>R</i>
+<p>
+Programmer's view:
+<p><pre>
+<i>result</i> = <i>r<sub>1</sub></i>
+for each tuple <i>t</i> in relation <i>r<sub>2</sub></i>
+    <i>result</i> = <i>result &cup; {t}</i>
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s17">
+<div class='heading'>Union <span style="font-size:67%">(cont)</span></div>
+<p>
+Example queries:
+<ul>
+<li> Which suburbs have either customers or branches?
+<ul>
+<li> <i>Proj[address](Customer) &cup; Proj[address](Branch)</i>
+</ul>
+<li> Which branches have either customers or accounts?
+<ul>
+<li> <i>Proj[homeBranch](Customer) &cup; Proj[branchName](Account)</i>
+</ul>
+</ul>
+The union operator is symmetric i.e. &nbsp; <i>R &cup; S &nbsp; = &nbsp; S &cup; R</i>.
+</DIV>
+<hr>
+<DIV id="s18">
+<div class='heading'>Intersection</div>
+<p>
+<font color='#0000BB'>Intersection</font> combines two <font color='#0000BB'>compatible</font>
+relations into a single relation via set intersection of sets of tuples.
+<p>
+<div class='center'>
+<i>r<sub>1</sub> &cap; r<sub>2</sub></i> &nbsp; = &nbsp; { <i>t</i> &nbsp;|&nbsp; <i>t &isin; r<sub>1</sub> &and; t &isin; r<sub>2</sub></i> }, &nbsp;&nbsp;&nbsp; where <i>r<sub>1</sub>(R), r<sub>2</sub>(R)</i>
+</div>
+<p>
+Uses same notion of relation compatibility as union.
+<p>
+Result size: &nbsp; |<i>r<sub>1</sub> &cup; r<sub>2</sub></i>| &nbsp; <i>&le;</i> &nbsp;
+min(|<i>r<sub>1</sub></i>|,|<i>r<sub>2</sub></i>|)
+&nbsp;&nbsp;&nbsp;
+Result schema: <i>R</i>
+<p>
+Programmer's view:
+<p><pre>
+<i>result</i> = {}
+for each tuple <i>t</i> in relation <i>r<sub>1</sub></i>
+    if (<i>t &isin; r<sub>2</sub></i>) { <i>result</i> = <i>result &cup; {t}</i> }
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s19">
+<div class='heading'>Intersection <span style="font-size:67%">(cont)</span></div>
+<p>
+Example queries:
+<ul>
+<li> Which suburbs have both customers and branches?
+<ul>
+<li> <i>Proj[address](Customer) &cap; Proj[address](Branch)</i>
+</ul>
+<li> Which branches have both customers and accounts?
+<ul>
+<li> <i>Proj[homeBranch](Customer) &cap; Proj[branchName](Account)</i>
+</ul>
+</ul>
+The intersection operator is symmetric i.e. &nbsp; <i>R &cap; S &nbsp; = &nbsp; S &cap; R</i>.
+</DIV>
+<hr>
+<DIV id="s20">
+<div class='heading'>Difference</div>
+<p>
+<font color='#0000BB'>Difference</font> finds the set of tuples that exist in
+one relation but do not occur in a second <font color='#0000BB'>compatible</font> relation.
+<p>
+<div class='center'>
+<i>r<sub>1</sub> - r<sub>2</sub></i> &nbsp; = &nbsp; { <i>t</i> &nbsp;|&nbsp; <i>t &isin; r<sub>1</sub> &and; <img src="lib/not-small.gif"> t &isin; r<sub>2</sub></i> }, &nbsp;&nbsp;&nbsp; where <i>r<sub>1</sub>(R), r<sub>2</sub>(R)</i>
+</div>
+<p>
+Uses same notion of relation compatibility as union.
+<p>
+Note:
+tuples in <i>r<sub>2</sub></i> but not <i>r<sub>1</sub></i> do not appear in the result
+<p>
+i.e. set difference != complement of set intersection
+</ul>
+Programmer's view:
+<p><pre>
+<i>result</i> = {}
+for each tuple <i>t</i> in relation <i>r<sub>1</sub></i>
+    if (!(<i>t &isin; r<sub>2</sub></i>)) { <i>result</i> = <i>result &cup; {t}</i> }
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s21">
+<div class='heading'>Difference <span style="font-size:67%">(cont)</span></div>
+<p>
+Example difference:
+<p>
+<div class='center'>
+<table border=0 cellpadding=10>
+<tr>
+<td valign=top align=center>
+<i>s1 = Sel [B = 1] (r1)</i> <p>
+<p><table border='1' cellpadding='2'>
+<tr align=center><td>&nbsp;&nbsp;<b>A</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>B</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>C</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>D</b>&nbsp;&nbsp;</td></tr>
+<tr align=center><td>a</td><td>1</td><td>x</td><td>4</td></tr>
+<tr align=center><td>e</td><td>1</td><td>y</td><td>4</td></tr>
+</table><p>
+</td>
+<td>&nbsp;&nbsp;&nbsp;</td>
+<td valign=top align=center>
+<i>s2 = Sel [C = x] (r1)</i> <p>
+<p><table border='1' cellpadding='2'>
+<tr align=center><td>&nbsp;&nbsp;<b>A</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>B</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>C</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>D</b>&nbsp;&nbsp;</td></tr>
+<tr align=center><td>a</td><td>1</td><td>x</td><td>4</td></tr>
+<tr align=center><td>d</td><td>8</td><td>x</td><td>5</td></tr>
+</table><p>
+</td>
+</tr>
+<tr><td></td></tr>
+<tr>
+<td valign=top align=center>
+<i>s1 - s2</i> <p>
+<p><table border='1' cellpadding='2'>
+<tr align=center><td>&nbsp;&nbsp;<b>A</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>B</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>C</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>D</b>&nbsp;&nbsp;</td></tr>
+<tr align=center><td>e</td><td>1</td><td>y</td><td>4</td></tr>
+</table><p>
+</td>
+<td>&nbsp;&nbsp;&nbsp;</td>
+<td valign=top align=center>
+<i>s2 - s1</i> <p>
+<p><table border='1' cellpadding='2'>
+<tr align=center><td>&nbsp;&nbsp;<b>A</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>B</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>C</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>D</b>&nbsp;&nbsp;</td></tr>
+<tr align=center><td>d</td><td>8</td><td>x</td><td>5</td></tr>
+</table><p>
+</td>
+</tr>
+</table>
+</div>
+&nbsp;<p>
+Clearly, difference is not symmetric.
+</DIV>
+<hr>
+<DIV id="s22">
+<div class='heading'>Difference <span style="font-size:67%">(cont)</span></div>
+<p>
+Example queries:
+<ul>
+<li> Which customers have no accounts?
+<ul>
+<li> <i>AllCusts = Proj[customerNo](Customer)</i><br>
+<i>CustsWithAccts = Proj[customer](Depositor)</i><br>
+<i>Result = AllCusts - CustsWithAccts</i>
+</ul>
+<li> Which branches have no customers?
+<ul>
+<li> <i>AllBranches = Proj[branchName](Branch)</i><br>
+<i>BranchesWithCusts = Proj[homeBranch](Customer)</i><br>
+<i>Result = AllBranches - BranchesWithCusts</i>
+</ul>
+</ul>
+</DIV>
+<hr>
+<DIV id="s23">
+<div class='heading'>Product</div>
+<p>
+<font color='#0000BB'>Product</font> (Cartesian product) combines information from
+two relations pairwise on tuples.
+<p>
+<div class='center'>
+<i>r &times; s</i> &nbsp; = &nbsp; { <i>(t<sub>1</sub> : t<sub>2</sub>)</i> &nbsp;|&nbsp; <i>t<sub>1</sub> &isin; r &and; t<sub>2</sub> &isin; s</i> }, &nbsp;&nbsp;&nbsp; where <i>r(R), s(S)</i>
+</div>
+<p>
+Each tuple in the result contains all attributes from <i>r</i> and <i>s</i>,
+possibly with some fields renamed to avoid ambiguity.
+<p>
+If <i>t<sub>1</sub> = (A<sub>1</sub>...A<sub>n</sub>)</i> and
+   <i>t<sub>2</sub> = (B<sub>1</sub>...B<sub>n</sub>)</i> then
+   <i>(t<sub>1</sub>:t<sub>2</sub>) = (A<sub>1</sub>...A<sub>n</sub>,B<sub>1</sub>...B<sub>n</sub>)</i>
+<p>
+Note: relations do not have to be union-compatible.
+<p>
+Result size is <font color='#0000BB'>large</font>: &nbsp; |<i>r &times; s</i>| = |<i>r</i>|.|<i>s</i>|
+&nbsp;&nbsp;&nbsp;
+Schema: <i>R&cup;S</i>
+<p>
+Programmer's view:
+<p><pre>
+<i>result</i> = {}
+for each tuple <i>t<sub>1</sub></i> in relation <i>r</i>
+    for each tuple <i>t<sub>2</sub></i> in relation <i>s</i>
+        <i>result</i> = <i>result &cup; {(<i>t<sub>1</sub>:t<sub>2</sub></i>)}</i> }
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s24">
+<div class='heading'>Product <span style="font-size:67%">(cont)</span></div>
+<p>
+Example product #1:
+<p>
+<div class='center'>
+<table border=0 cellpadding=10>
+<tr><td valign=top><i>r1 &times; r2</i></td><td valign=top>
+<p><table border='1' cellpadding='2'>
+<tr align=center><td>&nbsp;&nbsp;<b>A</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>B</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>C</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>D</b>&nbsp;&nbsp;</td>
+	<td>&nbsp;&nbsp;<b>E</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>F</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>G</b>&nbsp;&nbsp;</td></tr>
+<tr align=center><td>a</td><td>1</td><td>x</td><td>4</td>
+	<td>1</td><td>a</td><td>x</td></tr>
+<tr align=center><td>a</td><td>1</td><td>x</td><td>4</td>
+	<td>2</td><td>b</td><td>y</td></tr>
+<tr align=center><td>a</td><td>1</td><td>x</td><td>4</td>
+	<td>3</td><td>c</td><td>x</td></tr>
+<tr align=center><td>a</td><td>1</td><td>x</td><td>4</td>
+	<td>4</td><td>a</td><td>y</td></tr>
+<tr align=center><td>a</td><td>1</td><td>x</td><td>4</td>
+	<td>5</td><td>b</td><td>x</td></tr>
+<tr align=center><td>b</td><td>2</td><td>y</td><td>5</td>
+	<td>1</td><td>a</td><td>x</td></tr>
+<tr align=center><td>b</td><td>2</td><td>y</td><td>5</td>
+	<td>2</td><td>b</td><td>y</td></tr>
+<tr align=center><td>b</td><td>2</td><td>y</td><td>5</td>
+	<td>3</td><td>c</td><td>x</td></tr>
+<tr><td colspan=7 align=center> ... </td></tr>
+<tr align=center><td>f</td><td>2</td><td>z</td><td>5</td>
+	<td>3</td><td>c</td><td>x</td></tr>
+<tr align=center><td>f</td><td>2</td><td>z</td><td>5</td>
+	<td>4</td><td>a</td><td>y</td></tr>
+<tr align=center><td>f</td><td>2</td><td>z</td><td>5</td>
+	<td>5</td><td>b</td><td>x</td></tr>
+</table><p>
+</td></tr>
+</table>
+</div>
+</DIV>
+<hr>
+<DIV id="s25">
+<div class='heading'>Product <span style="font-size:67%">(cont)</span></div>
+<p>
+Example product #2:
+<P>
+<div class='center'>
+<i>Students &times; Marks</i>
+<small>
+<p><table border='1' cellpadding='2'>
+<tr align=center><td>&nbsp;&nbsp;<b>course</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>name</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>sid</b>&nbsp;&nbsp;</td>
+	<td>&nbsp;&nbsp;<b>stude</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>subj</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>mark</b>&nbsp;&nbsp;</td></tr>
+<tr align=center><td>BE</td><td>Anne</td><td>21333</td>
+	<td>21333</td><td>1011</td><td>74</td></tr>
+<tr align=center><td>BE</td><td>Anne</td><td>21333</td>
+	<td>21333</td><td>1021</td><td>70</td></tr>
+<tr align=center><td>BE</td><td>Anne</td><td>21333</td>
+	<td>21333</td><td>2011</td><td>68</td></tr>
+<tr align=center><td>BE</td><td>Anne</td><td>21333</td>
+	<td>21531</td><td>1011</td><td>94</td></tr>
+<tr align=center><td>BE</td><td>Anne</td><td>21333</td>
+	<td>21531</td><td>1021</td><td>90</td></tr>
+<tr align=center><td>BE</td><td>Anne</td><td>21333</td>
+	<td>21623</td><td>1011</td><td>50</td></tr>
+<tr align=center><td>BE</td><td>Dave</td><td>21876</td>
+	<td>21333</td><td>1011</td><td>74</td></tr>
+<tr align=center><td>BE</td><td>Dave</td><td>21876</td>
+	<td>21333</td><td>1021</td><td>70</td></tr>
+<tr align=center><td>BE</td><td>Dave</td><td>21876</td>
+	<td>21333</td><td>2011</td><td>68</td></tr>
+<tr align=center><td>BE</td><td>Dave</td><td>21876</td>
+	<td>21531</td><td>1011</td><td>94</td></tr>
+<tr align=center><td>BE</td><td>Dave</td><td>21876</td>
+	<td>21531</td><td>1021</td><td>90</td></tr>
+<tr align=center><td>BE</td><td>Dave</td><td>21876</td>
+	<td>21623</td><td>1011</td><td>50</td></tr>
+<tr align=center><td>BSc</td><td>John</td><td>21531</td>
+	<td>21333</td><td>1011</td><td>74</td></tr>
+<tr align=center><td>BSc</td><td>John</td><td>21531</td>
+	<td>21333</td><td>1021</td><td>70</td></tr>
+<tr align=center><td>BSc</td><td>John</td><td>21531</td>
+	<td>21333</td><td>2011</td><td>68</td></tr>
+<tr align=center><td>BSc</td><td>John</td><td>21531</td>
+	<td>21531</td><td>1011</td><td>94</td></tr>
+<tr align=center><td>BSc</td><td>John</td><td>21531</td>
+	<td>21531</td><td>1021</td><td>90</td></tr>
+<tr align=center><td>BSc</td><td>John</td><td>21531</td>
+	<td>21623</td><td>1011</td><td>50</td></tr>
+<tr align=center><td>BSc</td><td>Tim</td><td>21623</td>
+	<td>21333</td><td>1011</td><td>74</td></tr>
+<tr align=center><td>BSc</td><td>Tim</td><td>21623</td>
+	<td>21333</td><td>1021</td><td>70</td></tr>
+<tr align=center><td>BSc</td><td>Tim</td><td>21623</td>
+	<td>21333</td><td>2011</td><td>68</td></tr>
+<tr align=center><td>BSc</td><td>Tim</td><td>21623</td>
+	<td>21531</td><td>1011</td><td>94</td></tr>
+<tr align=center><td>BSc</td><td>Tim</td><td>21623</td>
+	<td>21531</td><td>1021</td><td>90</td></tr>
+<tr align=center><td>BSc</td><td>Tim</td><td>21623</td>
+	<td>21623</td><td>1011</td><td>50</td></tr>
+</table><p>
+</small>
+</div>
+</DIV>
+<hr>
+<DIV id="s26">
+<div class='heading'>Product <span style="font-size:67%">(cont)</span></div>
+<p>
+By itself, product isn't a useful querying mechanism.
+<p>
+However, it gives a basis for combining information across relations.
+<p>
+A special (and very common) usage of product:
+<ul>
+<li> form all possible pairs in <i>r &times; s</i>
+<li> select just the "interesting" pairs
+	&nbsp; <small><font color="#777777">(matching key values)</font></small>
+</ul>
+This usage is represented by a separate operation: <font color='#0000BB'>join</font>.
+<p>
+Note: join is <font color='#0000BB'>not</font> implemented using product
+	&nbsp; <small>(which is why RDBMSs work)</small>
+<p>
+<small>
+Join is critically important in implementing "navigation" in relational databases.
+</small>
+</DIV>
+<hr>
+<DIV id="s27">
+<div class='heading'>Product <span style="font-size:67%">(cont)</span></div>
+<p>
+Example query #1:
+<ul>
+<li> Who are the owners of account A101?
+<ul>
+<li> combine information from <i>Customer</i> and <i>Depositor</i>
+<li>	<i>tmp1 = Customer &times; Depositor</i> <br>
+	<i>tmp2 = Sel [account=A101] (tmp1)</i> <br>
+	<i>tmp3 = Sel [customer=customerNo] (tmp2)</i> <br>
+	<i>res &nbsp;  = Proj [name] (tmp3)</i>
+</ul>
+</ul>
+</DIV>
+<hr>
+<DIV id="s28">
+<div class='heading'>Product <span style="font-size:67%">(cont)</span></div>
+<p>
+Example query #2:
+<ul>
+<li> Which accounts are held in branches in Horseneck or Brooklyn?
+<ul>
+<li> combine information from <i>Account</i> and <i>Branch</i>
+<li>	<i>tmp1 = Account &times; Branch</i> <br>
+	<i>tmp2 = Sel [B.address = Horseneck] (tmp1)</i> <br>
+	<i>tmp3 = Sel [B.address = Brooklyn] (tmp1)</i> <br>
+	<i>tmp4 = tmp2 &cup; tmp3</i> <br>
+	<i>tmp5 = Sel [A.branchName = B.branchName] (tmp4)</i> <br>
+	<i>res &nbsp; = Proj [A.accountNo] (tmp5)</i>
+</ul>
+</ul>
+</DIV>
+<hr>
+<DIV id="s29">
+<div class='heading'>Product <span style="font-size:67%">(cont)</span></div>
+<p>
+Example query #3:
+<ul>
+<li> Which customers hold accounts at a Brooklyn branch?
+<ul>
+<li> need to combine information from all relations
+<li>	<i>tmp1 = Account &times; Branch &times; Customer &times; Depositor</i> <br>
+	<i>tmp2 = Sel [B.address = Brooklyn] (tmp1)</i> <br>
+	<i>tmp3 = Sel [B.branchName = A.branchName] (tmp2)</i> <br>
+	<i>tmp4 = Sel [A.accountNo = account] (tmp3)</i> <br>
+	<i>tmp5 = Sel [C.customerNo = A.customer] (tmp4)</i> <br>
+	<i>res &nbsp; = Proj [C.name] (tmp5)</i>
+</ul>
+</ul>
+</DIV>
+<hr>
+<DIV id="s30">
+<div class='heading'>Rename</div>
+<p>
+<font color='#0000BB'>Rename</font> provides "schema mapping".
+<p>
+If expression <i>E</i> returns a relation
+<i>R(A<sub>1</sub>, A<sub>2</sub>, ... A<sub>n</sub>)</i>, then
+<p>
+<div class='center'>
+<i>Rename[S(B<sub>1</sub>, B<sub>2</sub>, ... B<sub>n</sub>)](E)</i>
+</div>
+<p>
+gives a relation called <i>S</i>
+<ul>
+<li> containing the same set of tuples as <i>E</i>
+<li> but with the name of each attribute changed from <i>A<sub>i</sub></i>
+to <i>B<sub>i</sub></i>
+</ul>
+<small>
+Rename is like the identity function on the <i>contents</i> of a relation;
+it changes only the schema.
+</small>
+<p>
+<font color='#0000BB'>Rename</font> can be viewed as a "technical" apparatus of RA.
+</DIV>
+<hr>
+<DIV id="s31">
+<div class='heading'>Rename <span style="font-size:67%">(cont)</span></div>
+<p>
+Examples:
+<p>
+<div class='center'>
+<tr><td valign=top align=center>
+<i>Rename[s1(J,K,L,M)](r1)</i>
+<p>
+<p><table border='1' cellpadding='2'>
+<tr align=center><td>&nbsp;&nbsp;<b>J</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>K</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>L</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>M</b>&nbsp;&nbsp;</td></tr>
+<tr align=center><td>a</td><td>1</td><td>x</td><td>4</td></tr><tr align=center><td>b</td><td>2</td><td>y</td><td>5</td></tr>
+<tr align=center><td>c</td><td>4</td><td>z</td><td>4</td></tr><tr align=center><td>d</td><td>8</td><td>x</td><td>5</td></tr><tr align=center><td>e</td><td>1</td><td>y</td><td>4</td></tr>
+<tr align=center><td>f</td><td>2</td><td>z</td><td>5</td></tr>
+</table><p>
+<i>s1</i>
+</td><td>&nbsp;&nbsp;&nbsp;</td><td valign=top align=center>
+<i>Rename[s2(X,Y,Z)](r2)</i>
+<p>
+<p><table border='1' cellpadding='2'>
+<tr align=center><td>&nbsp;&nbsp;<b>X</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>Y</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>Z</b>&nbsp;&nbsp;</td></tr><tr align=center><td>1</td><td>a</td><td>x</td></tr><tr align=center><td>2</td><td>b</td><td>y</td></tr><tr align=center><td>3</td><td>c</td><td>x</td></tr><tr align=center><td>4</td><td>a</td><td>y</td></tr><tr align=center><td>5</td><td>b</td><td>x</td></tr>
+</table><p>
+<i>s2</i>
+</td></tr>
+</table>
+</div>
+</DIV>
+<hr>
+<DIV id="s32">
+<div class='heading'>Natural Join</div>
+<p>
+<font color='#0000BB'>Natural join</font> is a specialised product:
+<ul>
+<li> containing only pairs that match on their <font color='#0000BB'>common</font> attributes
+<li> with one of each pair of common attributes eliminated
+</ul>
+Consider relation schemas <i>R(ABC..J<font color="#009900">KLM</font>)</i>,  <i>S(<font color="#009900">KLM</font>N..XYZ)</i>.
+<p>
+The natural join of relations <i>r(R)</i> and <i>s(S)</i> is defined as:
+<p>
+<div class='center'>
+<i>r <img src="lib/join-small.gif"> s</i> &nbsp; = &nbsp; <i>r Join s</i> &nbsp; = &nbsp; <br>
+	{ <i>(t<sub>1</sub>[ABC..J] : t<sub>2</sub>[K..XYZ])</i> &nbsp;|&nbsp;
+	  <i>t<sub>1</sub> &isin; r &and; t<sub>2</sub> &isin; s &and; match</i>
+	}
+<p>
+where &nbsp;&nbsp; <i>match</i> &nbsp; = &nbsp;
+		<i>t<sub>1</sub>[K] = t<sub>2</sub>[K] &and;
+		t<sub>1</sub>[L] = t<sub>2</sub>[L] &and;
+		t<sub>1</sub>[M] = t<sub>2</sub>[M]</i>
+</div>
+<p>
+Programmer's view:
+<p><pre>
+<i>result</i> = {}
+for each tuple <i>t<sub>1</sub></i> in relation <i>r</i>
+   for each tuple <i>t<sub>2</sub></i> in relation <i>s</i>
+      if (<i>matches(t<sub>1</sub>,t<sub>2</sub>)</i>)
+         <i>result</i> = <i>result &cup; {combine(<i>t<sub>1</sub>,t<sub>2</sub></i>)}</i>
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s33">
+<div class='heading'>Natural Join <span style="font-size:67%">(cont)</span></div>
+<p>
+<p>
+Natural join can also be defined in terms of other relational algebra operations:
+<p>
+<div class='center'>
+<i>r Join s</i> &nbsp; = &nbsp; <i> Proj[R &cup; S] ( Sel[match] ( r &times; s) )</i>
+</div>
+<p>
+We assume that the union on attributes eliminates duplicates.
+<p>
+If we wish to join relations, where the common attributes have
+different names, we rename the attributes first.
+<p>
+E.g. <i>R(AB<font color="#009900">C</font>)</i> and <i>S(D<font color="#009900">E</font>F)</i> can be joined by
+<p>
+<div class='center'>
+<i>R Join Rename[S(D<font color="#009900">C</font>F)](S)</i>
+</div>
+<p>
+Note: |<i>r <img src="lib/join-small.gif"> s</i>| <i><img src="lib/ll-small.gif"></i> |<i>r &times; s</i>|, so <i>join</i> not implemented via <i>product</i>.
+</DIV>
+<hr>
+<DIV id="s34">
+<div class='heading'>Natural Join <span style="font-size:67%">(cont)</span></div>
+<p>
+Example (assuming that <i>A</i> and <i>F</i> are the common attributes):
+<p>
+<div class='center'>
+<table border=0 cellpadding=10>
+<tr><td align=center><i>r1 Join r2</i>
+<p>
+<p><table border='1' cellpadding='2'>
+<tr align=center><td>&nbsp;&nbsp;<b>A</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>B</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>C</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>D</b>&nbsp;&nbsp;</td>
+	<td>&nbsp;&nbsp;<b>E</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>G</b>&nbsp;&nbsp;</td></tr>
+<tr align=center><td>a</td><td>1</td><td>x</td><td>4</td>
+	<td>1</td><td>x</td></tr>
+<tr align=center><td>a</td><td>1</td><td>x</td><td>4</td>
+	<td>4</td><td>y</td></tr>
+<tr align=center><td>b</td><td>2</td><td>y</td><td>5</td>
+	<td>2</td><td>y</td></tr>
+<tr align=center><td>b</td><td>2</td><td>y</td><td>5</td>
+	<td>5</td><td>x</td></tr>
+<tr align=center><td>c</td><td>4</td><td>z</td><td>4</td>
+	<td>3</td><td>x</td></tr>
+</table><p>
+</td></tr>
+</table>
+</div>
+<p>
+Strictly, the operation above was: <i>r1 Join Rename[r2(E,<font color="#009900">A</font>,G)](r2)</i>
+</DIV>
+<hr>
+<DIV id="s35">
+<div class='heading'>Natural Join <span style="font-size:67%">(cont)</span></div>
+<p>
+Natural join is not quite the same as:
+<p>
+<div class='center'>
+<i>Sel[sid=stude] (Students &times; Marks)</i>
+<p><table border='1' cellpadding='2'>
+<tr align=center><td>&nbsp;&nbsp;<b>course</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>name</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>sid</b>&nbsp;&nbsp;</td>
+	<td>&nbsp;&nbsp;<b>stude</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>subj</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>mark</b>&nbsp;&nbsp;</td></tr>
+<tr align=center><td>BE</td><td>Anne</td><td>21333</td>
+	<td>21333</td><td>1011</td><td>74</td></tr>
+<tr align=center><td>BE</td><td>Anne</td><td>21333</td>
+	<td>21333</td><td>1021</td><td>70</td></tr>
+<tr align=center><td>BE</td><td>Anne</td><td>21333</td>
+	<td>21333</td><td>2011</td><td>68</td></tr>
+<tr align=center><td>BSc</td><td>John</td><td>21531</td>
+	<td>21531</td><td>1011</td><td>94</td></tr>
+<tr align=center><td>BSc</td><td>John</td><td>21531</td>
+	<td>21531</td><td>1021</td><td>90</td></tr>
+<tr align=center><td>BSc</td><td>Tim</td><td>21623</td>
+	<td>21623</td><td>1011</td><td>50</td></tr>
+</table><p>
+</div>
+</DIV>
+<hr>
+<DIV id="s36">
+<div class='heading'>Natural Join <span style="font-size:67%">(cont)</span></div>
+<p>
+Compare this to the previous result:
+<p>
+<div class='center'>
+<i>Students &nbsp; Join &nbsp; Marks</i>
+<p><table border='1' cellpadding='2'>
+<tr align=center><td>&nbsp;&nbsp;<b>course</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>name</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>sid</b>&nbsp;&nbsp;</td>
+	<td>&nbsp;&nbsp;<b>subj</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>mark</b>&nbsp;&nbsp;</td></tr>
+<tr align=center><td>BE</td><td>Anne</td><td>21333</td>
+	<td>1011</td><td>74</td></tr>
+<tr align=center><td>BE</td><td>Anne</td><td>21333</td>
+	<td>1021</td><td>70</td></tr>
+<tr align=center><td>BE</td><td>Anne</td><td>21333</td>
+	<td>2011</td><td>68</td></tr>
+<tr align=center><td>BSc</td><td>John</td><td>21531</td>
+	<td>1011</td><td>94</td></tr>
+<tr align=center><td>BSc</td><td>John</td><td>21531</td>
+	<td>1021</td><td>90</td></tr>
+<tr align=center><td>BSc</td><td>Tim</td><td>21623</td>
+	<td>1011</td><td>50</td></tr>
+</table><p>
+</div>
+As above, we assume &nbsp; <i>Rename[Marks(<font color="#009900">sid</font>,subj,mark)](Marks)</i>
+</DIV>
+<hr>
+<DIV id="s37">
+<div class='heading'>Natural Join <span style="font-size:67%">(cont)</span></div>
+<p>
+Example queries:
+<ul>
+<li> Who is the owner of account A101?
+<ul>
+<li> <i>Proj[name](Sel[account=A101](Customer <img src="lib/join-small.gif"> Depositor))</i>
+</ul>
+<li> Which accounts are held in branches in Horseneck?
+<ul>
+<li> <i>tmp1 = Sel[address=Horseneck](Account <img src="lib/join-small.gif"> Branch)</i> <br>
+	<i>res &nbsp; = Proj[accountNo](tmp1))</i>
+</ul>
+<li> Which customers hold accounts at a Brooklyn branch?
+<ul>
+<li>	<i>tmp1 = Account <img src="lib/join-small.gif"> Branch <img src="lib/join-small.gif"> Customer <img src="lib/join-small.gif"> Depositor</i> <br>
+	<i>res &nbsp; = Proj[name](Sel[address=Brooklyn](tmp1))</i>
+</ul>
+</ul>
+</DIV>
+<hr>
+<DIV id="s38">
+<div class='heading'>Theta Join</div>
+<p>
+The <font color='#0000BB'>theta join</font> is a specialised product
+containing only pairs that match on a supplied condition <i>C</i>.
+<p>
+<div class='center'>
+<i>r <img src="lib/join-small.gif"><sub>C</sub> s</i> &nbsp; = &nbsp; { <i>(t<sub>1</sub> : t<sub>2</sub>)</i> &nbsp;|&nbsp; <i>t<sub>1</sub> &isin; r &and; t<sub>2</sub> &isin; s &and; C(t<sub>1</sub> : t<sub>2</sub>)</i> }, <br>
+where <i>r(R),s(S)</i>
+</div>
+<p>
+Examples: &nbsp; <i>(r1 Join[B>E] r2)</i> ... <i>(r1 Join[E&lt;D&and;C=G] r2)</i>
+<p>
+Can be defined in terms of other RA operations:
+<p>
+<div class='center'>
+<i>r <img src="lib/join-small.gif"><sub>C</sub> s</i> &nbsp; = &nbsp; <i>r Join[C] s</i> &nbsp; = &nbsp; <i> Sel[C] ( r &times; s )</i>
+</div>
+<p>
+Unlike natural join, "duplicate" attributes are not removed.
+<p>
+Note that &nbsp; <i>r <img src="lib/join-small.gif"><sub>true</sub> s &nbsp; = &nbsp; r &times; s</i>.
+</DIV>
+<hr>
+<DIV id="s39">
+<div class='heading'>Theta Join <span style="font-size:67%">(cont)</span></div>
+<p>
+Example theta join:
+<p>
+<div class='center'>
+<table border=0 cellpadding=10>
+<tr><td valign=top align=center>
+<i>r1 Join[D &lt; E] r2</i>
+<p>
+<p><table border='1' cellpadding='2'>
+<tr align=center><td>&nbsp;&nbsp;<b>A</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>B</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>C</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>D</b>&nbsp;&nbsp;</td>
+	<td>&nbsp;&nbsp;<b>E</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>F</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>G</b>&nbsp;&nbsp;</td></tr>
+<tr align=center><td>a</td><td>1</td><td>x</td><td>4</td>
+	<td>5</td><td>b</td><td>x</td></tr>
+<tr align=center><td>c</td><td>4</td><td>z</td><td>4</td>
+	<td>5</td><td>b</td><td>x</td></tr>
+<tr align=center><td>e</td><td>1</td><td>y</td><td>4</td>
+	<td>5</td><td>b</td><td>x</td></tr>
+</table><p>
+</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td valign=top align=center>
+<i>r1 Join[B &gt; 1 &and; D &lt; E] r2</i>
+<p>
+<p><table border='1' cellpadding='2'>
+<tr align=center><td>&nbsp;&nbsp;<b>A</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>B</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>C</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>D</b>&nbsp;&nbsp;</td>
+	<td>&nbsp;&nbsp;<b>E</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>F</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>G</b>&nbsp;&nbsp;</td></tr>
+<tr align=center><td>c</td><td>4</td><td>z</td><td>4</td>
+	<td>5</td><td>b</td><td>x</td></tr>
+</table><p>
+</td></tr>
+</table>
+</div>
+<small>
+<p>
+(Theta join is an important component of most SQL queries; many examples
+of its use to follow)
+</small>
+</DIV>
+<hr>
+<DIV id="s40">
+<div class='heading'>Theta Join <span style="font-size:67%">(cont)</span></div>
+<p>
+Comparison between join operations:
+<ul>
+<li> <font color='#0000BB'>theta join</font> allows arbitrary tests in the condition <br>
+	<small>(and leaves all attributes from the original relations in the result)</small>
+<li> <font color='#0000BB'>equijoin</font> has only equality tests in the condition <br>
+	<small>(and leaves all attributes from the original relations in the result)</small>
+<li> <font color='#0000BB'>natural join</font> has only equality tests on common attributes <br>
+	<small>(and removes one of each pair of matching attributes)</small>
+</ul>
+<small>
+Equijoin is a specialised theta join; natural join is like theta join followed by projection.
+</small>
+</DIV>
+<hr>
+<DIV id="s41">
+<div class='heading'>Outer Join</div>
+<p>
+<i>r Join s</i> eliminates all <i>s</i> tuples that do not match some <i>r</i> tuple.
+<p>
+Sometimes, we wish to keep this information, so <font color='#0000BB'>outer join</font>
+<ul>
+<li> includes all tuples from each relation in the result
+<li> for pairs of matching tuples, concatenate attributes as for standard join
+<li> for tuples that have no match, assign null to "unmatched" attributes
+</ul>
+</DIV>
+<hr>
+<DIV id="s42">
+<div class='heading'>Outer Join <span style="font-size:67%">(cont)</span></div>
+<p>
+Example (assuming that <i>A</i> and <i>F</i> are the common attributes):
+<p>
+<div class='center'>
+<table border=0 cellpadding=10>
+<tr><td align=center><i>r1 OuterJoin r2</i>
+<p>
+<p><table border='1' cellpadding='2'>
+<tr align=center><td>&nbsp;&nbsp;<b>A</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>B</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>C</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>D</b>&nbsp;&nbsp;</td>
+	<td>&nbsp;&nbsp;<b>E</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>G</b>&nbsp;&nbsp;</td></tr>
+<tr align=center><td>a</td><td>1</td><td>x</td><td>4</td>
+	<td>1</td><td>x</td></tr>
+<tr align=center><td>a</td><td>1</td><td>x</td><td>4</td>
+	<td>4</td><td>y</td></tr>
+<tr align=center><td>b</td><td>2</td><td>y</td><td>5</td>
+	<td>2</td><td>y</td></tr>
+<tr align=center><td>b</td><td>2</td><td>y</td><td>5</td>
+	<td>5</td><td>x</td></tr>
+<tr align=center><td>c</td><td>4</td><td>z</td><td>4</td>
+	<td>3</td><td>x</td></tr>
+<tr align=center><td>d</td><td>8</td><td>x</td><td>5</td>
+	<td>null</td><td>null</td></tr></tr>
+<tr align=center><td>e</td><td>1</td><td>y</td><td>4</td>
+	<td>null</td><td>null</td></tr></tr>
+<tr align=center><td>f</td><td>2</td><td>z</td><td>5</td>
+	<td>null</td><td>null</td></tr></tr>
+</table><p>
+</td></tr>
+</table>
+</div>
+<p>
+Contrast this to the result for <i>R Join S</i> presented earlier.
+</DIV>
+<hr>
+<DIV id="s43">
+<div class='heading'>Outer Join <span style="font-size:67%">(cont)</span></div>
+<p>
+Another outer join example <small>(compare to earlier similar join):</small>
+<p>
+<div class='center'>
+<i>Students &nbsp; OuterJoin &nbsp; Marks</i>
+<p><table border='1' cellpadding='2'>
+<tr align=center><td>&nbsp;&nbsp;<b>course</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>name</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>sid</b>&nbsp;&nbsp;</td>
+	<td>&nbsp;&nbsp;<b>subj</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>mark</b>&nbsp;&nbsp;</td></tr>
+<tr align=center><td>BE</td><td>Anne</td><td>21333</td>
+	<td>1011</td><td>74</td></tr>
+<tr align=center><td>BE</td><td>Anne</td><td>21333</td>
+	<td>1021</td><td>70</td></tr>
+<tr align=center><td>BE</td><td>Dave</td><td>21876</td>
+	<td><small>null</small></td><td><small>null</small></td></tr>
+<tr align=center><td>BE</td><td>Anne</td><td>21333</td>
+	<td>2011</td><td>68</td></tr>
+<tr align=center><td>BSc</td><td>John</td><td>21531</td>
+	<td>1011</td><td>94</td></tr>
+<tr align=center><td>BSc</td><td>John</td><td>21531</td>
+	<td>1021</td><td>90</td></tr>
+<tr align=center><td>BSc</td><td>Tim</td><td>21623</td>
+	<td>1011</td><td>50</td></tr>
+</table><p>
+</div>
+</DIV>
+<hr>
+<DIV id="s44">
+<div class='heading'>Outer Join <span style="font-size:67%">(cont)</span></div>
+<p>
+There are three variations of outer join <i>R OuterJoin S</i>:
+<ul>
+<li> left outer join (<i>LeftOuterJoin</i>) includes all tuples from <i>R</i>
+<li> right outer join (<i>RightOuterJoin</i>) includes all tuples from <i>S</i>
+<li> full outer join (<i>OuterJoin</i>) includes all tuples from <i>R</i> and <i>S</i>
+</ul>
+Which one to use depends on the application e.g.
+<p>
+If we want to know about all Students, regardless of whether they're enrolled in anything
+<p>
+<div class='center'>
+<i>Students LeftOuterJoin Enrolment</i>
+</div>
+</DIV>
+<hr>
+<DIV id="s45">
+<div class='heading'>Outer Join <span style="font-size:67%">(cont)</span></div>
+<p>
+Operational description of <i>r(R) LeftOuterJoin s(S)</i>:
+<p><pre>
+<i>result</i> = {}
+for each tuple <i>t<sub>1</sub></i> in relation <i>r</i>
+   <i>nmatches</i> = 0
+   for each tuple <i>t<sub>2</sub></i> in relation <i>s</i>
+      if (<i>matches(t<sub>1</sub>,t<sub>2</sub>)</i>)
+         <i>result</i> = <i>result &cup; {combine(<i>t<sub>1</sub>,t<sub>2</sub></i>)}</i>
+         <i>nmatches</i>++
+   if (<i>nmatches</i> == 0)
+      <i>result</i> = <i>result &cup;
+                 {combine(<i>t<sub>1</sub>,S<sub>null</sub></i>)}</i>
+</pre><p>
+where <i>S<sub>null</sub></i> is a tuple from <i>S</i> with all atributes set to NULL.
+</DIV>
+<hr>
+<DIV id="s46">
+<div class='heading'>Division</div>
+<p>
+Consider two relation schemas <i>R</i> and <i>S</i> where <i>S &sub; R</i>.
+<p>
+The <font color='#0000BB'>division</font> operation is defined on instances <i>r(R)</i>, <i>s(S)</i> as:
+<p>
+<div class='center'>
+<i>r / s</i> &nbsp; = &nbsp; <i>r Div s</i> &nbsp; = &nbsp;
+	{ <i>t</i> | <i>t &isin; r[R-S] &and; satisfy</i> }
+<p>
+where &nbsp; <i>satisfy</i> &nbsp; = &nbsp; <i>&forall; t<sub>s</sub> &isin; S ( &exist; t<sub>r</sub> &isin; R ( t<sub>r</sub>[S] = t<sub>s</sub> &and; t<sub>r</sub>[R-S] = t ) )</i>
+</div>
+<p>
+Operationally:
+<ul>
+<li> consider each subset of tuples in <i>R</i> that match on <i>t[R-S]</i>
+<li> for this subset of tuples, take the <i>t[S]</i> values from each
+<li> if this covers all tuples in <i>S</i>, then include <i>t[R-S]</i> in the result
+</ul>
+</DIV>
+<hr>
+<DIV id="s47">
+<div class='heading'>Division <span style="font-size:67%">(cont)</span></div>
+<p>
+Example:
+<p>
+<div class='center'>
+<table border=0 cellpadding=10>
+<tr>
+<td valign=top align=center>
+<i>R=Proj[D,C](r1)</i> <p>
+<p><table border='1' cellpadding='2'>
+<tr align=center><td>&nbsp;&nbsp;<b>D</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>C</b>&nbsp;&nbsp;</td></tr>
+<tr align=center><td><font color="#CC0000">4</font></td><td><font color="#009900">x</font></td></tr>
+<tr align=center><td><font color="#CC0000">4</font></td><td><font color="#0000EE">y</font></td></tr>
+<tr align=center><td><font color="#CC0000">4</font></td><td>z</td></tr>
+<tr align=center><td>5</td><td><font color="#009900">x</font></td></tr>
+<tr align=center><td>5</td><td><font color="#0000EE">y</font></td></tr>
+<tr align=center><td>5</td><td>z</td></tr>
+</table><p>
+</td>
+<td>&nbsp;&nbsp;&nbsp;</td>
+<td valign=top align=center>
+<i>S=Proj[G](r2)</i> <p>
+<p><table border='1' cellpadding='2'>
+<tr align=center><td>&nbsp;&nbsp;<b>G</b>&nbsp;&nbsp;</td></tr>
+<tr align=center><td><font color="#009900">x</font></td></tr>
+<tr align=center><td><font color="#0000EE">y</font></td></tr>
+</table><p>
+</td>
+<td>&nbsp;&nbsp;&nbsp;</td>
+<td valign=top align=center>
+<i>R / S</i> <p>
+<p><table border='1' cellpadding='2'>
+<tr align=center><td>&nbsp;&nbsp;<b>name</b>&nbsp;&nbsp;</td></tr>
+<tr align=center><td>4</td></tr>
+<tr align=center><td>5</td></tr>
+</table><p>
+</td>
+</tr>
+</table>
+<p>
+Strictly, <i>R/S</i> is <i>R / Rename[S(C)](S)</i>
+</div>
+</DIV>
+<hr>
+<DIV id="s48">
+<div class='heading'>Division <span style="font-size:67%">(cont)</span></div>
+<p>
+Division handles queries that include the notion "for all".
+<p>
+E.g. Which customers have accounts at all branches?</font>
+<p>
+We can answer this as follows:
+<ul>
+<li> generate a relation of customers and branches where they hold accounts
+<li> generate a relation of all branch names
+<li> find which customers appear in tuples with <font color='#0000BB'>every</font> branch name
+</ul>
+</DIV>
+<hr>
+<DIV id="s49">
+<div class='heading'>Division <span style="font-size:67%">(cont)</span></div>
+<p>
+RA operations for answering the query:
+<ul>
+<li> customers and branches where they hold accounts
+<ul>
+<li>	<i>r1 = Account <img src="lib/join-small.gif"> Branch <img src="lib/join-small.gif"> Customer <img src="lib/join-small.gif"> Depositor</i> <br>
+	<i>r2 = Proj [name,branchName] (r1)</i>
+</ul>
+<li> branch names
+<ul>
+<li> <i>r3 = Proj[branchName](Branch)</i>
+</ul>
+<li> customers who appear in tuples with every branch name
+<ul>
+<li> <i>res &nbsp; = r2 Div r3</i>
+</ul>
+</ul>
+</DIV>
+<hr>
+<DIV id="s50">
+<div class='heading'>Division <span style="font-size:67%">(cont)</span></div>
+<p>
+Example of answering the query <small>(in a different database instance):</small>
+<p>
+<div class='center'>
+<table border=0 cellpadding=10>
+<tr>
+<td valign=top align=center>
+<i>r2</i> <p>
+<p><table border='1' cellpadding='2'>
+<tr align=center><td>&nbsp;&nbsp;<b>name</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>branchName</b>&nbsp;&nbsp;</td></tr>
+<tr align=center><td><font color="#0000EE">Davis</font></td><td>Downtown</td></tr>
+<tr align=center><td>Hayes</td><td>Round Hill</td></tr>
+<tr align=center><td><font color="#CC0000">Jones</font></td><td>Brighton</td></tr>
+<tr align=center><td><font color="#CC0000">Jones</font></td><td>Downtown</td></tr>
+<tr align=center><td><font color="#CC0000">Jones</font></td><td>Round Hill</td></tr>
+<tr align=center><td><font color="#009900">Smith</font></td><td>Downtown</td></tr>
+<tr align=center><td><font color="#009900">Smith</font></td><td>Round Hill</td></tr>
+</table><p>
+</td>
+<td>&nbsp;&nbsp;&nbsp;</td>
+<td valign=top align=center>
+<i>r3</i> <p>
+<p><table border='1' cellpadding='2'>
+<tr align=center><td>&nbsp;&nbsp;<b>branchName</b>&nbsp;&nbsp;</td></tr>
+<tr align=center><td>Brighton</td></tr>
+<tr align=center><td>Downtown</td></tr>
+<tr align=center><td>Round Hill</td></tr>
+</table><p>
+</td>
+<td>&nbsp;&nbsp;&nbsp;</td>
+<td valign=top align=center>
+<i>r2/r3</i> <p>
+<p><table border='1' cellpadding='2'>
+<tr align=center><td>&nbsp;&nbsp;<b>name</b>&nbsp;&nbsp;</td></tr>
+<tr align=center><td>Jones</td></tr>
+</table><p>
+</td>
+</tr>
+</table>
+</div>
+</DIV>
+<hr>
+<DIV id="s51">
+<div class='heading'>Division <span style="font-size:67%">(cont)</span></div>
+<p>
+Division can be implemented in terms of other RA operations.
+<p>
+Consider <i>R/S</i> where <i>R = X &cup; Y</i> and <i>S = Y</i> ...
+<p><table border='0' cellpadding='6'>
+<tr valign=top>
+<td><nobr> <i>T = Proj[X](R)</i> </td>
+<td></td><td> <small>generate all potential result tuples</small> </td>
+</tr>
+<tr valign=top>
+<td><nobr> <i>U = T &times; S</i> </td>
+<td></td><td> <small>combine potential results with all tuples from <i>S</i></small> </td>
+</tr>
+<tr valign=top>
+<td><nobr> <i>V = U - R</i> </td>
+<td></td><td> <small>find any combined tuples that are not in <i>R</i>; <br>
+any potential results which occur with all <i>S</i> values in <i>R</i>
+will be removed; <i>V</i> thus contains potential result tuples which
+do not occur with all <i>S</i> values in <i>R</i></small> </td>
+</tr>
+<tr valign=top>
+<td><nobr> <i>W = Proj[X](V)</i> </td>
+<td></td><td> <small>the <i>X</i> parts of these tuples are "disqualified"</small> </td>
+</tr>
+<tr valign=top>
+<td><nobr> <i>Res = T - W</i> </td>
+<td></td><td> <small>so remove them to produce the result</small> </td>
+</tr>
+</table><p>
+</DIV>
+<hr>
+<DIV id="s52">
+<div class='heading'>Aggregation</div>
+<p>
+Two types of aggregation are common in database queries:
+<ul>
+<li> accumulating summary values for data in tables
+<ul>
+<li> typical operations <i>Sum</i>, <i>Average</i>, <i>Count</i>
+<li> many operations work on a single column <br>
+	<small>(e.g. <i>Sum[assets](Branch)</i>)</small>
+</ul>
+<li> grouping sets of tuples with common values 
+<ul>
+<li> <i>GroupBy[A<sub>1</sub>...A<sub>n</sub>](R)</i>
+<li> typically we group using only a single attribute
+</ul>
+</ul>
+</DIV>
+<hr>
+<DIV id="s53">
+<div class='heading'>Aggregation <span style="font-size:67%">(cont)</span></div>
+<p>
+Example aggregations:
+<p>
+<div class='center'>
+<table border=0 cellpadding=10>
+<tr>
+<td valign=top align=center>
+<i>GroupBy[C](r1)</i> <p>
+<p><table border='1' cellpadding='2'>
+<tr align=center><td>&nbsp;&nbsp;<b>A</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>B</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>C</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>D</b>&nbsp;&nbsp;</td></tr>
+<tr align=center><td>a</td><td>1</td><td>x</td><td>4</td></tr>
+<tr align=center><td>d</td><td>8</td><td>x</td><td>5</td></tr>
+<tr align=center><td>f</td><td>2</td><td>x</td><td>5</td></tr>
+<tr align=center><td colspan=4>&nbsp;</td></tr>
+<tr align=center><td>b</td><td>2</td><td>y</td><td>5</td></tr>
+<tr align=center><td>e</td><td>1</td><td>y</td><td>4</td></tr>
+<tr align=center><td colspan=4>&nbsp;</td></tr>
+<tr align=center><td>c</td><td>4</td><td>z</td><td>4</td></tr>
+</table><p>
+</td>
+<td>&nbsp;&nbsp;&nbsp;</td>
+<td valign=top align=center>
+<i>Sum[B](r1)</i> <p>
+<p><table border='1' cellpadding='2'>
+<tr align=center><td>&nbsp;&nbsp;<b>Sum</b>&nbsp;&nbsp;</td></tr>
+<tr align=center><td>18</td></tr>
+</table><p>
+</td>
+<td>&nbsp;&nbsp;&nbsp;</td>
+<td valign=top align=center>
+<i>GroupBy[C]<sub>Sum[B]</sub>(r1)</i> <p>
+<p><table border='1' cellpadding='2'>
+<tr align=center><td>&nbsp;&nbsp;<b>C</b>&nbsp;&nbsp;</td><td>&nbsp;&nbsp;<b>Sum</b>&nbsp;&nbsp;</td></tr>
+<tr align=center><td>x</td><td>11</td></tr>
+<tr align=center><td>y</td><td>3</td></tr>
+<tr align=center><td>z</td><td>4</td></tr>
+</table><p>
+</td>
+</tr>
+</table>
+</div>
+</DIV>
+<hr>
+<DIV id="s54">
+<div class='heading'>Generalised Projection</div>
+<p>
+In standard projection, we select values of specified attributes.
+<p>
+In <font color='#0000BB'>generalised projection</font> we perform some computation on the
+attribute value before placing it in the result tuple.
+<p>
+Examples:
+<ul>
+<li> Display branch assets in Aus$ rather than US$.
+<ul>
+<li> <i>Proj [branchname,address,assets*0.75] (Branch)</i>
+</ul>
+<li> Display employee records using age rather than birthday.
+<ul>
+<li> <i>Proj [id,name,(today-birthdate)/365,salary] (Employee)</i>
+</ul>
+</ul>
+</DIV>
+<p><hr><p>
+<span style='font-size:11px;color: grey;'>Produced: 13 Sep 2020</span>
+ <script src='lib/prism.js'></script>   
+ <script src='lib/sg.js'></script>   
+</body>
+</html>

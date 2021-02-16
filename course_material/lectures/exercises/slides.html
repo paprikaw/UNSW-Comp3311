@@ -1,0 +1,779 @@
+<html>
+<head>
+<title>Exercises</title>
+<link href='lib/slides.css' rel='stylesheet' type='text/css'>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML" async></script>
+<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js'></script>
+<link href='https://fonts.googleapis.com/css?family=Lato' rel='stylesheet'>
+<link href='lib/prism.css' rel='stylesheet'>
+<script src='lib/sg.js'></script>
+</head>
+<body>
+ <DIV class='slideCl1' id="s0"  >
+<div class='navCl1'><a href="#s1"><span class='nextArrowCl'>>></span></a> </div> <div class='heading'>Exercises</div><p><ul class='indexUl'  style='font-size: 0.7em;'><li class="i"> <a href="#s1">ER Notation</a>
+<li class="i"> <a href="#s3">N:M Relationships</a>
+<li class="i"> <a href="#s4">1:N Relationships</a>
+<li class="i"> <a href="#s5">1:1 Relationships</a>
+<li class="i"> <a href="#s6">Exercise: ER Diagram</a>
+<li class="i"> <a href="#s7">Exercise: Medical Information</a>
+<li class="i"> <a href="#s8">Ass1: Calendar App</a>
+<li class="i"> <a href="#s10">Users</a>
+<li class="i"> <a href="#s12">Calendars</a>
+<li class="i"> <a href="#s14">Events</a>
+<li class="i"> <a href="#s18">Inserting and Deleting</a>
+<li class="i"> <a href="#s19">SQL Queries on the Beer Database</a>
+<li class="i"> <a href="#s23">Functions returning sets of numbers</a>
+<li class="i"> <a href="#s24">Imported Beers</a>
+<li class="i"> <a href="#s25">MyMyUNSW Database</a>
+<li class="i"> <a href="#s27">MyMyUNSW: People/Subjects/Courses</a>
+<li class="i"> <a href="#s28">MyMyUNSW: People/OrgUnits</a>
+<li class="i"> <a href="#s29">MyMyUNSW: Programs/Streams/Degrees</a>
+<li class="i"> <a href="#s32">MyMyUNSW: Enrolment</a>
+<li class="i"> <a href="#s35">Exercise: Exploring the MyMyUNSW Database</a>
+<li class="i"> <a href="#s36">Exercise: Queries on MyMyUNSW Database (i)</a>
+<li class="i"> <a href="#s37">Exercise: Queries on MyMyUNSW Database (ii)</a>
+<li class="i"> <a href="#s38">Exercise: Queries on MyMyUNSW Database (iii)</a>
+<li class="i"> <a href="#s39">Exercise: Queries on MyMyUNSW Database (iv)</a>
+<li class="i"> <a href="#s40">Exercise: Queries on MyMyUNSW Database (v)</a>
+<li class="i"> <a href="#s41">Exercise: Triggers (1)</a>
+<li class="i"> <a href="#s42">Exercise: Triggers (2)</a>
+<li class="i"> <a href="#s43">Course Enrolments (i) &nbsp; <small>(Python+Psycopg2)</small></a>
+<li class="i"> <a href="#s44">Course Enrolments (ii) &nbsp; <small>(Python+Psycopg2)</small></a>
+<li class="i"> <a href="#s45">Student WAM &nbsp; <small>(Python+Psycopg2)</small></a>
+<li class="i"> <a href="#s46">Course Averages &nbsp; <small>(Python+Psycopg2)</small></a>
+<li class="i"> <a href="#s47">Finding Students</a>
+<li class="i"> <a href="#s48">Transcripts in Python</a>
+<li class="i"> <a href="#s49">Exercise: A Better SQL to RA Mapping</a>
+</ul></DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Exercises &#9826; [0/49]</div> <DIV class='slideCl1    ' id="s1"  >
+<div class='navCl1'> <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s2"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; ER Notation</div></td><td align='right'></td></tr></table>
+<p>
+ER design elements:
+<p><br>
+<p><div align='center'>
+<img alt="[Diagram:Pics/er-rel/er-symbols.png]" src="Pics/er-rel/er-symbols.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Exercises &#9826; [1/49]</div> <DIV class='slideCl1    ' id="s2"  >
+<div class='navCl1'><a href="#s1"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s3"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; ER Notation <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Relationships:
+<p><div align='center'>
+<img alt="[Diagram:Pics/er-rel/cardinal.png]" src="Pics/er-rel/cardinal.png">
+</div><p>
+<p><br>
+Thick line = total participation; &nbsp; thin line = partial participation
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Exercises &#9826; [2/49]</div> <DIV class='slideCl1    ' id="s3"  >
+<div class='navCl1'><a href="#s2"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s4"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; N:M Relationships</div></td><td align='right'></td></tr></table>
+<p>
+<br>
+<p><div align='center'>
+<img alt="[Diagram:Pics/er-rel/relNM.png]" src="Pics/er-rel/relNM.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Exercises &#9826; [3/49]</div> <DIV class='slideCl1    ' id="s4"  >
+<div class='navCl1'><a href="#s3"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s5"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; 1:N Relationships</div></td><td align='right'></td></tr></table>
+<p>
+<br>
+<p><div align='center'>
+<img alt="[Diagram:Pics/er-rel/rel1N.png]" src="Pics/er-rel/rel1N.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Exercises &#9826; [4/49]</div> <DIV class='slideCl1    ' id="s5"  >
+<div class='navCl1'><a href="#s4"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s6"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; 1:1 Relationships</div></td><td align='right'></td></tr></table>
+<p>
+<br>
+<p><div align='center'>
+<img alt="[Diagram:Pics/er-rel/rel11.png]" src="Pics/er-rel/rel11.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Exercises &#9826; [5/49]</div> <DIV class='slideCl1    ' id="s6"  >
+<div class='navCl1'><a href="#s5"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s7"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Exercise: ER Diagram</div></td><td align='right'></td></tr></table>
+<p>
+For the ER diagram below
+<ul>
+<li> give examples of entity values (in tuple notation)
+<li> describe the semantics of the relationships
+</ul>
+<p>
+<p><div align='center'>
+<img alt="[Diagram:Pics/er-rel/ER-summary.png]" src="Pics/er-rel/ER-summary.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Exercises &#9826; [6/49]</div> <DIV class='slideCl1    ' id="s7"  >
+<div class='navCl1'><a href="#s6"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s8"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Exercise: Medical Information</div></td><td align='right'></td></tr></table>
+<p>
+Develop an ER design for the following scenario:
+<p>
+<small>
+<ul>
+<li> Patients are identified by an SSN, and their names, addresses and ages
+must be recorded.
+<li> Doctors are identified by an SSN. For each doctor, the name, specialty
+and years of experience must be recorded.
+<li> Each pharmacy has a name, address and phone number. A pharmacy must have
+a manager, who is a pharmacist.
+<li> A pharmacist is identified by an SSN, he/she can only work for one
+pharmacy. For each pharmacist, the name, qualification must be recorded.
+<li> For each drug, the trade name and formula must be recorded.
+<li> Every patient has a primary physician. Every doctor has at least one
+patient. 
+<li> Each pharmacy sells several drugs, and has a price for each. A drug
+could be sold at several pharmacies, and the price could vary between
+pharmacies.
+<li> Doctors prescribe drugs for patients. A doctor could prescribe one or
+more drugs for several patients, and a patient could obtain prescriptions
+from several doctors. Each prescription has a date and quantity associated
+with it.
+</ul>
+</small>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Exercises &#9826; [7/49]</div> <DIV class='slideCl1    ' id="s8"  >
+<div class='navCl1'><a href="#s7"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s9"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Ass1: Calendar App</div></td><td align='right'></td></tr></table>
+<p>
+<p><div align='center'>
+<img alt="[Diagram:Pics/ass1/cal1.png]" src="Pics/ass1/cal1.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Exercises &#9826; [8/49]</div> <DIV class='slideCl1    ' id="s9"  >
+<div class='navCl1'><a href="#s8"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s10"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Ass1: Calendar App <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<br>
+A plausible calendar app involves:
+<ul>
+<li> users ... login and maintain calendars/events
+<li> groups ... collections of users
+<li> events ... activities that occur at specific times/days
+<li> calendars ... collections of events
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Exercises &#9826; [9/49]</div> <DIV class='slideCl1    ' id="s10"  >
+<div class='navCl1'><a href="#s9"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s11"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Users</div></td><td align='right'></td></tr></table>
+<p>
+Users are ...
+<ul>
+<li> individuals who use the calendar
+<li> we need to know at least their name and email address
+<li> they also have a password for authentication
+<li> some (very few) users have administration privileges <br>
+<small>(we don't need to specify what these privileges are in the data model)</small>
+</ul>
+Groups are ...
+<ul>
+<li> named collections of individual users
+<li> useful as shorthand for scheduling events for specific groups
+<li> each group is owned by a user, who maintains the list of members
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Exercises &#9826; [10/49]</div> <DIV class='slideCl1    ' id="s11"  >
+<div class='navCl1'><a href="#s10"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s12"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Users <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<br>
+Possible ER design:
+<p><div align='center'>
+<img alt="[Diagram:Pics/ass1/user-group.png]" src="Pics/ass1/user-group.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Exercises &#9826; [11/49]</div> <DIV class='slideCl1    ' id="s12"  >
+<div class='navCl1'><a href="#s11"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s13"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Calendars</div></td><td align='right'></td></tr></table>
+<p>
+Calendars are ...
+<ul>
+<li> named collections of events (e.g. "John's Weekly Meetings/Classes")
+<li> each calendar is owned by a user; a user may own many calendars;
+<li> each event is attached to a specific calendar
+<li> each calendar has accessibility restrictions (per user and default) <br>
+<small>(e.g. some users have read/write, some have read-only, some have no access)</small>
+<li> if a user has read permission on a calendar, they see private event titles instead of "Busy"
+<li> users may subscribe to other peoples' calendars (if they can read them)
+<li> each calendar has a colour (set by its owner)
+<li> a subscriber may set a different colour for their own view
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Exercises &#9826; [12/49]</div> <DIV class='slideCl1    ' id="s13"  >
+<div class='navCl1'><a href="#s12"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s14"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Calendars <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Possible ER design:
+<p><div align='center'>
+<img alt="[Diagram:Pics/ass1/calendar.png]" src="Pics/ass1/calendar.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Exercises &#9826; [13/49]</div> <DIV class='slideCl1    ' id="s14"  >
+<div class='navCl1'><a href="#s13"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s15"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Events</div></td><td align='right'></td></tr></table>
+<p>
+<small>
+ <ul>
+<li> there are various kinds of events
+<ul>
+<li> associated with a particular day/date (e.g. birthday)
+<li> scheduled at a given time on a given day (e.g. a meeting)
+<li> recurring on a regular basis (e.g. a COMP3311 lecture)
+</ul>
+<li> each event is owned by the individual user who creates it
+<li> each event has a title and visibility (public, private)
+<ul>
+<li> a private event is shown simply as "Busy" in the interface
+</ul>
+<li> an event may be associated with a location (where it will occur)
+<li> an event may be associated with a set of individual users (invitees)
+<li> an event may recur in a number of ways
+<ul>
+<li> on a particular day of the week (Mon,Tue,Wed,Thu,Fri,Sat,Sun)
+<li> weekly, every 2/3/4 weeks
+<li> monthly (on same date of month), every 2/3/.../11 months
+<li> on the first/second/third/last Xday of each month
+<li> for a fixed number of times (e.g. 10 times)
+<li> annually
+</ul>
+<li> a recurring event will have a starting date and may have an ending date
+<li> at specified times before each event an alarm event can be triggered
+<li> there may be multiple alarms associated with an event <br>
+    <small>(e.g. 15 mins before, 5 mins before, 1 minute before)</small>
+<li> an event can have an associated list of users who are invited <br>
+    <small>(we don't associate events with groups; groups are used to generate a list of invited users whne the event is created)</small>
+<ul>
+<li> users on the list can be flagged as "Invited", "Accepted", or "Declined"
+</ul>
+</ul>
+</small>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Exercises &#9826; [14/49]</div> <DIV class='slideCl1    ' id="s15"  >
+<div class='navCl1'><a href="#s14"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s16"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Events <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Possible ER design:
+<p><div align='center'>
+<img alt="[Diagram:Pics/ass1/event.png]" src="Pics/ass1/event.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Exercises &#9826; [15/49]</div> <DIV class='slideCl1    ' id="s16"  >
+<div class='navCl1'><a href="#s15"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s17"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Events <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Possible ER design:
+<p><div align='center'>
+<img alt="[Diagram:Pics/ass1/event2.png]" src="Pics/ass1/event2.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Exercises &#9826; [16/49]</div> <DIV class='slideCl1    ' id="s17"  >
+<div class='navCl1'><a href="#s16"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s18"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Events <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<br>
+Possible ER design for remaining relationships:
+<p><div align='center'>
+<img alt="[Diagram:Pics/ass1/event2.png]" src="Pics/ass1/event2.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Exercises &#9826; [17/49]</div> <DIV class='slideCl1    ' id="s18"  >
+<div class='navCl1'><a href="#s17"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s19"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Inserting and Deleting</div></td><td align='right'></td></tr></table>
+<p>
+<br>
+Consider the following simple relational schema:
+<p>
+<p><div align='center'>
+<img alt="[Diagram:Pics/sql/simple-schema.png]" src="Pics/sql/simple-schema.png">
+</div><p>
+<p>
+How to define it as an SQL schema?
+<p>
+How to insert tuples?
+<p>
+How to delete tuples?
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Exercises &#9826; [18/49]</div> <DIV class='slideCl1    ' id="s19"  >
+<div class='navCl1'><a href="#s18"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s20"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; SQL Queries on the Beer Database</div></td><td align='right'></td></tr></table>
+<p>
+Beer database schema:
+<p>
+<p><div align='center'>
+<img alt="[Diagram:Pics/sql/beer-er.png]" src="Pics/sql/beer-er.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Exercises &#9826; [19/49]</div> <DIV class='slideCl1    ' id="s20"  >
+<div class='navCl1'><a href="#s19"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s21"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; SQL Queries on the Beer Database <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Answer the following questions via SQL:
+<ol>
+<li> Where does John live?
+<li> What styles of beer does 'Sierra Nevada' make?
+<li> How many beers does each brewer make?
+<li> Which brewers make only one beer?
+<li> Who makes the most beers?
+<li> Find beers that are the only one by their brewer.
+<li> What is the most common beer style?
+<li> What is the most popular beer?
+<li> How many beers does John like?
+<li> Who doesn't like beer?
+</ol>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Exercises &#9826; [20/49]</div> <DIV class='slideCl1    ' id="s21"  >
+<div class='navCl1'><a href="#s20"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s22"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; SQL Queries on the Beer Database <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Answer the following questions via SQL:
+<ol start="11">
+<li> Where could I go to drink 'Old'?
+<li> Bars where either Gernot or John drink.
+<li> Bars where both Gernot and John drink.
+<li> Which bar sells 'New' cheapest?
+<li> Which bar sells the widest variety of beers?
+<li> Which bars sell 'New' at the same price<br>
+as the Coogee Bay Hotel charges for VB.
+<li> Find the average price of common beers <br>
+<small>(i.e. served in more than two bars/hotels).</small>
+</ol>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Exercises &#9826; [21/49]</div> <DIV class='slideCl1    ' id="s22"  >
+<div class='navCl1'><a href="#s21"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s23"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; SQL Queries on the Beer Database <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Answer the following questions via SQL:
+<ol start="18">
+<li> What is the most liked beer style?
+<li> Find the brewers whose beers John likes.
+<li> Find the beers sold at bars where John drinks.
+<li> How many drinkers live where bars are located?
+<li> Bars that sell no beers made by Carlton?
+<li> How many bars in suburbs where dinkers live?<br>
+<small>(must include all such suburbs, even if no bars)</small>
+<li> Which bars sell all beers?
+</ol>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Exercises &#9826; [22/49]</div> <DIV class='slideCl1    ' id="s23"  >
+<div class='navCl1'><a href="#s22"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s24"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Functions returning sets of numbers</div></td><td align='right'></td></tr></table>
+<p>
+<br>
+Write three functions called <large><code>iota()</code></large> ...
+<ul>
+<li> each function returns a <large><code>setof integer</code></large> values
+<li> <large><code>iota(<i>hi</i>)</code></large> returns numbers in range 1..<large><code><i>hi</i></code></large>
+<li> <large><code>iota(<i>lo</i>,<i>hi</i>)</code></large> returns numbers in range <large><code>lo</code></large>..<large><code><i>hi</i></code></large>
+<li> <large><code>iota(<i>lo</i>,<i>hi</i>,<i>inc</i>)</code></large> returns <br>
+    &nbsp;&nbsp;&nbsp; <large><code><i>lo</i></code></large>, <large><code><i>lo+inc</i></code></large>, <large><code><i>lo+2*inc</i></code></large>, <large><code><i>lo+3*inc</i></code></large>, ..., <large><code>max &le; <i>hi</i></code></large>
+</ul>
+<small>
+Note: Functions returning <large><code>setof <i>Type</i></code></large> are used in the <large><code>from</code></large> clause.
+</small>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Exercises &#9826; [23/49]</div> <DIV class='slideCl1    ' id="s24"  >
+<div class='navCl1'><a href="#s23"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s25"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Imported Beers</div></td><td align='right'></td></tr></table>
+<p>
+<br>
+We want to know which beers are imported.
+<p>
+Return a set of (beer,brewer,country) tuples for such beers
+<ul>
+<li> using a view imports1(beer,brewer,country)
+<li> using a function returning a set of (beer,brewer,country)
+<li> using a function that takes a country as a parameter
+<li> using a function that takes a country or NULL (all countries)
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Exercises &#9826; [24/49]</div> <DIV class='slideCl1    ' id="s25"  >
+<div class='navCl1'><a href="#s24"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s26"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; MyMyUNSW Database</div></td><td align='right'></td></tr></table>
+<p>
+Database for Assignment 2 ...
+<ul>
+<li> UNSW (academic) information system:
+<ul>
+<li> staff, students, faculties, schools, ...
+<li> programs, streams, courses, classes, ...
+<li> enrolments, marks, academic standing, ...
+<li> rooms, buildings, facilities, ...
+</ul>
+<li> supporting functionalities like:
+<ul>
+<li> show handbook, enrol in a program/course/class
+<li> record enrolments/marks, produce transcripts
+</ul>
+</ul>
+This domain is useful because ...
+<ul>
+<li> you're already familiar with it <small>(or should be)</small>
+<li> you know the problems with the current system
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Exercises &#9826; [25/49]</div> <DIV class='slideCl1    ' id="s26"  >
+<div class='navCl1'><a href="#s25"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s27"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; MyMyUNSW Database <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+We call the schema "MyMyUNSW", because ...
+<ul>
+<li> <small>MyUNSW/PeopleSoft hasn't delivered complete functionality for 20 years</small>
+</ul>
+<p>
+Some abuses/modifications of standard terminology in this database:
+<ul>
+<li> Subject = course description (code, uoc, syllabus, etc.)
+<li> Course = course offering (subject, semester, teachers, etc.)
+<li> Stream = requirements for majors/minors <small>(Plans,Specialisations)</small>
+<li> Program = requirements leading to a degree
+</ul>
+<b>Warning:</b> the following ER diagrams approximate the schema
+<p>
+Assignment 2: write queries, views, PLpgSQL functions on this schema
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Exercises &#9826; [26/49]</div> <DIV class='slideCl1    ' id="s27"  >
+<div class='navCl1'><a href="#s26"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s28"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; MyMyUNSW: People/Subjects/Courses</div></td><td align='right'></td></tr></table>
+<p>
+<p>
+<p><div align='center'>
+<img alt="[Diagram:Pics/mymyunsw/person+course.png]" src="Pics/mymyunsw/person+course.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Exercises &#9826; [27/49]</div> <DIV class='slideCl1    ' id="s28"  >
+<div class='navCl1'><a href="#s27"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s29"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; MyMyUNSW: People/OrgUnits</div></td><td align='right'></td></tr></table>
+<p>
+<br>
+<p><div align='center'>
+<img alt="[Diagram:Pics/mymyunsw/orgunits.png]" src="Pics/mymyunsw/orgunits.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Exercises &#9826; [28/49]</div> <DIV class='slideCl1    ' id="s29"  >
+<div class='navCl1'><a href="#s28"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s30"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; MyMyUNSW: Programs/Streams/Degrees</div></td><td align='right'></td></tr></table>
+<p>
+<br>
+<p><div align='center'>
+<img alt="[Diagram:Pics/mymyunsw/academic-objects.png]" src="Pics/mymyunsw/academic-objects.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Exercises &#9826; [29/49]</div> <DIV class='slideCl1    ' id="s30"  >
+<div class='navCl1'><a href="#s29"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s31"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; MyMyUNSW: Programs/Streams/Degrees <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<p>
+<p><div align='center'>
+<img alt="[Diagram:Pics/mymyunsw/prog+stream-relns.png]" src="Pics/mymyunsw/prog+stream-relns.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Exercises &#9826; [30/49]</div> <DIV class='slideCl1    ' id="s31"  >
+<div class='navCl1'><a href="#s30"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s32"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; MyMyUNSW: Programs/Streams/Degrees <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<p>
+<p><div align='center'>
+<img alt="[Diagram:Pics/mymyunsw/rules.png]" src="Pics/mymyunsw/rules.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Exercises &#9826; [31/49]</div> <DIV class='slideCl1    ' id="s32"  >
+<div class='navCl1'><a href="#s31"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s33"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; MyMyUNSW: Enrolment</div></td><td align='right'></td></tr></table>
+<p>
+<br>
+<p><div align='center'>
+<img alt="[Diagram:Pics/mymyunsw/enrolments.png]" src="Pics/mymyunsw/enrolments.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Exercises &#9826; [32/49]</div> <DIV class='slideCl1    ' id="s33"  >
+<div class='navCl1'><a href="#s32"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s34"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; MyMyUNSW: Enrolment <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<br>
+<p><div align='center'>
+<img alt="[Diagram:Pics/mymyunsw/course-enrolment.png]" src="Pics/mymyunsw/course-enrolment.png">
+</div><p>
+<p>
+<br>
+Note that grade is not directly determined by mark e.g. 55UF, 48PC
+<p>
+<large><code>evaluation</code></large> is a very simple implementation of myExperience ...
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Exercises &#9826; [33/49]</div> <DIV class='slideCl1    ' id="s34"  >
+<div class='navCl1'><a href="#s33"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s35"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; MyMyUNSW: Enrolment <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<p>
+<p><div align='center'>
+<img alt="[Diagram:Pics/mymyunsw/variations.png]" src="Pics/mymyunsw/variations.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Exercises &#9826; [34/49]</div> <DIV class='slideCl1    ' id="s35"  >
+<div class='navCl1'><a href="#s34"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s36"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Exercise: Exploring the MyMyUNSW Database</div></td><td align='right'></td></tr></table>
+<p>
+Try to work out the following:
+<ul>
+<li> How many tables are there?
+<li> How many domains? sequences? views?
+<li> How many tuples in each table?
+<li> What grades have been awarded?
+<li> What are the min/max marks ever given?
+<li> How many students are in the database?
+<li> What does field <i>X</i> in table <i>Y</i> represent?
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Exercises &#9826; [35/49]</div> <DIV class='slideCl1    ' id="s36"  >
+<div class='navCl1'><a href="#s35"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s37"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Exercise: Queries on MyMyUNSW Database (i)</div></td><td align='right'></td></tr></table>
+<p>
+<br>
+<ul>
+<li> What are the start/end dates of all semesters since 2000? <br>
+	<small>(relevant tables: <large><code>terms</code></large>)</small>
+<li> When was the last Winter Semester (X2)? <br>
+	<small>(relevant tables: <large><code>terms</code></large>)</small>
+<li> How long have semesters been since 2000? <br>
+	<small>(relevant tables: <large><code>terms</code></large>)</small>
+<li> What kinds of staff positions are there? <br>
+	<small>(relevant tables: <large><code>staff_roles</code></large>)</small>
+<li> How many academic job types are there at UNSW? <br>
+	<small>(relevant tables: <large><code>StaffRoles</code></large>)</small>
+<li> Who is the Vice-chancellor? <br>
+	<small>(relevant tables: <large><code>people</code></large>, <large><code>staff_roles</code></large>, <large><code>affiliations</code></large>)</small>
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Exercises &#9826; [36/49]</div> <DIV class='slideCl1    ' id="s37"  >
+<div class='navCl1'><a href="#s36"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s38"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Exercise: Queries on MyMyUNSW Database (ii)</div></td><td align='right'></td></tr></table>
+<p>
+<br>
+<ul>
+<li> How many people don't have UNSW student/staff ids? <br>
+	<small>(relevant tables: <large><code>people</code></large>)</small>
+<li> What is the name of the student whose id is 3064813? <br>
+	<small>(relevant tables: <large><code>people</code></large>)</small>
+<li> Are there any students with "oov" somewhere in their name? <br>
+	<small>(relevant tables: <large><code>people</code></large>)</small>
+<li> What is John Shepherd's office telephone number? <br>
+	<small>(relevant tables: <large><code>people</code></large>, <large><code>staff</code></large>)</small>
+<li> What is the most common month for student birthdays? <br>
+	<small>(relevant tables: <large><code>people</code></large>)</small>
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Exercises &#9826; [37/49]</div> <DIV class='slideCl1    ' id="s38"  >
+<div class='navCl1'><a href="#s37"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s39"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Exercise: Queries on MyMyUNSW Database (iii)</div></td><td align='right'></td></tr></table>
+<p>
+<br>
+<ul>
+<li> What are the large (>300 seats) lecture theatres? <br>
+	<small>(relevant tables: <large><code>rooms</code></large>, <large><code>buildings</code></large>)</small>
+<li> What are the very large (> 1000 students) courses? <br>
+    <small>(relevant tables: <large><code>courses</code></large>, <large><code>subjects</code></large>, <large><code>course_enrolments</code></large>)</small>
+<li> How many times has COMP1511 been offered? <br>
+	<small>(relevant tables: <large><code>courses</code></large>, <large><code>subjects</code></large>)</small>
+<li> Which students have taken no courses? <br>
+	<small>(relevant tables: <large><code>people</code></large>, <large><code>students</code></large>, <large><code>course_enrolments</code></large>)</small>
+<li> Is anyone enrolled in a course who's not a student? <br>
+    <small>(relevant tables: <large><code>people</code></large>, <large><code>students</code></large>, <large><code>course_enrolments</code></large>)</small>
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Exercises &#9826; [38/49]</div> <DIV class='slideCl1    ' id="s39"  >
+<div class='navCl1'><a href="#s38"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s40"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Exercise: Queries on MyMyUNSW Database (iv)</div></td><td align='right'></td></tr></table>
+<p>
+<ul>
+<li>
+Write a function to give the "standard" name (e.g. 18s2) for a term
+</p>
+<p><pre style="font-size:90%">
+create or replace function
+    termName(tid integer) returns text ...
+
+select termName(206);
+<span class='comment'>returns</span> '15s1'
+</pre><p>
+<li> 
+<p>
+Write a function to give a full name for a course, e.g.
+</p>
+<p><pre style="font-size:90%">
+create or replace function
+    courseName(cid integer) returns text ...
+
+select courseName(xx)
+<span class='comment'>returns</span> 'COMP3311 05s2 Database Systems'
+</pre><p>
+</ul>
+Both functions take an internal <large><code>id</code></large> value as a parameter.
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Exercises &#9826; [39/49]</div> <DIV class='slideCl1    ' id="s40"  >
+<div class='navCl1'><a href="#s39"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s41"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Exercise: Queries on MyMyUNSW Database (v)</div></td><td align='right'></td></tr></table>
+<p>
+<ul>
+<li>
+What is the most easterly building (or buildings) on the UNSW
+Kensington campus?
+<p>
+Relevant tables: <large><code>buildings</code></large>, &nbsp; Hint: gridref
+<li>
+UNSW often claims to be one of Australia's most multi-cultural University.
+Write an SQL query to investigate the truth of this claim by returning
+a list of the top 20 countries-of-citizenship for the UNSW students in
+the database. The output should also include a count of the number of
+students of each nationality.
+<p>
+Relevant tables: <large><code>people</code></large>, <large><code>students</code></large>, <large><code>countries</code></large>
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Exercises &#9826; [40/49]</div> <DIV class='slideCl1    ' id="s41"  >
+<div class='navCl1'><a href="#s40"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s42"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Exercise: Triggers (1)</div></td><td align='right'></td></tr></table>
+<p>
+Requirement: maintain assets in bank branches
+<ul>
+<li> each branch has assets based on the accounts held there
+<li> whenever an account changes, the assets of the corresponding
+        branch should be updated to reflect this change
+</ul>
+Some possible changes:
+<ul>
+<li> a new account is opened
+<li> the amount of money in an account changes
+<li> an account moves from one branch to another
+<li> an account is closed
+</ul>
+Implement triggers to maintain <large><code>Branch.assets</code></large>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Exercises &#9826; [41/49]</div> <DIV class='slideCl1    ' id="s42"  >
+<div class='navCl1'><a href="#s41"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s43"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Exercise: Triggers (2)</div></td><td align='right'></td></tr></table>
+<p>
+Consider a simple airline flights/bookings database:
+<p><pre>
+Airports(<b>id</b>, code, name, city)
+Planes(<b>id</b>, craft, nseats)
+Flights(<b>id</b>, fltNum, plane, source, dest
+        departs, arrives, price, <font color="#0000EE">seatsAvail</font>)
+Passengers(<b>id</b>, name, address, phone)
+Bookings(<b>pax, flight</b>, paid)
+</pre><p>
+Write triggers to ensure that <large><code>Flights.seatsAvail</code></large>
+is consistent with number of <large><code>Bookings</code></large> on that flight.
+<p>
+Assume that we never <large><code>UPDATE</code></large> a booking <small>(only insert/delete)</small>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Exercises &#9826; [42/49]</div> <DIV class='slideCl1    ' id="s43"  >
+<div class='navCl1'><a href="#s42"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s44"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Course Enrolments (i) &nbsp; <small>(Python+Psycopg2)</small></div></td><td align='right'></td></tr></table>
+<p>
+<br>
+Write a program &nbsp;<large><code>./enrs term</code></large>&nbsp; to display
+<ul>
+<li> all courses in the term, ordered by subject code
+<li> #students, subject code, term, title
+<li> number of students enrolled in the course
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Exercises &#9826; [43/49]</div> <DIV class='slideCl1    ' id="s44"  >
+<div class='navCl1'><a href="#s43"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s45"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Course Enrolments (ii) &nbsp; <small>(Python+Psycopg2)</small></div></td><td align='right'></td></tr></table>
+<p>
+<br>
+Write a program &nbsp;<large><code>./enr subject term</code></large>&nbsp; to display
+<ul>
+<li> course code, term, title
+<li> number of students enrolled in the course
+</ul>
+Then ....
+<ul>
+<li> add check for valid subject code and termcode
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Exercises &#9826; [44/49]</div> <DIV class='slideCl1    ' id="s45"  >
+<div class='navCl1'><a href="#s44"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s46"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Student WAM &nbsp; <small>(Python+Psycopg2)</small></div></td><td align='right'></td></tr></table>
+<p>
+<br>
+Write a program &nbsp;<large><code>./wam zID</code></large>&nbsp; to display
+<ul>
+<li> student id (unswid)
+<li> student name
+<li> WAM for all courses studied
+<ul>
+<li> ignore courses with no mark
+<li> totuoc = sum UOC for all courses with a mark <small>(even fails)</small>
+<li> wsum = sum (mark*UOC) for all courses with a mark
+<li> WAM = wsum / totuoc
+</ul>
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Exercises &#9826; [45/49]</div> <DIV class='slideCl1    ' id="s46"  >
+<div class='navCl1'><a href="#s45"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s47"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Course Averages &nbsp; <small>(Python+Psycopg2)</small></div></td><td align='right'></td></tr></table>
+<p>
+<br>
+Write a program &nbsp;<large><code>./avgs [term [subject]]</code></large>&nbsp; to display
+<ul>
+<li> course code, term, title
+<li> average mark for the course
+<li> if no subject given, all courses for that term
+<li> if no term given, all courses for all terms
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Exercises &#9826; [46/49]</div> <DIV class='slideCl1    ' id="s47"  >
+<div class='navCl1'><a href="#s46"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s48"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Finding Students</div></td><td align='right'></td></tr></table>
+<p>
+<br>
+Write a Python script called <tt>stu</tt> that
+<ul>
+<li> takes a student name as a command-line argument
+<li> displays zID and student name
+<li> if multiple students match the name, show them all
+<li> if no students match, print "No such student"
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Exercises &#9826; [47/49]</div> <DIV class='slideCl1    ' id="s48"  >
+<div class='navCl1'><a href="#s47"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s49"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Transcripts in Python</div></td><td align='right'></td></tr></table>
+<p>
+<br>
+Re-do the Transcript exercise from Assignment 2 so that ...
+<ul>
+<li> it is done in a Python script called <tt>ts</tt>
+<li> the student ID is on the command-line
+<li> Python checks that it's a valid student ID
+<li> Python manages the output and calculations
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Exercises &#9826; [48/49]</div> <DIV class='slideCl1    ' id="s49"  >
+<div class='navCl1'><a href="#s48"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>   </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Exercise: A Better SQL to RA Mapping</div></td><td align='right'></td></tr></table>
+<p>
+On the previous slide, we translated an SQL query as follows:
+<p><pre>
+<span class='comment'>-- schema: R(a,b) S(c,d)</span>
+select a as x
+from   R join S on (b=c)
+where  d = 100
+<span class='comment'>-- could be mapped to</span>
+Tmp1(a,b,c,d) = R Join[b=c] S
+Tmp2(a,b,c,d) = Sel[d=100](Tmp1)
+Tmp3(a)       = Proj[a](Tmp2)
+Res(x)        = Rename[Res(x)](Tmp3)
+</pre><p>
+Suggest a better approach.
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Exercises &#9826; [49/49]</div><p><hr><p>
+<span style='font-size:11px;color: grey;'>Produced: 11 Nov 2020</span>
+ <script src='lib/prism.js'></script>   
+ <script src='lib/sg.js'></script>   
+</body>
+</html>

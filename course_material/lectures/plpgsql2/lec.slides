@@ -1,0 +1,240 @@
+<title>PLpgSQL (ii)
+<footer>COMP3311 20T3 <diamond> PLpgSQL (ii) <diamond>
+
+<slide>
+<heading>PLpgSQL Functions (recap)
+Defining PLpgSQL functions:
+<syntax>
+<green>CREATE OR REPLACE</green>
+   <$>funcName</$>(<$>param1</$>, <$>param2</$>, ....)
+   <green>RETURNS</green> <$>rettype</$>
+<green>AS $$</green>
+<blue>DECLARE</blue>
+   <$>variable</$> <$>declarations</$>
+<blue>BEGIN</blue>
+   <$>code</$> <$>for</$> <$>function</$>
+<blue>END;</blue>
+<green>$$ LANGUAGE</green> plpgsql;
+</syntax>
+<small>
+</small>
+Setting <$>rettype</$><~> to <~><@>void</@><~> means "no return value"
+</slide>
+
+<slide>
+<heading>Debugging Output
+Printing info about intermediate states is critical for debugging
+<p>
+Depending on how PostgreSQL is configured
+<itemize>
+<item> <@>raise notice</@> allows you to display info from a function
+<item> displayed in <@>psql</@> window during the function's execution
+<item> usage: <~><@>raise notice '<i>FormatString</i>',<i>Value<sub>1</sub></i>,...<i>Value<sub>n</sub></i>;</@>
+</itemize>
+Example:
+<program>
+<comment>-- assuming x==3, y==3.14, z='abc'</comment>
+raise notice <brown>'x+1 = %, y = %, z = %'</brown>, x+1, y, z;
+<comment>-- displays "NOTICE:  x+1 = 4, y = 3.14, z = abc"</comment>
+</program>
+</slide>
+
+<slide>
+<continued>
+<b>Example:</b> a simple function with debugging output
+<p>
+<table cellpadding="5">
+<tr valign="top"><td>
+<b>Function</b>
+<program80>
+create or replace function
+   seq(_n int) returns setof int
+as $$
+declare i int;
+begin
+   for i in 1.._n loop
+      <blue>raise notice 'i=%',i</blue>;
+      return next i;
+   end loop;
+end;
+$$ language plpgsql;
+</program>
+</td><td>
+<b>Output</b>
+<program80>
+db=# select * from seq(3);
+NOTICE:  i=1
+NOTICE:  i=2
+NOTICE:  i=3
+ seq 
+-----
+   1
+   2
+   3
+(3 rows)
+</program>
+</td></tr>
+</table>
+<p>
+<small>
+Replacing <~><@>notice</@><~> by <~><@>exception</@><~> causes function to terminate in first iteration
+</small>
+</slide>
+
+<slide>
+<heading>Returning Multiple Values
+PLpgSQL functions can return a set of values (<@>setof</@> <$>Type</$>)
+<itemize>
+<sitem> effectively a function returning a table
+<sitem> <$>Type</$> could be atomic <Rightarrow> like a single column
+<sitem> <$>Type</$> could be tuples <Rightarrow> like a full table
+</itemize>
+Atomic types, e.g.
+<program>
+integer, float, numeric, date, text, varchar(<i>n</i>), ...
+</program>
+Tuple types, e.g.
+<program>
+create <navy>type</navy> Point as (x float, y float);
+</program>
+</slide>
+
+<slide>
+<continued>
+Example function returning a set of tuples
+<program90>
+create type MyPoint as (x integer, y integer);
+
+create or replace function
+   points(n integer, m integer) returns <blue>setof</blue> MyPoint
+as $$
+declare
+   i integer;  j integer;
+   p MyPoint;  <comment>-- tuple variable</comment>
+begin
+   for i in 1 .. n loop
+      for j in 1 .. m loop
+         p.x := i;  p.y := j;
+         <blue>return next</blue> p;
+      end loop;
+   end loop;
+end;
+$$ language plpgsql;
+</program>
+</slide>
+
+<slide>
+<continued>
+<br>
+Functions returning <~><@>setof</@> <$>Type</$><~> are used like tables
+<program>
+db=# <blue>select * from points(2,3);</blue>
+ x | y 
+---+---
+ 1 | 1
+ 1 | 2
+ 1 | 3
+ 2 | 1
+ 2 | 2
+ 2 | 3
+(6 rows)
+</program>
+</slide>
+
+<slide>
+<heading>INSERT ... RETURNING
+Can capture values from tuples inserted into DB:
+<syntax>
+<blue>insert</blue> into <$>Table(...)</$> values
+(<$>Val<sub>1</sub></$>, <$>Val<sub>2</sub></$>, ... <$>Val<sub>n</sub></$>)
+<blue>returning</blue> <$>ProjectionList</$> <blue>into</blue> <$>VarList</$>
+</syntax>
+Useful for recording id values generated for <@>serial</@> PKs:
+<program>
+declare newid integer; colour text;
+...
+insert into T(id,a,b,c) values (default,2,3,'red')
+returning id,c into newid,colour;
+<comment>-- id contains the primary key value</comment>
+<comment>-- for the new tuple T(?,2,3,'red')
+</program>
+</slide>
+
+<slide>
+<heading>Exceptions
+PLpgSQL supports exception handling via
+<syntax>
+<blue>begin</blue>
+    <$>Statements...</$>
+<blue>exception</blue>
+    <blue>when</blue> <$>Exceptions<sub>1</sub></$> <blue>then</blue>
+        <$>StatementsForHandler<sub>1</sub></$>
+    <blue>when</blue> <$>Exceptions<sub>2</sub></$> <blue>then</blue>
+        <$>StatementsForHandler<sub>2</sub></$>
+    ...
+<blue>end</blue>;
+</syntax>
+Each <$>Exceptions<sub>i</sub></$> is an <@>OR</@> list of exception names, e.g.
+<program>
+division_by_zero OR floating_point_exception OR ...
+</program>
+A list of exceptions is in Appendix A of the PostgreSQL Manual.
+</slide>
+
+<slide>
+<continued>
+<br>
+When an exception occurs:
+<itemize>
+<item> control is transferred to the relevant exception handling code
+<item> all database changes so far in this transaction are undone
+<item> all function variables retain their current values
+<item> handler executes and then transaction aborts <small>(and function exits)</small>
+</itemize>
+If no handler in current scope, exception passed to next outer level.
+<p>
+Default exception handlers, at outermost level, exit and log error.
+</slide>
+
+<slide>
+<continued>
+<b>Example:</b> exception handling:
+<program90>
+<comment>-- table T contains one tuple ('Tom','Jones')</comment>
+declare
+   x integer := 3;
+   y integer;
+begin
+   update T set firstname = 'Joe'
+   where lastname = 'Jones';
+   <comment>-- table T now contains ('Joe','Jones')</comment>
+   x := x + 1;
+   y := x / 0;
+exception
+   when division_by_zero then
+      <comment>-- update on T is rolled back to ('Tom','Jones')</comment>
+      raise notice 'caught division_by_zero';
+      return x; <comment>-- value returned is 4</comment>
+end;
+</program>
+</slide>
+
+<slide>
+<continued>
+The <@>raise</@> operator can generate server log entries, e.g.
+<program>
+raise debug1 'Simple message';
+raise notice 'User = %',user_id;
+raise exception 'Fatal: value was %',value;
+</program>
+There are several levels of severity:
+<itemize>
+<item> <@>DEBUG1</@>, <@>LOG</@>, <@>INFO</@>, <@>NOTICE</@>, <@>WARNING</@>, and <@>EXCEPTION</@>
+<item> not all severities generate a message to the client (<@>psql</@>)
+</itemize>
+Your CSE server log is the file <@>/srvr/<i>YOU</i>/pgsql/Log</@> 
+<p>
+<small>
+Server logs can grow <i>very</i> large; delete when you shut your server down
+</small>
+</slide>

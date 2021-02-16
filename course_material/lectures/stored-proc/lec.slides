@@ -1,0 +1,283 @@
+<title>Stored Procedures
+<footer>COMP3311 20T3 <diamond> Stored Procedures <diamond>
+
+<slide>
+<heading>Limitations of Basic SQL
+What we have seen of SQL so far:
+<itemize>
+<item> data definition language
+	<~> <small>(<@>create table(...)</@>)</small>
+<item> constraints
+	<~> <small>(domain, key, referential integrity)</small>
+<item> query language
+	<~> <small>(<@>select...from...where...</@>)</small>
+<item> views
+	<~> <small>(give names to SQL queries)</small>
+</itemize>
+This provides powerful declarative data extraction mechanisms.
+<p>
+This is not sufficient to write complete applications.
+<p>
+More <em>extensibility</em> and <em>programmability</em> are needed.
+</slide>
+
+<slide>
+<heading>Extending SQL
+Ways in which standard SQL might be extended:
+<itemize>
+<item> new data types
+	<small>(incl. constraints, I/O, indexes, ...)</small>
+<item> object-orientation
+<item> more powerful constraint checking
+<item> packaging/parameterizing queries
+<item> more functions/aggregates for use in queries
+<item> event-based triggered actions 
+</itemize>
+All are required to <i>assist</i><~> in application development.
+<p>
+But still do not provide a solution to developing applications.
+</slide>
+
+<slide>
+<heading>SQL as a Programming Language
+<br>
+At some point in developing complete database applications
+<itemize>
+<item> we need to implement user interactions
+<item> we need to control sequences of database operations
+<item> we need to process query results in complex ways
+<item> we need to build a web interface for users to access data
+</itemize>
+and SQL cannot do any of these.
+<p>
+SQL cannot even do something as simple as factorial!
+<p>
+<small>
+Ok ... so PostgreSQL added a factorial operator ... but it's non-standard.
+</small>
+</slide>
+
+<slide>
+<continued>
+Consider the problem of withdrawal from a bank account:
+<p>
+<i>If a bank customer attempts to withdraw more funds than
+they have in their account, then indicate "Insufficient Funds",
+otherwise update the account</i>
+<p>
+An attempt to implement this in SQL:
+<program90>
+select 'Insufficient Funds'
+from   Accounts
+where  acctNo = <i>AcctNum</i> and balance << <i>Amount</i>;
+update Accounts
+set    balance = balance - <i>Amount</i>
+where  acctNo = <i>AcctNum</i> and balance >= <i>Amount</i>;
+select 'New balance: '||balance
+from   Accounts
+where  acctNo = <i>AcctNum</i>;
+</program>
+</slide>
+
+<slide>
+<continued>
+Two possible evaluation scenarios:
+<itemize>
+<item> displays <q>Insufficient Funds</q>, <@>UPDATE</@> has no effect, displays unchanged balance
+<item> <@>UPDATE</@> occurs as required, displays changed balance
+</itemize>
+Some problems:
+<itemize>
+<sitem> SQL doesn't allow parameterisation (e.g. <i>AcctNum</i>)
+<sitem> always attempts <@>UPDATE</@>, even when it knows it's invalid
+<sitem> need to evaluate <@>(balance << </@><i>Amount</i><@>)</@> test twice
+<sitem> always displays balance, even when not changed
+</itemize>
+To accurately express the <q>business logic</q>,
+we need facilities like conditional execution and parameter passing.
+</slide>
+
+<slide>
+<heading>Database Programming
+Database programming requires a combination of
+<itemize>
+<item> manipulation of data in DB <~> <small>(via SQL)</small>
+<item> conventional programming <~> <small>(via procedural code)</small>
+</itemize>
+This combination is realised in a number of ways:
+<itemize>
+<item> passing SQL commands via a <q>call-level</q> interface <br>
+<small><gray>(prog lang is decoupled from DBMS; most flexible; e.g. Java/JDBC, PHP, Python)</gray></small>
+<item> embedding SQL into augmented programming languages <br>
+<small><gray>(requires pre-processor for language; typically DBMS-specific; e.g. SQL/C)</gray></small>
+<item> special-purpose programming languages in the DBMS <br>
+<small><gray>(closely integrated with DBMS; enable extensibility; e.g. PL/SQL, PLpgSQL)</gray></small>
+</itemize>
+<small>
+Here we focus on the last: extending DBMS capabilities via programs stored in the DB
+</small>
+</slide>
+
+<slide>
+<continued>
+Combining <red>SQL</red> and <green>procedural</green> code solves the <q>withdrawal</q> problem:
+<sprogram>
+<green>create function
+    withdraw(<blue>acctNum</blue> text, <blue>amount</blue> integer) returns text
+declare bal integer;
+begin
+    set bal = (<red>select balance
+               from   Accounts
+               where  acctNo = <blue>acctNum</blue></red>);
+    if (bal << <blue>amount</blue>) then
+        return 'Insufficient Funds';
+    else
+        <red>update Accounts
+        set    balance = balance - <blue>amount</blue>
+        where  acctNo = <blue>acctNum</blue></red>;
+        set bal = (<red>select balance
+                   from   Accounts
+                   where  acctNo = <blue>acctNum</blue></red>);
+        return 'New Balance: ' || bal;
+    end if
+end;</green>
+</sprogram>
+<small>(This example is actually a stored procedure, using SQL/PSM syntax)</small>
+</slide>
+
+<slide>
+<heading>Stored Procedures
+<em>Stored procedures</em> are small programs ...
+<itemize>
+<item> stored in the database, alongside the stored data
+<item> invoked in SQL queries, or automatically invoked in triggers
+</itemize>
+SQL/PSM is a standard for stored procedures, developed in 1996. <br>
+By then, most DBMSs had their own stored procedure languages.
+<p>
+PostgreSQL supports stored procedures in a variety of languages
+<itemize>
+<item> PLpgSQL ... PostgreSQL-specific procedural language <~> <smaller>(cf. Oracle's PL/SQL)</smaller>
+<item> SQL ... functions that resemble parameterised views
+<item> Python, Perl, Tcl, ... etc.
+</itemize>
+</slide>
+
+<slide>
+<continued>
+The PLpgSQL interpreter
+<itemize>
+<sitem> executes procedural code and manages variables
+<sitem> calls PostgreSQL engine to evaluate SQL statements
+</itemize>
+<diagram>Pics/plpgsql/engine.png
+Embedded in DBMS engine, so efficient to execute with queries
+</slide>
+
+<slide>
+<heading>SQL Functions
+PostgreSQL allows functions to be defined in SQL
+<syntax>
+CREATE OR REPLACE
+   <navy><$>funcName</$>(<$>arg1type</$>, <$>arg2type</$>, ....)
+   RETURNS <$>rettype</$></navy>
+AS <green>$$
+   <$>SQL</$> <$>statements</$>
+$$</green> LANGUAGE sql;
+</syntax>
+Within the function, arguments are accessed as <@>$1</@>, <@>$2</@>, ...
+<p>
+Return value: result of the last SQL statement.
+<p>
+<$>rettype</$> can be any PostgreSQL data type (incl tuples,tables).
+<p>
+Function returning a table: <~> <@>returns setof</@> <$>TupleType</$>
+<p>
+Details: PostgreSQL Documentation, Section 37.5
+</slide>
+
+<slide>
+<continued>
+<b>Example:</b> info about bars from a given suburb
+<program90>
+create or replace function
+    hotelsIn(text) returns setof Bars
+as $$
+select * from Bars where addr = $1;
+$$ language sql;
+
+<comment>-- usage examples</comment>
+select * from hotelsIn('The Rocks');
+      name       |   addr    | license 
+-----------------+-----------+---------
+ Australia Hotel | The Rocks |  123456
+ Lord Nelson     | The Rocks |  123888
+
+select * from hotelsIn('Randwick');
+    name     |   addr   | license 
+-------------+----------+---------
+ Royal Hotel | Randwick |  938500
+</program>
+</slide>
+
+<slide>
+<continued>
+<b>Example:</b> Name of cheapest beer at each bar
+<program90>
+create view Cheapest(bar, price) as
+select bar, min(price) from Sells group by bar;
+
+select s.*
+from   Sells s
+where  s.price =
+         (select price from Cheapest where bar = s.bar);
+</program>
+Could be implemted by defining an SQL function <@>LowestPriceAt(bar)</@>
+<program90>
+create or replace
+    function LowestPriceAt(text) returns float
+as $$
+select min(price) from Sells where bar = $1;
+$$ language sql;
+
+select * from Sells where price = LowestPriceAt(bar);
+</program>
+</slide>
+
+<slide>
+<heading>Functions vs Views
+A parameterless function behaves similar to a view
+<p>
+E.g.
+<program>
+create or replace view EmpList
+as
+select given||' '||family as name,
+       street||', '||town as addr
+from   Employees;
+</program>
+which is used as
+<program>
+mydb=# select * from EmpList;
+</program>
+</slide>
+
+<slide>
+<continued>
+Compared to its implementation as a function:
+<program>
+create type EmpRecord as (name text, addr text);
+
+create or replace function
+   EmpList() returns setof EmpRecord
+as $$
+select family||' '||given as name,
+       street||', '||town as addr
+from   Employees
+$$ language sql;
+</program>
+which is used as
+<program>
+mydb=# select * from EmpList();
+</program>
+</slide>

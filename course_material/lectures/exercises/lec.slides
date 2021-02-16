@@ -1,0 +1,635 @@
+<title>Exercises
+<footer>COMP3311 20T3 <diamond> Exercises <diamond>
+
+<slide>
+<heading>ER Notation
+ER design elements:
+<p><br>
+<diagram>Pics/er-rel/er-symbols
+</slide>
+
+<slide>
+<continued>
+Relationships:
+<diagram>Pics/er-rel/cardinal.png
+<p><br>
+Thick line = total participation; <~> thin line = partial participation
+</slide>
+
+<slide>
+<heading>N:M Relationships
+<br>
+<diagram>Pics/er-rel/relNM
+</slide>
+
+<slide>
+<heading>1:N Relationships
+<br>
+<diagram>Pics/er-rel/rel1N
+</slide>
+
+<slide>
+<heading>1:1 Relationships
+<br>
+<diagram>Pics/er-rel/rel11
+</slide>
+
+<slide>
+<exercise>ER Diagram
+For the ER diagram below
+<itemize>
+<sitem> give examples of entity values (in tuple notation)
+<sitem> describe the semantics of the relationships
+</itemize>
+<p>
+<diagram>Pics/er-rel/ER-summary
+</slide>
+
+<slide>
+<exercise>Medical Information
+Develop an ER design for the following scenario:
+<p>
+<small>
+<itemize>
+<sitem> Patients are identified by an SSN, and their names, addresses and ages
+must be recorded.
+<sitem> Doctors are identified by an SSN. For each doctor, the name, specialty
+and years of experience must be recorded.
+<sitem> Each pharmacy has a name, address and phone number. A pharmacy must have
+a manager, who is a pharmacist.
+<sitem> A pharmacist is identified by an SSN, he/she can only work for one
+pharmacy. For each pharmacist, the name, qualification must be recorded.
+<sitem> For each drug, the trade name and formula must be recorded.
+<sitem> Every patient has a primary physician. Every doctor has at least one
+patient. 
+<sitem> Each pharmacy sells several drugs, and has a price for each. A drug
+could be sold at several pharmacies, and the price could vary between
+pharmacies.
+<sitem> Doctors prescribe drugs for patients. A doctor could prescribe one or
+more drugs for several patients, and a patient could obtain prescriptions
+from several doctors. Each prescription has a date and quantity associated
+with it.
+</itemize>
+</small>
+</slide>
+
+<slide>
+<heading>Ass1: Calendar App
+<diagram>Pics/ass1/cal1.png
+</slide>
+
+<slide>
+<continued>
+<br>
+A plausible calendar app involves:
+<itemize>
+<item> users ... login and maintain calendars/events
+<item> groups ... collections of users
+<item> events ... activities that occur at specific times/days
+<item> calendars ... collections of events
+</itemize>
+</slide>
+
+<slide>
+<heading>Users
+Users are ...
+<itemize>
+<item> individuals who use the calendar
+<item> we need to know at least their name and email address
+<item> they also have a password for authentication
+<item> some (very few) users have administration privileges <br>
+<small>(we don't need to specify what these privileges are in the data model)</small>
+</itemize>
+Groups are ...
+<itemize>
+<item> named collections of individual users
+<item> useful as shorthand for scheduling events for specific groups
+<item> each group is owned by a user, who maintains the list of members
+</itemize>
+</slide>
+
+<slide>
+<continued>
+<br>
+Possible ER design:
+<diagram>Pics/ass1/user-group
+</slide>
+
+<slide>
+<heading>Calendars
+Calendars are ...
+<itemize>
+<item> named collections of events (e.g. "John's Weekly Meetings/Classes")
+<item> each calendar is owned by a user; a user may own many calendars;
+<item> each event is attached to a specific calendar
+<item> each calendar has accessibility restrictions (per user and default) <br>
+<small>(e.g. some users have read/write, some have read-only, some have no access)</small>
+<item> if a user has read permission on a calendar, they see private event titles instead of "Busy"
+<item> users may subscribe to other peoples' calendars (if they can read them)
+<item> each calendar has a colour (set by its owner)
+<item> a subscriber may set a different colour for their own view
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Possible ER design:
+<diagram>Pics/ass1/calendar
+</slide>
+
+<slide>
+<heading>Events
+<small>
+ <ul>
+<li> there are various kinds of events
+<ul>
+<li> associated with a particular day/date (e.g. birthday)
+<li> scheduled at a given time on a given day (e.g. a meeting)
+<li> recurring on a regular basis (e.g. a COMP3311 lecture)
+</ul>
+<li> each event is owned by the individual user who creates it
+<li> each event has a title and visibility (public, private)
+<ul>
+<li> a private event is shown simply as "Busy" in the interface
+</ul>
+<li> an event may be associated with a location (where it will occur)
+<li> an event may be associated with a set of individual users (invitees)
+<li> an event may recur in a number of ways
+<ul>
+<li> on a particular day of the week (Mon,Tue,Wed,Thu,Fri,Sat,Sun)
+<li> weekly, every 2/3/4 weeks
+<li> monthly (on same date of month), every 2/3/.../11 months
+<li> on the first/second/third/last Xday of each month
+<li> for a fixed number of times (e.g. 10 times)
+<li> annually
+</ul>
+<li> a recurring event will have a starting date and may have an ending date
+<li> at specified times before each event an alarm event can be triggered
+<li> there may be multiple alarms associated with an event <br>
+    <small>(e.g. 15 mins before, 5 mins before, 1 minute before)</small>
+<li> an event can have an associated list of users who are invited <br>
+    <small>(we don't associate events with groups; groups are used to generate a list of invited users whne the event is created)</small>
+<ul>
+<li> users on the list can be flagged as "Invited", "Accepted", or "Declined"
+</ul>
+</ul>
+</small>
+</slide>
+
+<slide>
+<continued>
+Possible ER design:
+<diagram>Pics/ass1/event
+</slide>
+
+<slide>
+<continued>
+Possible ER design:
+<diagram>Pics/ass1/event2
+</slide>
+
+<slide>
+<continued>
+<br>
+Possible ER design for remaining relationships:
+<diagram>Pics/ass1/event2
+</slide>
+
+<slide>
+<heading>Inserting and Deleting
+<br>
+Consider the following simple relational schema:
+<p>
+<diagram>Pics/sql/simple-schema
+<p>
+How to define it as an SQL schema?
+<p>
+How to insert tuples?
+<p>
+How to delete tuples?
+</slide>
+
+<slide>
+<heading>SQL Queries on the Beer Database
+Beer database schema:
+<p>
+<diagram>Pics/sql/beer-er
+</slide>
+
+<slide>
+<continued>
+Answer the following questions via SQL:
+<ol>
+<item> Where does John live?
+<item> What styles of beer does 'Sierra Nevada' make?
+<item> How many beers does each brewer make?
+<item> Which brewers make only one beer?
+<item> Who makes the most beers?
+<item> Find beers that are the only one by their brewer.
+<item> What is the most common beer style?
+<item> What is the most popular beer?
+<item> How many beers does John like?
+<item> Who doesn't like beer?
+</ol>
+</slide>
+
+<slide>
+<continued>
+Answer the following questions via SQL:
+<ol start="11">
+<item> Where could I go to drink 'Old'?
+<item> Bars where either Gernot or John drink.
+<item> Bars where both Gernot and John drink.
+<item> Which bar sells 'New' cheapest?
+<item> Which bar sells the widest variety of beers?
+<item> Which bars sell 'New' at the same price<br>
+as the Coogee Bay Hotel charges for VB.
+<item> Find the average price of common beers <br>
+<small>(i.e. served in more than two bars/hotels).</small>
+</ol>
+</slide>
+
+<slide>
+<continued>
+Answer the following questions via SQL:
+<ol start="18">
+<item> What is the most liked beer style?
+<item> Find the brewers whose beers John likes.
+<item> Find the beers sold at bars where John drinks.
+<item> How many drinkers live where bars are located?
+<item> Bars that sell no beers made by Carlton?
+<item> How many bars in suburbs where dinkers live?<br>
+<small>(must include all such suburbs, even if no bars)</small>
+<item> Which bars sell all beers?
+</ol>
+</slide>
+
+<slide>
+<heading>Functions returning sets of numbers
+<br>
+Write three functions called <@>iota()</@> ...
+<itemize>
+<item> each function returns a <@>setof integer</@> values
+<item> <@>iota(<i>hi</i>)</@> returns numbers in range 1..<@><i>hi</i></@>
+<item> <@>iota(<i>lo</i>,<i>hi</i>)</@> returns numbers in range <@>lo</@>..<@><i>hi</i></@>
+<item> <@>iota(<i>lo</i>,<i>hi</i>,<i>inc</i>)</@> returns <br>
+    <~~~> <@><i>lo</i></@>, <@><i>lo+inc</i></@>, <@><i>lo+2*inc</i></@>, <@><i>lo+3*inc</i></@>, ..., <@>max <leq> <i>hi</i></@>
+</itemize>
+<small>
+Note: Functions returning <@>setof <i>Type</i></@> are used in the <@>from</@> clause.
+</small>
+</slide>
+
+<slide>
+<heading>Imported Beers
+<br>
+We want to know which beers are imported.
+<p>
+Return a set of (beer,brewer,country) tuples for such beers
+<itemize>
+<item> using a view imports1(beer,brewer,country)
+<item> using a function returning a set of (beer,brewer,country)
+<item> using a function that takes a country as a parameter
+<item> using a function that takes a country or NULL (all countries)
+</itemize>
+</slide>
+
+<slide>
+<heading>MyMyUNSW Database
+Database for Assignment 2 ...
+<itemize>
+<item> UNSW (academic) information system:
+<itemize>
+<sitem> staff, students, faculties, schools, ...
+<sitem> programs, streams, courses, classes, ...
+<sitem> enrolments, marks, academic standing, ...
+<sitem> rooms, buildings, facilities, ...
+</itemize>
+<item> supporting functionalities like:
+<itemize>
+<sitem> show handbook, enrol in a program/course/class
+<sitem> record enrolments/marks, produce transcripts
+</itemize>
+</itemize>
+This domain is useful because ...
+<itemize>
+<sitem> you're already familiar with it <small>(or should be)</small>
+<sitem> you know the problems with the current system
+</itemize>
+</slide>
+
+<slide>
+<continued>
+We call the schema <q>MyMyUNSW</q>, because ...
+<itemize>
+<item> <small>MyUNSW/PeopleSoft hasn't delivered complete functionality for 20 years</small>
+</itemize>
+<p>
+Some abuses/modifications of standard terminology in this database:
+<itemize>
+<item> Subject = course description (code, uoc, syllabus, etc.)
+<item> Course = course offering (subject, semester, teachers, etc.)
+<item> Stream = requirements for majors/minors <small>(Plans,Specialisations)</small>
+<item> Program = requirements leading to a degree
+</itemize>
+<b>Warning:</b> the following ER diagrams approximate the schema
+<p>
+Assignment 2: write queries, views, PLpgSQL functions on this schema
+</slide>
+
+<slide>
+<heading>MyMyUNSW: People/Subjects/Courses
+<p>
+<diagram>Pics/mymyunsw/person+course.png
+</slide>
+
+<slide>
+<heading>MyMyUNSW: People/OrgUnits
+<br>
+<diagram>Pics/mymyunsw/orgunits.png
+</slide>
+
+<slide>
+<heading>MyMyUNSW: Programs/Streams/Degrees
+<br>
+<diagram>Pics/mymyunsw/academic-objects.png
+</slide>
+
+<slide>
+<continued>
+<p>
+<diagram>Pics/mymyunsw/prog+stream-relns.png
+</slide>
+
+<slide>
+<continued>
+<p>
+<diagram>Pics/mymyunsw/rules.png
+</slide>
+
+<slide>
+<heading>MyMyUNSW: Enrolment
+<br>
+<diagram>Pics/mymyunsw/enrolments.png
+</slide>
+
+<slide>
+<continued>
+<br>
+<diagram>Pics/mymyunsw/course-enrolment.png
+<p>
+<br>
+Note that grade is not directly determined by mark e.g. 55UF, 48PC
+<p>
+<@>evaluation</@> is a very simple implementation of myExperience ...
+</slide>
+
+<slide>
+<continued>
+<p>
+<diagram>Pics/mymyunsw/variations.png
+</slide>
+
+<slide>
+<exercise>Exploring the MyMyUNSW Database
+Try to work out the following:
+<itemize>
+<item> How many tables are there?
+<item> How many domains? sequences? views?
+<item> How many tuples in each table?
+<item> What grades have been awarded?
+<item> What are the min/max marks ever given?
+<item> How many students are in the database?
+<item> What does field <i>X</i> in table <i>Y</i> represent?
+</itemize>
+</slide>
+
+<slide>
+<exercise>Queries on MyMyUNSW Database (i)
+<br>
+<itemize>
+<item> What are the start/end dates of all semesters since 2000? <br>
+	<small>(relevant tables: <@>terms</@>)</small>
+<item> When was the last Winter Semester (X2)? <br>
+	<small>(relevant tables: <@>terms</@>)</small>
+<item> How long have semesters been since 2000? <br>
+	<small>(relevant tables: <@>terms</@>)</small>
+<item> What kinds of staff positions are there? <br>
+	<small>(relevant tables: <@>staff_roles</@>)</small>
+<item> How many academic job types are there at UNSW? <br>
+	<small>(relevant tables: <@>StaffRoles</@>)</small>
+<item> Who is the Vice-chancellor? <br>
+	<small>(relevant tables: <@>people</@>, <@>staff_roles</@>, <@>affiliations</@>)</small>
+</itemize>
+</slide>
+
+<slide>
+<exercise>Queries on MyMyUNSW Database (ii)
+<br>
+<itemize>
+<item> How many people don't have UNSW student/staff ids? <br>
+	<small>(relevant tables: <@>people</@>)</small>
+<item> What is the name of the student whose id is 3064813? <br>
+	<small>(relevant tables: <@>people</@>)</small>
+<item> Are there any students with "oov" somewhere in their name? <br>
+	<small>(relevant tables: <@>people</@>)</small>
+<item> What is John Shepherd's office telephone number? <br>
+	<small>(relevant tables: <@>people</@>, <@>staff</@>)</small>
+<item> What is the most common month for student birthdays? <br>
+	<small>(relevant tables: <@>people</@>)</small>
+</itemize>
+</slide>
+
+<slide>
+<exercise>Queries on MyMyUNSW Database (iii)
+<br>
+<itemize>
+<item> What are the large (>300 seats) lecture theatres? <br>
+	<small>(relevant tables: <@>rooms</@>, <@>buildings</@>)</small>
+<item> What are the very large (> 1000 students) courses? <br>
+    <small>(relevant tables: <@>courses</@>, <@>subjects</@>, <@>course_enrolments</@>)</small>
+<item> How many times has COMP1511 been offered? <br>
+	<small>(relevant tables: <@>courses</@>, <@>subjects</@>)</small>
+<item> Which students have taken no courses? <br>
+	<small>(relevant tables: <@>people</@>, <@>students</@>, <@>course_enrolments</@>)</small>
+<item> Is anyone enrolled in a course who's not a student? <br>
+    <small>(relevant tables: <@>people</@>, <@>students</@>, <@>course_enrolments</@>)</small>
+</itemize>
+</slide>
+
+<slide>
+<exercise>Queries on MyMyUNSW Database (iv)
+<itemize>
+<item>
+Write a function to give the "standard" name (e.g. 18s2) for a term
+</p>
+<program90>
+create or replace function
+    termName(tid integer) returns text ...
+
+select termName(206);
+<comment>returns</comment> '15s1'
+</program>
+<item> 
+<p>
+Write a function to give a full name for a course, e.g.
+</p>
+<program90>
+create or replace function
+    courseName(cid integer) returns text ...
+
+select courseName(xx)
+<comment>returns</comment> 'COMP3311 05s2 Database Systems'
+</program>
+</itemize>
+Both functions take an internal <@>id</@> value as a parameter.
+</slide>
+
+<slide>
+<exercise>Queries on MyMyUNSW Database (v)
+<itemize>
+<item>
+What is the most easterly building (or buildings) on the UNSW
+Kensington campus?
+<p>
+Relevant tables: <@>buildings</@>, <~> Hint: gridref
+<item>
+UNSW often claims to be one of Australia's most multi-cultural University.
+Write an SQL query to investigate the truth of this claim by returning
+a list of the top 20 countries-of-citizenship for the UNSW students in
+the database. The output should also include a count of the number of
+students of each nationality.
+<p>
+Relevant tables: <@>people</@>, <@>students</@>, <@>countries</@>
+</itemize>
+</slide>
+
+<slide>
+<exercise>Triggers (1)
+Requirement: maintain assets in bank branches
+<itemize>
+<sitem> each branch has assets based on the accounts held there
+<sitem> whenever an account changes, the assets of the corresponding
+        branch should be updated to reflect this change
+</itemize>
+Some possible changes:
+<itemize>
+<sitem> a new account is opened
+<sitem> the amount of money in an account changes
+<sitem> an account moves from one branch to another
+<sitem> an account is closed
+</itemize>
+Implement triggers to maintain <@>Branch.assets</@>
+</slide>
+
+<slide>
+<exercise>Triggers (2)
+Consider a simple airline flights/bookings database:
+<program>
+Airports(<b>id</b>, code, name, city)
+Planes(<b>id</b>, craft, nseats)
+Flights(<b>id</b>, fltNum, plane, source, dest
+        departs, arrives, price, <blue>seatsAvail</blue>)
+Passengers(<b>id</b>, name, address, phone)
+Bookings(<b>pax, flight</b>, paid)
+</program>
+Write triggers to ensure that <@>Flights.seatsAvail</@>
+is consistent with number of <@>Bookings</@> on that flight.
+<p>
+Assume that we never <@>UPDATE</@> a booking <small>(only insert/delete)</small>
+</slide>
+
+<slide>
+<heading>Course Enrolments (i) <~> <small>(Python+Psycopg2)</small>
+<br>
+Write a program <~><@>./enrs term</@><~> to display
+<itemize>
+<item> all courses in the term, ordered by subject code
+<item> #students, subject code, term, title
+<item> number of students enrolled in the course
+</itemize>
+</slide>
+
+<slide>
+<heading>Course Enrolments (ii) <~> <small>(Python+Psycopg2)</small>
+<br>
+Write a program <~><@>./enr subject term</@><~> to display
+<itemize>
+<item> course code, term, title
+<item> number of students enrolled in the course
+</itemize>
+Then ....
+<itemize>
+<item> add check for valid subject code and termcode
+</itemize>
+</slide>
+
+<slide>
+<heading>Student WAM <~> <small>(Python+Psycopg2)</small>
+<br>
+Write a program <~><@>./wam zID</@><~> to display
+<itemize>
+<item> student id (unswid)
+<item> student name
+<item> WAM for all courses studied
+<itemize>
+<item> ignore courses with no mark
+<item> totuoc = sum UOC for all courses with a mark <small>(even fails)</small>
+<item> wsum = sum (mark*UOC) for all courses with a mark
+<item> WAM = wsum / totuoc
+</itemize>
+</itemize>
+</slide>
+
+<slide>
+<heading>Course Averages <~> <small>(Python+Psycopg2)</small>
+<br>
+Write a program <~><@>./avgs [term [subject]]</@><~> to display
+<itemize>
+<item> course code, term, title
+<item> average mark for the course
+<item> if no subject given, all courses for that term
+<item> if no term given, all courses for all terms
+</itemize>
+</slide>
+
+<slide>
+<heading>Finding Students
+<br>
+Write a Python script called <tt>stu</tt> that
+<itemize>
+<item> takes a student name as a command-line argument
+<item> displays zID and student name
+<item> if multiple students match the name, show them all
+<item> if no students match, print "No such student"
+</itemize>
+</slide>
+
+<slide>
+<heading>Transcripts in Python
+<br>
+Re-do the Transcript exercise from Assignment 2 so that ...
+<itemize>
+<item> it is done in a Python script called <tt>ts</tt>
+<item> the student ID is on the command-line
+<item> Python checks that it's a valid student ID
+<item> Python manages the output and calculations
+</itemize>
+</slide>
+
+<slide>
+<exercise>A Better SQL to RA Mapping
+On the previous slide, we translated an SQL query as follows:
+<program>
+<comment>-- schema: R(a,b) S(c,d)</comment>
+select a as x
+from   R join S on (b=c)
+where  d = 100
+<comment>-- could be mapped to</comment>
+Tmp1(a,b,c,d) = R Join[b=c] S
+Tmp2(a,b,c,d) = Sel[d=100](Tmp1)
+Tmp3(a)       = Proj[a](Tmp2)
+Res(x)        = Rename[Res(x)](Tmp3)
+</program>
+Suggest a better approach.
+</slide>

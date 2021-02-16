@@ -1,0 +1,1388 @@
+<title>Data modelling and OO/ER data models
+
+<slide>
+<section>Data Modelling
+</slide>
+
+<slide>
+<heading>Data Modelling
+<em>Data modelling</em>: an important early stage of database application development <small>(aka <q>database engineering</q>)</small>.
+<p>
+<enumerate>
+<item> requirements analysis
+	<~> <small>(identify data and operations)</small>
+<item> <blue><b>data modelling</b></blue>
+	<~> <small>(high-level, abstract)</small>
+<item> database schema design
+	<~> <small>(detailed, relational/tables)</small>
+<item> database physical design
+	<~> <small>(based on expected workload)</small>
+<item> database implementation
+	<~> <small>(create instance of schema)</small>
+<item> build operations/interface
+	<~> <small>(SQL, stored procedures, GUI)</small>
+<item> performance tuning
+	<~> <small>(physical re-design)</small>
+<item> schema evolution
+	<~> <small>(logical schema re-design)</small>
+</enumerate>
+</slide>
+
+<slide>
+<continued>
+Aim of data modelling:
+<itemize>
+<item> describe what <em>information</em> is contained in the database <br>
+	<small>(e.g. entities: students, courses, accounts, branches, patients, ...)</small>
+<item> describe <em>relationships</em> between data items <br>
+	<small>(e.g. John is enrolled in COMP3311, Paul's account is held at Coogee)</small>
+<item> describe <em>constraints</em> on data <br>
+	<small>(e.g. 7-digit IDs, students can enrol in no more than 36UC per semester)</small>
+</itemize>
+<p>
+Data modelling is analogous to the design phase of
+software engineering, but deals only with data structures.
+</slide>
+
+<slide>
+<continued>
+Inputs to data modelling:
+<itemize>
+<item> enterprise to be modelled, user requirements
+</itemize>
+Outputs from data modelling:
+<itemize>
+<item> (semi) formal description of the database structure
+</itemize>
+Many languages/methodologies have been developed to assist, e.g.
+<itemize>
+<item> entity-relationship (ER) diagrams
+<item> ODL = object design language
+<item> UML = unified modelling language
+</itemize>
+</slide>
+
+<slide>
+<heading>Data Models
+<em>Data models</em> are either:
+<itemize>
+<item> <em>logical models</em>
+	<~> <small>... deal with conceptual modelling of information</small>
+<item> <em>physical models</em>
+	<~> <small>... deal with physical layout of data in storage</small>
+</itemize>
+Two main groups of logical data models:
+<itemize>
+<item> <em>object-based models</em>
+<itemize>
+<item> e.g. entity-relationship, object-oriented, semantic, ...
+</itemize>
+<item> <em>record based models</em>
+<itemize>
+<item> e.g. relational, network, hierachical, ...
+</itemize>
+</itemize>
+</slide>
+
+<slide>
+<heading>Object-based vs. Record-based
+Object-based data models
+<itemize>
+<item> treat database as a collection of entities of various kinds
+<item> provide very flexible/natural data structuring facilities
+<item> may also allow description of code for actions on objects
+</itemize>
+Record-based data models
+<itemize>
+<item> treat database as a collection of fixed-size records
+<item> less flexible data structures than with object-based models
+<item> closer to physical level so easier to implement efficiently
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Formal mappings exist between the different kinds of models.
+<p>
+A useful strategy:
+<itemize>
+<item> design in an object-based model
+	<~> <small>(for clarity)</small>
+<item> then convert to a record-based model
+	<~> <small>(for efficiency)</small>
+</itemize>
+We adopt this (very common) strategy in this course.
+</slide>
+
+<slide>
+<heading> Database Design
+The initial elements of the database design process:
+<diagram>Pic/er-rel/process.png
+</slide>
+
+<slide>
+<heading>Some Design Ideas
+Consider the following while doing data modelling:
+<itemize>
+<item> ought to establish all requirements before designing
+<item> designs evolve as we consider more aspects of the problem
+<item> most designs involve various kinds (classes) of people
+<item> keywords in requirements give clues for data/relationships <br>
+        <small>(simplistic rule-of-thumb: nouns suggest data, verbs suggest rela
+tionships)</small>
+<item> don't confuse operations with relationships <br>
+        <small>(operation: he <b>buys</b> a book; relationship: the book <b>is o
+wned</b> by him)</small>
+<item> consider all potential scenarios, not just actual data <small>(if given)</small>
+</itemize>
+</slide>
+
+
+<slide>
+<heading>Case Study: Banking System
+Consider the database system for a savings/loan bank ...
+<p>
+What kind of information does it need to maintain?
+<itemize>
+<item> e.g. customers, accounts, branches, staff, transactions, ...
+</itemize>
+How are all of these data items related?
+<itemize>
+<item> e.g. customers hold accounts at specific branches, ...
+</itemize>
+We illustrate data models by:
+<itemize>
+<item> describing, in abstract terms, the capabilities they offer
+<item> showing how they could be used to model this application
+</itemize>
+</slide>
+
+<slide>
+<heading>Correctness of Designs
+In general, there is no single <q>best</q> design for a given application.
+<p>
+Also, limitations of modelling framework may force compromises.
+<p>
+However, we may describe a proposed design as <q>inadequate</q> if it:
+<itemize>
+<item> omits some information that is supposed to be modelled
+	<br> <small>(e.g. no customer name or account balance)</small>
+<item> contains redundant information
+	<~><small>(but may be unavoidable)</small>
+	<br> <small>(e.g. customer name stored in both <@>Customer</@> and <@>Account</@>)</small>
+<item> leads to an inefficient implementation
+	<br> <small>(e.g. required to traverse large amount of data for most common operation)</small>
+<item> violates syntactic or semantic rules of data model
+	<br> <small>(e.g. in ER, line connecting two entities)</small>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Initial requirements statements are typically vague
+<itemize>
+<item> elicit more detailed requirements before design
+<item> ask for clarification during design
+</itemize>
+Most important aspects of design documents:
+<itemize>
+<item> completeness
+	<~> <small>(all assumptions are explicit)</small>
+<item> consistency
+	<~> <small>(no contradictory statements)</small>
+</itemize>
+</slide>
+
+<slide>
+<section> Object-Oriented Data Modelling
+</slide>
+
+<slide>
+<heading> Object-oriented Data Modelling
+The world is viewed as a collection of inter-related <em>objects</em>.
+<p>
+Examples:
+	<~> a person,
+	<~> a car,
+	<~> a bank account, ...
+<p>
+Each object is described by:
+<itemize>
+<item> a unique object identifier (OID) <small>(to distinguish it from other obejcts)</small>
+<item> a collection of attributes that model <q>properties of interest</q>
+<item> operations (<em>methods</em>) that can be performed on the object
+</itemize>
+</slide>
+
+<slide>
+<continued>
+A <em>class</em> is a set of objects with similar properties and methods.
+<p>
+Examples:
+	<~> all students <small>(at UNSW)</small>,
+	<~> all cars <small>(in Australia)</small>, ...
+<p>
+All student objects have the same data and operations,
+<p>
+e.g. <@>student.name</@>, <~> <@>student.graduates(2003)</@>
+<p>
+An alternative view of classes
+<itemize>
+<item> a template for generating objects of a certain kind
+</itemize>
+</slide>
+
+<slide>
+<heading> Object Definition Language (ODL)
+<em>ODL</em> is a proposed standard for object-oriented data modelling:
+<itemize>
+<item> developed by Object Data Management Group (ODMG)
+<item> an extension of the Interface Definition Language (IDL)
+<item> IDL defined in CORBA <small>(model for distributed object systems)</small>
+</itemize>
+For object-oriented database management systems:
+<itemize>
+<item> ODL is the proposed standard data definition language
+<item> OQL (Object Query Language) is the proposed standard query language
+</itemize>
+</slide>
+
+<slide>
+<heading>ODL Definitions
+An ODL definition consists of a collection of classes.
+<p>
+ODL describes classes using three kinds of properties:
+<itemize>
+<item> <em>attributes</em> - data values associated with objects
+<item> <em>relationships</em> - connections between objects
+<item> <em>methods</em> - actions on objects
+</itemize>
+Since we are concerned with <i>data</i> modelling here, we ignore methods.
+</slide>
+
+<slide>
+<heading>Classes
+Class declarations have the following syntax:
+<program>
+interface <i>ClassName</i> : <i>ParentClass</i> { <i>List of Properties</i> }
+</program>
+Example:
+<program>
+interface Person {
+	attribute string  name;
+	attribute integer height;
+	attribute Enum Gender gender;
+	attribute Struct Date birthday;
+};
+
+interface Employee : Person {
+	attribute float   salary;
+	relationship Company WorksFor
+	     inverse Company::Employs;
+};
+</program>
+</slide>
+
+<slide>
+<heading>Attributes
+<em>Attributes</em> describe the data values associated with an object. 
+<p>
+Each attribute is defined by a <em>type</em> and a <em>name</em>.
+<p>
+ODL defines a variety of atomic, user-defined, and structured data types.
+<p>
+Attributes can have any type <b>except</b> types involving class types.
+<p>
+Names have global scope, and are used in context of object (e.g. <@>p.name</@>).
+<p>
+Attributes are inherited by sub-classes.
+</slide>
+
+<slide>
+<heading>ODL Types
+Atomic built-in data types:
+<itemize>
+<item> integer, float, character, string, boolean
+</itemize>
+Atomic user-defined data types:
+<itemize>
+<item> enumerated types <~> (cf. C's <@>enum</@>)
+</itemize>
+Examples:
+<program>
+Enum Gender   {male, female}
+Enum AcctType {savings, cheque, credit}
+Enum Colour   {red, orange, yellow, green, blue}
+</program>
+</slide>
+
+<slide>
+<continued>
+Structured data types are built using a set of type constructors:
+<p>
+<deftable>
+<row>
+  <col1> <@>Set<<</@><$>T</$><@>>></@> </col1>
+  <col2> unordered collections of distinct elements of type <$>T</$> </col2>
+</row>
+<row>
+  <col1> <@>Bag<<</@><$>T</$><@>>></@> </col1>
+  <col2> unordered collections of elements of type <$>T</$> </col2>
+</row>
+<row>
+  <col1> <@>List<<</@><$>T</$><@>>></@> </col1>
+  <col2> sequences of elements of type <$>T</$> </col2>
+</row>
+<row>
+  <col1> <@>Array<<</@><$>T,i</$><@>>></@> </col1>
+  <col2> fixed-length vectors of <$>i</$> elements of type <$>T</$> </col2>
+</row>
+</deftable>
+<p>
+The base types <$>T</$>'s can be arbitrary types, including class types.
+<p>
+A structured type for an attribute may not contain any class types.
+<p>
+These structured types are ODL's <em>collection types</em>
+	<~> <small>(important for relationships)</small>.
+</slide>
+
+<slide>
+<continued>
+Differences between Sets, Bags, Lists:
+<p>
+<table 5>
+<row>
+  <col1><~></col1>
+  <col2> <small>{1,2,3}={1,2,3}</small> </col2>
+  <col3> <small>{1,2,3}={3,2,1}</small> </col3>
+  <col4> <small>{1,1,2}={1,2,1}</small> </col4>
+  <col5> <small>{1,1,2}={1,2}</small> </col5>
+</row>
+<row>
+  <col1><b>Set</b></col1>
+  <col2>Yes</col2>
+  <col3>Yes</col3>
+  <col4>Yes</col4>
+  <col5>Yes</col5>
+</row>
+<row>
+  <col1><b>Bag</b></col1>
+  <col2>Yes</col2>
+  <col3>Yes</col3>
+  <col4>Yes</col4>
+  <col5>No</col5>
+</row>
+<row>
+  <col1><b>List</b></col1>
+  <col2>Yes</col2>
+  <col3>No</col3>
+  <col4>No</col4>
+  <col5>No</col5>
+</row>
+</table>
+<p>
+Arrays and Lists are similar <~> <small>(e.g. could view Array as fixed-size List)</small>
+</slide>
+
+<slide>
+<continued>
+Examples of structured type definitions:
+<program>
+<comment>// Can be used as types for attributes</comment>
+
+List<<real>>
+Array<<string, 20>>
+Set<<integer>>
+Bag<<Enum Colour>>
+List<<Array<<Set<<integer>>, 10>>>>
+
+<comment>// Cannot be used as types for attributes</comment>
+
+List<<People>>
+Set<<Company>>
+List<<Set<<People>>>>
+</program>
+</slide>
+
+<slide>
+<continued>
+One other structured data type builds tuples <~> (cf. C's <@>struct</@>).
+<program>
+Struct <$>Name</$> {
+  <$>Type<sub>1</sub> FieldName<sub>1</sub></$>,
+  <$>Type<sub>2</sub> FieldName<sub>2</sub></$>,
+  ...
+  <$>Type<sub>n</sub> FieldName<sub>n</sub></$>,
+}
+</program>
+Examples:
+<program>
+Struct Date {integer day, integer month, integer year}
+Struct Name {string family, string given}
+Struct Address {integer number, string street, ...}
+</program>
+</slide>
+
+<slide>
+<heading>Relationships
+<em>Relationships</em> describe connections between objects (classes).
+<p>
+A relationship is defined in a class <$>C</$> by:
+<itemize>
+<item> naming the class <$>D</$> to which it is related
+<item> describing the kind of relationship between <$>C</$> and <$>D</$> <~> <small>(details to follow)</small>
+<item> giving a name to the relationship
+<item> specifying the inverse relationship (defined in <$>D</$>)
+</itemize>
+Syntax for relationship declarations:
+<program>
+relationship <$>Collection(D)</$> <$>RelName</$> inverse <$>D</$>::<$>InverseRelName</$>
+</program>
+</slide>
+
+<slide>
+<continued>
+<b>Example:</b> <br>
+- employees work in a company; may work on many projects <br>
+- each project requires several employees to get it completed
+<program>
+interface Employee { ...
+  relationship Company WorksFor;
+  relationship Set<<Project>> WorksOn;
+};
+interface Company { ...
+  relationship Set<<Employee>> Employs;
+};
+interface Project { ...
+  relationship Set<<Employee>> Involves;
+};
+</program>
+</slide>
+
+<slide>
+<continued>
+Example (with inverses included):
+<program>
+interface Employee { ...
+  relationship Company WorksFor
+    <em>inverse Company::Employs;</em>
+  relationship Set<<Project>> WorksOn
+    <em>inverse Project::Involves;</em>
+};
+interface Company { ...
+  relationship Set<<Employee>> Employs
+    <em>inverse Employee::WorksFor;</em>
+};
+interface Project { ...
+  relationship Set<<Employee>> Involves
+    <em>inverse Employee::WorksOn;</em>
+};
+</program>
+</slide>
+
+<slide>
+<continued>
+Example (family trees):
+<program>
+interface Person {
+  attribute string name;
+  attribute Date   birthday;
+  ...
+  relationship Person FatherIs
+    inverse Person::FatherOf;
+  relationship Set<<Person>> FatherOf
+    inverse Person::FatherIs;
+  ...
+  relationship Set<<Person>> Children
+    inverse Person::BiologicalParent;
+  relationship Array<<Person,2>> BiologicalParents
+    inverse Person::Children;
+  ...
+  relationship Set<<Person>> Raised
+    inverse Person::RaisedBy;
+  relationship Set<<Person>> RaisedBy
+    inverse Person::Raised;
+  ...
+  relationship Person BestFriend
+    inverse Person::BestFriend;
+};
+</program>
+Notes:
+<itemize>
+<item> an object in class <$>C</$> can be related other objects in class <$>C</$>
+<item> relationships have different <em>multiplicities</em>
+</itemize>
+</slide>
+
+<slide>
+<heading>Relationship Multiplicity
+An important property of relationships:
+<itemize>
+<item> how many objects is a given object <$>Obj</$> related to under relationship <$>R</$> ?
+</itemize>
+Possibilities:
+<itemize>
+<item> related to exactly one other <~> <small>(e.g. <@>FatherIs</@>)</small>
+<item> related to exactly <$>n</$> other <~> <small>(e.g. <@>BiologicalParents</@>)</small>
+<item> related to many others <~> <small>(e.g. <@>Children</@>)</small>
+</itemize>
+Similarly for <$>R</$>'s inverse relationship <$>R<sup>-1</sup></$>.
+</slide>
+
+<slide>
+<continued>
+Consider classes <$>C</$>, <$>D</$>, and relationships <$>R</$>, <$>R<sup>-1</sup></$> between them.
+<p>
+The most common <em>relationship multiplicities</em>:
+<p>
+<center>
+<deftable 7>
+<row>
+  <col1><em>many-to-many</em></col1>
+  <col2><$>C <rightarrow> R <rightarrow> D</$> <~> is a set of objects <br>
+	<$>D <rightarrow> R<sup>-1</sup> <rightarrow> C</$> <~> is a set of objects
+  </col2>
+</row>
+<row>
+  <col1><em>many-to-one</em></col1>
+  <col2><$>C <rightarrow> R <rightarrow> D</$> <~> is a single object <br>
+	<$>D <rightarrow> R<sup>-1</sup> <rightarrow> C</$> <~> is a set of objects
+  </col2>
+</row>
+<row>
+  <col1><em>one-to-one</em></col1>
+  <col2><$>C <rightarrow> R <rightarrow> D</$> <~> is a single object <br>
+	<$>D <rightarrow> R<sup>-1</sup> <rightarrow> C</$> <~> is a single object
+  </col2>
+</row>
+</deftable>
+</center>
+</slide>
+
+<slide>
+<heading>ODL Model for Bank
+Kinds of objects:
+<itemize>
+<item> name, address, date, ...
+<item> customer, account, branch, transaction, ...
+</itemize>
+Some we can model via user-defined types:
+<program>
+Struct Name { string family, string given };
+Struct Address {
+  integer number;
+  string  street;
+  string  suburb;
+  integer postcode;
+};
+Enum Activity { deposit, withdrawal };
+Enum AcctType { savings, cheque, credit }; 
+</program>
+</slide>
+
+<slide>
+<continued>
+Modelling people:
+<program>
+interface Person {
+  attribute Struct Name name;
+  attribute Struct Address address;
+};
+
+interface Employee : Person {
+  attribute int employeeNo;
+  attribute float salary;
+  relationship Branch WorskAt
+    inverse Branch::Staff;
+};
+
+interface Manager : Employee {
+  relationship Branch Manages
+    inverse Branch::ManagedBy;
+};
+</program>
+</slide>
+
+<slide>
+<continued>
+Modelling branches:
+<program>
+interface Branch {
+  attribute integer branchNo;
+  attribute string name;
+  attribute Struct Address address;
+  attribute float assets;
+  ...
+  relationship Set<<Customer>> Customers
+    inverse Customer::HomeBranch;
+  relationship Set<<Account>> Accounts
+    inverse Account::HeldAt;
+};
+</program>
+</slide>
+
+<slide>
+<continued>
+Modelling accounts:
+<program>
+interface Account {
+  attribute integer accountNo; 
+  attribute float balance;
+  ...
+  relationship Branch HeldAt
+    inverse Branch:Accounts;
+  relationship Set<<Customer>> Owners
+    inverse Customers::Accounts;
+  relationship List<<Transaction>> Transactions
+    inverse Transaction::TransAcct;
+};
+</program>
+</slide>
+
+<slide>
+<continued>
+Modelling transactions:
+<program>
+interface Transaction {
+  attribute Enum Activity type;
+  attribute Date when;
+  attribute float amount;
+  ...
+  relationship Account TransAcct
+    inverse Account::Transactions;
+  relationship Customer MadeBy
+    inverse Customer::Transactions;
+};
+</program>
+</slide>
+
+<slide>
+<continued>
+Modelling people <small>(cont)</small>:
+<program>
+interface Customer : Person {
+  attribute int customerNo;
+  attribute Date memberFrom;
+  ...
+  relationship Branch HomeBranch
+    inverse Branch::Customers;
+  relationship Set<<Account>> Holds
+    inverse Account::HeldBy;
+  relationship List<<Transaction>> Transactions
+    inverse Transaction::MadeBy;
+};
+</program>
+</slide>
+
+<slide>
+<section> Entity-Relationship (ER) Model
+</slide>
+
+<slide>
+<heading> Entity-Relationship Data Modelling
+The world is viewed as a collection of <green>inter-related</green> <navy>entities</navy>.
+<p>
+Goal of ER modelling:
+<itemize>
+<item> a notation for describing entities and their relationships
+<item> abstract/graphical <$><Rightarrow></$> used between developers/clients
+</itemize>
+Examples of entities:
+	<~> John Shepherd, his car, K17, ...
+<p>
+Example of relation:
+	<~> John Shepherd <blue>owns</blue> his car
+</slide>
+
+<slide>
+<continued>
+Each entity is described by:
+<itemize>
+<item> a collection of attributes that model "properties of interest"
+</itemize>
+Examples:
+<itemize>
+<item> Person = (Name, TaxFileNum, DateOfBirth, Citizenship) <br>
+	e.g. (John, 2233456789, 12-Feb-1978, Australian)
+<item> Car = (Make, Model, Year, Colour, Registration)  <br>
+	e.g. (Ford, Laser, 1990, Red, JAS-007)
+</itemize>
+An <em>entity set</em> is a collection of entities with similar properties.
+</slide>
+
+<slide>
+<continued>
+Analogy between ER and OO models:
+<itemize>
+<item> an <green>entity</green> is like an <navy>object</navy>
+<item> an <green>entity set</green> is like a <navy>class</navy>
+</itemize>
+Differences between ER and OO models:
+<itemize>
+<item> entities don't have OIDs to distinguish them
+<item> ER modelling doesn't consider operations (methods)
+</itemize>
+</slide>
+
+<slide>
+<continued>
+The entity-relationship model has existed for almost 30 years.
+<p>
+<small>(Original description: Chen, <i>ACM Transactions on Database Systems</i>, 1(1), 1976) </small>
+<p>
+It was never standardised, but has been well-used ...
+<itemize>
+<item> so, unfortunately, many variations exist <br>
+<small>
+(major variations involve relationship cardinalities and OO extensions)
+</small>
+</itemize>
+In lectures, we use the notation from the KSS book.
+<p>
+Other texts (EN, GUW, RG) use slightly different notation.
+<p>
+Choose whichever <b>one</b> you like, and use it consistenly.
+</slide>
+
+<slide>
+<heading> Entity-Relationship (ER) Diagrams
+<em>ER diagrams</em> are a graphical tool for data modelling.
+<p>
+An ER diagram consists of:
+<itemize>
+<item> a collection of <em>entity set</em> definitions
+<item> a collection of <em>relationship set</em> definitions
+<item> <em>attributes</em> associated with entity and relationship sets
+<item> connections between entity and relationship sets 
+</itemize>
+<red><b>Warning</b></red>: 99% of the time ...
+<itemize>
+<item> we say <q>entity</q> when we mean <q>entity set</q>
+<item> we say <q>relationship</q> when we mean <q>relationship set</q>
+</itemize>
+If we want to refer to a specific entity, we generally say <q>entity instance</q>.
+</slide>
+
+<slide>
+<continued>
+Specific visual symbols indicate different ER design elements:
+<p>
+<diagram>Pic/er-rel/er-symbols
+</slide>
+
+<slide>
+<continued>
+Example ER diagram <small>(details explained below)</small>:
+<p>
+<diagram>Pic/er-rel/er1
+</slide>
+
+<slide>
+<heading>Attributes
+Each <em>attribute</em> in an ER diagram:
+<itemize>
+<item> has a <em>name</em> <small>(which appears on the ER diagram)</small>
+<item> is associated with an entity or relationship set
+<item> has an underlying <em>domain</em> (type) 
+</itemize>
+Information about attribute domains
+<itemize>
+<item> is not presented on the ER diagram
+<item> supplied separately via some other formalism (e.g. SQL)
+</itemize>
+</slide>
+
+<slide>
+<continued>
+<em>Simple</em> attributes are drawn from atomic value domains.
+<p align=right> 
+<small>(cf. ODL's atomic data types)</small>
+<p>
+<em>Composite</em> attributes consist of a hierarchy of attributes.
+<p align=right>
+<small>(cf. ODL's <@>Struct</@> types)</small>
+<p>
+<em>Single-valued</em> attributes have one value for each entity.
+<p align=right>
+<small>(cf. ODL's atomic or <@>Struct</@> types)</small>
+<p>
+<em>Multivalued</em> attributes have a set of values for each entity.
+<p align=right>
+<small>(cf. ODL's collection types)</small>
+</slide>
+
+<slide>
+<continued>
+<em>Null</em> attributes may contain a distinguished <@>null</@> value to indicate:
+<itemize>
+<item> the attribute is not relevant for a particular entity
+	<br><small>(e.g. a customer under 18 would not have a credit card number)</small>
+<item> the value of the attribute is unknown for a particular entity
+	<br><small>(e.g. don't know someone's address or phone number)</small>
+</itemize>
+<em>Derived</em> attributes contain values that are calculated from other attributes.
+<p align=right>
+<small>(e.g. a person's age may be computed given their date of birth)</small>
+</slide>
+
+<slide>
+<continued>
+Example of attribute notations:
+<p>
+<diagram>Pic/er-rel/erattrs.png
+</slide>
+
+<slide>
+<heading>Entity Sets
+An <em>entity set</em> can be viewed as either:
+<itemize>
+<item> a set of entities with the same set of attributes <br>
+	<small>(<em>extensional view</em> of entity set)</small>
+<item> an abstract description of a class of entities <br>
+	<small>(<em>intensional view</em> of entity set)</small>
+</itemize>
+Entity sets are not necessarily disjoint.
+<p align=right>
+<small>
+(e.g. a person may be both a <@>Customer</@> and <@>Employee</@> of a bank)
+</small>
+<p>
+The <q>raw data</q> in a database may be viewed as a collection of entity sets.
+</slide>
+
+<slide>
+<heading>Keys
+ER model does not have a notion of OIDs, so how to distinguish entities?
+<p>
+What if two entities have the same set of attribute values?
+<p>
+They're regarded as the same entity.
+<p>
+So, each entity must have a distinct set of attribute values.
+<p>
+<p>
+Implications:
+<itemize>
+<item> it is not possible to distinguish two separate real-world entities
+	if their set of attribute values is identical
+<item> since it is necessary to distinguish entities, we need to be careful
+	about how we choose attributes
+</itemize>
+</slide>
+
+<slide>
+<continued>
+One approach to ensuring that attribute value sets are distinct:
+<itemize>
+<sitem> add a new attribute to each entity
+<sitem> containing a unique value for each entity in the entity set
+</itemize>
+<small>
+(like re-introducing OIDs, but they only need to be distinct within an entity set)
+</small>
+<p>
+This approach is used commonly in practice e.g.
+<itemize>
+<sitem> social security number (SSN)
+	<~> <small>(distinct for all residents of USA)</small>
+<sitem> tax file number (TFN)
+	<~> <small>(distinct for all Australian taxpayers)</small>
+<sitem> UNSW student id
+	<~> <small>(distinct for all students at UNSW)</small>
+</itemize>
+This is a specific example of the more general notion of a <em>key</em>.
+</slide>
+
+<slide>
+<continued>
+A <em>superkey</em> is
+<itemize>
+<item> a set of one or more attributes for an entity set
+<item> whose values are distinct for all entities in that set
+</itemize>
+<small>(i.e. a set of values for superkey attributes
+identifies at most one entity in the set)</small>
+<p>
+The notion of superkey is a property of the whole entity set (extension).
+<p>
+During design, we typically consider keys relative to all possible extensions.
+</slide>
+
+<slide>
+<continued>
+Example (bank customer entities):
+<program>
+Customer=(custNo,name,address,taxFileNo)
+</program>
+Definite superkeys:
+<itemize>
+<item> any set of attributes involving <@>custNo</@> or <@>taxFileNo</@>
+</itemize>
+Possible superkeys:
+<itemize>
+<item> <@>(name,address)</@>
+</itemize>
+Unlikely superkeys:
+<itemize>
+<item> <@>(name)</@>, <~> <@>(address)</@>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+The entire set of attributes is always a superkey.
+<p>
+However, most entity sets have several superkeys.
+<p>
+E.g. <@>(custNo,name)</@>, <@>(custNo,address)</@>, ... 
+<p>
+It would be convenient to have just one key to identify entities.
+<p>
+Can we identify a minimal set of attributes to be <b>the</b> key?
+<p>
+In examples with artificial identifiers (e.g. SSN), use identifier.
+<p>
+In other examples ... ?
+</slide>
+
+<slide>
+<continued>
+A <em>candidate key</em> is any superkey such that
+<itemize>
+<item> no proper subset of its attributes is also a superkey
+</itemize>
+E.g. <@>(custNo)</@>, <@>(taxFileNo)</@>, <@>(name,address)</@>, ...
+<p>
+A <em>primary key</em>:
+<itemize>
+<item> is a candidate key chosen by the database designer
+<item> to be used as the identifying mechanism for the entity set
+</itemize>
+A <em>composite key</em> is a key with two or more attributes.
+</slide>
+
+<slide>
+<continued>
+Keys are indicated in ER diagrams by underlining the key attributes.
+<p>
+<diagram>Pic/er-rel/keys.png
+</slide>
+
+<slide>
+<heading>Relationship Sets
+A <em>relationship</em> is an association among several entities.
+<p>
+E.g. Customer(9876) <~> <em>is the owner of</em> <~> Account(12345)
+<p>
+A <em>relationship set</em> is a collection of relationships of the same type.
+<p>
+E.g. the <q><em>is the owner of</em></q> relationship set
+<p>
+Customer(9876) <~> <em>is the owner of</em> <~> Account(12345) <br>
+Customer(9426) <~> <em>is the owner of</em> <~> Account(54321) <br>
+Customer(9511) <~> <em>is the owner of</em> <~> Account(88888) <br>
+Customer(9303) <~> <em>is the owner of</em> <~> Account(78787) <br>
+etc. etc.
+</slide>
+
+<slide>
+<continued>
+Stated more formally:
+<itemize>
+<item> consider <$>n <geq> 2</$> entity sets <$>E<sub>1</sub>, E<sub>2</sub>, ... E<sub>n</sub></$> <~> <small>(possibly non-distinct)</small>
+<item> a <em>relationship</em> is a tuple
+	<$>(e<sub>1</sub>, e<sub>2</sub>, ... e<sub>n</sub>)</$>
+	<$><elem> E<sub>1</sub> <times> E<sub>2</sub> <times> ... <times> E<sub>n</sub></$>
+<item> a <em>relationship set</em> <$>R</$> is a subset of
+	<$>E<sub>1</sub> <times> E<sub>2</sub> <times> ... <times> E<sub>n</sub></$>
+<item> entity sets <$>E<sub>1</sub>, E<sub>2</sub>, ... E<sub>n</sub></$>
+	<em>participate</em> in <$>R</$>, <~> <$>R</$> has <em>degree</em> <$>n</$>
+</itemize>
+ER relationships' degree <$><geq> 2</$>
+</slide>
+
+<slide>
+<continued>
+In an ER diagram, relationship sets are assigned names.
+<p>
+The <em>role</em> of each entity in the relationship is usually implicit.
+<p>
+Roles can be explicitly named if needed <~> <small>(in red below)</small>
+<p>
+Examples:
+<p>
+<diagram>Pic/er-rel/erroles.png
+</slide>
+
+<slide>
+<continued>
+<em>Mapping cardinalities</em> describe the number of entities that a
+given entity can be associated with via a relationship.
+<p>
+A binary relationship set <$>R</$> between entity sets <$>A</$> and <$>B</$>
+may be (assuming <~> <$>a <in> A</$>, <~> <$>b <in> B</$>):
+<p>
+<deftable 6>
+<row>
+  <col1><em>one-to-one</em></col1>
+  <col2>each <$>a</$> is associated with at most one <$>b</$> <br>
+	each <$>b</$> is associated with at most one <$>a</$>
+  </col2>
+</row>
+<row>
+  <col1><em>one-to-many</em></col1>
+  <col2>each <$>a</$> is associated with zero or more <$>b</$> <br>
+	each <$>b</$> is associated with at most one <$>a</$>
+  </col2>
+</row>
+<row>
+  <col1><em>many-to-one</em></col1>
+  <col2>each <$>a</$> is associated with at most one <$>b</$> <br>
+	each <$>b</$> is associated with zero or more <$>a</$>
+  </col2>
+</row>
+<row>
+  <col1><em>many-to-many</em></col1>
+  <col2>each <$>a</$> is associated with zero or more <$>b</$> <br>
+	each <$>b</$> is associated with zero or more <$>a</$>
+  </col2>
+</row>
+</deftable>
+</slide>
+
+<slide>
+<continued>
+Examples:
+<p>
+<diagram>Pic/er-rel/cardinal.png
+<p>
+An arrow from <$>A</$> to <$>B</$> indicates that there is at most one 
+<$>b <in> B</$> for each <$>a <in> A</$>.
+</slide>
+
+<slide>
+<continued>
+An alternative notation makes cardinalities explicit:
+<p>
+<diagram>Pic/er-rel/cardinal2.png
+</slide>
+
+<slide>
+<continued>
+<em>Level of participation</em> is another type of relationship constraint.
+<p>
+Participation in relationship set <$>R</$> by entity set <$>A</$> may be:
+<p>
+<deftable 3>
+<row>
+  <col1><em>total</em></col1>
+  <col2>every <$>a <in> A</$> participates in <$><geq>1</$> relationship in <$>R</$>
+  </col2>
+</row>
+<row>
+  <col1><em>partial</em></col1>
+  <col2>only some <$>a <in> A</$> participate in relationships in <$>R</$>
+  </col2>
+</row>
+</deftable>
+<p>
+Example:
+<itemize>
+<item> every bank loan is associated with at least one customer
+<item> not every customer in a bank has a loan
+</itemize>
+</slide>
+
+<slide>
+<continued>
+In ER diagrams:
+<itemize>
+<item> partial participation is denoted by single lines
+<item> total participation is denoted by double lines (or <b>thick</b> lines)
+</itemize>
+Example:
+<diagram>Pic/er-rel/particip.png
+</slide>
+
+<slide>
+<continued>
+In the x-to-one and one-to-x relationships above, we noted that e.g.
+<p>
+<center>
+ <q>Each <$>a <in> A</$> is associated with <green>at most one</green> <$>b <in> B</$></q>
+</center>
+<p>
+Sometimes, we require that there <green>must</green> be <green>exactly one</green> associated entity.
+<p>
+<small>E.g. a manager must have a branch to manage, but a branch may (temporarily) have no manager.</small>
+<p>
+<diagram>Pic/er-rel/refinteg.png
+<p>
+This is known as a <em>referential integrity constraint</em>.
+</slide>
+
+<slide>
+<continued>
+In some cases, a relationship needs associated attributes.
+<p>
+Example:
+<p>
+<diagram>Pic/er-rel/relattr.png
+<p>
+<small>(Price and quantity are related to products in a particular store)</small>
+</slide>
+
+<slide>
+<heading>Weak Entity Sets
+<em>Weak entities</em> exist only because of association with other entities.
+<p>
+Examples:
+<itemize>
+<item> family of employees in a company <br>
+	<small>(would not be interested in the family once the employee leaves)</small>
+<item> payments on bank loans <br>
+	<small>(if there were no loans, no need to keep information about payments)</small>
+</itemize>
+Weak entities
+<itemize>
+<item> do not have a primary key (or any superkey)
+<item> have a subset of attributes that form a <em>discriminator</em>
+<item> need to be considered in conjunction with strong entities
+</itemize>
+</slide>
+
+<slide>
+<continued>
+While weak entities do not have a primary key
+<itemize>
+<item> they have a subset of attributes that form a <em>discriminator</em>
+</itemize>
+We can can form a primary key by taking a combination of
+<itemize>
+<item> the set of values for the discriminator
+<item> the primary key of the associated strong entity
+</itemize>
+Example:
+<itemize>
+<item> Ian's son called Tim is different to Paul's son called Tim
+</itemize>
+</slide>
+
+<slide>
+<continued>
+E.g. employees/family, with name as a <q>key</q> ...
+<sprogram>
+Employees = {Anne, John, Liam}
+Families  = {Alice, Bob, David, Jane, Mary, <green>Tim</green>, <blue>Tim</blue>}
+John's family = {Alice, Bob, Mary, <green>Tim</green>}
+Anne's family = {David, <blue>Tim</blue>}
+Liam's family = {Jane}
+</sprogram>
+<p>
+E.g. loans/payments, with loan ids and payment sequence ...
+<sprogram>
+Loan        = {(1234,John,100000),(4321,Arun,70000)}
+Payments    = {(1,1500),(2,1500),(3,1500),(1,750),(2,1500)}
+John's payments = {(<red>1</red>,1500),(<red>2</red>,1500),(<red>3</red>,1500)}
+Arun's payments = {(<red>1</red>,750),(<red>2</red>,1500)}
+</sprogram>
+</slide>
+
+<slide>
+<continued>
+In ER diagrams:
+<itemize>
+<item> weak entities are denoted by double-boxes
+<item> strong/weak entity relationships are denoted by double-diamonds
+<item> discriminators are denoted by dotted underline
+</itemize>
+Example:
+<diagram>Pic/er-rel/weakent.png
+</slide>
+
+<slide>
+<heading>Subclasses and Inheritance
+Extensions to the <q>standard</q> ER model include inheritance.
+<p>
+A <em>subclass</em> of an entity set <$>A</$> is a set of entities:
+<itemize>
+<item> with all of the attributes found in entities of <$>A</$>
+<item> with (generally) additional attributes of its own
+<item> that is involved in all of the relationships involving <$>A</$>
+<item> may be involved in additional relationships on its own
+</itemize>
+In other words, the subclass <em>inherits</em> the attributes and relationships of <$>A</$>.
+<p>
+<small>
+Some texts use the term <em>lower level entity set</em> as synonym for <q>subclass</q>.
+</small>
+</slide>
+
+<slide>
+<continued>
+If an entity set has multiple subclasses, they may be:
+<itemize>
+<item> <em>disjoint</em> - an entity belongs to at most one subclass
+<item> <em>overlapping</em> - an entity may belong to several subclasses
+</itemize>
+An orthogonal property is the <em>completeness contraint</em>:
+<itemize>
+<item> <em>total</em> - all entities must belong to at least one subclass
+<item> <em>partial</em> - some entities may belong to no subclass
+</itemize>
+ER diagrams use the following notation:
+<itemize>
+<item> subclass denoted by <@>ISA</@> or subset symbol on line
+<item> disjoint/overlapping = the letter <@>'d'</@>/<@>'o'</@> in a circle
+<item> total/partial completeness = double(thick)/normal line
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Example of subclasses:
+<p>
+<diagram>Pic/er-rel/inherit.png
+</slide>
+
+<slide>
+<heading>Design Using the ER Model
+The ER model provides a powerful, general set of data modelling tools.
+<p>
+Some considerations in using these tools to create a design:
+<itemize>
+<item> should an <q>object</q> be represented by an attribute or entity?
+<item> is a <q>concept</q> best expressed as an entity or relationship?
+<item> should we use <$>n</$>-way relationship or several 2-way relationships?
+<item> is an <q>object</q> a strong or weak entity?
+<item> are there subclasses/superclasses within the entities?
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Attribute vs Entity Example (v1)
+<pp>
+<diagram>Pic/er-rel/attr-ent1.png
+<pp>
+<small>Employees can work for several departments, but cannot work for the same department over two different time periods.</small>
+</slide>
+
+<slide>
+<continued>
+Attribute vs Entity Example (v2)
+<pp>
+<diagram>Pic/er-rel/attr-ent2.png
+<pp>
+<small>Employees can work for the same department over two different time periods.</small>
+</slide>
+
+<slide>
+<continued>
+Design is initially somewhat fluid; no single <q>correct</q> answer.
+<p>
+Some design refinements:
+<itemize>
+<item> an attribute might be used in several entities <br>
+	 <$><rightarrow></$> attribute becomes new entity+relationships
+<item> entity used via simple relationship to one other entity <br>
+	<$><rightarrow></$> entity becomes attribute of other entity
+</itemize>
+The texts discuss design issues relatively briefly.
+<p>
+Other texts discuss design in more detail
+	<~> <small>(e.g. Conolly/Begg)</small>
+<p>
+To some extent, it's a case of <q>learn by practising</q>
+</slide>
+
+<slide>
+<heading>ER Model for Bank
+Kinds of information in model:
+<itemize>
+<item> attributes: name, address, date, dollar amount, ...
+<item> entities: customer, account, branch, transaction, ...
+<item> relationships: holds, worksAt, manages, ...
+</itemize>
+How to give a model?
+<itemize>
+<item> detailed description of attribute domains
+<item> detailed description of entities <small>(maybe SQL notation)</small>
+<item> detailed description of relationships <small>(especially constraints)</small>
+<item> ER diagram showing how it all <q>fits together</q>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+ER diagrams are typically too large to fit on a single screen. <br>
+<small>(or a single sheet of paper, if printing)</small>
+<p>
+One commonly used strategy:
+<itemize>
+<item> define entity sets separately, showing attributes
+<item> if relationships have attributes, treat similarly
+<item> combine entitities and relationships on a single diagram <br>
+	<small>(without attributes)</small>
+<item> if very large design, may use several linked diagrams
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Modelling people:
+<p>
+<diagram>Pic/er-rel/bank1.png
+</slide>
+
+<slide>
+<continued>
+Modelling people <small>(cont)</small>:
+<p>
+<diagram>Pic/er-rel/bank2.png
+</slide>
+
+<slide>
+<continued>
+Modelling branches, accounts, transactions:
+<p>
+<diagram>Pic/er-rel/bank3.png
+</slide>
+
+<slide>
+<continued>
+Putting it all together with relationships ...
+<p>
+<diagram>Pic/er-rel/bank4.png
+</slide>
+
+<slide>
+<heading>Limitations of ER Model
+There are some design aspects that ER does not deal with:
+<itemize>
+<item> attribute domains <br>
+	<~> <small>e.g. should phone <q>number</q> be represented by number or string?</small>
+<item> computational dependencies <br>
+	<~> <small>e.g. employee's salary is determined by department and level</small>
+<item> general constraints <br>
+	<~> <small>e.g. manager's budget is less than 10% of the combined budget of all departments they manage</small>
+</itemize>
+Some of these are handled later in the relational model.
+</slide>
+
+<slide>
+<heading>Summary
+<em>Conceptual design</em> (data modelling) follows requirements analysis.
+<p>
+ER model is popular for doing coneptual design
+<itemize>
+<item> has good expressive power, close to how we think
+</itemize>
+Basic constructs: <em>entities, relationships, attributes</em>
+<p>
+Additional constructs: <em>weak entities, ISA hierarchies</em>
+<p>
+Many notational variants of ER exist <br>
+<small>(especially in the expression of constraints on relationships)</small>
+</slide>

@@ -1,0 +1,87 @@
+All timings run on Grieg after buffers filled
+Note that count(*) was used to reduce the amount of output,
+  while the requiring the query to completely evaluate
+
+The timings flagged with *now* were run in my MacBook
+
+The *then* timings were probably using PostgreSQL 9.4
+The *now* timings used PostgreSQL 12.4
+
+
+select count(*) from movies where title like 'D%';
+
+  Average time then 24ms
+
+  Average time now 3ms
+
+select count(*) from movies where substring(title,1,1) = 'D';
+
+  Average time then 47ms
+
+  Average time now 5ms
+
+select count(*) from movies where title ~ '^D.*';
+
+  Average time 65ms
+
+  Average time now 8ms
+
+select count(*) from movies where title ~* '^d.*';
+
+  Average time now 8ms
+
+All of the above queries are evaluated very fast
+LIKE is fast enough
+Calling functions in a WHERE clause is relatively expensive
+PostgreSQL's imlementation of regular expressions is slow
+
+
+select count(*) from movies where title = 'Trio';
+
+  Average time 21ms
+  Average time now 2.5ms
+
+select count(*) from movies where title ~ 'T.*o';
+
+  Average time then 111ms
+  Average time now 5ms
+
+select count(*) from movies where title like 'T__o';
+
+  Average time then 23ms
+  Average time now 2.6ms
+
+select count(*) from movies where id = 110010302;
+
+  Average time 0.4ms
+
+All of the above queries are evaluated very fast
+String comparison and LIKE have comparable speeds.
+Retrieval with an indexed attribute is very very fast.
+
+
+select max(id) from movies;
+
+  Average time 0.3ms
+
+select max(title) from movies;
+
+  Average time 43ms
+
+Both of the above queries are fast.
+Finding the max on an indexed attribute is done without
+even looking at the table data; it just uses the index
+(which contains the values of the indexed attribute)
+Finding the max on non-indexed fields requires a scan of
+the entire table data
+
+
+select count(*)
+from   Titles t join Principals p on (t.id = p.title_id)
+       join Names n on (n.id = p.name_id)
+where  p.ordering = 1
+
+Average time 4.8ms
+
+This join on three large tables is very fast
+Joins on indexed primary keys can be very efficiently implemented

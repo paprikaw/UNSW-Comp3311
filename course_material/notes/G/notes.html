@@ -1,0 +1,2478 @@
+<html>
+<head>
+<title>Extending Relational Databases</title>
+<link href='lib/notes.css' rel='stylesheet' type='text/css'>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML" async></script>
+<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js'></script>
+<link href='lib/prism.css' rel='stylesheet'>
+<script src='lib/sg.js'></script>
+</head>
+<body>
+<div class='heading'>Extending Relational Databases</div><p><ul class='indexUl'  style='font-size: 0.7em;'><li class="i"> <a href="#s1">Limitations of Basic SQL</a>
+<li class="i"> <a href="#s2">Extending SQL</a>
+<li class="i"> <a href="#s3">User-defined Data Types</a>
+<li class="i"> <a href="#s4">SQL Data Types</a>
+<li class="i"> <a href="#s11">Programming with SQL</a>
+<li class="i"> <a href="#s12">SQL as a Programming Language</a>
+<li class="i"> <a href="#s13">What's wrong with SQL?</a>
+<li class="i"> <a href="#s15">Database Programming</a>
+<li class="i"> <a href="#s17">Stored Procedures</a>
+<li class="i"> <a href="#s18">Stored Procedures</a>
+<li class="i"> <a href="#s19">SQL/PSM</a>
+<li class="i"> <a href="#s30">PSM in Real DBMSs</a>
+<li class="i"> <a href="#s31">PLpgSQL</a>
+<li class="i"> <a href="#s32">PLpgSQL</a>
+<li class="i"> <a href="#s34">Defining PLpgSQL Functions</a>
+<li class="i"> <a href="#s39">PLpgSQL Function Parameters</a>
+<li class="i"> <a href="#s44">Function Return Types</a>
+<li class="i"> <a href="#s47">Using PLpgSQL Functions</a>
+<li class="i"> <a href="#s48">What's Wrong with PLpgSQL?</a>
+<li class="i"> <a href="#s50">Data Types</a>
+<li class="i"> <a href="#s53">Syntax/Control Structures</a>
+<li class="i"> <a href="#s54">SELECT...INTO</a>
+<li class="i"> <a href="#s60">INSERT ... RETURNING</a>
+<li class="i"> <a href="#s61">Exceptions</a>
+<li class="i"> <a href="#s65">Cursors</a>
+<li class="i"> <a href="#s71">Dynamically Generated Queries</a>
+<li class="i"> <a href="#s74">Functions Returning Tables</a>
+<li class="i"> <a href="#s78">SQL Functions</a>
+<li class="i"> <a href="#s84">Extra Thoughts on Functions</a>
+<li class="i"> <a href="#s85">Further Examples</a>
+<li class="i"> <a href="#s86">User-defined Aggregates</a>
+<li class="i"> <a href="#s87">Aggregates</a>
+<li class="i"> <a href="#s92">Constraints and Assertions</a>
+<li class="i"> <a href="#s93">Constraints</a>
+<li class="i"> <a href="#s94">An Aside on Constraints</a>
+<li class="i"> <a href="#s97">Assertions</a>
+<li class="i"> <a href="#s102">Triggers</a>
+<li class="i"> <a href="#s103">Triggers</a>
+<li class="i"> <a href="#s106">Example Trigger</a>
+<li class="i"> <a href="#s110">Triggers in PostgreSQL</a>
+<li class="i"> <a href="#s115">Example PostgreSQL Trigger</a>
+<li class="i"> <a href="#s117">Example PostgreSQL Trigger #2</a>
+<li class="i"> <a href="#s122">Trigger Caveat</a>
+</ul><hr>
+<DIV id="s1">
+<div class='heading'>Limitations of Basic SQL</div>
+<p>
+What we have seen of SQL so far:
+<ul>
+<li> data definition language
+	&nbsp; <small>(<large><code>create table(...)</code></large>)</small>
+<li> constraints
+	&nbsp; <small>(domain, key, referential integrity)</small>
+<li> query language
+	&nbsp; <small>(<large><code>select...from...where...</code></large>)</small>
+<li> views
+	&nbsp; <small>(give names to SQL queries)</small>
+</ul>
+This is not sufficient to write complete applications.
+<p>
+More <font color='#0000BB'>extensibility</font> and <font color='#0000BB'>programmability</font> are needed.
+</DIV>
+<hr>
+<DIV id="s2">
+<div class='heading'>Extending SQL</div>
+<p>
+Ways in which standard SQL might be extended:
+<ul>
+<li> new data types
+	<small>(incl. constraints, I/O, indexes, ...)</small>
+<li> object-orientation
+<li> more powerful constraint checking
+<li> packaging/parameterizing queries
+<li> more functions/aggregates for use in queries
+<li> event-based triggered actions 
+</ul>
+All are required to assist in application development.
+</DIV>
+<hr>
+<DIV id="s3">
+<div class='section'>&#8750; User-defined Data Types</div>
+<p>
+</DIV>
+<hr>
+<DIV id="s4">
+<div class='heading'>SQL Data Types</div>
+<p>
+SQL data definition language provides:
+<ul>
+<li> atomic types: integer, float, character, boolean
+<li> ability to define tuple types <small>(<large><code>create table</code></large>)</small>
+</ul>
+Other programming languages allow programmers add new types.
+<p>
+SQL also provides mechanisms to define new types:
+<ul>
+<li> basic types: <large><code>CREATE DOMAIN ... AS</code></large> <i>BaseType</i> ...
+<li> enumerated types: <large><code>CREATE TYPE ... AS ENUM (</code></large> <i>Vals</i> <large><code>)</code></large>
+<li> tuple types: <large><code>CREATE TYPE ... AS (</code></large> <i>Attrs</i> <large><code>)</code></large>
+</ul>
+</DIV>
+<hr>
+<DIV id="s5">
+<div class='heading'>SQL Data Types <span style="font-size:67%">(cont)</span></div>
+<p>
+Defining an atomic type <small>(as specialisation of existing type)</small>:
+<p><pre>
+CREATE DOMAIN <i>DomainName</i> [AS] <i>DataType</i>
+[ DEFAULT <i>expression</i> ]
+[ CONSTRAINT <i>ConstrName</i> <i>constraint</i>]
+</pre><p>
+Example:
+<p><pre>
+create domain UnswCourseCode as text
+    check (value ~ '[A-Z]{4}[0-9]{4}');
+</pre><p>
+which can then be used like other SQL atomic types, e.g.
+<p><pre>
+create table Course (
+    id    integer,
+    code  UnswCourseCode,
+    ...
+);
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s6">
+<div class='heading'>SQL Data Types <span style="font-size:67%">(cont)</span></div>
+<p>
+Defining an enumerated type:
+<p><pre>
+CREATE TYPE <i>TypeName</i> AS ENUM
+( <i>Str<sub>1</sub></i>, <i>Str<sub>2</sub></i>, ... <i>Str<sub>n</sub></i> )
+</pre><p>
+Examples:
+<p><pre>
+create type Color as enum
+    ('red','orange','yellow','green','blue','violet');
+
+create type Grade as enum
+    ('FL','PS','CR','DN','HD');
+</pre><p>
+Note: defines values and an ordering on the values
+<p>
+e.g. <large><code>'FL' &lt; 'PS' &lt; 'CR' &lt; 'DN' &lt; 'HD'</code></large>
+</DIV>
+<hr>
+<DIV id="s7">
+<div class='heading'>SQL Data Types <span style="font-size:67%">(cont)</span></div>
+<p>
+Difference between domains and enumerated types:
+<p><pre>
+create domain mood1 text
+   check (value in ('sad','ok','happy'));
+
+create type mood2 as enum ('sad','ok','happy');
+</pre><p>
+Example:
+<p><pre>
+select 'sad'::mood1 < 'happy'::mood1;
+</pre><p>
+Returns false; values are compared as text strings.
+<p><pre>
+select 'sad'::mood2 < 'happy'::mood2;
+</pre><p>
+Returns true; values are compared as ordered enum constants.
+</DIV>
+<hr>
+<DIV id="s8">
+<div class='heading'>SQL Data Types <span style="font-size:67%">(cont)</span></div>
+<p>
+Defining a tuple type:
+<p><pre>
+CREATE TYPE <i>TypeName</i> AS
+( <i>AttrName<sub>1</sub></i> <i>DataType<sub>1</sub></i>, <i>AttrName<sub>2</sub></i> <i>DataType<sub>2</sub></i>, ...)
+</pre><p>
+Examples:
+<p><pre>
+create type ComplexNumber as ( r float, i float );
+
+create type CourseInfo as (
+    course   UnswCourseCode,
+    syllabus text,
+    lecturer text
+);
+</pre><p>
+If attributes need constraints, can be supplied by using a <large><code>DOMAIN</code></large>.
+</DIV>
+<hr>
+<DIV id="s9">
+<div class='heading'>SQL Data Types <span style="font-size:67%">(cont)</span></div>
+<p>
+Other ways that tuple types are defined in SQL:
+<ul>
+<li> <large><code>CREATE TABLE</code></large> <i>T</i>
+	&nbsp; <small>(effectively creates tuple type <i>T</i>)</small>
+<li> <large><code>CREATE VIEW</code></large> <i>V</i>
+	&nbsp; <small>(effectively creates tuple type <i>V</i>)</small>
+</ul>
+<p>
+<large><code>CREATE TYPE</code></large> is different from <large><code>CREATE TABLE</code></large>:
+<ul>
+<li> does <b>not</b> create a new (empty) table
+<li> does <b>not</b> provide for key constraints
+<li> does <b>not</b> have explicit specification of domain constraints
+</ul>
+The main use of tuple types: <br>
+as result types of functions that return tuples or sets.
+</DIV>
+<hr>
+<DIV id="s10">
+<div class='heading'>SQL Data Types <span style="font-size:67%">(cont)</span></div>
+<p>
+<large><code>CREATE TYPE</code></large> has one more very important use ...
+<p>
+For specifying full details of new (atomic) types:
+<ul>
+<li> how to parse/display values of the type
+<li> converting external to internal representation
+<li> defining storage parameters for internal representation
+<li> function for statistical analysis of type (for query optimiser)
+</ul>
+<small>
+See PostgreSQL Manual (e.g. SQL reference and Section 34.11) for details.
+</small>
+</DIV>
+<hr>
+<DIV id="s11">
+<div class='section'>&#8750; Programming with SQL</div>
+<p>
+</DIV>
+<hr>
+<DIV id="s12">
+<div class='heading'>SQL as a Programming Language</div>
+<p>
+SQL is a powerful language for manipulating relational data.
+<p>
+But it is <font color='#0000BB'>not</font> a powerful <font color='#0000BB'>programming language</font>.
+<p>
+At some point in developing complete database applications
+<ul>
+<li> we need to implement user interactions
+<li> we need to control sequences of database operations
+<li> we need to process query results in complex ways
+</ul>
+and SQL cannot do any of these.
+<p>
+SQL cannot even do something as simple as factorial!
+<p>
+<small>
+Ok ... so PostgreSQL added a factorial operator ... but it's non-standard.
+</small>
+</DIV>
+<hr>
+<DIV id="s13">
+<div class='heading'>What's wrong with SQL?</div>
+<p>
+Consider the problem of withdrawal from a bank account:
+<p>
+<i>If a bank customer attempts to withdraw more funds than
+they have in their account, then indicate "Insufficient Funds",
+otherwise update the account</i>
+<p>
+An attempt to implement this in SQL:
+<p><pre><small>
+select 'Insufficient Funds'
+from   Accounts
+where  acctNo = <i>AcctNum</i> and balance &lt; <i>Amount</i>;
+update Accounts
+set    balance = balance - <i>Amount</i>
+where  acctNo = <i>AcctNum</i> and balance >= <i>Amount</i>;
+select 'New balance: '||balance
+from   Accounts
+where  acctNo = <i>AcctNum</i>;
+</small></pre><p>
+</DIV>
+<hr>
+<DIV id="s14">
+<div class='heading'>What's wrong with SQL? <span style="font-size:67%">(cont)</span></div>
+<p>
+Two possible evaluation scenarios:
+<ul>
+<li> displays "Insufficient Funds", <large><code>UPDATE</code></large> has no effect, displays unchanged balance
+<li> <large><code>UPDATE</code></large> occurs as required, displays changed balance
+</ul>
+Some problems:
+<ul>
+<li> SQL doesn't allow parameterisation (e.g. <i>AcctNum</i>)
+<li> always attempts <large><code>UPDATE</code></large>, even when it knows it's invalid
+<li> need to evaluate <large><code>(balance &lt; </code></large><i>Amount</i><large><code>)</code></large> test twice
+<li> always displays balance, even when not changed
+</ul>
+To accurately express the "business logic",
+we need facilities like conditional execution and parameter passing.
+</DIV>
+<hr>
+<DIV id="s15">
+<div class='heading'>Database Programming</div>
+<p>
+Database programming requires a combination of
+<ul>
+<li> manipulation of data in DB &nbsp; <small>(via SQL)</small>
+<li> conventional programming &nbsp; <small>(via procedural code)</small>
+</ul>
+This combination is realised in a number of ways:
+<ul>
+<li> passing SQL commands via a "call-level" interface <br>
+<small><font color="#777777">(prog lang is decoupled from DBMS; most flexible; e.g. Java/JDBC, PHP)</font></small>
+<li> embedding SQL into augmented programming languages <br>
+<small><font color="#777777">(requires pre-processor for language; typically DBMS-specific; e.g. SQL/C)</font></small>
+<li> special-purpose programming languages in the DBMS <br>
+<small><font color="#777777">(closely integrated with DBMS; enable extensibility; e.g. PL/SQL, PLpgSQL)</font></small>
+</ul>
+</DIV>
+<hr>
+<DIV id="s16">
+<div class='heading'>Database Programming <span style="font-size:67%">(cont)</span></div>
+<p>
+Combining <font color="#CC0000">SQL</font> and <font color="#009900">procedural</font> code solves the "withdrawal" problem:
+<p><pre><small>
+<font color="#009900">create function
+    withdraw(<font color="#0000EE">acctNum</font> text, <font color="#0000EE">amount</font> integer) returns text
+declare bal integer;
+begin
+    set bal = (<font color="#CC0000">select balance
+               from   Accounts
+               where  acctNo = <font color="#0000EE">acctNum</font></font>);
+    if (bal &lt; <font color="#0000EE">amount</font>) then
+        return 'Insufficient Funds';
+    else
+        <font color="#CC0000">update Accounts
+        set    balance = balance - <font color="#0000EE">amount</font>
+        where  acctNo = <font color="#0000EE">acctNum</font></font>;
+        set bal = (<font color="#CC0000">select balance
+                   from   Accounts
+                   where  acctNo = <font color="#0000EE">acctNum</font></font>);
+        return 'New Balance: ' || bal;
+    end if
+end;</font>
+</small></pre><p>
+<small>(This example is actually a stored procedure, using SQL/PSM syntax)</small>
+</DIV>
+<hr>
+<DIV id="s17">
+<div class='section'>&#8750; Stored Procedures</div>
+<p>
+</DIV>
+<hr>
+<DIV id="s18">
+<div class='heading'>Stored Procedures</div>
+<p>
+<font color='#0000BB'>Stored procedures</font>
+<ul>
+<li> procedures/functions that are stored in DB along with data
+<li> written in a language combining SQL and procedural ideas
+<li> provide a way to extend operations available in database
+<li> executed within the DBMS &nbsp;
+	<small>(close coupling with query engine)</small>
+</ul>
+Benefits of using stored procedures:
+<ul>
+<li> code executed inside DBMS is fast with large data
+<li> user-defined functions can be nicely integrated with SQL
+<li> procedures are managed like other DBMS data <small>(ACID)</small>
+<li> procedures and the data they manipulate are held together
+</ul>
+</DIV>
+<hr>
+<DIV id="s19">
+<div class='heading'>SQL/PSM</div>
+<p>
+SQL/PSM is a 1996 standard for SQL stored procedures. <br>
+<p>
+<small>(PSM = <b>P</b>ersistent <b>S</b>tored <b>M</b>odules)</small>
+<p>
+Syntax for PSM procedure/function definitions:
+<p><pre>
+CREATE PROCEDURE <i>ProcName</i> ( <i>Params</i> )
+<font color="#CC0000">[</font> <i>local</i> <i>declarations</i> <font color="#CC0000">]</font>
+<i>procedure</i> <i>body</i> ;
+
+CREATE FUNCTION <i>FuncName</i> ( <i>Params</i> )
+RETURNS <i>Type</i>
+<font color="#CC0000">[</font> <i>local</i> <i>declarations</i> <font color="#CC0000">]</font>
+<i>function</i> <i>body</i> ;
+</pre><p>
+Parameters have three modes: &nbsp; <large><code>IN</code></large>, &nbsp; <large><code>OUT</code></large>, &nbsp; <large><code>INOUT</code></large>
+</DIV>
+<hr>
+<DIV id="s20">
+<div class='heading'>SQL/PSM <span style="font-size:67%">(cont)</span></div>
+<p>
+SQL/PSM Syntax:
+<p><pre>
+BEGIN <i>statements</i> END;
+
+SET <i>var</i> = <i>expression</i>;
+<span class='comment'>-- where <i>expression</i> may be an SQL query</span>
+
+IF <i>cond_1</i> THEN <i>statements_1</i>
+ELSIF <i>cond_2</i> THEN <i>statements_2</i>
+ELSE <i>statements_n</i>
+END IF;
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s21">
+<div class='heading'>SQL/PSM <span style="font-size:67%">(cont)</span></div>
+<p>
+More SQL/PSM syntax:
+<p><pre>
+<i>LoopName</i>: LOOP
+    <i>statements</i>
+    LEAVE <i>LoopName</i>;
+    <i>more statements</i>
+END LOOP;
+
+WHILE <i>condition</i> DO
+    <i>statements</i>
+END WHILE;
+
+FOR <i>LoopName</i> AS <i>CursorName</i>
+    CURSOR FOR <i>Query</i> DO
+    <i>statements</i>
+END FOR;
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s22">
+<div class='heading'>SQL/PSM <span style="font-size:67%">(cont)</span></div>
+<p>
+<b>Example</b>: Find cost of Toohey's New beer at a specified bar
+<p>
+Default behaviour: return price charged for New at that bar.
+<p><pre>
+function CostOfNew(string) returns float;
+</pre><p>
+How to deal with the case: New is not sold at that bar?
+<ul>
+<li> use exception-handling <small>(e.g. Java)</small>
+<li> return null or negative value to indicate error
+<li> return two values: price and/or status
+</ul>
+In PSM, could use return-value <font color='#0000BB'>plus</font> <large><code>OUT</code></large>-mode parameter.
+</DIV>
+<hr>
+<DIV id="s23">
+<div class='heading'>SQL/PSM <span style="font-size:67%">(cont)</span></div>
+<p>
+Using a <large><code>NULL</code></large> return value ...
+<p><pre>
+CREATE FUNCTION
+    CostOfNew(IN <font color="#0000EE">pub</font> VARCHAR)
+    RETURNS FLOAT
+DECLARE cost FLOAT;
+BEGIN
+    SET cost = (SELECT price FROM Sells
+                WHERE  beer = 'New' and
+                       bar = <font color="#0000EE">pub</font>);
+    <span class='comment'>-- cost is null if not sold in bar</span>
+    RETURN cost;
+END;
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s24">
+<div class='heading'>SQL/PSM <span style="font-size:67%">(cont)</span></div>
+<p>
+How this function is used:
+<p><pre>
+DECLARE myCost FLOAT;
+...
+SET myCost = CostOfNew('The Regent',ok);
+IF (myCost is not null) THEN
+    ... do something with the cost ...
+ELSE
+    ... handle not having a cost ...
+END IF;
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s25">
+<div class='heading'>SQL/PSM <span style="font-size:67%">(cont)</span></div>
+<p>
+Using an <large><code>OUT</code></large> parameter ...
+<p><pre>
+CREATE FUNCTION
+    CostOfNew(IN <font color="#0000EE">pub</font> VARCHAR,
+              OUT <font color="#009900">status</font> BOOLEAN)
+    RETURNS FLOAT
+DECLARE cost FLOAT;
+BEGIN
+    SET cost = (SELECT price FROM Sells
+                WHERE  beer = 'New' and
+                       bar = <font color="#0000EE">pub</font>);
+    SET <font color="#009900">status</font> = (cost IS NOT NULL);
+    RETURN cost;
+END;
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s26">
+<div class='heading'>SQL/PSM <span style="font-size:67%">(cont)</span></div>
+<p>
+How this function is used:
+<p><pre>
+DECLARE myCost FLOAT;
+DECLARE ok BOOLEAN;
+...
+SET myCost = CostOfNew('The Regent',ok);
+IF (ok) THEN
+    ... do something with the cost ...
+ELSE
+    ... handle not having a cost ...
+END IF;
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s27">
+<div class='heading'>SQL/PSM <span style="font-size:67%">(cont)</span></div>
+<p>
+<b>Example</b>: Find the sum of the first 100 integers.
+<p>
+Without using any functions at all:
+<p><pre>
+DECLARE i integer;
+DECLARE sum integer;
+...
+SET sum = 0; SET i = 1;
+WHILE (i <= 100) DO
+    SET sum = sum + i;
+    SET i = i + 1;
+END WHILE;
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s28">
+<div class='heading'>SQL/PSM <span style="font-size:67%">(cont)</span></div>
+<p>
+Sum(100) using a regular function to add two numbers:
+<p><pre>
+CREATE FUNCTION
+    add(IN a integer, IN b integer) RETURNS integer
+BEGIN
+    return a + b;
+END;
+</pre><p>
+which would be used as:
+<p><pre>
+WHILE (i < 20) DO
+    set sum = add(sum,i);
+    set i = i + 1;
+END WHILE;
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s29">
+<div class='heading'>SQL/PSM <span style="font-size:67%">(cont)</span></div>
+<p>
+Sum(100) using a procedure with an <large><code>INOUT</code></large> parameter:
+<p><pre>
+CREATE PROCEDURE
+    accum(INOUT sum integer, IN val integer)
+BEGIN
+    set sum = sum + val;
+END;
+</pre><p>
+which would be used as:
+<p><pre>
+WHILE (i < 20) DO
+    accum(sum,i);
+    set i = i + 1;
+END WHILE;
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s30">
+<div class='heading'>PSM in Real DBMSs</div>
+<p>
+Unfortunately, the PSM standard was developed after most DBMSs
+had their own stored procedure language
+<p>
+<i>&rArr;</i> no DBMS implements the PSM standard exactly.
+<p>
+IBM's DB2 and MySQL implement the SQL/PSM closely
+	<small>(but not exactly)</small>
+<p>
+Oracle's PL/SQL is moderately close to the SQL/PSM standard
+<small>
+<ul>
+<li> syntax differences e.g. <large><code>EXIT</code></large> vs <large><code>LEAVE</code></large>, &nbsp; <large><code>DECLARE</code></large> only needed once, ...
+<li> extra programming features e.g. packages, exceptions, input/output
+</ul>
+</small>
+PostgreSQL's PLpgSQL is close to PL/SQL <small>(95% compatible)</small>
+<p>
+<small>
+<ul>
+<li> has only functions (but can return <large><code>void</code></large>); limited exceptions; no i/o
+<li> PLpgSQL function bodies are defined within a string
+<li> PLpgSQL is just one of a number of languages for stored procedures
+</ul>
+</small>
+</DIV>
+<hr>
+<DIV id="s31">
+<div class='section'>&#8750; PLpgSQL</div>
+<p>
+<small>
+(PostgreSQL Manual: Chapter 38: PLpgSQL)
+</small>
+</DIV>
+<hr>
+<DIV id="s32">
+<div class='heading'>PLpgSQL</div>
+<p>
+<font color='#0000BB'>PLpgSQL</font> = <b>P</b>rocedural <b>L</b>anguage extensions to <b>P</b>ost<b>g</b>re<b>SQL</b>
+<p>
+A PostgreSQL-specific language integrating features of:
+<ul>
+<li> procedural programming and SQL programming
+</ul>
+Functions are stored in the database with the data.
+<p>
+Provides a means for <font color='#0000BB'>extending DBMS functionality</font>, e.g.
+<ul>
+<li> implementing constraint checking <small>(triggered functions)</small>
+<li> complex query evaluation <small>(e.g. recursive)</small>
+<li> complex computation of column values
+<li> detailed control of displayed results
+</ul>
+</DIV>
+<hr>
+<DIV id="s33">
+<div class='heading'>PLpgSQL <span style="font-size:67%">(cont)</span></div>
+<p>
+The PLpgSQL interpreter
+<ul>
+<li> executes procedural code and manages variables
+<li> calls PostgreSQL engine to evaluate SQL statements
+</ul>
+<p><div align='center'>
+<img alt="[Diagram:Pic/engine.png]" src="Pic/engine.png">
+</div><p>
+</DIV>
+<hr>
+<DIV id="s34">
+<div class='heading'>Defining PLpgSQL Functions</div>
+<p>
+PLpgSQL functions are created (and inserted into db) via:
+<p><pre>
+CREATE OR REPLACE
+   <font color="#000099"><i>funcName</i>(<i>arg1type</i>, <i>arg2type</i>, ....)
+   RETURNS <i>rettype</i></font>
+AS <font color="#009900">'
+DECLARE
+   <i>variable</i> <i>declarations</i>
+BEGIN
+   <i>code</i> <i>for</i> <i>function</i>
+END;'</font> LANGUAGE plpgsql;
+</pre><p>
+<p><br>
+Note: the entire function body is a single SQL string.
+</DIV>
+<hr>
+<DIV id="s35">
+<div class='heading'>Defining PLpgSQL Functions <span style="font-size:67%">(cont)</span></div>
+<p>
+Reasons for defining functions as strings:
+<ul>
+<li> allows functions to be defined in different languages
+<li> simplifies the SQL parser
+</ul>
+Problems with defining functions as strings:
+<ul>
+<li> requires a change of "lexical level"
+<li> leads to complex, error-prone definitions like:
+<p><pre><small>
+create function Fun(name text) returns text
+as '
+begin  return ''It''''s fun, ''||name||''!'';  end;
+' language plpgsql;
+</small></pre><p>
+</ul>
+<small>
+To fix the last problem, PostgreSQL 8 has introduced a new quoting
+mechanism, somewhat like "here-documents" in shell/Perl/PHP.
+</small>
+</DIV>
+<hr>
+<DIV id="s36">
+<div class='heading'>Defining PLpgSQL Functions <span style="font-size:67%">(cont)</span></div>
+<p>
+Comparison of old/new quoting mechanisms for functions:
+<p><pre>
+<span class='comment'>-- old style quoting</span>
+create function Fun(name text) returns text
+as '
+begin
+    return ''It''''s fun, ''||name||''!'';
+end;
+' language plpgsql;
+
+<span class='comment'>-- new style quoting</span>
+create function Fun(name text) returns text
+as $$
+begin
+    return 'It''s fun, '||name||'!';
+end;
+$$ language plpgsql;
+</pre><p>
+The <large><code>$$</code></large> may contain an embedded identifier
+	<small>(e.g. the function name)</small>.
+</DIV>
+<hr>
+<DIV id="s37">
+<div class='heading'>Defining PLpgSQL Functions <span style="font-size:67%">(cont)</span></div>
+<p>
+Solution to "withdrawal" problem in PLpgSQL:
+<p><pre>
+CREATE OR REPLACE FUNCTION
+   withdraw(acctNum text, amount real) RETURNS text AS $$
+DECLARE
+   current REAL;  newbalance REAL;
+BEGIN
+   <font color="#CC0000">SELECT <font color="#0000EE">INTO current</font> balance
+   FROM Accounts WHERE  acctNo = acctNum;</font>
+   IF (amount &gt; current) THEN
+      return 'Insufficient Funds';
+   ELSE
+      newbalance := current - amount;
+      <font color="#0000EE">UPDATE Accounts
+      SET    balance = newbalance
+      WHERE  acctNo = acctNum;</font>
+      return 'New Balance: '||newbalance;
+   END IF;
+END;
+$$ LANGUAGE plpgsql;
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s38">
+<div class='heading'>Defining PLpgSQL Functions <span style="font-size:67%">(cont)</span></div>
+<p>
+If a PLpgSQL function definition is syntactically correct
+<ul>
+<li> the function is stored in the database
+<li> but is not completely checked until executed
+</ul>
+Common errors:
+<ul>
+<li> using a variable with same name as some attribute <br>
+	<small>(the variable hides the attribute, so queries using the attribute fail "inexplicably")</small>
+<li> forgetting to use <large><code>''</code></large> in body if using old-style quoting
+</ul>
+Warning: PLpgSQL's error messages can sometimes be obscure.
+<p>
+<small>
+However, the PLpgSQL parser and error messages have improved
+<font color='#0000BB'>considerably</font> in recent versions.
+</small>
+</DIV>
+<hr>
+<DIV id="s39">
+<div class='heading'>PLpgSQL Function Parameters</div>
+<p>
+All parameters are passed by value in PLpgSQL.
+<p>
+Within a function, parameters can be referred to:
+<ul>
+<li> using positional notation (<large><code>$1</code></large>, <large><code>$2</code></large>, ...)
+<li> via <font color='#0000BB'>aliases</font>, supplied either
+<ul>
+<li> as part of the declarations
+	&nbsp; <small>(e.g. <large><code>a alias for $1; b alias for $2)</code></large>)</small>
+<li> as part of the function header
+	&nbsp; <small>(e.g. <large><code>f(a int, b int)</code></large>)</small>
+</ul>
+</ul>
+Nowadays, the last way is preferred <small>(i.e. like "normal" functions)</small>
+</DIV>
+<hr>
+<DIV id="s40">
+<div class='heading'>PLpgSQL Function Parameters <span style="font-size:67%">(cont)</span></div>
+<p>
+Example: a function to add two integers (old style)
+<p><pre>
+CREATE OR REPLACE FUNCTION
+    <font color="#000099">add(int, int) RETURNS int</font>
+AS '
+DECLARE
+    x alias for $1;  <span class='comment'>-- alias for parameter</span>
+    y alias for $2;  <span class='comment'>-- alias for parameter</span>
+    sum integer;     <span class='comment'>-- local variable</span>
+BEGIN
+    sum := x + y;
+    return sum;      <span class='comment'>-- return result</span>
+END;
+' LANGUAGE plpgsql;
+</pre><p>
+<b>Beware:</b> do not ever give parameters the same names as attributes.
+</DIV>
+<hr>
+<DIV id="s41">
+<div class='heading'>PLpgSQL Function Parameters <span style="font-size:67%">(cont)</span></div>
+<p>
+Example: a function to add two integers (new style)
+<p><pre>
+CREATE OR REPLACE FUNCTION
+    <font color="#000099">add(x int, y int) RETURNS int</font>
+AS $add$
+DECLARE
+    sum integer;     <span class='comment'>-- local variable</span>
+BEGIN
+    sum := x + y;
+    return sum;      <span class='comment'>-- return result</span>
+END;
+$add$ LANGUAGE plpgsql;
+</pre><p>
+<b>Beware:</b> do not ever give parameters the same names as attributes.
+</DIV>
+<hr>
+<DIV id="s42">
+<div class='heading'>PLpgSQL Function Parameters <span style="font-size:67%">(cont)</span></div>
+<p>
+Example: a function to add two values (polymorphic)
+<p><pre>
+CREATE OR REPLACE FUNCTION
+    <font color="#000099">add(x anyelement, y anyelement) RETURNS anyelement</font>
+AS $add$
+BEGIN
+    return x + y;
+END;
+$add$ LANGUAGE plpgsql;
+</pre><p>
+Restrictions:
+<ul>
+<li> requires <large><code>x</code></large> and <large><code>y</code></large> to have values of the same "add-able" type
+<li> does not allow definition of <large><code>sum anyelement</code></large> to hold result
+</ul>
+</DIV>
+<hr>
+<DIV id="s43">
+<div class='heading'>PLpgSQL Function Parameters <span style="font-size:67%">(cont)</span></div>
+<p>
+PLpgSQL allows overloading <small>(i.e. same name, different arg types).</small>
+<p>
+Examples:
+<p><pre><small>
+CREATE FUNCTION add(int, int) RETURNS int AS
+$$ BEGIN return $1+$2; END; $$ LANGUAGE plpgsql;
+
+CREATE FUNCTION add(int, int, int) RETURNS int AS
+$$ BEGIN return $1+$2+$3; END; $$ LANGUAGE plpgsql;
+
+CREATE FUNCTION add(char(1), int) RETURNS int AS
+$$ BEGIN return ascii($1)+$2; END; $$ LANGUAGE plpgsql;
+</small></pre><p>
+But must differ in result types, so <b>cannot</b> also define:
+<p><pre><small>
+CREATE FUNCTION add(char(1), int) RETURNS char AS
+$$ BEGIN return chr(ascii($1)+$2); END; $$ LANGUAGE plpgsql;
+</small></pre><p>
+<small>
+i.e. cannot have two functions that look like <large><code>add(char(1),int)</code>.
+</small>
+</DIV>
+<hr>
+<DIV id="s44">
+<div class='heading'>Function Return Types</div>
+<p>
+A PostgreSQL function can return a value which is
+<ul>
+<li> an atomic data type &nbsp; (e.g. <large><code>integer, float, boolean, ...</code></large>)
+<li> a tuple &nbsp; (e.g. table record type or tuple type)
+<li> a set of atomic values &nbsp; (like a table column)
+<li> a set of tuples &nbsp; (i.e. a table)
+</ul>
+A function returning a set of tuples is similar to a view.
+</DIV>
+<hr>
+<DIV id="s45">
+<div class='heading'>Function Return Types <span style="font-size:67%">(cont)</span></div>
+<p>
+Examples of different function return types:
+<p><pre>
+create function factorial(int) returns int ...
+create function EmployeeOfMonth(date) returns Employee ...
+create function allSalaries() returns setof int ...
+create function OlderEmployees returns setof Employee
+</pre><p>
+<small>
+The <large><code>OlderEmployees</code></large> function returns an instance of the <large><code>Employee</code></large> table.
+</small>
+<p>
+Functions can also return "generic" tuples:
+<p><pre>
+create function f(int) returns setof record ...
+<span class='comment'>-- which is used as e.g.</span>
+select * from f(3) as T(a integer, b float) where ...
+</pre><p>
+<small>
+The last example says that "the call <large><code>f(3)</code></large> returns a table T(a,b)".
+</small>
+</DIV>
+<hr>
+<DIV id="s46">
+<div class='heading'>Function Return Types <span style="font-size:67%">(cont)</span></div>
+<p>
+Different kinds of functions are invoked in different ways:
+<ul>
+<li> function fD() returning a single atomic data value
+<p><pre>
+select fD();  <span class='comment'>-- like an attribute called fD</span>
+</pre><p>
+<li> function fT() returning a single tuple (record)
+<p><pre>
+select fT();  <span class='comment'>-- like a (x,y,z) tuple-value</span>
+select * from fT() ... <span class='comment'>-- like a 1-row table</span>
+</pre><p>
+<li> function fS() returning set of atomic values or records
+<p><pre>
+select * from fS() ... <span class='comment'>-- like a table called fS</span>
+</pre><p>
+</ul>
+</DIV>
+<hr>
+<DIV id="s47">
+<div class='heading'>Using PLpgSQL Functions</div>
+<p>
+PLpgSQL functions can be invoked in several contexts:
+<ul>
+<li> as part of a <large><code>SELECT</code></large> statement
+<p><pre>
+select <font color="#0000EE">myFunction</font>(arg1,arg2);
+select * from <font color="#0000EE">myTableFunction</font>(arg1,arg2);
+</pre><p>
+<small>(either on the command line or within another PLpgSQL function)</small>
+<li> as part of the execution of another PLpgSQL function
+<p><pre>
+PERFORM <font color="#0000EE">myVoidFunction</font>(arg1,arg2);
+result := <font color="#0000EE">myOtherFunction</font>(arg1);
+</pre><p>
+<li> automatically, via an insert/delete/update trigger
+<p><pre>
+create trigger T before update on R
+  for each row execute procedure <font color="#0000EE">myCheck</font>();
+</pre><p>
+</ul>
+</DIV>
+<hr>
+<DIV id="s48">
+<div class='heading'>What's Wrong with PLpgSQL?</div>
+<p>
+Some things to beware of:
+<ul>
+<li> doesn't provide any i/o facilities  &nbsp; <small>(except <large><code>RAISE NOTICE</code></large>)</small>
+<small>
+<ul>
+<li> the aim is to build computations on tables that SQL alone can't do
+</ul>
+</small>
+<li> functions are not syntax-checked when loaded into DB
+<li> error messages are sometimes not particularly helpful
+</ul>
+<p><br><p>
+Summary: debugging PLpgSQL can sometimes be tricky.
+</DIV>
+<hr>
+<DIV id="s49">
+<div class='heading'>What's Wrong with PLpgSQL? <span style="font-size:67%">(cont)</span></div>
+<p>
+Some other "deficiencies", compared to Oracle's PL/SQL
+<ul>
+<li> no fine-grained transaction control within functions
+<small>
+<ul>
+<li> deliberate design decision to simplify PostgreSQL functions
+<li> each function executes as part of a single transaction
+</ul>
+</small>
+<li> functions are defined as strings
+<small>
+<ul>
+<li> change of "lexical scope" can sometimes be confusing
+</ul>
+</small>
+<li> (slightly) less powerful exception handling mechanism
+<small>
+<ul>
+<li> can <large><code>RAISE</code></large> exception to abort function/transaction
+<li> can also use <large><code>RAISE</code></large> to report problems and continue
+</ul>
+</small>
+</ul>
+<small>
+Nowadays, PLpgSQL has almost the same syntax as PL/SQL.
+</small>
+</DIV>
+<hr>
+<DIV id="s50">
+<div class='heading'>Data Types</div>
+<p>
+PLpgSQL constants and variables can be defined using:
+<ul>
+<li> standard SQL data types &nbsp; <small>(<large><code>CHAR, DATE, NUMBER, ...</code></large>)</small>
+<li> user-defined PostgreSQL data types &nbsp; <small>(e.g. <large><code>Point</code></large>)</small>
+<li> a special structured record type &nbsp; <small>(<large><code>RECORD</code></large>)</small>
+<li> table-row types &nbsp; <small>(e.g. <large><code>Branches%ROWTYPE</code></large>)</small>
+<li> types of existing variables &nbsp; <small>(e.g. <large><code>Branches.location%TYPE</code></large>)</small>
+</ul>
+There is also a <large><code>CURSOR</code></large> type for interacting with SQL.
+</DIV>
+<hr>
+<DIV id="s51">
+<div class='heading'>Data Types <span style="font-size:67%">(cont)</span></div>
+<p>
+Record variables are defined:
+<ul>
+<li> using a "placeholder" <large><code>RECORD</code></large> type, <small>e.g.</small>
+<p><pre>
+account RECORD;
+</pre><p>
+<small>(the actual type is fixed when the variable is bound to a query)</small>
+<p>
+<li> by deriving a type from an existing database table, <small>e.g.</small>
+<p><pre>
+account <font color="#CC0000">Accounts%ROWTYPE;</font>
+</pre><p>
+<li> as aliases for "tuple type" parameters, <small>e.g.</small>
+<p><pre>
+CREATE FUNCTION summary(<font color="#CC0000">Accounts</font>)
+RETURNS integer AS '
+DECLARE account alias for $1 ...
+</pre><p>
+</ul>
+<small>
+Record components referenced via attribute name &nbsp; e.g. <large><code>account.branchName</code></large>
+</small>
+</DIV>
+<hr>
+<DIV id="s52">
+<div class='heading'>Data Types <span style="font-size:67%">(cont)</span></div>
+<p>
+Variables can also be defined in terms of:
+<ul>
+<li> the type of an existing variable or table column
+<li> the type of an existing table row (implict <large><code>RECORD</code></large> type)
+</ul>
+<b>Examples:</b>
+<p><pre>
+quantity    INTEGER;
+start_qty   quantity%TYPE;
+
+employee    Employees%ROWTYPE;
+
+name        Employees.name%TYPE;
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s53">
+<div class='heading'>Syntax/Control Structures</div>
+<p>
+A standard assignment operator is available:
+<p><table border='0' cellpadding='6'>
+<tr valign=top>
+<td><nobr>Assignment</td>
+<td></td><td> <i>var</i> <large><code>:=</code></large> <i>expr</i> <br> <large><code>SELECT</code></large> <i>expr</i> <large><code>INTO</code></large> <i>var</i> </td>
+</tr>
+<tr valign=top>
+<td><nobr>Selection</td>
+<td></td><td>
+<p><pre>
+IF <i>C<sub>1</sub></i> THEN <i>S<sub>1</sub></i>
+ELSIF <i>C<sub>2</sub></i> THEN <i>S<sub>2</sub></i> ...
+ELSE <i>S</i> END IF
+</pre><p>
+</td>
+</tr>
+<tr valign=top>
+<td><nobr>Iteration</td>
+<td></td><td>
+<p><pre>
+LOOP <i>S</i> END LOOP
+WHILE <i>C</i> LOOP <i>S</i> END LOOP
+FOR <i>rec_var</i> IN <i>Query</i> LOOP ...
+FOR <i>int_var</i> IN <i>lo</i>..<i>hi</i> LOOP ...
+</pre><p>
+</td>
+</tr>
+</table><p>
+</DIV>
+<hr>
+<DIV id="s54">
+<div class='heading'>SELECT...INTO</div>
+<p>
+Can capture query results via:
+<p><pre>
+SELECT <i>Exp<sub>1</sub></i>,<i>Exp<sub>2</sub></i>,...,<i>Exp<sub>n</sub></i>
+INTO   <i>Var<sub>1</sub></i>,<i>Var<sub>2</sub></i>,...,<i>Var<sub>n</sub></i>
+FROM   <i>TableList</i>
+WHERE  <i>Condition</i> ...
+</pre><p>
+The semantics:
+<ul>
+<li> execute the query as usual
+<li> return "projection list" (<i>Exp<sub>1</sub></i>,<i>Exp<sub>2</sub></i>,...) as usual
+<li> assign each <i>Exp<sub>i</sub></i> to corresponding <i>Var<sub>i</sub></i>
+</ul>
+</DIV>
+<hr>
+<DIV id="s55">
+<div class='heading'>SELECT...INTO <span style="font-size:67%">(cont)</span></div>
+<p>
+Assigning a simple value via <large><code>SELECT...INTO</code></large>:
+<p><pre>
+<span class='comment'>-- cost is local var, price is attr</span>
+SELECT price INTO cost
+FROM   StockList
+WHERE  item = 'Cricket Bat';
+cost := cost * (1+tax_rate);
+total := total + cost;
+</pre><p>
+The current PostgreSQL parser also allows this syntax:
+<p><pre>
+SELECT INTO cost price
+FROM   StockList
+WHERE  item = 'Cricket Bat';
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s56">
+<div class='heading'>SELECT...INTO <span style="font-size:67%">(cont)</span></div>
+<p>
+Assigning whole rows via <large><code>SELECT...INTO</code></large>:
+<p><pre>
+DECLARE
+   emp    Employees%ROWTYPE;
+   eName  text;
+   pay    real;
+BEGIN
+   SELECT * INTO emp
+   FROM Employees WHERE id = 966543;
+   eName := emp.name;
+   ...
+   SELECT name,salary INTO eName,pay
+   FROM Employees WHERE id = 966543;
+END;
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s57">
+<div class='heading'>SELECT...INTO <span style="font-size:67%">(cont)</span></div>
+<p>
+In the case of a PLpgSQL statement like
+<p><pre>
+select a into b from R where ...
+</pre><p>
+If the selection returns no tuples
+<ul>
+<li> the variable <large><code>b</code></large> gets the value <large><code>NULL</code></large>
+</ul>
+If the selection returns multiple tuples
+<ul>
+<li> the variable <large><code>b</code></large> gets the value from the first tuple
+</ul>
+</DIV>
+<hr>
+<DIV id="s58">
+<div class='heading'>SELECT...INTO <span style="font-size:67%">(cont)</span></div>
+<p>
+If the above behaviour is too "generous", try:
+<p><pre>
+select a into <font color="#0000EE">strict</font> b from R where ...
+</pre><p>
+If the selection returns no tuples
+<ul>
+<li> the exception <large><code>NO_DATA_FOUND</code></large> is thrown
+</ul>
+If the selection returns multiple tuples
+<ul>
+<li> the exception <large><code>TOO_MANY_ROWS</code></large> is thrown
+</ul>
+This behaviour matches Oracle's default behaviour.
+</DIV>
+<hr>
+<DIV id="s59">
+<div class='heading'>SELECT...INTO <span style="font-size:67%">(cont)</span></div>
+<p>
+An alternative way of tracking <large><code>NO_DATA_FOUND</code></large> ...
+<p>
+Use the special variable <large><code>FOUND</code></large> ...
+<ul>
+<li> local to each function, set false at start of function
+<li> set true if a <large><code>SELECT</code></large> finds at least one tuple
+<li> set true if <large><code>INSERT/DELETE/UPDATE</code></large> affects at least one tuple
+<li> otherwise, remains as <large><code>FALSE</code></large>
+</ul>
+Example of use:
+<p><pre>
+select a into b from R where ...
+if (not found) then
+    <span class='comment'>-- handle case where no matching tuples b</span>
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s60">
+<div class='heading'>INSERT ... RETURNING</div>
+<p>
+Can capture values from tuples inserted into DB:
+<p><pre>
+INSERT INTO <i>Table(...)</i> VALUES
+(<i>Val<sub>1</sub></i>, <i>Val<sub>2</sub></i>, ... <i>Val<sub>n</sub></i>)
+RETURNING <i>ProjectionList</i> INTO <i>VarList</i>
+</pre><p>
+Useful for recording id values generated for <large><code>serial</code></large> PKs:
+<p><pre>
+declare newid integer;
+...
+insert into T(id,a,b,c) values (default,2,3,'red')
+returning id into newid;
+<span class='comment'>-- which used to be done as ...</span>
+select nextval('T_id_seq') into newid;
+insert into T(id,a,b,c) values(newid,2,3,'red');
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s61">
+<div class='heading'>Exceptions</div>
+<p>
+PostgreSQL 8 introduced execption handling to PLpgSQL:
+<p><pre>
+BEGIN
+    <i>Statements...</i>
+EXCEPTION
+    WHEN <i>Exceptions<sub>1</sub></i> THEN
+        <i>StatementsForHandler<sub>1</sub></i>
+    WHEN <i>Exceptions<sub>2</sub></i> THEN
+        <i>StatementsForHandler<sub>2</sub></i>
+    ...
+END;
+</pre><p>
+Each <i>Exceptions<sub>i</sub></i> is an <large><code>OR</code></large> list of exception names, e.g.
+<p><pre>
+division_by_zero OR  floating_point_exception OR ...
+</pre><p>
+A list of exceptions is in Appendix A of the PostgreSQL Manual.
+</DIV>
+<hr>
+<DIV id="s62">
+<div class='heading'>Exceptions <span style="font-size:67%">(cont)</span></div>
+<p>
+When an exception occurs:
+<ul>
+<li> control is transferred to the relevant exception handling code
+<li> all database changes so far in this transaction are undone
+<li> all function variables retain their current values
+<li> handler executes and then transaction aborts <small>(and function exits)</small>
+</ul>
+If no handler at given scoping level, exception passed to next outer level.
+<p>
+Default exception handlers at outermost level simply exit and log error.
+</DIV>
+<hr>
+<DIV id="s63">
+<div class='heading'>Exceptions <span style="font-size:67%">(cont)</span></div>
+<p>
+Example of exception handling:
+<p><pre>
+<span class='comment'>-- table T contains one tuple ('Tom','Jones')</span>
+declare
+    x integer := 3;
+begin
+    update T set firstname = 'Joe' where lastname = 'Jones';
+    <span class='comment'>-- table T now contains ('Joe','Jones')</span>
+    x := x + 1;
+    y := x / 0;
+exception
+    when division_by_zero then
+        <span class='comment'>-- update on T is rolled back to ('Tom','Jones')</span>
+        raise notice 'caught division_by_zero';
+        return x;
+        <span class='comment'>-- value returned is 4</span>
+end;
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s64">
+<div class='heading'>Exceptions <span style="font-size:67%">(cont)</span></div>
+<p>
+The <large><code>RAISE</code></large> operator generates server log entries, <small>e.g.</small>
+<p><pre>
+RAISE DEBUG 'Simple message';
+RAISE NOTICE 'User = %',user_id;
+RAISE EXCEPTION 'Fatal: value was %',value;
+</pre><p>
+There are several levels of severity:
+<ul>
+<li> <large><code>DEBUG</code></large>, <large><code>LOG</code></large>, <large><code>INFO</code></large>, <large><code>NOTICE</code></large>, <large><code>WARNING</code></large>, and <large><code>EXCEPTION</code></large>
+<li> not all severities generate a message to the client
+</ul>
+<large><code>RAISE EXCEPTION</code></large> also generates a <large><code>RAISE_EXCEPTION</code></large> exception.
+<p>
+<small>
+The server log for your PostgreSQL server is located in /srvr/<i>YOU</i>/pgsql823/logfile
+</small>
+</DIV>
+<hr>
+<DIV id="s65">
+<div class='heading'>Cursors</div>
+<p>
+A <font color='#0000BB'>cursor</font> is a variable that can be used to access
+the result of a particular SQL query.
+<p>
+<p><div align='center'>
+<img alt="[Diagram:Pic/cursor.png]" src="Pic/cursor.png">
+</div><p>
+<p>
+Cursors move sequentially from row to row
+&nbsp; <small>(cf. file pointers in C)</small>.
+</DIV>
+<hr>
+<DIV id="s66">
+<div class='heading'>Cursors <span style="font-size:67%">(cont)</span></div>
+<p>
+Simplest way to use cursors: implicitly via <large><code>FOR...IN</code></large>
+<p>
+Requires: <large><code>RECORD</code></large> variable or <i>Table</i><large><code>%ROWTYPE</code></large> variable
+<p>
+Example:
+<p><pre>
+CREATE FUNCTION totsal() RETURNS REAL AS $$
+DECLARE
+   emp RECORD;   total REAL := 0;
+BEGIN
+   FOR emp IN SELECT * FROM Employees
+   LOOP
+      total := total + emp.salary;
+   END LOOP;
+   return total;
+END; $$ LANGUAGE plpgsql;
+</pre><p>
+This style accounts for 95% of cursor usage.
+</DIV>
+<hr>
+<DIV id="s67">
+<div class='heading'>Cursors <span style="font-size:67%">(cont)</span></div>
+<p>
+Sidetrack ...
+<p>
+Of course, the previous example would be better done as:
+<p><pre>
+CREATE FUNCTION totsal() RETURNS REAL AS $$
+DECLARE
+   total REAL;
+BEGIN
+   SELECT sum(salary) INTO total FROM Employees;
+   return total;
+END;$$ LANGUAGE plpgsql;
+</pre><p>
+<small>
+The iteration/summation can be done much more efficiently as an aggregation.
+</small>
+</DIV>
+<hr>
+<DIV id="s68">
+<div class='heading'>Cursors <span style="font-size:67%">(cont)</span></div>
+<p>
+Sidetrack ... <small>(cont.)</small>
+<p>
+It could also be done as a view:
+<p><pre>
+CREATE VIEW totsalView AS
+SELECT sum(salary) INTO total FROM Employees;
+</pre><p>
+But note the different usage:
+<p><pre>
+<span class='comment'>-- Which departments have a budget 
+-- greater than the total salary bill?</span>
+SELECT d.name FROM Department
+WHERE d.budget > totsal();
+<span class='comment'>-- versus</span>
+SELECT d.name FROM Department
+WHERE d.budget > (SELECT * FROM totsalView);
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s69">
+<div class='heading'>Cursors <span style="font-size:67%">(cont)</span></div>
+<p>
+Basic operations on cursors: <large><code>OPEN</code></large>, <large><code>FETCH</code></large>, <large><code>CLOSE</code></large>:
+<p><pre>
+<span class='comment'>-- assume ... e CURSOR FOR SELECT * FROM Employees;</span>
+<font color="#0000EE">OPEN</font> e;
+LOOP
+   <font color="#0000EE">FETCH</font> e INTO emp;
+   EXIT WHEN NOT <font color="#0000EE">FOUND</font>;
+   total := total + emp.salary;
+END LOOP;
+<font color="#0000EE">CLOSE</font> e;
+...
+</pre><p>
+The <large><code>FETCH</code></large> operation can also extract components of a row:
+<p><pre>
+FETCH e INTO my_id, my_name, my_salary;
+</pre><p>
+<small>
+There must be one variable, of the correct type, for each column
+in the result.
+</small>
+<p>
+Note: low-level cursor operations are rarely used in practice.
+</DIV>
+<hr>
+<DIV id="s70">
+<div class='heading'>Cursors <span style="font-size:67%">(cont)</span></div>
+<p>
+Ways to declare cursors:
+<p><pre>
+DECLARE
+   a REFCURSOR;   <span class='comment'>-- unbound cursor</span>
+   b CURSOR FOR   <span class='comment'>-- bound cursor</span>
+     SELECT * FROM Emp WHERE salary > $1;
+   <span class='comment'>-- parameterised cursor</span>
+   c CURSOR (base real) IS
+     SELECT * FROM Emp WHERE salary > base;
+BEGIN
+   <span class='comment'>-- all access the same result set</span>
+   OPEN a FOR SELECT * FROM Emp WHERE salary > $1;
+   OPEN b;
+   OPEN c($1);
+   ...
+END;
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s71">
+<div class='heading'>Dynamically Generated Queries</div>
+<p>
+<large><code>EXECUTE</code></large> takes a string and executes it as an SQL query.
+<p>
+Examples:
+<p><pre>
+EXECUTE 'SELECT * FROM Employees';
+EXECUTE 'SELECT * FROM '||'Employees';
+EXECUTE 'SELECT * FROM '||quote_ident($1);
+EXECUTE 'DELETE FROM Accounts '||
+        'WHERE holder='||quote_literal($1);
+</pre><p>
+<large><code>EXECUTE</code></large> <i>string</i> can be used in any context
+where the query <i>string</i> could have been used.
+<p>
+This mechanism allows us to <font color='#0000BB'>construct</font> queries "on the fly".
+</DIV>
+<hr>
+<DIV id="s72">
+<div class='heading'>Dynamically Generated Queries <span style="font-size:67%">(cont)</span></div>
+<p>
+Example: a wrapper for updating a single text field
+<p><pre><small>
+CREATE OR REPLACE FUNCTION set(TEXT,TEXT,TEXT) RETURNS INT
+AS $$
+DECLARE
+   theTable alias for $1;  theField alias for $2;
+   theValue alias for $3;  query TEXT;
+BEGIN
+   query := 'UPDATE ' || quote_ident(theTable);
+   query := query || ' SET ' || quote_ident(theField);
+   query := query || ' = ' || quote_literal(theValue);
+   EXECUTE query;
+   RETURN NULL;
+END; $$ LANGUAGE plpgsql;
+</small></pre><p>
+which could be used as e.g.
+<p><pre><small>
+SELECT set('branches','address','Beach St.');
+</small></pre><p>
+</DIV>
+<hr>
+<DIV id="s73">
+<div class='heading'>Dynamically Generated Queries <span style="font-size:67%">(cont)</span></div>
+<p>
+One limitation of <large><code>EXECUTE</code></large>:
+<ul>
+<li> cannot use <large><code>SELECT INTO</code></large> in dynamic queries
+</ul>
+Needs to be expressed instead as:
+<p><pre>
+tuple R%rowtype; n int;
+EXECUTE 'select * from R where id='||n INTO tuple;
+<span class='comment'>-- or</span>
+x int; y int; z text;
+EXECUTE 'select a,b,c from R where id='||n INTO x,y,z;
+</pre><p>
+<small>
+Notes:
+<ul>
+<li> if query returns multiple tuples, first one is stored
+<li> if query returns zero tuples, all nulls are stored
+</ul>
+</small>
+</DIV>
+<hr>
+<DIV id="s74">
+<div class='heading'>Functions Returning Tables</div>
+<p>
+PLpgSQL functions can return tables by using a return type
+<p><pre>
+CREATE OR REPLACE
+   <i>funcName</i>(<i>arg1type</i>, <i>arg2type</i>, ....)
+   RETURNS SETOF <i>rowType</i>
+</pre><p>
+Example:
+<p><pre><small>
+CREATE OR REPLACE FUNCTION
+   valuableEmployees(REAL) RETURNS SETOF Employees
+AS $$
+DECLARE
+   e RECORD;
+BEGIN
+   FOR e IN SELECT * FROM Employees WHERE salary &gt; $1
+   LOOP
+      <font color="#0000EE">RETURN NEXT</font> e;  <span class='comment'>-- accumulates tuples</span>
+   END LOOP;
+   <font color="#0000EE">RETURN</font>;  <span class='comment'>-- returns accumulated tuples</span>
+END; $$ language plpgsql;
+</small></pre><p>
+</DIV>
+<hr>
+<DIV id="s75">
+<div class='heading'>Functions Returning Tables <span style="font-size:67%">(cont)</span></div>
+<p>
+Functions returning <large><code>SETOF </code></large><i>rowType</i> are used like tables.
+<p>
+Example:
+<p><pre><small>
+select * from valuableEmployees(50000);
+ id |  name  | salary 
+----+--------+--------
+  1 | David  |  75000
+  2 | John   |  70000
+  3 | Andrew |  75000
+  4 | Peter  |  55000
+  8 | Wendy  |  60000
+(5 rows)
+</small></pre><p>
+<large><code>SETOF</code></large> functions look similar to parameterised views.
+</DIV>
+<hr>
+<DIV id="s76">
+<div class='heading'>Functions Returning Tables <span style="font-size:67%">(cont)</span></div>
+<p>
+A difference between views and functions returning a <large><code>SETOF</code></large>:
+<ul>
+<li> <large><code>CREATE VIEW</code></large> produces a "virtual" table definition <br>
+	<small>(table definitions induce a row type with same name as table e.g. <large><code>Accounts</code></large>)</small>
+<li> <large><code>SETOF</code></large> functions require an existing tuple type
+</ul>
+In examples above, we used existing <large><code>Employees</code></large> tuple type.
+<p>
+In general, you need to define the tuple return type via
+<p><pre>
+CREATE TYPE <i>NewTupleType</i> AS (
+    <i>attr<sub>1</sub></i>  <i>type<sub>1</sub></i>,
+    <i>attr<sub>2</sub></i>  <i>type<sub>2</sub></i>,
+    ...
+    <i>attr<sub>n</sub></i>  <i>type<sub>n</sub></i>
+);
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s77">
+<div class='heading'>Functions Returning Tables <span style="font-size:67%">(cont)</span></div>
+<p>
+Example of using tuple types ... valuableEmployees() revisited:
+<p><pre><small>
+CREATE TYPE <font color="#0000EE">EmpInfo</font> as
+   name  varchar(50),
+   pay   integer
+);
+CREATE OR REPLACE FUNCTION
+   valuableEmployees(REAL) RETURNS SETOF <font color="#0000EE">EmpInfo</font>
+AS $$
+DECLARE
+   emp RECORD;
+   inf <font color="#009900">EmpInfo%ROWTYPE</font>;
+BEGIN
+   FOR emp IN SELECT * FROM Employees WHERE salary &gt; $1
+   LOOP
+      inf.name := emp.name;  inf.pay = emp.salary;
+      RETURN NEXT inf;  <span class='comment'>-- accumulates tuples</span>
+   END LOOP;
+   RETURN;  <span class='comment'>-- returns accumulated tuples</span>
+END; $$ LANGUAGE plpgsql;
+</small></pre><p>
+</DIV>
+<hr>
+<DIV id="s78">
+<div class='heading'>SQL Functions</div>
+<p>
+PostgreSQL functions require you to specify a language.
+<p>
+In our examples, we have used primarily PLpgSQL.
+<p>
+Other PostgreSQL function languages: SQL, Tcl, Perl, ...
+<p>
+SQL functions provide a mechanism for parameterised views.
+</DIV>
+<hr>
+<DIV id="s79">
+<div class='heading'>SQL Functions <span style="font-size:67%">(cont)</span></div>
+<p>
+Recall the <large><code>ValuableEmployees</code></large> example from above.
+<p>
+If we know that the minimum salary for a valuable employee
+will always be $50,000, we can solve the problem very simply as:
+<p><pre>
+create or replace view ValuableEmployees as
+select * from Employees where salary &gt; 50000;
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s80">
+<div class='heading'>SQL Functions <span style="font-size:67%">(cont)</span></div>
+<p>
+If we want to allow minimum valuable salary to change,
+we need a way of replacing $50,000 by a supplied value.
+<p>
+SQL functions provide a simple mechanism for this:
+<p><pre>
+create or replace function
+    ValuableEmployees(integer) returns setof Employees
+as $$
+select * from Employees where salary &gt; $1
+$$ language sql;
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s81">
+<div class='heading'>SQL Functions <span style="font-size:67%">(cont)</span></div>
+<p>
+Differences between SQL and PLpSQL functions
+<ul>
+<li> SQL function bodies are a single SQL statement
+<li> SQL functions cannot use named parameters <br>
+	<small>(required to use positional parameter notation: $1, $2, $3)</small>
+<li> SQL functions have no <large><code>RETURN</code></large> <br>
+	<small>(their result is the result of the SQL statement)</small>
+<li> return types can be atomic, tuple, or <large><code>setof</code></large> tuples
+</ul>
+</DIV>
+<hr>
+<DIV id="s82">
+<div class='heading'>SQL Functions <span style="font-size:67%">(cont)</span></div>
+<p>
+Comparison of SQL and PLpgSQL functions:
+<p><pre><small>
+create function add(int,int) returns int
+as $$ begin return ($1 + $2); end;
+$$ language plpgsql;
+
+create function add(int,int) returns int
+as $$ select $1 + $2 $$ language sql;
+
+create function fac(n int) returns int
+as $$
+begin
+    if (n = 0) then return 1;
+    else return n * fac(n-1);
+    end if;
+end;
+$$ language plpgsql;
+
+create function fac(int) returns int
+as $$
+   select case when $1 = 0 then 1
+          else $1 * fac($1-1) end
+$$ language sql;
+</small></pre><p>
+</DIV>
+<hr>
+<DIV id="s83">
+<div class='heading'>SQL Functions <span style="font-size:67%">(cont)</span></div>
+<p>
+More comparison of SQL and PLpgSQL functions:
+<p><pre><small>
+create or replace function
+   valuableEmployees(REAL) returns setof Employees
+as $$
+    select * from Employees where salary &gt; $1
+$$ language sql;
+
+create or replace function
+   valuableEmployees(REAL) returns setof Employees
+as $$
+declare
+   e record;
+begin
+   for e in select * from Employees where salary &gt; $1
+   loop  return next e;  end loop;
+   return;
+end; $$ language plpgsql;
+</small></pre><p>
+</DIV>
+<hr>
+<DIV id="s84">
+<div class='heading'>Extra Thoughts on Functions</div>
+<p>
+PostgreSQL provides a variety of abstraction mechanisms.
+<p>
+Always try to define "functions" as simply as possible.
+<p>
+E.g.
+<ul>
+<li> best defined as view? SQL function? PLpgSQL function?
+<li> if PLpgSQL, do we need explicit cursor or is <large><code>FOR</code></large> loop ok?
+<li> do we need to dynamically construct a query string?
+<li> or can we simply use substitution of parameter values?
+</ul>
+</DIV>
+<hr>
+<DIV id="s85">
+<div class='heading'>Further Examples</div>
+<p>
+More examples of PLpgSQL procedures may be found in
+<ul>
+<li> the PostgreSQL documentation
+<p>
+/home/cs3311/web/08s1/doc/pgsql830/plpgsql.html
+<li> the PostgreSQL distribution
+<p>
+/home/jas/systems/postgresql-8.2.3/src/test/regress/sql/plpgsql.sql
+<li> the OpenACS system (web content management)
+<p>
+/home/jas/systems/openacs-3.2.5/www/doc/sql
+<small>(OpenACS makes extensive use of stored procedures and triggers)</small>
+</ul>
+</DIV>
+<hr>
+<DIV id="s86">
+<div class='section'>&#8750; User-defined Aggregates</div>
+<p>
+</DIV>
+<hr>
+<DIV id="s87">
+<div class='heading'>Aggregates</div>
+<p>
+Aggregates reduce a collection of values into a single result.
+<p>
+Examples:
+	&nbsp; <large><code>count(</code></large><i>Tuples</i><large><code>)</code></large>,
+	&nbsp; <large><code>sum(</code></large><i>Numbers</i><large><code>)</code></large>,
+	&nbsp; <large><code>avg(</code></large><i>Numbers</i><large><code>)</code></large>, &nbsp; etc.
+<p>
+The action of an aggregate function can be viewed as:
+<p><pre>
+AggState = initial state
+for each item V {
+    <span class='comment'># incorporate V into AggState</span>
+    AggState = newState(AggState, V)
+}
+return final(AggState)
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s88">
+<div class='heading'>Aggregates <span style="font-size:67%">(cont)</span></div>
+<p>
+Defining a new aggregate in PostgreSQL requires:
+<ul>
+<li> description of the input (base) item type
+<li> description of the state type
+<li> value(s) for the initial state
+<li> state transition function
+<li> function to compute result from final state <small>(optional)</small>
+</ul>
+</DIV>
+<hr>
+<DIV id="s89">
+<div class='heading'>Aggregates <span style="font-size:67%">(cont)</span></div>
+<p>
+New aggregates defined using <large><code>CREATE AGGREGATE</code></large> statement:
+<p><pre>
+CREATE AGGREGATE <i>AggName</i> (
+    basetype  = <i>BaseType</i>,
+    stype     = <i>StateType</i>,
+    initcond  = <i>InitialValue</i>,
+    sfunc     = <i>NewStateFunction</i>,
+    finalfunc = <i>FinalResFunction</i>
+);
+</pre><p>
+<large><code>initcond</code></large> is optional; defaults to <large><code>NULL</code></large> <br>
+<large><code>finalfunc</code></large> is optional; defaults to identity function
+</DIV>
+<hr>
+<DIV id="s90">
+<div class='heading'>Aggregates <span style="font-size:67%">(cont)</span></div>
+<p>
+The state transition function always has type:
+<p><pre>
+function newState(<i>StateType</i>,<i>BaseType</i>) returns <i>StateType</i>
+</pre><p>
+The final function always has type
+<p><pre>
+function finalValue(<i>StateType</i>) returns <i>ResultType</i>
+</pre><p>
+<i>ResultType</i> may be the same as the <i>StateType</i> <br>
+or may be a component of the <i>StateType</i>
+</DIV>
+<hr>
+<DIV id="s91">
+<div class='heading'>Aggregates <span style="font-size:67%">(cont)</span></div>
+<p>
+Example: <large><code>sum2</code></large> sums two columns of integers
+<p><pre><small>
+create type IntPair as (x int, y int);
+
+create function
+    AddPair(sum int, p IntPair) returns int
+as $$
+begin return p.x+p.y+sum; end;
+$$ language plpgsql;
+
+create aggregate sum2 (
+    basetype  = IntPair,
+    stype     = int,
+    initcond  = 0,
+    sfunc     = AddPair
+);
+</small></pre><p>
+</DIV>
+<hr>
+<DIV id="s92">
+<div class='heading'>Constraints and Assertions</div>
+<p>
+</DIV>
+<hr>
+<DIV id="s93">
+<div class='heading'>Constraints</div>
+<p>
+So far, we have considered several kinds of constraints:
+<ul>
+<li> <font color="#0000EE">attribute</font> (column) constraints
+<li> <font color="#996600">tuple</font> (row) constraints
+<li> <font color="#CC0000">relation</font> (table) constraints
+<li> <font color="#009900">referential integrity</font> constraints
+</ul>
+Examples:
+<p><pre><small>
+create table Employee (
+   id      <font color="#0000EE">integer</font> <font color="#CC0000">primary key</font>,
+   name    <font color="#0000EE">varchar(40)</font>,
+   salary  <font color="#0000EE">real</font>,
+   age     <font color="#0000EE">integer check (age > 15)</font>,
+   worksIn <font color="#0000EE">integer</font>
+              <font color="#009900">references Department(id)</font>,
+   <font color="#996600">constraint PayOk check (salary > age*1000)</font>
+);
+</small></pre><p>
+</DIV>
+<hr>
+<DIV id="s94">
+<div class='heading'>An Aside on Constraints</div>
+<p>
+When discussing SQL DDL, we indicated that attribute
+constraints could not involve queries on other tables.
+<p>
+E.g. it is not possible to specify something like:
+<p><pre>
+create table R (x integer, y integer);
+create table S (
+    a integer check (a > (select max(x) from R)),
+    b integer check (b not in (select y from R))
+);
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s95">
+<div class='heading'>An Aside on Constraints <span style="font-size:67%">(cont)</span></div>
+<p>
+In fact, it is possible to implement arbitrary constraints
+<ul>
+<li> define a function returning boolean
+<li> pass the attribute(s) to be checked as parameters
+<li> perform arbitrary checks in the function
+</ul>
+Example:
+<p><pre>
+create table R (x integer, y integer);
+create table S (
+    a integer check (biggerThanX(a)),
+    b integer check (notInY(b))
+);
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s96">
+<div class='heading'>An Aside on Constraints <span style="font-size:67%">(cont)</span></div>
+<p>
+Where <large><code>biggerThanX</code></large> and <large><code>notInY</code></large> are defined as:
+<p><pre><small>
+create function biggerThanX(a integer) returns boolean
+as $$
+declare mx integer;
+begin
+    select max(x) into mx from R;
+    return (a > mx);
+end;
+$$ language plpgsql;
+
+create function notInY(b integer) returns boolean
+as $$
+begin
+    select * from R where y = b;
+    return (not FOUND);
+end;
+$$ language plpgsql;
+</small></pre><p>
+</DIV>
+<hr>
+<DIV id="s97">
+<div class='heading'>Assertions</div>
+<p>
+Column and table constraints ensure validity of one table.
+<p>
+RI constraints ensure connections between tables are valid.
+<p>
+In order to specify the conditions for validity of an entire database,
+we need to to be able to express more complex multi-table constraints.
+<p>
+Simple example:
+<p><pre><small>
+for all Branches b
+    b.assets = (select sum(acct.balance)
+                from   Accounts acct
+                where  acct.branch = b.location)
+</small></pre><p>
+<small>
+i.e. the assets of a branch is the sum of balances of accounts held at that branch
+</small>
+</DIV>
+<hr>
+<DIV id="s98">
+<div class='heading'>Assertions <span style="font-size:67%">(cont)</span></div>
+<p>
+<font color='#0000BB'>Assertions</font> are schema-level constraints
+<ul>
+<li> typically involving multiple tables
+<li> expressing a condition that must hold at all times
+<li> need to be checked for each update on relevant tables
+<li> cause update to be rejected if check fails
+</ul>
+Usage:
+<p><pre>
+CREATE ASSERTION <i>name</i> CHECK (<i>condition</i>)
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s99">
+<div class='heading'>Assertions <span style="font-size:67%">(cont)</span></div>
+<p>
+<b>Example:</b> <small>no course at UNSW is allowed more than 999 enrolments</small>
+<p><pre><small>
+create assertion ClassSizeConstraint check (
+    not exists (
+        select c.id from Course c, Enrolment e
+        where  c.id = e.course
+        group  by c.id
+        having count(e.student) &gt; 999
+    )
+)
+</small></pre><p>
+Needs to be checked
+<ul>
+<li> after each change to <large><code>Enrolment</code></large>
+	&nbsp; <small>(changes to <large><code>Course</code></large>?)</small>
+<li> however the change occurs
+	&nbsp; <small>(e.g explicit insert,cascaded delete,...)</small>
+</ul>
+</DIV>
+<hr>
+<DIV id="s100">
+<div class='heading'>Assertions <span style="font-size:67%">(cont)</span></div>
+<p>
+<b>Example:</b> <small>the assets of a bank branch are the sum of its account balances</small>
+<p><pre><small>
+create assertion AssetsCheck check (
+    not exists (
+        select branchName from Branch b
+        where  b.assets <>
+               (select sum(a.balance) from Accounts a
+                         where a.branch = b.location)
+    )
+)
+</small></pre><p>
+Needs to be checked
+<ul>
+<li> after each change to <large><code>Branch</code></large> or <large><code>Account</code></large>
+</ul>
+<small>
+In this example, it might be more useful if we could <i>force</i> this condition to hold after account updates.
+</small>
+</DIV>
+<hr>
+<DIV id="s101">
+<div class='heading'>Assertions <span style="font-size:67%">(cont)</span></div>
+<p>
+On each update, it is expensive
+<ul>
+<li> to determine which assertions need to be checked
+<li> to run the queries which check the assertions
+</ul>
+A database with many assertions would be <b>very</b> slow.
+<p>
+So, most RDBMSs do not implement general assertions.
+<p>
+<font color='#0000BB'>Triggers</font> are provided as
+<ul>
+<li> a lightweight mechanism for dealing with assertions
+<li> a general event-based programming tool for databases
+</ul>
+</DIV>
+<hr>
+<DIV id="s102">
+<div class='heading'>Triggers</div>
+<p>
+</DIV>
+<hr>
+<DIV id="s103">
+<div class='heading'>Triggers</div>
+<p>
+<font color='#0000BB'>Triggers</font> are
+<ul>
+<li> procedures stored in the database
+<li> activated in response to database events
+	&nbsp; <small>(e.g.updates)</small>
+</ul>
+<font color='#0000BB'>Active databases</font> = databases using triggers extensively.
+<p>
+Examples of uses for triggers:
+<ul>
+<li> checking schema-level constraints on update
+<li> maintaining summary data 
+<li> performing multi-table updates <small>(to maintain assertions)</small>
+</ul>
+</DIV>
+<hr>
+<DIV id="s104">
+<div class='heading'>Triggers <span style="font-size:67%">(cont)</span></div>
+<p>
+Triggers provide event-condition-action (ECA) programming:
+<ul>
+<li> an <font color='#0000BB'>event</font> activates the trigger
+<li> on activation, the trigger checks a <font color='#0000BB'>condition</font>
+<li> if the condition holds, a procedure is executed
+	<small>(the <font color='#0000BB'>action</font>)</small>
+</ul>
+<small>
+Some typical variations on this:
+<ul>
+<li> execute the action before, after or instead of the triggering event
+<li> can refer to both old and new values of updated tuples
+<li> can limit updates to a particular set of attributes
+<li> perform action: once for each modified tuple, once for all modified tuples
+</ul>
+</small>
+</DIV>
+<hr>
+<DIV id="s105">
+<div class='heading'>Triggers <span style="font-size:67%">(cont)</span></div>
+<p>
+SQL "standard" syntax for defining triggers:
+<p><pre>
+CREATE TRIGGER <i>TriggerName</i>
+{AFTER|BEFORE}  <i>Event1</i> [ OR <i>Event2</i> ... ]
+[ FOR EACH ROW ]
+ON <i>TableName</i>
+[ WHEN ( <i>Condition</i> ) ]
+<i>Block of Procedural/SQL Code</i> ;
+</pre><p>
+Possible <i>Events</i> are <large><code>INSERT</code></large>, <large><code>DELETE</code></large>, <large><code>UPDATE</code></large>.
+<p>
+<large><code>FOR EACH ROW</code></large> clause ...
+<ul>
+<li> if present, code is executed on each modified tuple
+<li> if not present, code is executed once after all tuples are modified,
+	just before changes are finally <large><code>COMMIT</code></large>ed
+</ul>
+</DIV>
+<hr>
+<DIV id="s106">
+<div class='heading'>Example Trigger</div>
+<p>
+<b>Example:</b> department salary totals
+<p>
+Scenario:
+<p><pre><small>
+Employee(id, name, address, dept, <font color="#0000EE">salary</font>, ...)
+Department(id, name, manager, <font color="#0000EE">totSal</font>, ...)
+</small></pre><p>
+An assertion that we wish to maintain:
+<p><pre><small>
+create assertion TotalSalary check (
+    not exists (
+        select d.id from Department d
+        where  d.totSal <>
+               (select sum(e.salary) from Employee e
+                                 where e.dept = d.id)
+    )
+)
+</small></pre><p>
+</DIV>
+<hr>
+<DIV id="s107">
+<div class='heading'>Example Trigger <span style="font-size:67%">(cont)</span></div>
+<p>
+Events that might affect the validity of the database
+<ul>
+<li> a new employee starts work in some department
+<li> an employee gets a rise in salary 
+<li> an employee changes from one department to another
+<li> an employee leaves the company
+</ul>
+A single assertion could check for this after each change.
+<p>
+With triggers, we have to program each case separately.
+<p>
+Each program implements updates to <i>ensure</i> assertion holds.
+</DIV>
+<hr>
+<DIV id="s108">
+<div class='heading'>Example Trigger <span style="font-size:67%">(cont)</span></div>
+<p>
+Case 1: new employees arrive
+<p><pre><small>
+create trigger TotalSalary1
+after insert on Employee
+for each row when (NEW.dept is not null)
+   update Department
+   set totSal = totSal + NEW.salary
+   where  Department.id = NEW.dept;
+</small></pre><p>
+Case 2: employees get a pay rise
+<p><pre><small>
+create trigger TotalSalary2
+after update of salary on Employee
+for each row when (NEW.dept is not null)
+   update Department
+   set totSal = totSal + NEW.salary - OLD.salary
+   where  Department.id = NEW.dept;
+</small></pre><p>
+</DIV>
+<hr>
+<DIV id="s109">
+<div class='heading'>Example Trigger <span style="font-size:67%">(cont)</span></div>
+<p>
+Case 3: employees change departments
+<p><pre><small>
+create trigger TotalSalary3
+after update of dept on Employee
+for each row
+begin
+   update Department
+   set totSal = totSal + NEW.salary
+   where  Department.id = NEW.dept;
+   update Department
+   set totSal = totSal - OLD.salary
+   where  Department.id = OLD.dept;
+</small></pre><p>
+Case 4: employees leave
+<p><pre><small>
+create trigger TotalSalary4
+after delete on Employee
+for each row when (OLD.dept is not null)
+   update Department
+   set totSal = totSal - OLD.salary
+   where  Department.id = OLD.dept;
+</small></pre><p>
+</DIV>
+<hr>
+<DIV id="s110">
+<div class='heading'>Triggers in PostgreSQL</div>
+<p>
+PostgreSQL triggers provide a mechanism for
+<ul>
+<li> <large><code>INSERT</code></large>, <large><code>DELETE</code></large> or <large><code>UPDATE</code></large> events
+<li> to automatically activate PLpgSQL functions
+</ul>
+Syntax for PostgreSQL trigger definition:
+<p><pre>
+CREATE TRIGGER <i>TriggerName</i>
+{AFTER|BEFORE}  <i>Event1</i> [OR <i>Event2</i> ...]
+ON <i>TableName</i>
+FOR EACH {ROW|STATEMENT}
+EXECUTE PROCEDURE <i>FunctionName</i>(<i>args...</i>);
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s111">
+<div class='heading'>Triggers in PostgreSQL <span style="font-size:67%">(cont)</span></div>
+<p>
+Examples of PostgreSQL trigger definitions:
+<p><pre>
+<span class='comment'>-- check for each new Employee</span>
+create trigger checkEmpInsert
+before insert on Employees
+for each row
+execute procedure checkInputValues();
+
+create function checkInputValues() ...
+
+<span class='comment'>-- check after all Employees changed</span>
+create trigger afterEmpChange
+after update on Employees
+for each statement
+execute procedure fixOtherTables();
+
+create function fixOtherTables() ...
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s112">
+<div class='heading'>Triggers in PostgreSQL <span style="font-size:67%">(cont)</span></div>
+<p>
+PostgreSQL does not have conditional activation of triggers <br>
+(i.e. no <large><code>WHEN</code></large> clause in the trigger definition statement).
+<p>
+However, tests in the function can effectively provide this, e.g.
+<p><pre>
+create trigger <i>X</i> before insert on <i>T</i>
+<font color="#0000EE">when (<i>C</i>)</font> begin <i>ProcCode</i> end;
+<span class='comment'>-- is implemented in PostgreSQL as</span>
+create trigger <i>X</i> before insert on <i>T</i>
+for each statement execute procedure <i>F</i>;
+create function <i>F</i> ... as $$
+begin
+   <font color="#0000EE">if (<i>C</i>)</font> then <i>ProcCode</i> end if;
+end;
+$$ language plpgsql;
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s113">
+<div class='heading'>Triggers in PostgreSQL <span style="font-size:67%">(cont)</span></div>
+<p>
+Triggers can be activated <large><code>BEFORE</code></large> or <large><code>AFTER</code></large> the event.
+<p>
+If activated <large><code>AFTER</code></large>, the effects of the event are visible:
+<ul>
+<li> <large><code>NEW</code></large> contains the current value of the altered tuple
+<li> <large><code>OLD</code></large> contains the previous value of the altered tuple
+</ul>
+Sequence of actions during a change:
+<ol>
+<li> execute any <large><code>BEFORE</code></large> triggers for this change
+<li> temporarily make the change and check constraints
+<li> execute any <large><code>AFTER</code></large> triggers for this change
+<li> commit the changes <small>(i.e. make them permanent)</small>
+</ol>
+Failure in any of the first three steps rolls back the change.
+</DIV>
+<hr>
+<DIV id="s114">
+<div class='heading'>Triggers in PostgreSQL <span style="font-size:67%">(cont)</span></div>
+<p>
+PLpgSQL functions for triggers are defined as
+<p><pre><small>
+<span class='comment'>-- PostgreSQL 7.3 and later</span>
+CREATE OR REPLACE FUNCTION <i>name</i>() RETURNS TRIGGER ...
+<span class='comment'>-- PostgreSQL 7.2</span>
+CREATE OR REPLACE FUNCTION <i>name</i>() RETURNS OPAQUE ...
+</small></pre><p>
+There is no restriction on what code can go in the function.
+<p>
+However it must contain one of:
+<p><pre>
+RETURN old;    <span class='comment'>or</span>    RETURN new;
+</pre><p>
+depending on which version of the tuple is to be used.
+<p>
+If an exception is raised in the function, no change occurs.
+</DIV>
+<hr>
+<DIV id="s115">
+<div class='heading'>Example PostgreSQL Trigger</div>
+<p>
+<b>Example:</b> ensure that U.S. state names are entered correctly
+<p><pre><small>
+create function checkState() returns trigger as $$
+begin
+   <span class='comment'>-- normalise the user-supplied value</span>
+   new.state = upper(trim(new.state));
+   if (new.state !~ ''^[A-Z][A-Z]$'') then
+      raise exception ''State code must be two alpha chars'';
+   end if;
+   <span class='comment'>-- implement referential integrity check</span>
+   select * from States where code=new.state;
+   if (not found) then
+      raise exception ''Invalid state code %'',new.state;
+   end if;
+   return new;
+end;
+' language plpgsql;
+
+create trigger checkState before insert or update
+on Person for each row execute procedure checkState();
+</small></pre><p>
+</DIV>
+<hr>
+<DIV id="s116">
+<div class='heading'>Example PostgreSQL Trigger <span style="font-size:67%">(cont)</span></div>
+<p>
+Examples of how this trigger would behave:
+<p><pre>
+insert into Person
+   values('John',...,'Calif.',...);
+<span class='comment'>-- fails with 'Statecode must be two alpha chars'</span>
+
+insert into Person
+   values('Jane',...,'NY',...);
+<span class='comment'>-- insert succeeds; Jane lives in New York</span>
+
+update Person
+   set town='Sunnyvale',state='CA'
+	 where name='Dave';
+<span class='comment'>-- update succeeds; Dave moves to California</span>
+
+update Person
+   set state='OZ' where name='Pete';
+<span class='comment'>-- fails with 'Invalid state code OZ'</span>
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s117">
+<div class='heading'>Example PostgreSQL Trigger #2</div>
+<p>
+Implement the Employee update triggers from above in PostgreSQL:
+<p>
+There are three changes that need to be handled:
+<ul>
+<li> case 1: new employee arrives (<large><code>INSERT</code></large>)
+<li> case 2a: employee changes salary (<large><code>UPDATE</code></large>)
+<li> case 2b: employee changes department (<large><code>UPDATE</code></large>)
+<li> case 3: existing employee leaves (<large><code>DELETE</code></large>)
+</ul>
+We need a function and trigger for each case.
+</DIV>
+<hr>
+<DIV id="s118">
+<div class='heading'>Example PostgreSQL Trigger #2 <span style="font-size:67%">(cont)</span></div>
+<p>
+Case 1: new employee arrives
+<p><pre>
+create function totalSalary1() returns trigger
+as $$
+begin
+    if (new.dept is not null) then
+        update Department
+        set    totSal = totSal + new.salary
+        where  Department.id = new.dept;
+    end if;
+    return new;
+end;
+$$ language plpgsql;
+</pre><p>
+<small>
+Note that the test on <large><code>new.dept</code></large> is not needed;
+if <large><code>new.dept</code></large> was <large><code>NULL</code></large>, the update would have no effect;
+having the test does give a marginal performance improvement, by
+occasionally avoiding an UPDATE.
+</small>
+</DIV>
+<hr>
+<DIV id="s119">
+<div class='heading'>Example PostgreSQL Trigger #2 <span style="font-size:67%">(cont)</span></div>
+<p>
+Case 2: employee changes department/salary
+<p><pre>
+create function totalSalary2() returns trigger
+as $$
+begin
+    update Department
+    set    totSal = totSal + new.salary
+    where  Department.id = new.dept;
+    update Department
+    set    totSal = totSal - old.salary
+    where  Department.id = old.dept;
+    return new;
+end;
+$$ language plpgsql;
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s120">
+<div class='heading'>Example PostgreSQL Trigger #2 <span style="font-size:67%">(cont)</span></div>
+<p>
+Case 3: existing employee leaves
+<p><pre>
+create function totalSalary3() returns trigger
+as $$
+begin
+    if (old.dept is not null) then
+        update Department
+        set    totSal = totSal - old.salary
+        where  Department.id = old.dept;
+    end if;
+    return old;
+end;
+$$ language plpgsql;
+</pre><p>
+<small>
+Note that the test on <large><code>old.dept</code></large> is not needed;
+if <large><code>old.dept</code></large> was <large><code>NULL</code></large>, the update would have no effect;
+having the test does give a marginal performance improvement, by
+occasionally avoiding an UPDATE.
+</small>
+</DIV>
+<hr>
+<DIV id="s121">
+<div class='heading'>Example PostgreSQL Trigger #2 <span style="font-size:67%">(cont)</span></div>
+<p>
+Finally, we need to define the triggers:
+<p><pre>
+create trigger TotalSalary1
+after insert on Employees
+for each row execute procedure totalSalary1();
+
+create trigger TotalSalary2
+after update on Employee
+for each row execute procedure totalSalary2();
+
+create trigger TotalSalary3
+after delete on Employee
+for each row execute procedure totalSalary3();
+</pre><p>
+<small>
+Note: all <large><code>after</code></large> triggers because we want to make
+sure that the changes to the <large><code>Employees</code></large> table are
+really going to occur.
+</small>
+</DIV>
+<hr>
+<DIV id="s122">
+<div class='heading'>Trigger Caveat</div>
+<p>
+Mutually recursive triggers can cause infinite loops.
+<p><pre>
+create function fixS() returns trigger as $$
+    begin update S where a = new.x; return new end;
+$$ language plpgsql;
+
+create function fixR() returns trigger as $$
+    begin update R where x = new.a; return new end;
+$$ language plpgsql;
+
+create trigger updateR before update on R
+for each row execute procedure fixS();
+
+create trigger updateS before update on S
+for each row execute procedure fixR();
+</pre><p>
+</DIV>
+<p><hr><p>
+<span style='font-size:11px;color: grey;'>Produced: 13 Sep 2020</span>
+ <script src='lib/prism.js'></script>   
+ <script src='lib/sg.js'></script>   
+</body>
+</html>

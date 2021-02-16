@@ -1,0 +1,362 @@
+<html>
+<head>
+<title>SQL Data Definition Language</title>
+<link href='lib/slides.css' rel='stylesheet' type='text/css'>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML" async></script>
+<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js'></script>
+<link href='https://fonts.googleapis.com/css?family=Lato' rel='stylesheet'>
+<link href='lib/prism.css' rel='stylesheet'>
+<script src='lib/sg.js'></script>
+</head>
+<body>
+ <DIV class='slideCl1' id="s0"  >
+<div class='navCl1'><a href="#s1"><span class='nextArrowCl'>>></span></a> </div> <div class='heading'>SQL Data Definition Language</div><p><ul class='indexUl'  style='font-size: 0.7em;'><li class="i"> <a href="#s1">Relational Data Definition</a>
+<li class="i"> <a href="#s2">Example Relational Schema</a>
+<li class="i"> <a href="#s3">SQL Data Definition Language</a>
+<li class="i"> <a href="#s4">Defining a Database Schema</a>
+<li class="i"> <a href="#s9">Data Integrity</a>
+<li class="i"> <a href="#s10">Another Example Schema</a>
+<li class="i"> <a href="#s11">Default Values</a>
+<li class="i"> <a href="#s12">Defining Keys</a>
+<li class="i"> <a href="#s16">Attribute Value Constraints</a>
+<li class="i"> <a href="#s17">Named Constraints</a>
+</ul></DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; SQL-DDL &#9826; [0/17]</div> <DIV class='slideCl1    ' id="s1"  >
+<div class='navCl1'> <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s2"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Relational Data Definition</div></td><td align='right'></td></tr></table>
+<p>
+In order to give a relational data model, we need to:
+<ul>
+<li> describe tables
+<li> describe attributes that comprise tables
+<li> describe any constraints on the data
+</ul>
+A <font color='#0000BB'>relation schema</font> defines an individual table
+<ul>
+<li> table name, attribute names, attribute domains, keys, etc.
+</ul>
+A <font color='#0000BB'>database schema</font> is a collection of relation schemas that
+<ul>
+<li> defines the structure the whole database
+<li> additional constraints on the whole database
+<ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; SQL-DDL &#9826; [1/17]</div> <DIV class='slideCl1    ' id="s2"  >
+<div class='navCl1'><a href="#s1"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s3"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Example Relational Schema</div></td><td align='right'></td></tr></table>
+<p>
+So far, we have given relational schemas informally, e.g.
+<p><div align='center'>
+<img alt="[Diagram:Pics/sql/uni-rschema.png]" src="Pics/sql/uni-rschema.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; SQL-DDL &#9826; [2/17]</div> <DIV class='slideCl1    ' id="s3"  >
+<div class='navCl1'><a href="#s2"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s4"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; SQL Data Definition Language</div></td><td align='right'></td></tr></table>
+<p>
+In the example schema above, we provided only
+<ul>
+<li> relation names, attribute names, primary keys, foreign keys
+</ul>
+A usable database needs to provide much more detail
+<p>
+SQL has a rich data definition language (DDL) that can describe
+<ul>
+<li> names of tables
+<li> names and domains for attributes
+<li> various types of constraints <small>(e.g. primary/foreign keys)</small>
+</ul>
+It also provides mechanisms for performance tuning <small>(see later)</small>.
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; SQL-DDL &#9826; [3/17]</div> <DIV class='slideCl1    ' id="s4"  >
+<div class='navCl1'><a href="#s3"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s5"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Defining a Database Schema</div></td><td align='right'></td></tr></table>
+<p>
+Tables (relations) are described using:
+<p><pre>
+CREATE TABLE <i>TableName</i> (
+    <i>attribute<sub>1</sub> &nbsp; domain<sub>1</sub> &nbsp; constraints<sub>1</sub></i>,
+    <i>attribute<sub>2</sub> &nbsp; domain<sub>2</sub> &nbsp; constraints<sub>2</sub></i>,
+    ...
+    <i>table</i>-<i>level constraints</i>, ...
+)
+</pre><p>
+<p>
+This SQL statement ..
+<ul>
+<li> defines the table schema &nbsp; <small>(adds it to database meta-data)</small>
+<li> creates an empty instance of the table &nbsp; <small>(zero tuples)</small>
+</ul>
+Tables are removed via &nbsp;&nbsp; <large><code>DROP TABLE <i>TableName</i>;</code></large>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; SQL-DDL &#9826; [4/17]</div> <DIV class='slideCl1    ' id="s5"  >
+<div class='navCl1'><a href="#s4"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s6"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Defining a Database Schema <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Example: defining the <large><code>Students</code></large> table ...
+<p><pre>
+CREATE TABLE Students (
+    zid     serial,
+    family  varchar(40),
+    given   varchar(40) NOT NULL,
+    d_o_b   date NOT NULL,
+    gender  char(1) CHECK (gender in ('M','F')),
+    degree  integer,
+    PRIMARY KEY (zid),
+    FOREIGN KEY (degree) REFERENCES Degrees(did)
+);
+</pre><p>
+<small>
+Note that there is much more info here than in the relational schema diagram.
+<p>
+A primary key attribute is implicitly defined to be <large><code>UNIQUE</code></large> and <large><code>NOT NULL</code></large>
+</small>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; SQL-DDL &#9826; [5/17]</div> <DIV class='slideCl1    ' id="s6"  >
+<div class='navCl1'><a href="#s5"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s7"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Defining a Database Schema <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Example: alternative definition of the <large><code>Students</code></large> table ...
+<p><pre>
+CREATE DOMAIN GenderType AS
+       char(1) CHECK (value in ('M','F'));
+    
+CREATE TABLE Students (
+    zid     serial PRIMARY KEY,
+            <span class='comment'>-- only works if primary key is one attr</span>
+    family  text,  <span class='comment'>-- no need to worry about max length</span>
+    given   text NOT NULL,
+    d_o_b   date NOT NULL,
+    gender  GenderType,
+    degree  integer REFERENCES Degrees(did)
+);
+</pre><p>
+<small>
+At this stage, prefer to use the long-form declaration of primary and foreign keys
+</small>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; SQL-DDL &#9826; [6/17]</div> <DIV class='slideCl1    ' id="s7"  >
+<div class='navCl1'><a href="#s6"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s8"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Defining a Database Schema <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Example: defining the <large><code>Courses</code></large> table ...
+<p><pre>
+CREATE TABLE Courses (
+    cid    serial,
+    code   char(8) NOT NULL uhs
+                   CHECK (code ~ '[A-Z]{4}[0-9]{4}'),
+    term   char(4) NOT NULL
+                   CHECK (term ~ '[0-9]{2}T[0-3]'),
+    title  text UNIQUE NOT NULL,
+    PRIMARY KEY (cid)
+);
+</pre><p>
+<small>
+Uses non-standard regular expression checking on <large><code>code</code></large> and <large><code>term</code></large>
+<p>
+No two <large><code>Courses</code></large> can have the same title; but not used as primary key
+</small>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; SQL-DDL &#9826; [7/17]</div> <DIV class='slideCl1    ' id="s8"  >
+<div class='navCl1'><a href="#s7"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s9"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Defining a Database Schema <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Example: defining the <large><code>Enrolments</code></large> relationship ...
+<p><pre>
+CREATE TABLE Enrolments (
+    student integer,
+    course  integer,
+    mark    integer CHECK (mark BETWEEN 0 AND 100),
+    grade   GradeType,
+    PRIMARY KEY (student,course),
+    FOREIGN KEY (student)
+                  REFERENCES Students(zid)
+    FOREIGN KEY (course)
+                  REFERENCES Courses(cid)
+);
+</pre><p>
+<small>
+Could not enforce total partcipation constraint if e.g. all courses must have &gt; 0 students
+<p>
+Possible alternative names for foreign keys <large><code>student_id</code></large> and <large><code>course_id</code></large>
+</small>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; SQL-DDL &#9826; [8/17]</div> <DIV class='slideCl1    ' id="s9"  >
+<div class='navCl1'><a href="#s8"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s10"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Data Integrity</div></td><td align='right'></td></tr></table>
+<p>
+<br>
+Defining tables as above affects behaviour of DBMS when changing data
+<p>
+Constraints and types ensure that integrity of data is preserved
+<ul>
+<li> no duplicate keys
+<li> no "dangling references"
+<li> all attributes have valid values
+<li> etc. etc. etc.
+</ul>
+Preserving data integrity is a <i>critical</i>&nbsp; function of a DBMS.
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; SQL-DDL &#9826; [9/17]</div> <DIV class='slideCl1    ' id="s10"  >
+<div class='navCl1'><a href="#s9"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s11"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Another Example Schema</div></td><td align='right'></td></tr></table>
+<p>
+<br>
+Variation on banking schema used elsewhere
+<p><br>
+<p><div align='center'>
+<img alt="[Diagram:Pics/sql/bank-rschema.png]" src="Pics/sql/bank-rschema.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; SQL-DDL &#9826; [10/17]</div> <DIV class='slideCl1    ' id="s11"  >
+<div class='navCl1'><a href="#s10"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s12"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Default Values</div></td><td align='right'></td></tr></table>
+<p>
+Can specify a <large><code>DEFAULT</code></large> value for an attribute
+<ul>
+<li> will be assigned to attribute if no value is supplied during insert
+</ul>
+<b>Example:</b>
+<p><pre style="font-size:90%">
+CREATE TABLE Accounts (
+    acctNo  char(5) PRIMARY KEY,
+    branch  varchar(30) REFERENCES Branches(name)
+                        DEFAULT 'Central',
+    owner   integer REFERENCES Customers(custID),
+    balance float DEFAULT 0.0
+);
+
+INSERT INTO Accounts(acctNo,owner) VALUES ('A-456',645342)
+<span class='comment'>-- produces the tuple</span>
+Accounts('A-456', 'Central', 645342, 0.0)
+</pre><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; SQL-DDL &#9826; [11/17]</div> <DIV class='slideCl1    ' id="s12"  >
+<div class='navCl1'><a href="#s11"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s13"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Defining Keys</div></td><td align='right'></td></tr></table>
+<p>
+Primary keys:
+<ul>
+<li> if PK is one attribute, can define as attribute constraint
+<li> if PK is multiple attributes, must define in table constraints
+<li> PK implies <large><code>NOT NULL</code></large> <large><code>UNIQUE</code></large> for all attributes in key
+</ul>
+Foreign keys:
+<ul>
+<li> if FK is one attribute, can define as attribute constraint
+<li> can omit <large><code>FOREIGN KEY</code></large> keywords in attribute constraint
+<li> if FK has multiple attributes, must define as a single table constraint
+<li> should always specify corresponding PK attribute in FK constraint, e.g
+<p><pre style="font-size:90%">
+<font color="#008800">customer</font> integer
+         FOREIGN KEY REFERENCES Customers(<font color="#008800">customerNo</font>)
+</pre><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; SQL-DDL &#9826; [12/17]</div> <DIV class='slideCl1    ' id="s13"  >
+<div class='navCl1'><a href="#s12"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s14"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Defining Keys <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Defining primary keys assures <font color='#0000BB'>entity integrity</font>
+<ul>
+<li> must give values for all attributes in the primary key
+</ul>
+For example this insertion would fail ...
+<p><pre style="font-size:90%">
+INSERT INTO Enrolments(student,course,mark,grade)
+       VALUES (5123456, NULL, NULL, NULL);
+</pre><p>
+because no <large><code>course</code></large> was specified; but <large><code>mark</code></large> and <large><code>grade</code></large> can be <large><code>NULL</code></large>
+<p>
+Defining primary keys assures <font color='#0000BB'>uniqueness</font>
+<ul>
+<li> cannot insert a tuple which contains an existing PK value
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; SQL-DDL &#9826; [13/17]</div> <DIV class='slideCl1    ' id="s14"  >
+<div class='navCl1'><a href="#s13"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s15"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Defining Keys <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<br>
+Defining foreign keys assures <font color='#0000BB'>referential integrity</font>.
+<p>
+On insertion, cannot add a tuple where FK value does not exist as a PK
+<p>
+For example, this insert would fail ...
+<p><pre style="font-size:90%">
+INSERT INTO Accounts(acctNo, owner, branch, balance)
+            VALUES ('A-123', 765432, 'Nowhere', 5000);
+</pre><p>
+if there is no customer with id <large><code>765432</code></large> or no branch <large><code>Nowhere</code></large>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; SQL-DDL &#9826; [14/17]</div> <DIV class='slideCl1    ' id="s15"  >
+<div class='navCl1'><a href="#s14"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s16"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Defining Keys <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<br>
+On deletion, interesting issues arise, e.g.
+<p>
+<large><code>Accounts.branch</code></large> refers to primary key <large><code>Branches.name</code></large>
+<p>
+If we want to delete a tuple from <large><code>Branches</code></large>, and there are tuples
+in <large><code>Accounts</code></large> that refer to it, we could ...
+<ul>
+<li> <b>reject</b> the deletion <small>(PostgreSQL/Oracle default behaviour)</small>
+<li> <b>set-NULL</b> the foreign key attributes in <large><code>Account</code></large> records
+<li> <b>cascade</b> the deletion and remove <large><code>Account</code></large> records
+</ul>
+SQL allows us to choose a strategy appropriate for the application
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; SQL-DDL &#9826; [15/17]</div> <DIV class='slideCl1    ' id="s16"  >
+<div class='navCl1'><a href="#s15"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s17"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Attribute Value Constraints</div></td><td align='right'></td></tr></table>
+<p>
+<large><code>NOT NULL</code></large> and <large><code>UNIQUE</code></large> are special constraints on attributes.
+<p>
+SQL has a general mechanism for specifying attribute constraints
+<p><pre>
+<i>attrName</i>  <i>type</i>  CHECK ( <i>Condition</i> )
+</pre><p>
+<i>Condition</i> is a boolean expression and can
+involve other attributes, relations and <large><code>SELECT</code></large> queries.
+<p><pre style="font-size:90%">
+CREATE TABLE Example
+(
+   gender char(1)  CHECK (gender IN ('M','F')),
+   Xvalue integer  NOT NULL,
+   Yvalue integer  CHECK (Yvalue > Xvalue),
+   Zvalue float    CHECK (Zvalue >
+                          (SELECT MAX(price)
+                           FROM   Sells)
+                  )
+);
+</pre><p>
+<small>
+(but many RDBMSs (e.g. Oracle and PostgreSQL) don't allow <large><code>SELECT</code></large> in <large><code>CHECK</code></large>)
+</small>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; SQL-DDL &#9826; [16/17]</div> <DIV class='slideCl1    ' id="s17"  >
+<div class='navCl1'><a href="#s16"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>   </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Named Constraints</div></td><td align='right'></td></tr></table>
+<p>
+A constraint in an SQL table definition can (optionally) be named via
+<p><pre>
+CONSTRAINT  <i>constraintName</i>  <i>constraint</i>
+</pre><p>
+Example:
+<p><pre>
+CREATE TABLE Example
+(
+   gender char(1) CONSTRAINT GenderCheck
+                  CHECK (gender IN ('M','F')),
+   Xvalue integer NOT NULL,
+   Yvalue integer CONSTRAINT XYOrder
+                  CHECK (Yvalue > Xvalue)
+);
+</pre><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; SQL-DDL &#9826; [17/17]</div><p><hr><p>
+<span style='font-size:11px;color: grey;'>Produced: 10 Feb 2021</span>
+ <script src='lib/prism.js'></script>   
+ <script src='lib/sg.js'></script>   
+</body>
+</html>

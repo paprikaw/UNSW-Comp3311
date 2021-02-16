@@ -1,0 +1,317 @@
+<html>
+<head>
+<title>Performance Tuning</title>
+<link href='lib/slides.css' rel='stylesheet' type='text/css'>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML" async></script>
+<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js'></script>
+<link href='https://fonts.googleapis.com/css?family=Lato' rel='stylesheet'>
+<link href='lib/prism.css' rel='stylesheet'>
+<script src='lib/sg.js'></script>
+</head>
+<body>
+ <DIV class='slideCl1' id="s0"  >
+<div class='navCl1'><a href="#s1"><span class='nextArrowCl'>>></span></a> </div> <div class='heading'>Performance Tuning</div><p><ul class='indexUl'  style='font-size: 0.7em;'><li class="i"> <a href="#s1">DB Application Performance</a>
+<li class="i"> <a href="#s7">Indexes</a>
+<li class="i"> <a href="#s9">Query Tuning</a>
+<li class="i"> <a href="#s11">PostgreSQL Performance Analysis</a>
+<li class="i"> <a href="#s12">EXPLAIN Examples</a>
+</ul></DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Performance Tuning &#9826; [0/14]</div> <DIV class='slideCl1    ' id="s1"  >
+<div class='navCl1'> <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s2"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; DB Application Performance</div></td><td align='right'></td></tr></table>
+<p>
+In order to make DB applications efficient, it is useful to know:
+<ul>
+<li> what operations on the data does the application require
+<p>
+<small>
+(which queries, updates, inserts and how frequently is each one performed)
+</small>
+<li> how much each implementation will cost
+<p>
+<small>
+(in terms of the amount of data transferred between memory and disk &rArr; time)
+</small>
+</ul>
+and then, "encourage" the DBMS to use the most efficient methods
+<p>
+Achieve by using indexes and avoiding certain SQL query structures
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Performance Tuning &#9826; [1/14]</div> <DIV class='slideCl1    ' id="s2"  >
+<div class='navCl1'><a href="#s1"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s3"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; DB Application Performance <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Application programmer choices that affect query cost:
+<ul>
+<li> how queries are expressed
+<ul>
+<li> generally join is faster than subquery
+<li> especially if subquery is correlated
+<li> filter first, then join <tiny>(avoids large intermediate tables)</tiny>
+<li> avoid applying functions in where/group-by clasues
+</ul>
+<li> creating <font color='#0000BB'>indexes</font> on tables
+<ul>
+<li> index will speed-up filtering based on indexed attributes
+<li> indexes generally only effective for equality, gt/lt
+<li> mainly useful if filtering much more frequent than update
+</ul>
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Performance Tuning &#9826; [2/14]</div> <DIV class='slideCl1    ' id="s3"  >
+<div class='navCl1'><a href="#s2"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s4"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; DB Application Performance <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<br>
+Whatever you do as a DB application programmer
+<ul>
+<li> the DBMS <font color='#0000BB'>query optimiser</font> will transform your query
+<li> attempt to make it execute as efficiently as possible
+</ul>
+You have no control over the optimisation process
+<ul>
+<li> but choices you make can block certain options
+<li> limiting the query optimiser's chance to improve
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Performance Tuning &#9826; [3/14]</div> <DIV class='slideCl1    ' id="s4"  >
+<div class='navCl1'><a href="#s3"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s5"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; DB Application Performance <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Example: query to find sales people earning more than $50K
+<p><pre style="font-size:90%">
+select name from Employee
+where  salary &gt; 50000 and
+       empid in (select empid from Worksin
+                 where  dept = 'Sales')
+</pre><p>
+A query evaluator might use the strategy
+<p><pre style="font-size:90%">
+SalesEmps = (select empid from WorksIn where dept='Sales')
+foreach e in Employee {
+    if (e.empid in SalesEmps && e.salary &gt; 50000)
+        add e to result set
+}
+</pre><p>
+Needs to examine <i>all</i>&nbsp; employees, even if not in Sales
+<p>
+This is not a good expression of the query.
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Performance Tuning &#9826; [4/14]</div> <DIV class='slideCl1    ' id="s5"  >
+<div class='navCl1'><a href="#s4"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s6"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; DB Application Performance <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+A different expression of the same query:
+<p><pre style="font-size:90%">
+select name
+from   Employee join WorksIn using (empid)
+where  Employee.salary &gt; 5000 and
+       WorksIn.dept = 'Sales'
+</pre><p>
+Query evaluator might use the strategy
+<p><pre style="font-size:90%">
+SalesEmps = (select * from WorksIn where dept='Sales')
+foreach e in (Employee join SalesEmps) {
+    if (e.salary &gt; 50000)
+        add e to result set
+}
+</pre><p>
+Only examines Sales employees, and uses a simpler test
+<p>
+This is a good expression of the query.
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Performance Tuning &#9826; [5/14]</div> <DIV class='slideCl1    ' id="s6"  >
+<div class='navCl1'><a href="#s5"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s7"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; DB Application Performance <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+A very poor expression of the query <small>(correlated subquery)</small>:
+<p><pre style="font-size:80%">
+select name from Employee e
+where  salary &gt; 50000 and
+       'Sales' in (select dept from Worksin where empid=e.id)
+</pre><p>
+A query evaluator would be forced to use the strategy:
+<p><pre style="font-size:80%">
+foreach e in Employee {
+    Depts = (select dept from WorksIn where empid=e.empid)
+    if ('Sales' in Depts && e.salary &gt; 50000)
+        add e to result set
+}
+</pre><p>
+Needs to run a query for <i>every</i>&nbsp; employee ...
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Performance Tuning &#9826; [6/14]</div> <DIV class='slideCl1    ' id="s7"  >
+<div class='navCl1'><a href="#s6"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s8"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Indexes</div></td><td align='right'></td></tr></table>
+<p>
+Indexes provide efficient content-based access to tuples.
+<p>
+Can build indexes on any (combination of) attributes.
+<p>
+Definining indexes:
+<p><pre>
+CREATE INDEX <i>name</i> ON <i>table</i> ( <i>attr<sub>1</sub></i>, <i>attr<sub>2</sub></i>, ... )
+</pre><p>
+<i>attr<sub>i</sub></i>&nbsp; can be an arbitrary expression (e.g. <large><code>upper(name)</code></large>).
+<p>
+<large><code>CREATE INDEX</code></large> also allows us to specify
+<ul>
+<li> that the index is on <large><code>UNIQUE</code></large> values
+<li> an access method (<large><code>USING</code></large> btree, hash, ...)
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Performance Tuning &#9826; [7/14]</div> <DIV class='slideCl1    ' id="s8"  >
+<div class='navCl1'><a href="#s7"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s9"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Indexes <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Indexes can significantly improve query costs.
+<p>
+Considerations in applying indexes:
+<ul>
+<li> is an attribute used in frequent/expensive queries? <br>
+	&nbsp; <small>(note that some kinds of queries can be answered from index alone)</small>
+<li> should we create an index on a collection of attributes? <br>
+	&nbsp; <small>(yes, if the collection is used in a frequent/expensive query)</small>
+<li> is the table containing attribute frequently updated?
+<li> should we use B-tree or Hash index?
+<p><pre style="font-size:90%">
+<span class='comment'>-- use hashing for (unique) attributes in equality tests, e.g.</span>
+select * from Employee where <font color="#CC0000">id</font> = 12345
+<span class='comment'>-- use B-tree for attributes in range tests, e.g.</span>
+select * from Employee where <font color="#CC0000">age</font> &gt; 60
+</pre><p>
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Performance Tuning &#9826; [8/14]</div> <DIV class='slideCl1    ' id="s9"  >
+<div class='navCl1'><a href="#s8"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s10"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Query Tuning</div></td><td align='right'></td></tr></table>
+<p>
+Sometimes, a query can be re-phrased to affect performance:
+<ul>
+<li> by helping the optimiser to make use of indexes
+<li> by avoiding unnecessary/expensive operations
+</ul>
+Examples which <i>may</i>&nbsp; prevent optimiser from using indexes:
+<p><pre>
+select name from Employee where <font color="#CC0000">salary</font>/365 &gt; 100
+       <span class='comment'>-- fix by re-phrasing condition to (salary &gt; 36500)</span>
+select name from Employee where <font color="#CC0000">name</font> like '%ith%'
+select name from Employee where <font color="#CC0000">birthday</font> is null
+       <span class='comment'>-- above two are difficult to "fix"</span>
+select name from Employee
+where  dept in (select id from Dept where ...)
+       <span class='comment'>-- fix by using Employee join Dept on (e.dept=d.id)</span>
+</pre><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Performance Tuning &#9826; [9/14]</div> <DIV class='slideCl1    ' id="s10"  >
+<div class='navCl1'><a href="#s9"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s11"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Query Tuning <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Other tricks in query tuning <small>(effectiveness is DBMS-dependent)</small>
+<ul>
+<li> <large><code>select distinct</code></large> typically requires a sort ...<br>
+	 <small>is the <large><code>distinct</code></large> really necessary? (at this stage in the query?)</small>
+<li> if multiple join conditions are available ... <br>
+	<small>choose join attributes that are indexed, avoid joins on strings</small>
+<p><pre style="font-size:90%">
+select ... Employee join Customer on (s.<font color="#0000EE">name</font> = p.<font color="#0000EE">name</font>)
+<span class='comment'>vs</span>
+select ... Employee join Customer on (s.<font color="#CC0000">ssn</font> = p.<font color="#CC0000">ssn</font>)
+</pre><p>
+<li> sometimes <large><code>or</code></large> prevents index from being used ... <br>
+	<small>replace the <large><code>or</code></large> condition by a union of non-<large><code>or</code></large> clauses</small>
+<p><pre style="font-size:90%">
+select name from Employee where Dept=1 or Dept=2
+<span class='comment'>vs</span>
+(select name from Employee where <font color="#CC0000">Dept</font>=1)
+union
+(select name from Employee where <font color="#CC0000">Dept</font>=2)
+</pre><p>
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Performance Tuning &#9826; [10/14]</div> <DIV class='slideCl1    ' id="s11"  >
+<div class='navCl1'><a href="#s10"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s12"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; PostgreSQL Performance Analysis</div></td><td align='right'></td></tr></table>
+<p>
+PostgreSQL provides the <large><font color="#008800"><b><code>explain</code></b></font></large> statement to
+<ul>
+<li> give a representation of the query execution plan
+<li> with information that may help to tune query performance
+</ul>
+Usage:
+<p><pre>
+EXPLAIN [ANALYZE] <i>Query</i>
+</pre><p>
+Without <large><code>ANALYZE</code></large>, <large><code>EXPLAIN</code></large> shows plan with estimated costs.
+<p>
+With <large><code>ANALYZE</code></large>, <large><code>EXPLAIN</code></large> executes query and prints real costs.
+<p>
+<small>
+Note that runtimes may show considerable variation due to buffering.
+<p>
+If simply knowing the runtime is ok, maybe <large><code>\timing</code></large> is good enough
+</small>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Performance Tuning &#9826; [11/14]</div> <DIV class='slideCl1    ' id="s12"  >
+<div class='navCl1'><a href="#s11"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s13"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; EXPLAIN Examples</div></td><td align='right'></td></tr></table>
+<p>
+Note that PostgreSQL builds a query evaluation tree, rather than a linear plan, e.g.
+<p><div align='center'>
+<img alt="[Diagram:Pics/dbms/pg-plan.png]" src="Pics/dbms/pg-plan.png">
+</div><p>
+<large><code>EXPLAIN</code></large> effectively shows a pre-order traversal of the plan tree
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Performance Tuning &#9826; [12/14]</div> <DIV class='slideCl1    ' id="s13"  >
+<div class='navCl1'><a href="#s12"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s14"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; EXPLAIN Examples <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Example: Select on indexed attribute
+<p><pre style="font-size:80%">
+db=# <font color="#008800">explain analyze select * from Students where id=100250;</font>
+                            QUERY PLAN
+------------------------------------------------------------
+ Index Scan using student_pkey on student
+                  (cost=0.00..5.94 rows=1 width=17)
+                  (actual time=3.209..3.212 rows=1 loops=1)
+   Index Cond: (id = 100250)
+ Total runtime: 3.252 ms
+</pre><p>
+Example: Select on non-indexed attribute
+<p><pre style="font-size:80%">
+db=# <font color="#008800">explain analyze select * from Students where stype='local';</font>
+                         QUERY PLAN
+-------------------------------------------------------------
+ Seq Scan on student  (cost=0.00..70.33 rows=18 width=17)
+             (actual time=0.061..7.784 rows=2512 loops=1)
+   Filter: ((stype)::text = 'local'::text)
+ Total runtime: 7.554 ms
+</pre><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Performance Tuning &#9826; [13/14]</div> <DIV class='slideCl1    ' id="s14"  >
+<div class='navCl1'><a href="#s13"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>   </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; EXPLAIN Examples <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Example: Join on a primary key (indexed) attribute
+<p><pre style="font-size:90%">
+db=# <font color="#008800">explain</font>
+db-# <font color="#008800">select s.sid,p.name</font>
+db-# <font color="#008800">from Students s join People p on s.id=p.id;</font>
+
+                        QUERY PLAN
+-------------------------------------------------------
+ Hash Join  (cost=70.33..305.86 rows=3626 width=52)
+   Hash Cond: ("outer".id = "inner".id)
+   -> Seq Scan on people p
+               (cost=0.00..153.01 rows=3701 width=52)
+   -> Hash  (cost=61.26..61.26 rows=3626 width=8)
+       -> Seq Scan on student s
+                   (cost=0.00..61.26 rows=3626 width=8)
+</pre><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Performance Tuning &#9826; [14/14]</div><p><hr><p>
+<span style='font-size:11px;color: grey;'>Produced: 12 Nov 2020</span>
+ <script src='lib/prism.js'></script>   
+ <script src='lib/sg.js'></script>   
+</body>
+</html>

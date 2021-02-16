@@ -1,0 +1,1030 @@
+<html>
+<head>
+<title>COMP3311 Weekly Previews</title>
+<link href='lib/slides.css' rel='stylesheet' type='text/css'>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML" async></script>
+<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js'></script>
+<link href='https://fonts.googleapis.com/css?family=Lato' rel='stylesheet'>
+<link href='lib/prism.css' rel='stylesheet'>
+<script src='lib/sg.js'></script>
+</head>
+<body>
+ <DIV class='slideCl1' id="s0"  >
+<div class='navCl1'><a href="#s1"><span class='nextArrowCl'>>></span></a> </div> <div class='heading'>COMP3311 Weekly Previews</div><p><ul class='indexUl'  style='font-size: 0.7em;'><li class="i"> <a href="#s1">Week 10</a>
+<li class="i"> <a href="#s2">Assessment TODOs</a>
+<li class="i"> <a href="#s3">Final Exam</a>
+<li class="i"> <a href="#s4">Famous DB Nerds #10</a>
+<li class="i"> <a href="#s6">Week 09</a>
+<li class="i"> <a href="#s7">Famous DB Nerds #9</a>
+<li class="i"> <a href="#s8">Assignment 3</a>
+<li class="i"> <a href="#s12">Week 08</a>
+<li class="i"> <a href="#s13">Famous DB Nerds #8</a>
+<li class="i"> <a href="#s15">Week 07</a>
+<li class="i"> <a href="#s16">Famous (DB) Nerds #7</a>
+<li class="i"> <a href="#s18">Week 05</a>
+<li class="i"> <a href="#s19">Famous DB Nerds #6</a>
+<li class="i"> <a href="#s21">MyMyUNSW Database</a>
+<li class="i"> <a href="#s34">Assignment 2</a>
+<li class="i"> <a href="#s35">Week 04</a>
+<li class="i"> <a href="#s36">Famous DB Nerds #5</a>
+<li class="i"> <a href="#s38">Week 03</a>
+<li class="i"> <a href="#s39">Famous DB Nerds #4</a>
+<li class="i"> <a href="#s41">Week 02</a>
+<li class="i"> <a href="#s43">PostgreSQL @ CSE</a>
+<li class="i"> <a href="#s44">Famous DB Nerds #3</a>
+<li class="i"> <a href="#s46">Week 01</a>
+<li class="i"> <a href="#s49">Text References</a>
+<li class="i"> <a href="#s51">Famous DB Nerds #1</a>
+<li class="i"> <a href="#s53">Famous DB Nerds #2</a>
+</ul></DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Weekly Preview &#9826; [0/54]</div> <DIV class='slideCl1    ' id="s1"  >
+<div class='navCl1'> <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s2"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Week 10</div></td><td align='right'></td></tr></table>
+<p>
+<h4>Things to Note ...</h4>
+<ul>
+<li> Assignment 3 due Mon 23 Nov by 3pm
+<li> Quiz 8 (last one!) due Fri 20 Nov by 11:59pm
+<li> Sample Exam out later this week
+<li> MyExperience is open ... <span class="smaller">save it until after you've recovered from Ass3</span>
+</ul>
+<h4>This Week ...</h4>
+<ul>
+<li> Transactions
+	&nbsp; <span class="refs">(EN19, GUW8.6,18.1-3, RG16, KSS15, KBL18,20)</span>
+<li> Course Review and Exam Preview
+</ul>
+<h4>Coming Up ... Exams!</h4>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Weekly Preview &#9826; [1/54]</div> <DIV class='slideCl1    ' id="s2"  >
+<div class='navCl1'><a href="#s1"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s3"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Assessment TODOs</div></td><td align='right'></td></tr></table>
+<p>
+<br>
+Things to look at ...
+<ul>
+<li> Ass1 ... penalties for defaults
+<li> Quiz 5 Q3 ... unexpected quotes in ''
+<li> Quiz 6 Q1 ... use of quotes in dbname=mydb
+<li> Ass2 ... auto-marking and style marking
+<li> Ass3 ... <tt>check</tt> script 
+</ul>
+Want all assessments to be resolved by Mon 30 Nov
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Weekly Preview &#9826; [2/54]</div> <DIV class='slideCl1    ' id="s3"  >
+<div class='navCl1'><a href="#s2"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s4"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Final Exam</div></td><td align='right'></td></tr></table>
+<p>
+Summary:
+<ul>
+<li> Thursday 3 December, 10am AEDT - 10pm AEDT
+<li> Amount of work in exam ~3 hours worth
+<li> Best done on home computer; can be done via <large><code>ssh grieg</code></large>
+<li> Submission via Webcms3 or <large><code>give</code></large>
+<li> Exam paper presented as collection of Web pages
+<li> Also, a collection of answer template files is provided
+<li> Plus a database to answer practical questions
+<li> Exam paper, database and templates can be downloaded
+<li> Using PostgreSQL (incl PLpgSQL) and Python/Psycopg2
+</ul>
+More info available next Sunday (Week 11 "preview")
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Weekly Preview &#9826; [3/54]</div> <DIV class='slideCl1    ' id="s4"  >
+<div class='navCl1'><a href="#s3"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s5"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Famous DB Nerds #10</div></td><td align='right'></td></tr></table>
+<p>
+<div class='center'>
+<small>The next in a series on famous database people ...</small>
+<p><center>
+<img src="NerdPics/jimgray.jpg">
+</div>
+</div>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Weekly Preview &#9826; [4/54]</div> <DIV class='slideCl1    ' id="s5"  >
+<div class='navCl1'><a href="#s4"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s6"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Famous DB Nerds #10 <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<table>
+<tr valign=top>
+<td>
+<span class="nerd">Jim Gray</span>
+<p>
+<img src="NerdPics/jimgray2.jpg">
+</td>
+<td>&nbsp;</td>
+<td>
+<ul>
+<li> Pioneered <font color='#0000BB'>transaction processing</font>
+<li> 1969 PhD from UC Berkeley
+<li> 1970-1995 IBM, Tandem, DEC
+<li> 1995- Microsoft Research Lab
+<li> 1999 Turing Award &nbsp; <small>(for <font color='#0000BB'>tp</font> research)</small>
+<li> Most recent work:
+<ul>
+<li> scientific databases
+<li> sensor networks + databases
+</ul>
+<li> Disappeared at sea, 27 Jan 2007
+</ul>
+</td>
+</tr>
+</table>
+</div>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Weekly Preview &#9826; [5/54]</div> <DIV class='slideCl1    ' id="s6"  >
+<div class='navCl1'><a href="#s5"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s7"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Week 09</div></td><td align='right'></td></tr></table>
+<p>
+<h4>Things to Note ...</h4>
+<ul>
+<li> Quiz 7 ... ends Friday 7 November 11:59pm
+<li> Assignment 3 ... discussed below, due Mon 23 Nov
+</ul>
+<h4>This Week's Topics ...</h4>
+<ul>
+<li> Relational Algebra
+	&nbsp; <span class="refs">(EN7.4, GUW5, KSS3.2, KBL5.1)</span>
+<li> Query Evaluation
+	&nbsp; <span class="refs">(EN13, GUW11, KSS11, KBL9)</span>
+</ul>
+<h4>Coming Up ... </h4>
+<ul>
+<li> Transactions
+	&nbsp; <span class="refs">(EN19, GUW8.6,18.1-3, KSS15, KBL18,20)</span>
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Weekly Preview &#9826; [6/54]</div> <DIV class='slideCl1    ' id="s7"  >
+<div class='navCl1'><a href="#s6"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s8"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Famous DB Nerds #9</div></td><td align='right'></td></tr></table>
+<p>
+<table>
+<tr valign=top>
+<td>
+<span class="nerd">Rudolf&nbsp;Bayer</span>
+<br>
+<img src="NerdPics/bayer.jpg">
+<p>
+<span class="nerd">Ed&nbsp;McCreight</span>
+<br>
+<img src="NerdPics/mccreight.jpg">
+</td>
+<td>&nbsp;</td>
+<td>
+<ul>
+<li> Together, they invented the <font color='#0000BB'>B-tree</font> (1972)
+<li> <b>Bayer</b>
+<ul>
+<li> Extensive database research career
+<ul>
+<li> access methods (B-tree, UB-tree, ...)
+<li> deductive and XML databases
+<li> query processing in digital libraries
+</ul>
+<li> <nobr>Professor, Technische Universitat Munchen</nobr>
+</ul>
+<li> <b>McCreight</b>
+<ul>
+<li> Carnegie-Mellon University
+<li> Worked for Xerox PARC, Adobe Systems
+<li> Retired to Zurich
+</ul>
+</ul>
+</td>
+</tr>
+</table>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Weekly Preview &#9826; [7/54]</div> <DIV class='slideCl1    ' id="s8"  >
+<div class='navCl1'><a href="#s7"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s9"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Assignment 3</div></td><td align='right'></td></tr></table>
+<p>
+Goal: write Python scripts to display data from IMDB
+<ul>
+<li> IMDB = Internet Movie Database
+<li> access database via Psycopg2 module
+</ul>
+Scripts are
+<ul>
+<li> <tt>best</tt> ... list best movies
+<li> <tt>rels</tt> ... show world releases for a Movie
+<li> <tt>minfo</tt> ... show info+cast+crew for a Movie
+<li> <tt>bio</tt> ... show biography/filmography of a Name
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Weekly Preview &#9826; [8/54]</div> <DIV class='slideCl1    ' id="s9"  >
+<div class='navCl1'><a href="#s8"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s10"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Assignment 3 <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Full IMDB is large (5GB), so we use a cut-down version
+<ul>
+<li> no TV shows, games, short films, just movies
+<li> only movies since 1950 and with good ratings
+</ul>
+Some IMDB terminology
+<ul>
+<li> <tt>Names</tt> = people/animals/CG involved in movies
+<li> <tt>Aliases</tt> = releases of movies in different countries
+<li> <tt>Principals</tt> = important Names in a movie
+<li> <tt>Acting_roles</tt> = what characters an actor plays
+<li> <tt>Crew_roles</tt> = what job a crew member does
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Weekly Preview &#9826; [9/54]</div> <DIV class='slideCl1    ' id="s10"  >
+<div class='navCl1'><a href="#s9"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s11"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Assignment 3 <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Overview of database design (minimal attributes)
+<br>
+<p><div align='center'>
+<img alt="[Diagram:Pics/ass3/imdb.png]" src="Pics/ass3/imdb.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Weekly Preview &#9826; [10/54]</div> <DIV class='slideCl1    ' id="s11"  >
+<div class='navCl1'><a href="#s10"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s12"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Assignment 3 <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Approximate database size
+<p><pre>
+imdb=# select * from dbpop();
+  tablename   | ntuples 
+--------------+---------
+ acting_roles |  107310
+ aliases      |   25922
+ crew_roles   |   83863
+ movie_genres |   57633
+ movies       |   26058
+ names        |  111430
+ principals   |  254394
+(7 rows)
+</pre><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Weekly Preview &#9826; [11/54]</div> <DIV class='slideCl1    ' id="s12"  >
+<div class='navCl1'><a href="#s11"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s13"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Week 08</div></td><td align='right'></td></tr></table>
+<p>
+<h4>Things to Note ...</h4>
+<ul>
+<li> Quiz 6 ... ends Friday 6 November 11:59pm
+<li> Assignment 3 ... out this week, due Mon 23 Nov
+</ul>
+<h4>This Week's Topics ...</h4>
+<ul>
+<li> Relational Design Theory
+        &nbsp; <span class="refs">(EN10, GUW3.4-6, KSS3, KBL6)</span>
+</ul>
+<h4>Coming Up ... </h4>
+<ul>
+<li> Relational Algebra
+        &nbsp; <span class="refs">(EN7.4, GUW5, KSS3.2, KBL5.1)</span>
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Weekly Preview &#9826; [12/54]</div> <DIV class='slideCl1    ' id="s13"  >
+<div class='navCl1'><a href="#s12"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s14"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Famous DB Nerds #8</div></td><td align='right'></td></tr></table>
+<p>
+<div class='center'>
+<small>The next in a series on famous database people ...</small>
+<p><center>
+<img src="NerdPics/ullman5.jpg">
+</div>
+</div>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Weekly Preview &#9826; [13/54]</div> <DIV class='slideCl1    ' id="s14"  >
+<div class='navCl1'><a href="#s13"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s15"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Famous DB Nerds #8 <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<table>
+<tr valign=top>
+<td>
+<span class="nerd">Jeff Ullman</span>
+<p>
+<img src="NerdPics/ullman.gif"> 
+</td>
+<td>&nbsp;</td>
+<td>
+<ul>
+<li> DB Professor at Stanford U <small>(1980...)</small>
+<li> Very well-known database researcher
+<li> Published over 200 articles + 10 textbooks <br>
+	<small>(DB, theory, data-structs, compilers, ...)</small>
+<li> Research areas include:
+<ul>
+<li> deductive databases (NAIL)
+<li> information itegration (TSIMMIS)
+<li> information extraction (MIDAS)
+</ul>
+<li> PhD supervisor of Sergey Brin, Larry Page
+</ul>
+</td>
+</tr>
+</table>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Weekly Preview &#9826; [14/54]</div> <DIV class='slideCl1    ' id="s15"  >
+<div class='navCl1'><a href="#s14"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s16"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Week 07</div></td><td align='right'></td></tr></table>
+<p>
+<h4>Things to Note ...</h4>
+<ul>
+<li> Quiz 5 ... ends Friday 30 October 11:59pm
+<li> Assignment 2 ... ends Monday 2 November 3:00pm
+</ul>
+<h4>This Week's Topics ...</h4>
+<ul>
+<li> Programming with Databases
+        &nbsp; <span class="refs">(EN10, GUWx, KSSx, KBLx)</span>
+<li> Python, Psycopg2
+        &nbsp; <span class="refs">(python.org, psycopg.org)</span>
+</ul>
+<h4>Coming Up ... </h4>
+<ul>
+<li> Relational Design Theory
+        &nbsp; <span class="refs">(EN10, GUW3.4-6, KSS3, KBL6)</span>
+<li> Relational Algebra
+        &nbsp; <span class="refs">(EN7.4, GUW5, KSS3.2, KBL5.1)</span>
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Weekly Preview &#9826; [15/54]</div> <DIV class='slideCl1    ' id="s16"  >
+<div class='navCl1'><a href="#s15"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s17"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Famous (DB) Nerds #7</div></td><td align='right'></td></tr></table>
+<p>
+<div class='center'>
+<small>The next in a series on famous computing people ...</small>
+<p><center>
+<img src="NerdPics/Guido1.jpg">
+</div>
+</div>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Weekly Preview &#9826; [16/54]</div> <DIV class='slideCl1    ' id="s17"  >
+<div class='navCl1'><a href="#s16"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s18"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Famous (DB) Nerds #7 <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<table>
+<tr valign=top>
+<td>
+<span class="nerd"><nobr>Guido van Rossum</nobr></span>
+<p>
+<img src="NerdPics/Guido2.jpg">
+</td>
+<td>&nbsp;&nbsp;&nbsp;</td>
+<td>
+<ul>
+<li> Inventor of Python
+<li> Masters in Maths and CompSci 1982 <br>
+	<small>(University of Amsterdam)</small>
+<li> Python BDFL 1990-2018 <br>
+	<small>(Benevolent Dictator for Life)</small>
+<li> Zope 2000-2003
+<li> Google 2005-2012
+<li> Dropbox 2013-2019
+<li> Now retired
+</ul>
+</td>
+</tr>
+</table>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Weekly Preview &#9826; [17/54]</div> <DIV class='slideCl1    ' id="s18"  >
+<div class='navCl1'><a href="#s17"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s19"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Week 05</div></td><td align='right'></td></tr></table>
+<p>
+<h4>Things to Note ...</h4>
+<ul>
+<li> Quiz 4 ... ends Friday 16 October 11:59pm
+<li> Assignment 2 ... database available Real Soon
+<li> Added Documentation page (under Coursework)
+</ul>
+<h4>This Week's Topics ...</h4>
+<ul>
+<li> PLpgSQL
+        <span class="refs">(PostgreSQL Manual, Chapter 43)</span>
+<li> Aggregates
+        <span class="refs">(PostgreSQL Manual, CREATE AGGREGATE)</span>
+<li> Constraints and Triggers
+        <span class="refs">(EN8.6, GUW7.4, RG5.7-8, KSS6.3-4)</span>
+</ul>
+<h4>Coming Up ... </h4>
+<ul>
+<li> Interface between DBMSs and - Programming Languages 
+<li> Python and psycopg2
+	<span class="refs">online documentation e.g. docs.python.org</span>
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Weekly Preview &#9826; [18/54]</div> <DIV class='slideCl1    ' id="s19"  >
+<div class='navCl1'><a href="#s18"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s20"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Famous DB Nerds #6</div></td><td align='right'></td></tr></table>
+<p>
+<div class='center'>
+<small>The next in a series on famous database people ...</small>
+<p>
+<div align="center">
+<img src="NerdPics/selinger1.jpg">
+</div>
+</div>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Weekly Preview &#9826; [19/54]</div> <DIV class='slideCl1    ' id="s20"  >
+<div class='navCl1'><a href="#s19"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s21"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Famous DB Nerds #6 <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<table>
+<tr valign=top>
+<td>
+<b><font color="#000099">Patricia Selinger</font></b>
+<p>
+<img src="NerdPics/selinger2.jpg"></td>
+<td>&nbsp;</td>
+<td>
+<ul>
+<li> IBM San Jose Research Centre
+<li> Part of System R Team
+<li> Cost-based query optimisation
+<li> Awards:
+<ul>
+<li> IBM Research Fellowship
+<li> ACM Innovations Award
+</ul>
+<li> Director of DB Technology Institute <br>
+	at IBM Almaden Research Centre
+</ul>
+</td>
+</tr>
+</table>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Weekly Preview &#9826; [20/54]</div> <DIV class='slideCl1    ' id="s21"  >
+<div class='navCl1'><a href="#s20"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s22"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; MyMyUNSW Database</div></td><td align='right'></td></tr></table>
+<p>
+<br>
+Database for Assignment 2:
+<ul>
+<li> UNSW (academic) information system &nbsp;<small>(e.g. students, courses, ...)</small>
+</ul>
+This domain is useful because ...
+<ul>
+<li> you're already familiar with it <small>(or should be)</small>
+</ul>
+This is needed because the current UNSW system
+<ul>
+<li> cost a large amount of money ($80M+)
+<li> could be better ... e.g. progression checks
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Weekly Preview &#9826; [21/54]</div> <DIV class='slideCl1    ' id="s22"  >
+<div class='navCl1'><a href="#s21"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s23"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; MyMyUNSW Database <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+UNSW's existing system is based on PeopleSoft &amp; implements:
+<ul>
+<li> <font color='#0000BB'>academic information</font>, human resources, accounting
+</ul>
+MyUNSW provides a web interface to Peoplesoft <small>(and others)</small>
+<p>
+PeopleSoft is an enterprise management system comprising:
+<ul>
+<li> large relational database schema &nbsp;<small>(Oracle on Solaris)</small>
+<li> application logic wrapped around schema
+<li> VB-based GUI for accessing data and operations
+</ul>
+Educational version (CS = Campus Solutions) designed for North America.
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Weekly Preview &#9826; [22/54]</div> <DIV class='slideCl1    ' id="s23"  >
+<div class='navCl1'><a href="#s22"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s24"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; MyMyUNSW Database <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+MyUNSW/PeopleSoft (academic) currently implements ...
+<p>
+<ul>
+<li> People: <small>staff, students; UNSWid, name, address, office, ...</small>
+<li> Subjects: <small>code <span style="font-size:80%">(e.g. COMP3311)</span>, title, UoC, (syllabus), pre-reqs, ...</small>
+<li> Courses: <small>session, LIC, quota, ...</small>
+<li> Classes: <small>course, type (e.g. lec/tute), day, time, location, ...</small>
+<li> Course Enrolments: <small>student, course, mark, grade, comment, ...</small>
+<li> Class Enrolments:  <small>student, class, ...</small>
+<li> Program/Stream Enrolments: <small>student, program, stage, ...</small>
+</ul>
+We have designed a replacement DB schema for this: MyMyUNSW
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Weekly Preview &#9826; [23/54]</div> <DIV class='slideCl1    ' id="s24"  >
+<div class='navCl1'><a href="#s23"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s25"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; MyMyUNSW Database <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<br>
+We give an overview of the whole database now.
+<p>
+Some abuses/modifications of standard UNSW terminology:
+<ul>
+<li> Subject = course description (code, uoc, syllabus, etc.)
+<li> Course = course offering (subject, semester, teachers, etc.)
+<li> Stream = requirements for majors/minors (Plans, Specialisations)
+<li> Program = requirements leading to a degree
+</ul>
+<b>Warning:</b> the following ER diagrams approximate the full schema
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Weekly Preview &#9826; [24/54]</div> <DIV class='slideCl1    ' id="s25"  >
+<div class='navCl1'><a href="#s24"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s26"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; MyMyUNSW Database <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<p>
+<p><div align='center'>
+<img alt="[Diagram:Pics/mymyunsw/person+course.png]" src="Pics/mymyunsw/person+course.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Weekly Preview &#9826; [25/54]</div> <DIV class='slideCl1    ' id="s26"  >
+<div class='navCl1'><a href="#s25"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s27"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; MyMyUNSW Database <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<p>
+<p><div align='center'>
+<img alt="[Diagram:Pics/mymyunsw/user-roles.png]" src="Pics/mymyunsw/user-roles.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Weekly Preview &#9826; [26/54]</div> <DIV class='slideCl1    ' id="s27"  >
+<div class='navCl1'><a href="#s26"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s28"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; MyMyUNSW Database <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<p>
+<p><div align='center'>
+<img alt="[Diagram:Pics/mymyunsw/academic-objects.png]" src="Pics/mymyunsw/academic-objects.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Weekly Preview &#9826; [27/54]</div> <DIV class='slideCl1    ' id="s28"  >
+<div class='navCl1'><a href="#s27"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s29"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; MyMyUNSW Database <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<p>
+<p><div align='center'>
+<img alt="[Diagram:Pics/mymyunsw/prog+stream-relns.png]" src="Pics/mymyunsw/prog+stream-relns.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Weekly Preview &#9826; [28/54]</div> <DIV class='slideCl1    ' id="s29"  >
+<div class='navCl1'><a href="#s28"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s30"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; MyMyUNSW Database <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<p>
+<p><div align='center'>
+<img alt="[Diagram:Pics/mymyunsw/enrolments.png]" src="Pics/mymyunsw/enrolments.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Weekly Preview &#9826; [29/54]</div> <DIV class='slideCl1    ' id="s30"  >
+<div class='navCl1'><a href="#s29"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s31"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; MyMyUNSW Database <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<br>
+<p><div align='center'>
+<img alt="[Diagram:Pics/mymyunsw/course-enrolment.png]" src="Pics/mymyunsw/course-enrolment.png">
+</div><p>
+<p>
+<br>
+Note that grade is not directly determined by mark e.g. 55UF, 48PC
+<p>
+Evaluation is a very simple implementation of MyExperience ...
+</small>
+</div>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Weekly Preview &#9826; [30/54]</div> <DIV class='slideCl1    ' id="s31"  >
+<div class='navCl1'><a href="#s30"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s32"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; MyMyUNSW Database <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<p>
+<p><div align='center'>
+<img alt="[Diagram:Pics/mymyunsw/requirements.png]" src="Pics/mymyunsw/requirements.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Weekly Preview &#9826; [31/54]</div> <DIV class='slideCl1    ' id="s32"  >
+<div class='navCl1'><a href="#s31"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s33"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; MyMyUNSW Database <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<p><div align='center'>
+<img alt="[Diagram:Pics/mymyunsw/academic-object-groups.png]" src="Pics/mymyunsw/academic-object-groups.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Weekly Preview &#9826; [32/54]</div> <DIV class='slideCl1    ' id="s33"  >
+<div class='navCl1'><a href="#s32"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s34"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; MyMyUNSW Database <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<p>
+<p><div align='center'>
+<img alt="[Diagram:Pics/mymyunsw/variations.png]" src="Pics/mymyunsw/variations.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Weekly Preview &#9826; [33/54]</div> <DIV class='slideCl1    ' id="s34"  >
+<div class='navCl1'><a href="#s33"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s35"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Assignment 2</div></td><td align='right'></td></tr></table>
+<p>
+We give you ...
+<ul>
+<li> complete ER diagrams and SQL schema
+<li> a database instance using above schema (old-ish)
+<li> a bunch of queries to answer, functions to write
+<li> a script to check whether your views/functions work
+</ul>
+And then ...
+<ul>
+<li> a new database instance using the above schema
+<li> a script to check whether your views/functions work
+</ul>
+Detailed data focuses on CSE courses, streams, programs
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Weekly Preview &#9826; [34/54]</div> <DIV class='slideCl1    ' id="s35"  >
+<div class='navCl1'><a href="#s34"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s36"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Week 04</div></td><td align='right'></td></tr></table>
+<p>
+<h4>Things to Note ...</h4>
+<ul>
+<li> Quiz 3 ... ends Friday 9 October 11:59pm
+<li> Assignment 1 ... ends Sunday 11 October 11:59pm
+<li> Quiz and Tute solutions for previous week out on Monday
+</ul>
+<h4>This Week's Topics ...</h4>
+<ul>
+<li> More Queries in SQL
+     <span class='refs'>(EN7.2-5, GUW6.1-5, RG5.1-6, KSS4.1-10, KBL5.2)</span>
+<li> Stored Procedures
+        <span class='refs'>(EN10.5, GUW8.2, RG6.5, KSS9.6)</span>
+<li> PLpgSQL
+        <span class="refs">(PostgreSQL Manual, Chapter 43)</span>
+</ul>
+<h4>Coming Up ... </h4>
+<ul>
+<li> Aggregates
+        <span class="refs">(PostgreSQL Manual, CREATE AGGREGATE)</span>
+<li> Assertions and Triggers
+        <span class="refs">(EN8.6, GUW7.4, RG5.7-8, KSS6.3-4)</span>
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Weekly Preview &#9826; [35/54]</div> <DIV class='slideCl1    ' id="s36"  >
+<div class='navCl1'><a href="#s35"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s37"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Famous DB Nerds #5</div></td><td align='right'></td></tr></table>
+<p>
+<p>
+<small>The next in a series on famous database people ...</small>
+<p>
+<div class='center'>
+<img align="center" src="NerdPics/lindsay3.jpg">
+</div>
+<p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Weekly Preview &#9826; [36/54]</div> <DIV class='slideCl1    ' id="s37"  >
+<div class='navCl1'><a href="#s36"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s38"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Famous DB Nerds #5 <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<table>
+<tr valign=top>
+<td>
+<span class="nerd">Bruce Lindsay</span>
+<p>
+<img src="NerdPics/lindsay4.jpg"></td>
+<td>
+<ul>
+<li> IBM Almaden Research Centre
+<li> Part of System R Team
+<ul>
+<li> buffer pool manager, ...
+</ul>
+<li> Since System R:
+<ul>
+<li> distributed databases (R*)
+<li> transactions/concurrency control
+<li> query optimisation
+<li> composite objects in RDBMS
+<li> web caching
+</ul>
+<li> IBM Research Fellow
+</ul>
+</td>
+</tr>
+</table>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Weekly Preview &#9826; [37/54]</div> <DIV class='slideCl1    ' id="s38"  >
+<div class='navCl1'><a href="#s37"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s39"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Week 03</div></td><td align='right'></td></tr></table>
+<p>
+<h4>Things to Note ...</h4>
+<ul>
+<li> Quiz 2 ... ends Friday 2 October 11:59pm
+<li> Assignment 1 ... ends Sunday 11 October 11:59pm
+<li> Quiz and Tute solutions for previous week out on Monday
+</ul>
+<h4>This Week's Topics ...</h4>
+<ul>
+<li> Managing data in SQL
+        <span class='refs'>(EN8.6,9, GUW6.5, RG3.1, KSS3.10, KBL5.3)</span>
+<li> Queries in SQL
+     <span class='refs'>(EN7.2-5, GUW6.1-5, RG5.1-6, KSS4.1-10, KBL5.2)</span>
+</ul>
+<h4>Coming Up ... </h4>
+<ul>
+<li> Stored Procedures
+        <span class='refs'>(EN10.5, GUW8.2, RG6.5, KSS9.6)</span>
+<li> PLpgSQL
+        <span class="refs">(PostgreSQL Manual, Chapter 43)</span>
+<ul>
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Weekly Preview &#9826; [38/54]</div> <DIV class='slideCl1    ' id="s39"  >
+<div class='navCl1'><a href="#s38"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s40"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Famous DB Nerds #4</div></td><td align='right'></td></tr></table>
+<p>
+<div class='center'>
+<small>The next in a series on famous database people ...</small>
+<p><center><img valign=top src="NerdPics/mehl.jpg"> &nbsp; <img valign=top src="NerdPics/lorie.jpg"></center><p>
+</div>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Weekly Preview &#9826; [39/54]</div> <DIV class='slideCl1    ' id="s40"  >
+<div class='navCl1'><a href="#s39"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s41"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Famous DB Nerds #4 <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<table>
+<tr valign=top cellspacing=10>
+<td>
+<span class="nerd">Jim Mehl</span>
+<p>
+<img src="NerdPics/mehl1.jpg">
+</td>
+<td> &nbsp;&nbsp; </td>
+<td>
+<span class="nerd">Ray Lorie</span>
+<p>
+<img src="NerdPics/lorie1.jpg">
+</td>
+<td> &nbsp;&nbsp;&nbsp; </td>
+<td>
+<ul>
+<li> IBM San Jose Research Centre
+<li> Part of System R Team
+<li> Lorie: Design of SQL <br>
+        <small>(along with Don Chamberlin)</small>
+<li> Mehl: First SQL Parser
+</ul>
+</td>
+</tr>
+</table>
+<p>
+SQL parser <small>(for the really keen)</small>:
+<ul>
+<li> <i>.../PostgreSQL/Source/Code</i>/src/backend/parser/
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Weekly Preview &#9826; [40/54]</div> <DIV class='slideCl1    ' id="s41"  >
+<div class='navCl1'><a href="#s40"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s42"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Week 02</div></td><td align='right'></td></tr></table>
+<p>
+<h4>Things to Note ...</h4>
+<ul>
+<li> Quiz 1 ... ends Friday 25 September 11:59pm
+<li> Assignment 1 ... ends Sunday 11 October 11:59pm
+</ul>
+<br>
+<h4>This Week's Topics ...</h4>
+<ul>
+<li> Data definition in SQL
+    <span class='refs'>(EN8.1-2, GUW6.6, RG3.1-3, KSS4.11, KBL3.3)</span>
+<li> ER-to-SQL Mapping
+    <span class='refs'>(EN9.1, GUW3.2, RG3.5, KSS2.9, KBL4.5)</span>
+<li> Managing data in SQL
+        <span class='refs'>(EN8.6,9, GUW6.5, RG3.1, KSS3.10, KBL5.3)</span>
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Weekly Preview &#9826; [41/54]</div> <DIV class='slideCl1    ' id="s42"  >
+<div class='navCl1'><a href="#s41"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s43"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Week 02 <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<h4>Tutorials ...</h4>
+<ul>
+<li> meet your tutor and fellow tutees
+<li> ER, Relational, ER&rightarrow;Rel mapping
+</ul>
+<br>
+<h4>Prac Work ...</h4>
+<ul>
+<li> Install a PostgreSQL server ASAP 
+<li> Prac 02 explains how to do it on CSE servers
+<li> For home installation, Google "install postgresql"
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Weekly Preview &#9826; [42/54]</div> <DIV class='slideCl1    ' id="s43"  >
+<div class='navCl1'><a href="#s42"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s44"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; PostgreSQL @ CSE</div></td><td align='right'></td></tr></table>
+<p>
+<br>
+How it's set up ... <small>(details in Prac 02)</small> ...
+<ul>
+<li> each student gets a directory <large><code>/srvr/${USER}/</code></large> on Grieg
+<li> create this directory by running "<large><code>priv srvr</code></large>" once on Grieg
+<li> "<large><code>pginit</code></large>" command creates directories and files for PG server
+<li> including the <large><code>env</code></large> script to set your environment to run a PG server
+<li> after "<large><code>source env</code></large>", &nbsp;"<large><code>pg 1</code></large>" starts the server, &nbsp;"<large><code>pg 0</code></large>" stops it
+<li> on Grieg, PG server runs in &nbsp;<large><code>/srvr/${USER}/pgsql/</code></large>
+<li> can also run PostgreSQL server on most CSE lab machines (in &nbsp;<large><code>/tmp</code></large>)
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Weekly Preview &#9826; [43/54]</div> <DIV class='slideCl1    ' id="s44"  >
+<div class='navCl1'><a href="#s43"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s45"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Famous DB Nerds #3</div></td><td align='right'></td></tr></table>
+<p>
+<div class='center'>
+<small>The next in a series on famous database people ...</small>
+<p><center><img src="NerdPics/chamberlin.gif"></center><p>
+</div>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Weekly Preview &#9826; [44/54]</div> <DIV class='slideCl1    ' id="s45"  >
+<div class='navCl1'><a href="#s44"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s46"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Famous DB Nerds #3 <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<table>
+<tr valign=top>
+<td>
+<span class="nerd">Don Chamberlin</span>
+<p>
+<img src="NerdPics/don.chamberlin.jpg"></td>
+<td>&nbsp;&nbsp;&nbsp;</td>
+<td>
+<ul>
+<li> IBM Almaden Research Lab
+<li> Member of System R team
+<li> Designed SQL <small>(with Ray Boyce) (1975)</small>
+<li> Worked on DB2 <small>(1980's..1990's)</small>
+<li> Query language for XML DBMSs <small>(QUILT, XQuery) (2005)</small>
+<li> Couchbase technical advisor <small>(2015..)</small>
+<li> ACM Fellow, ACM Software Systems Award
+</ul>
+</td>
+</tr>
+</table>
+<p>
+<div class='center'>
+System R <small>(1975)</small> = the original prototype relational DBMS
+</div>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Weekly Preview &#9826; [45/54]</div> <DIV class='slideCl1    ' id="s46"  >
+<div class='navCl1'><a href="#s45"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s47"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Week 01</div></td><td align='right'></td></tr></table>
+<p>
+<h4>Things to Note ...</h4>
+<ul>
+<li> Important notices appear here ...
+<ul>
+<li> <font color="#777777">e.g. Assignment 3 Spec released tomorrow</font>
+<li> <font color="#777777">e.g. Quiz 5 out now ... due Friday</font>
+</ul>
+<li> Not officially enrolled? Sort it out Real Soon
+<li> Dropping the course? Send me email to let me know
+<li> ELS students ... send me your advice ASAP
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Weekly Preview &#9826; [46/54]</div> <DIV class='slideCl1    ' id="s47"  >
+<div class='navCl1'><a href="#s46"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s48"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Week 01 <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Sources of content ...
+<ul>
+<li> videos and slides ... follow course syllabus exactly
+<li> course notes ... more details, plus non-examinable stuff
+<li> textbooks ... full details on most course topics
+<li> documentation ... PostgreSQL, SQLite, Psycopg2
+</ul>
+Activities ...
+<ul>
+<li> problem-solving sessions ... reinforce topic videos <span class="smaller">(on BBC)</span>
+<li> tutorials ... reinforce topics from previous week <span class="smaller">(on BBC)</span>
+<li> weekly quizzes ... review topics from previous week <span class="smaller">(on Webcms3)</span>
+<li> prac exercises ... build skills for assignments <span class="smaller">(on Grieg or own laptop)</span>
+<li> assignments ... solve non-trivial DB problems <span class="smaller">(on Grieg or own laptop)</span>
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Weekly Preview &#9826; [47/54]</div> <DIV class='slideCl1    ' id="s48"  >
+<div class='navCl1'><a href="#s47"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s49"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Week 01 <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<h4>This Week's Topics ...</h4>
+<ul>
+<li> Data Modelling
+<li> ER Data Model
+        &nbsp; <span class='refs'>(EN3,4, GUW2, KSS2, KBL4.1-4)</span>
+<li> Relational Data Model
+        &nbsp; <span class='refs'>(EN7, GUW3, KSS3, KBL3.2)</span>
+<li> ER-to-relational Mapping
+        &nbsp; <span class='refs'>(EN9.1, GUW3.2, KSS2.9, KBL4.5)</span>
+</ul>
+<h4>Upcoming Topics ...</h4>
+<ul>
+<li> SQL Data Definition Language
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Weekly Preview &#9826; [48/54]</div> <DIV class='slideCl1    ' id="s49"  >
+<div class='navCl1'><a href="#s48"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s50"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Text References</div></td><td align='right'></td></tr></table>
+<p>
+References to material in texts uses format:
+<ul>
+<li>
+<font color="#0000EE">Book</font><font color="#008800">Chapter</font>.<font color="#0000EE">Section</font>....
+&nbsp; <small>(e.g. <font color="#0000EE">EN</font><font color="#008800">2.</font><font color="#0000EE">1.1</font>)</small>
+</ul>
+<p>
+Books are denoted by:
+<ul>
+<li> <font color="#0000EE">EN</font> = Elmasir/Navathe (4th ed)
+<li> <font color="#0000EE">GUW</font> = Garcia-Molina/Ullman/Widom (1st ed)
+<li> <font color="#0000EE">KSS</font> = Silberschatz/Korth/Sudarshan (4th ed)
+<li> <font color="#0000EE">KBL</font> = Kifer/Bernstein/Lewis (2nd ed)
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Weekly Preview &#9826; [49/54]</div> <DIV class='slideCl1    ' id="s50"  >
+<div class='navCl1'><a href="#s49"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s51"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Text References <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<h4>Tutorials ...</h4>
+<ul>
+<li> No tutes this week
+</ul>
+<h4>Prac Work ...</h4>
+<ul>
+<li> Play with SQLite ... be writing SQL in 5 mins
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Weekly Preview &#9826; [50/54]</div> <DIV class='slideCl1    ' id="s51"  >
+<div class='navCl1'><a href="#s50"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s52"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Famous DB Nerds #1</div></td><td align='right'></td></tr></table>
+<p>
+<div class='center'>
+<small>The first in a series on famous database people ...</small>
+<p><center>
+<img src="NerdPics/larryellison.jpg">
+</div>
+</div>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Weekly Preview &#9826; [51/54]</div> <DIV class='slideCl1    ' id="s52"  >
+<div class='navCl1'><a href="#s51"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s53"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Famous DB Nerds #1 <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<table>
+<tr valign=top>
+<td>
+<span class="nerd">Larry Ellison</span>
+<p>
+<img src="NerdPics/larryellison2.jpg">
+</td>
+<td>&nbsp;&nbsp;&nbsp;</td>
+<td>
+<ul>
+<li> CEO of Oracle Corporation
+<ul>
+<li> Founded in 1977
+<li> First product 1979
+<li> Now, world's #1 DB supplier <br>
+	<small>(also acquired: Java, Peoplesoft, MySQL)</small>
+</ul>
+<li> Currently worth ~$30 billion <small>(was $50B)</small>
+<li> Eccentric, opinionated, flamboyant
+</ul>
+</td>
+</tr>
+</table>
+<p>
+Old Silicon Valley Joke:
+<p>
+<b><font color="#CC0000">Q:</font></b> What's the difference between God and Larry Ellison?
+<p><br><p>
+<b><font color="#CC0000">A:</font></b> God doesn't think he's Larry Ellison.
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Weekly Preview &#9826; [52/54]</div> <DIV class='slideCl1    ' id="s53"  >
+<div class='navCl1'><a href="#s52"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s54"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Famous DB Nerds #2</div></td><td align='right'></td></tr></table>
+<p>
+<div class='center'>
+<small>The next in a series on famous database people ...</small>
+<p><center><img src="NerdPics/peterchen.jpg"></center><p>
+</div>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Weekly Preview &#9826; [53/54]</div> <DIV class='slideCl1    ' id="s54"  >
+<div class='navCl1'><a href="#s53"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>   </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Famous DB Nerds #2 <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<table>
+<tr valign=top>
+<td>
+<span class="nerd">Peter Chen</span>
+<p>
+<img src="NerdPics/peterchen1.jpg"></td>
+<td>&nbsp;&nbsp;</td>
+<td>
+<ul>
+<li> Invented ER Data Model
+<li> Original paper in 1976
+<li> One of the most-cited papers in CS
+<li> ER provided foundation for:
+<ul>
+<li> design methodologies (e.g. UML)
+<li> CASE tools <small>(e.g. Oracle Designer/2000)</small>
+</ul>
+<li> Fellow of ACM and IEEE
+<li> Professor at Louisiana SU
+</ul>
+</td>
+</tr>
+</table>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Weekly Preview &#9826; [54/54]</div><p><hr><p>
+<span style='font-size:11px;color: grey;'>Produced: 15 Nov 2020</span>
+ <script src='lib/prism.js'></script>   
+ <script src='lib/sg.js'></script>   
+</body>
+</html>

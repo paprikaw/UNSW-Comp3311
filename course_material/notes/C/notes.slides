@@ -1,0 +1,1344 @@
+<title>Relational Algebra
+
+<slide>
+<heading>Relational Algebra
+<em>Relational algebra</em> (RA) can be viewed as ...
+<itemize>
+<item> mathematical system for manipulating relations, or
+<item> data manipulation language (DML) for the relational model
+</itemize>
+Relational algebra consists of:
+<itemize>
+<item> <em>operands</em>: relations, or variables representing relations
+<item> <em>operators</em> that map relations to relations
+<item> rules for combining operands/operators into expressions
+<item> rules for evaluating such expressions
+</itemize>
+RA can be viewed as the <q>machine language</q> for RDBMSs
+</slide>
+
+<slide>
+<continued>
+Core relational algebra operations:
+<itemize>
+<item> <em>selection</em>: choosing a subset of rows
+<item> <em>projection</em>: choosing a subset of columns
+<item> <em>product</em>, <em>join</em>: combining relations
+<item> <em>union</em>, <em>intersection</em>, <em>difference</em>: combining relations
+<item> <em>rename</em>: change names of relations/attributes
+</itemize>
+Common extensions include:
+<itemize>
+<item> <em>aggregation</em>, <em>projection++</em>, <em>division</em>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Select, project, join provide a powerful set of operations for
+constructing relations and extracting relevant data from them.
+<p>
+<diagram>Pic/relalg/spj.png
+<p>
+Adding set operations and renaming makes RA <em>complete</em>.
+</slide>
+
+<slide>
+<heading>Notation
+Standard treatments of relational algebra use Greek symbols.
+<p>
+We use the following notation <small>(because it is easier to reproduce)</small>:
+<deftable>
+<row>
+  <col1><b>Operation</b></col1>
+  <col2><b>Standard<br>Notation</b></col2>
+  <col3><b>Our<br>Notation</b></col3>
+</row>
+<row>
+  <col1>Selection</col1>
+  <col2><$><sel><sub>expr</sub>(Rel)</$></col2>
+  <col3><$>Sel[expr](Rel)</$></col3>
+</row>
+<row>
+  <col1>Projection</col1>
+  <col2><$><proj><sub>A,B,C</sub>(Rel)</$></col2>
+  <col3><$>Proj[A,B,C](Rel)</$></col3>
+</row>
+<row>
+  <col1>Join</col1>
+  <col2><$>Rel<sub>1</sub> <join><sub>expr</sub> Rel<sub>2</sub></$></col2>
+  <col3><$>Rel<sub>1</sub> <~>Join[expr]<~> Rel<sub>2</sub></$></col3> 
+</row>
+<row>
+  <col1>Rename</col1>
+  <col2><$><renam><sub>schema</sub>Rel</$></col2>
+  <col3><$>Rename[schema](Rel)</$></col3> 
+</row>
+</deftable>
+<small>
+For other operations (e.g. set operations) we adopt the standard notation.
+</small>
+</slide>
+
+<slide>
+<continued>
+We define the semantics of RA operations using
+<itemize>
+<item> regular <q>conditional set</q> expressions <~> e.g. <$>{ X | condition }</$>
+<p>
+(<em>tuple relational calculus</em> ... cf. Haskell list comprehensions)
+<item> tuple notations:
+<itemize>
+<item> <$>t[AB]</$> <~> <small>(extracts attributes <$>A</$> and <$>B</$> from tuple <$>t</$>)</small>
+<item> <$>(x,y,z)</$> <~> <small>(enumerated tuples; specify attribute values)</small>
+</itemize>
+<item> quantifiers, set operations, boolean operators
+</itemize>
+</slide>
+
+<slide>
+<continued>
+All RA operators return a result relation <small>(no DB updates)</small>.
+<p>
+For convenience, we can name a result and use it later.
+<p>
+E.g.
+<program>
+Temp = R <$>op<sub>1</sub></$> S <$>op<sub>2</sub></$> T
+Res  = Temp <$>op<sub>3</sub></$> Z
+<comment>-- which is equivalent to</comment>
+Res  = (R <$>op<sub>1</sub></$> S <$>op<sub>2</sub></$> T) <$>op<sub>3</sub></$> Z
+</program>
+<small>
+Each <q>intermediate result</q> has a well-defined schema.
+</small>
+</slide>
+
+<slide>
+<heading>Sample Relations
+Example database #0 to demonstrate RA operators:
+<diagram>Pic/relalg/db0.png
+</slide>
+
+<slide>
+<continued>
+Example database #1 to demonstrate RA operators:
+<diagram>Pic/relalg/db1.png
+</slide>
+
+<slide>
+<continued>
+Example database #2 to demonstrate RA operators:
+<diagram>Pic/relalg/db2.png
+</slide>
+
+<slide>
+<heading>Selection
+<em>Selection</em> returns a subset of the tuples
+in a relation <$>r</$> that satisfy a specified condition <$>C</$>.
+<p>
+<center>
+<$><sel><sub>C</sub>(r)</$> <~> = <~> <$>Sel[C](r)</$> <~> = <~> { <$>t</$> <~>|<~> <$>t <in> r <and> C(t)</$> }, <~~~> where <$>r(R)</$>
+</center>
+<p>
+<$>C</$> is a boolean expression on attributes in <$>R</$>.
+<p>
+Result size: <~> |<$><sel><sub>C</sub>(r)</$>| <$><leq></$> |<$>r</$>|
+<p>
+Result schema: <~> same as the schema of <$>r</$> <~> (i.e. <$>R</$>)
+<p>
+Programmer's view:
+<program>
+<$>result</$> = {}
+for each tuple <$>t</$> in relation <$>r</$>
+    if (<$>C(t)</$>) { <$>result</$> = <$>result <union> {t}</$> }
+</program>
+</slide>
+
+<slide>
+<continued>
+Example selections:
+<p>
+<center>
+<table cellspacing='10'>
+<tr valign='top'>
+<td>
+<$>Sel [B = 1] (r1)</$> <p>
+<reltable 4>
+<row><attr1>A</attr1><attr2>B</attr2><attr3>C</attr3><attr4>D</attr4></row>
+<row><col1>a</col1><col2>1</col2><col3>x</col3><col4>4</col4></row>
+<row><col1>e</col1><col2>1</col2><col3>y</col3><col4>4</col4></row>
+</reltable>
+</td>
+<td><~></td>
+<td>
+<$>Sel [A=b <or> A=c] (r1)</$> <p>
+<reltable 4>
+<row><attr1>A</attr1><attr2>B</attr2><attr3>C</attr3><attr4>D</attr4></row>
+<row><col1>b</col1><col2>2</col2><col3>y</col3><col4>5</col4></row>
+<row><col1>c</col1><col2>4</col2><col3>z</col3><col4>4</col4></row>
+</reltable>
+</td>
+</tr>
+<tr valign='top'>
+<td>
+<$>Sel [B <geq> D] (r1)</$> <p>
+<reltable 4>
+<row><attr1>A</attr1><attr2>B</attr2><attr3>C</attr3><attr4>D</attr4></row>
+<row><col1>c</col1><col2>4</col2><col3>z</col3><col4>4</col4></row>
+<row><col1>d</col1><col2>8</col2><col3>x</col3><col4>5</col4></row>
+</reltable>
+</td>
+<td><~></td>
+<td>
+<$>Sel [A = C] (r1)</$> <p>
+<reltable 4>
+<row><attr1>A</attr1><attr2>B</attr2><attr3>C</attr3><attr4>D</attr4></row>
+</reltable>
+</td>
+</tr>
+</table>
+</center>
+</slide>
+
+<slide>
+<continued>
+Example queries:
+<itemize>
+<item> Find details about the Perryridge branch?
+<itemize>
+<item> <$>Sel [branchName=Perryridge] (Branch)</$>
+</itemize>
+<item> Which accounts are overdrawn?
+<itemize>
+<item> <$>Sel [balance&lt;0] (Account)</$>
+</itemize>
+<item> Which Round Hill accounts are overdrawn?
+<itemize>
+<item> <$>Sel [branchName=Round Hill <and> balance&lt;0] (Account)</$>
+</itemize>
+</itemize>
+</slide>
+
+<slide>
+<heading>Projection
+<em>Projection</em> returns a set of tuples containing
+a subset of the attributes in the original relation.
+<p>
+<center>
+<$><proj><sub>X</sub>(r)</$> <~> = <~> <$>Proj[X](r)</$> <~> = <~> { <$>t[X]</$> <~>|<~> <$>t <in> r</$> }, <~~~> where <$>r(R)</$>
+</center>
+<p>
+<$>X</$> specifies a subset of the attributes of <$>R</$>.
+<p>
+Note that removing key attributes can produce duplicates.
+<p>
+In RA, duplicates are removed from the result <em>set</em>.
+<br>
+<small><gray>(In many RDBMS's, duplicates are retained <~> (i.e. they use bag, not set, semantics)</small>)</gray></small>
+<p>
+Result size: <~> |<$><proj><sub>X</sub>(r)</$>| <$><leq></$> |<$>r</$>|
+<~~~>
+Result schema: <~> <$>R'(X)</$>
+<p>
+Programmer's view:
+<program>
+<$>result</$> = {}
+for each tuple <$>t</$> in relation <$>r</$>
+    <$>result</$> = <$>result <union> {t[X]}</$>
+</program>
+</slide>
+
+<slide>
+<continued>
+Example projections:
+<p>
+<center>
+<table border=0 cellpadding=10>
+<tr>
+<td valign=top align=center>
+<$>Proj [A,B,D] (r1)</$> <p>
+<reltable 3>
+<row><attr1>A</attr1><attr2>B</attr2><attr3>D</attr3></row>
+<row><col1>a</col1><col2>1</col2><col3>4</col3></row>
+<row><col1>b</col1><col2>2</col2><col3>5</col3></row>
+<row><col1>c</col1><col2>4</col2><col3>4</col3></row>
+<row><col1>d</col1><col2>8</col2><col3>5</col3></row>
+<row><col1>e</col1><col2>1</col2><col3>4</col3></row>
+<row><col1>f</col1><col2>2</col2><col3>5</col3></row>
+</reltable>
+</td>
+<td><~~~></td>
+<td valign=top align=center>
+<$>Proj [B,D] (r1)</$> <p>
+<reltable 2>
+<row><attr1>B</attr1><attr2>D</attr2></row>
+<row><col1>1</col1><col2>4</col2></row>
+<row><col1>2</col1><col2>5</col2></row>
+<row><col1>4</col1><col2>4</col2></row>
+<row><col1>8</col1><col2>5</col2></row>
+</reltable>
+</td>
+<td><~~~></td>
+<td valign=top align=center>
+<$>Proj [D] (r1)</$> <p>
+<reltable 1>
+<row><attr1>D</attr1></row>
+<row><col1>4</col1></row>
+<row><col1>5</col1></row>
+</reltable>
+</td>
+</tr>
+</table>
+</center>
+</slide>
+
+<slide>
+<continued>
+Example queries:
+<item> <$>Proj [branchName] (Branch)</$>
+</itemize>
+<item> Which branches actually hold accounts?
+<itemize>
+<item> <$>Proj [branchName] (Account)</$>
+</itemize>
+<item> What are the names and addresses of all customers?
+<itemize>
+<item> <$>Proj [name,address] (Customer)</$>
+</itemize>
+<item> Generate a list of all the account numbers
+<itemize>
+<item> <$>Proj [accountNo] (Account)</$> <~~> <gray>or</gray>
+<sitem> <$>Proj [account] (Depositor)</$> <~~> <small><gray>(if we assume every account has a depositor)</gray></small>
+</itemize>
+</itemize>
+</slide>
+
+<slide>
+<heading>Union
+<em>Union</em> combines two <em>compatible</em> relations into
+a single relation via set union of sets of tuples.
+<p>
+<center>
+<$>r<sub>1</sub> <union> r<sub>2</sub></$> <~> = <~> { <$>t</$> <~>|<~> <$>t <in> r<sub>1</sub> <or> t <in> r<sub>2</sub></$> }, <~~~> where <$>r<sub>1</sub>(R), r<sub>2</sub>(R)</$>
+</center>
+<p>
+Compatibility = both relations have the same schema
+<p>
+Result size: <~> |<$>r<sub>1</sub> <union> r<sub>2</sub></$>| <~> <$><leq></$> <~>
+|<$>r<sub>1</sub></$>| + |<$>r<sub>2</sub></$>|
+<~~~>
+Result schema: <$>R</$>
+<p>
+Programmer's view:
+<program>
+<$>result</$> = <$>r<sub>1</sub></$>
+for each tuple <$>t</$> in relation <$>r<sub>2</sub></$>
+    <$>result</$> = <$>result <union> {t}</$>
+</program>
+</slide>
+
+<slide>
+<continued>
+Example queries:
+<itemize>
+<item> Which suburbs have either customers or branches?
+<itemize>
+<item> <$>Proj[address](Customer) <union> Proj[address](Branch)</$>
+</itemize>
+<item> Which branches have either customers or accounts?
+<itemize>
+<item> <$>Proj[homeBranch](Customer) <union> Proj[branchName](Account)</$>
+</itemize>
+</itemize>
+The union operator is symmetric i.e. <~> <$>R <union> S <~> = <~> S <union> R</$>.
+</slide>
+
+<slide>
+<heading>Intersection
+<em>Intersection</em> combines two <em>compatible</em>
+relations into a single relation via set intersection of sets of tuples.
+<p>
+<center>
+<$>r<sub>1</sub> <intersect> r<sub>2</sub></$> <~> = <~> { <$>t</$> <~>|<~> <$>t <in> r<sub>1</sub> <and> t <in> r<sub>2</sub></$> }, <~~~> where <$>r<sub>1</sub>(R), r<sub>2</sub>(R)</$>
+</center>
+<p>
+Uses same notion of relation compatibility as union.
+<p>
+Result size: <~> |<$>r<sub>1</sub> <union> r<sub>2</sub></$>| <~> <$><leq></$> <~>
+min(|<$>r<sub>1</sub></$>|,|<$>r<sub>2</sub></$>|)
+<~~~>
+Result schema: <$>R</$>
+<p>
+Programmer's view:
+<program>
+<$>result</$> = {}
+for each tuple <$>t</$> in relation <$>r<sub>1</sub></$>
+    if (<$>t <in> r<sub>2</sub></$>) { <$>result</$> = <$>result <union> {t}</$> }
+</program>
+</slide>
+
+<slide>
+<continued>
+Example queries:
+<itemize>
+<item> Which suburbs have both customers and branches?
+<itemize>
+<item> <$>Proj[address](Customer) <intersect> Proj[address](Branch)</$>
+</itemize>
+<item> Which branches have both customers and accounts?
+<itemize>
+<item> <$>Proj[homeBranch](Customer) <intersect> Proj[branchName](Account)</$>
+</itemize>
+</itemize>
+The intersection operator is symmetric i.e. <~> <$>R <intersect> S <~> = <~> S <intersect> R</$>.
+</slide>
+
+<slide>
+<heading>Difference
+<em>Difference</em> finds the set of tuples that exist in
+one relation but do not occur in a second <em>compatible</em> relation.
+<p>
+<center>
+<$>r<sub>1</sub> - r<sub>2</sub></$> <~> = <~> { <$>t</$> <~>|<~> <$>t <in> r<sub>1</sub> <and> <not> t <in> r<sub>2</sub></$> }, <~~~> where <$>r<sub>1</sub>(R), r<sub>2</sub>(R)</$>
+</center>
+<p>
+Uses same notion of relation compatibility as union.
+<p>
+Note:
+tuples in <$>r<sub>2</sub></$> but not <$>r<sub>1</sub></$> do not appear in the result
+<p>
+i.e. set difference != complement of set intersection
+</itemize>
+Programmer's view:
+<program>
+<$>result</$> = {}
+for each tuple <$>t</$> in relation <$>r<sub>1</sub></$>
+    if (!(<$>t <in> r<sub>2</sub></$>)) { <$>result</$> = <$>result <union> {t}</$> }
+</program>
+</slide>
+
+<slide>
+<continued>
+Example difference:
+<p>
+<center>
+<table border=0 cellpadding=10>
+<tr>
+<td valign=top align=center>
+<$>s1 = Sel [B = 1] (r1)</$> <p>
+<reltable 4>
+<row><attr1>A</attr1><attr2>B</attr2><attr3>C</attr3><attr4>D</attr4></row>
+<row><col1>a</col1><col2>1</col2><col3>x</col3><col4>4</col4></row>
+<row><col1>e</col1><col2>1</col2><col3>y</col3><col4>4</col4></row>
+</reltable>
+</td>
+<td><~~~></td>
+<td valign=top align=center>
+<$>s2 = Sel [C = x] (r1)</$> <p>
+<reltable 4>
+<row><attr1>A</attr1><attr2>B</attr2><attr3>C</attr3><attr4>D</attr4></row>
+<row><col1>a</col1><col2>1</col2><col3>x</col3><col4>4</col4></row>
+<row><col1>d</col1><col2>8</col2><col3>x</col3><col4>5</col4></row>
+</reltable>
+</td>
+</tr>
+<tr><td></td></tr>
+<tr>
+<td valign=top align=center>
+<$>s1 - s2</$> <p>
+<reltable 4>
+<row><attr1>A</attr1><attr2>B</attr2><attr3>C</attr3><attr4>D</attr4></row>
+<row><col1>e</col1><col2>1</col2><col3>y</col3><col4>4</col4></row>
+</reltable>
+</td>
+<td><~~~></td>
+<td valign=top align=center>
+<$>s2 - s1</$> <p>
+<reltable 4>
+<row><attr1>A</attr1><attr2>B</attr2><attr3>C</attr3><attr4>D</attr4></row>
+<row><col1>d</col1><col2>8</col2><col3>x</col3><col4>5</col4></row>
+</reltable>
+</td>
+</tr>
+</table>
+</center>
+<~><p>
+Clearly, difference is not symmetric.
+</slide>
+
+<slide>
+<continued>
+Example queries:
+<itemize>
+<item> Which customers have no accounts?
+<itemize>
+<item> <$>AllCusts = Proj[customerNo](Customer)</$><br>
+<$>CustsWithAccts = Proj[customer](Depositor)</$><br>
+<$>Result = AllCusts - CustsWithAccts</$>
+</itemize>
+<item> Which branches have no customers?
+<itemize>
+<item> <$>AllBranches = Proj[branchName](Branch)</$><br>
+<$>BranchesWithCusts = Proj[homeBranch](Customer)</$><br>
+<$>Result = AllBranches - BranchesWithCusts</$>
+</itemize>
+</itemize>
+</slide>
+
+<slide>
+<heading>Product
+<em>Product</em> (Cartesian product) combines information from
+two relations pairwise on tuples.
+<p>
+<center>
+<$>r <times> s</$> <~> = <~> { <$>(t<sub>1</sub> : t<sub>2</sub>)</$> <~>|<~> <$>t<sub>1</sub> <in> r <and> t<sub>2</sub> <in> s</$> }, <~~~> where <$>r(R), s(S)</$>
+</center>
+<p>
+Each tuple in the result contains all attributes from <$>r</$> and <$>s</$>,
+possibly with some fields renamed to avoid ambiguity.
+<p>
+If <$>t<sub>1</sub> = (A<sub>1</sub>...A<sub>n</sub>)</$> and
+   <$>t<sub>2</sub> = (B<sub>1</sub>...B<sub>n</sub>)</$> then
+   <$>(t<sub>1</sub>:t<sub>2</sub>) = (A<sub>1</sub>...A<sub>n</sub>,B<sub>1</sub>...B<sub>n</sub>)</$>
+<p>
+Note: relations do not have to be union-compatible.
+<p>
+Result size is <em>large</em>: <~> |<$>r <times> s</$>| = |<$>r</$>|.|<$>s</$>|
+<~~~>
+Schema: <$>R<union>S</$>
+<p>
+Programmer's view:
+<program>
+<$>result</$> = {}
+for each tuple <$>t<sub>1</sub></$> in relation <$>r</$>
+    for each tuple <$>t<sub>2</sub></$> in relation <$>s</$>
+        <$>result</$> = <$>result <union> {(<$>t<sub>1</sub>:t<sub>2</sub></$>)}</$> }
+</program>
+</slide>
+
+<slide>
+<continued>
+Example product #1:
+<p>
+<center>
+<table border=0 cellpadding=10>
+<tr><td valign=top><$>r1 <times> r2</$></td><td valign=top>
+<reltable 7>
+<row><attr1>A</attr1><attr2>B</attr2><attr3>C</attr3><attr4>D</attr4>
+	<attr5>E</attr5><attr6>F</attr6><attr7>G</attr7></row>
+<row><col1>a</col1><col2>1</col2><col3>x</col3><col4>4</col4>
+	<col5>1</col5><col6>a</col6><col7>x</col7></row>
+<row><col1>a</col1><col2>1</col2><col3>x</col3><col4>4</col4>
+	<col5>2</col5><col6>b</col6><col7>y</col7></row>
+<row><col1>a</col1><col2>1</col2><col3>x</col3><col4>4</col4>
+	<col5>3</col5><col6>c</col6><col7>x</col7></row>
+<row><col1>a</col1><col2>1</col2><col3>x</col3><col4>4</col4>
+	<col5>4</col5><col6>a</col6><col7>y</col7></row>
+<row><col1>a</col1><col2>1</col2><col3>x</col3><col4>4</col4>
+	<col5>5</col5><col6>b</col6><col7>x</col7></row>
+<row><col1>b</col1><col2>2</col2><col3>y</col3><col4>5</col4>
+	<col5>1</col5><col6>a</col6><col7>x</col7></row>
+<row><col1>b</col1><col2>2</col2><col3>y</col3><col4>5</col4>
+	<col5>2</col5><col6>b</col6><col7>y</col7></row>
+<row><col1>b</col1><col2>2</col2><col3>y</col3><col4>5</col4>
+	<col5>3</col5><col6>c</col6><col7>x</col7></row>
+<tr><td colspan=7 align=center> ... </td></tr>
+<row><col1>f</col1><col2>2</col2><col3>z</col3><col4>5</col4>
+	<col5>3</col5><col6>c</col6><col7>x</col7></row>
+<row><col1>f</col1><col2>2</col2><col3>z</col3><col4>5</col4>
+	<col5>4</col5><col6>a</col6><col7>y</col7></row>
+<row><col1>f</col1><col2>2</col2><col3>z</col3><col4>5</col4>
+	<col5>5</col5><col6>b</col6><col7>x</col7></row>
+</reltable>
+</td></tr>
+</table>
+</center>
+</slide>
+
+<slide>
+<continued>
+Example product #2:
+<P>
+<center>
+<$>Students <times> Marks</$>
+<small>
+<reltable 6>
+<row><attr1>course</attr1><attr2>name</attr2><attr3>sid</attr3>
+	<attr4>stude</attr4><attr5>subj</attr5><attr6>mark</attr6></row>
+<row><col1>BE</col1><col2>Anne</col2><col3>21333</col3>
+	<col4>21333</col4><col5>1011</col5><col6>74</col3></row>
+<row><col1>BE</col1><col2>Anne</col2><col3>21333</col3>
+	<col4>21333</col4><col5>1021</col5><col6>70</col3></row>
+<row><col1>BE</col1><col2>Anne</col2><col3>21333</col3>
+	<col4>21333</col4><col5>2011</col5><col6>68</col3></row>
+<row><col1>BE</col1><col2>Anne</col2><col3>21333</col3>
+	<col4>21531</col4><col5>1011</col5><col6>94</col3></row>
+<row><col1>BE</col1><col2>Anne</col2><col3>21333</col3>
+	<col4>21531</col4><col5>1021</col5><col6>90</col3></row>
+<row><col1>BE</col1><col2>Anne</col2><col3>21333</col3>
+	<col4>21623</col4><col5>1011</col5><col6>50</col3></row>
+<row><col1>BE</col1><col2>Dave</col2><col3>21876</col3>
+	<col4>21333</col4><col5>1011</col5><col6>74</col3></row>
+<row><col1>BE</col1><col2>Dave</col2><col3>21876</col3>
+	<col4>21333</col4><col5>1021</col5><col6>70</col3></row>
+<row><col1>BE</col1><col2>Dave</col2><col3>21876</col3>
+	<col4>21333</col4><col5>2011</col5><col6>68</col3></row>
+<row><col1>BE</col1><col2>Dave</col2><col3>21876</col3>
+	<col4>21531</col4><col5>1011</col5><col6>94</col3></row>
+<row><col1>BE</col1><col2>Dave</col2><col3>21876</col3>
+	<col4>21531</col4><col5>1021</col5><col6>90</col3></row>
+<row><col1>BE</col1><col2>Dave</col2><col3>21876</col3>
+	<col4>21623</col4><col5>1011</col5><col6>50</col3></row>
+<row><col1>BSc</col1><col2>John</col2><col3>21531</col3>
+	<col4>21333</col4><col5>1011</col5><col6>74</col3></row>
+<row><col1>BSc</col1><col2>John</col2><col3>21531</col3>
+	<col4>21333</col4><col5>1021</col5><col6>70</col3></row>
+<row><col1>BSc</col1><col2>John</col2><col3>21531</col3>
+	<col4>21333</col4><col5>2011</col5><col6>68</col3></row>
+<row><col1>BSc</col1><col2>John</col2><col3>21531</col3>
+	<col4>21531</col4><col5>1011</col5><col6>94</col3></row>
+<row><col1>BSc</col1><col2>John</col2><col3>21531</col3>
+	<col4>21531</col4><col5>1021</col5><col6>90</col3></row>
+<row><col1>BSc</col1><col2>John</col2><col3>21531</col3>
+	<col4>21623</col4><col5>1011</col5><col6>50</col3></row>
+<row><col1>BSc</col1><col2>Tim</col2><col3>21623</col3>
+	<col4>21333</col4><col5>1011</col5><col6>74</col3></row>
+<row><col1>BSc</col1><col2>Tim</col2><col3>21623</col3>
+	<col4>21333</col4><col5>1021</col5><col6>70</col3></row>
+<row><col1>BSc</col1><col2>Tim</col2><col3>21623</col3>
+	<col4>21333</col4><col5>2011</col5><col6>68</col3></row>
+<row><col1>BSc</col1><col2>Tim</col2><col3>21623</col3>
+	<col4>21531</col4><col5>1011</col5><col6>94</col3></row>
+<row><col1>BSc</col1><col2>Tim</col2><col3>21623</col3>
+	<col4>21531</col4><col5>1021</col5><col6>90</col3></row>
+<row><col1>BSc</col1><col2>Tim</col2><col3>21623</col3>
+	<col4>21623</col4><col5>1011</col5><col6>50</col3></row>
+</reltable>
+</small>
+</center>
+</slide>
+
+<slide>
+<continued>
+By itself, product isn't a useful querying mechanism.
+<p>
+However, it gives a basis for combining information across relations.
+<p>
+A special (and very common) usage of product:
+<itemize>
+<item> form all possible pairs in <$>r <times> s</$>
+<item> select just the <q>interesting</q> pairs
+	<~> <small><gray>(matching key values)</gray></small>
+</itemize>
+This usage is represented by a separate operation: <em>join</em>.
+<p>
+Note: join is <em>not</em> implemented using product
+	<~> <small>(which is why RDBMSs work)</small>
+<p>
+<small>
+Join is critically important in implementing <q>navigation</q> in relational databases.
+</small>
+</slide>
+
+<slide>
+<continued>
+Example query #1:
+<itemize>
+<item> Who are the owners of account A101?
+<itemize>
+<item> combine information from <$>Customer</$> and <$>Depositor</$>
+<item>	<$>tmp1 = Customer <times> Depositor</$> <br>
+	<$>tmp2 = Sel [account=A101] (tmp1)</$> <br>
+	<$>tmp3 = Sel [customer=customerNo] (tmp2)</$> <br>
+	<$>res <~>  = Proj [name] (tmp3)</$>
+</itemize>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Example query #2:
+<itemize>
+<item> Which accounts are held in branches in Horseneck or Brooklyn?
+<itemize>
+<item> combine information from <$>Account</$> and <$>Branch</$>
+<item>	<$>tmp1 = Account <times> Branch</$> <br>
+	<$>tmp2 = Sel [B.address = Horseneck] (tmp1)</$> <br>
+	<$>tmp3 = Sel [B.address = Brooklyn] (tmp1)</$> <br>
+	<$>tmp4 = tmp2 <union> tmp3</$> <br>
+	<$>tmp5 = Sel [A.branchName = B.branchName] (tmp4)</$> <br>
+	<$>res <~> = Proj [A.accountNo] (tmp5)</$>
+</itemize>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Example query #3:
+<itemize>
+<item> Which customers hold accounts at a Brooklyn branch?
+<itemize>
+<item> need to combine information from all relations
+<item>	<$>tmp1 = Account <times> Branch <times> Customer <times> Depositor</$> <br>
+	<$>tmp2 = Sel [B.address = Brooklyn] (tmp1)</$> <br>
+	<$>tmp3 = Sel [B.branchName = A.branchName] (tmp2)</$> <br>
+	<$>tmp4 = Sel [A.accountNo = account] (tmp3)</$> <br>
+	<$>tmp5 = Sel [C.customerNo = A.customer] (tmp4)</$> <br>
+	<$>res <~> = Proj [C.name] (tmp5)</$>
+</itemize>
+</itemize>
+</slide>
+
+<slide>
+<heading>Rename
+<em>Rename</em> provides <q>schema mapping</q>.
+<p>
+If expression <$>E</$> returns a relation
+<$>R(A<sub>1</sub>, A<sub>2</sub>, ... A<sub>n</sub>)</$>, then
+<p>
+<center>
+<$>Rename[S(B<sub>1</sub>, B<sub>2</sub>, ... B<sub>n</sub>)](E)</$>
+</center>
+<p>
+gives a relation called <$>S</$>
+<itemize>
+<item> containing the same set of tuples as <$>E</$>
+<item> but with the name of each attribute changed from <$>A<sub>i</sub></$>
+to <$>B<sub>i</sub></$>
+</itemize>
+<small>
+Rename is like the identity function on the <i>contents</i> of a relation;
+it changes only the schema.
+</small>
+<p>
+<em>Rename</em> can be viewed as a <q>technical</q> apparatus of RA.
+</slide>
+
+<slide>
+<continued>
+Examples:
+<p>
+<center><table border=0 cellpadding=10>
+<tr><td valign=top align=center>
+<$>Rename[s1(J,K,L,M)](r1)</$>
+<p>
+<reltable 4>
+<row><attr1>J</attr1><attr2>K</attr2><attr3>L</attr3><attr4>M</attr4></row>
+<row><col1>a</col1><col2>1</col2><col3>x</col3><col4>4</col4></row><row><col1>b</col1><col2>2</col2><col3>y</col3><col4>5</col4></row>
+<row><col1>c</col1><col2>4</col2><col3>z</col3><col4>4</col4></row><row><col1>d</col1><col2>8</col2><col3>x</col3><col4>5</col4></row><row><col1>e</col1><col2>1</col2><col3>y</col3><col4>4</col4></row>
+<row><col1>f</col1><col2>2</col2><col3>z</col3><col4>5</col4></row>
+</reltable>
+<$>s1</$>
+</td><td><~~~></td><td valign=top align=center>
+<$>Rename[s2(X,Y,Z)](r2)</$>
+<p>
+<reltable 3>
+<row><attr1>X</attr1><attr2>Y</attr2><attr3>Z</attr3></row><row><col1>1</col1><col2>a</col2><col3>x</col3></row><row><col1>2</col1><col2>b</col2><col3>y</col3></row><row><col1>3</col1><col2>c</col2><col3>x</col3></row><row><col1>4</col1><col2>a</col2><col3>y</col3></row><row><col1>5</col1><col2>b</col2><col3>x</col3></row>
+</reltable>
+<$>s2</$>
+</td></tr>
+</table>
+</center>
+</slide>
+
+<slide>
+<heading>Natural Join
+<em>Natural join</em> is a specialised product:
+<itemize>
+<item> containing only pairs that match on their <em>common</em> attributes
+<item> with one of each pair of common attributes eliminated
+</itemize>
+Consider relation schemas <$>R(ABC..J<green>KLM</green>)</$>,  <$>S(<green>KLM</green>N..XYZ)</$>.
+<p>
+The natural join of relations <$>r(R)</$> and <$>s(S)</$> is defined as:
+<p>
+<center>
+<$>r <join> s</$> <~> = <~> <$>r Join s</$> <~> = <~> <br>
+	{ <$>(t<sub>1</sub>[ABC..J] : t<sub>2</sub>[K..XYZ])</$> <~>|<~>
+	  <$>t<sub>1</sub> <in> r <and> t<sub>2</sub> <in> s <and> match</$>
+	}
+<p>
+where <~~> <$>match</$> <~> = <~>
+		<$>t<sub>1</sub>[K] = t<sub>2</sub>[K] <and>
+		t<sub>1</sub>[L] = t<sub>2</sub>[L] <and>
+		t<sub>1</sub>[M] = t<sub>2</sub>[M]</$>
+</center>
+<p>
+Programmer's view:
+<program>
+<$>result</$> = {}
+for each tuple <$>t<sub>1</sub></$> in relation <$>r</$>
+   for each tuple <$>t<sub>2</sub></$> in relation <$>s</$>
+      if (<$>matches(t<sub>1</sub>,t<sub>2</sub>)</$>)
+         <$>result</$> = <$>result <union> {combine(<$>t<sub>1</sub>,t<sub>2</sub></$>)}</$>
+</program>
+</slide>
+
+<slide>
+<continued>
+<p>
+Natural join can also be defined in terms of other relational algebra operations:
+<p>
+<center>
+<$>r Join s</$> <~> = <~> <$> Proj[R <union> S] ( Sel[match] ( r <times> s) )</$>
+</center>
+<p>
+We assume that the union on attributes eliminates duplicates.
+<p>
+If we wish to join relations, where the common attributes have
+different names, we rename the attributes first.
+<p>
+E.g. <$>R(AB<green>C</green>)</$> and <$>S(D<green>E</green>F)</$> can be joined by
+<p>
+<center>
+<$>R Join Rename[S(D<green>C</green>F)](S)</$>
+</center>
+<p>
+Note: |<$>r <join> s</$>| <$><ll></$> |<$>r <times> s</$>|, so <i>join</i> not implemented via <i>product</i>.
+</slide>
+
+<slide>
+<continued>
+Example (assuming that <$>A</$> and <$>F</$> are the common attributes):
+<p>
+<center>
+<table border=0 cellpadding=10>
+<tr><td align=center><$>r1 Join r2</$>
+<p>
+<reltable 7>
+<row><attr1>A</attr1><attr2>B</attr2><attr3>C</attr3><attr4>D</attr4>
+	<attr5>E</attr5><attr6>G</attr6></row>
+<row><col1>a</col1><col2>1</col2><col3>x</col3><col4>4</col4>
+	<col5>1</col5><col6>x</col6></row>
+<row><col1>a</col1><col2>1</col2><col3>x</col3><col4>4</col4>
+	<col5>4</col5><col6>y</col6></row>
+<row><col1>b</col1><col2>2</col2><col3>y</col3><col4>5</col4>
+	<col5>2</col5><col6>y</col6></row>
+<row><col1>b</col1><col2>2</col2><col3>y</col3><col4>5</col4>
+	<col5>5</col5><col6>x</col6></row>
+<row><col1>c</col1><col2>4</col2><col3>z</col3><col4>4</col4>
+	<col5>3</col5><col6>x</col6></row>
+</reltable>
+</td></tr>
+</table>
+</center>
+<p>
+Strictly, the operation above was: <$>r1 Join Rename[r2(E,<green>A</green>,G)](r2)</$>
+</slide>
+
+<slide>
+<continued>
+Natural join is not quite the same as:
+<p>
+<center>
+<$>Sel[sid=stude] (Students <times> Marks)</$>
+<reltable 6>
+<row><attr1>course</attr1><attr2>name</attr2><attr3>sid</attr3>
+	<attr4>stude</attr4><attr5>subj</attr5><attr6>mark</attr6></row>
+<row><col1>BE</col1><col2>Anne</col2><col3>21333</col3>
+	<col4>21333</col4><col5>1011</col5><col6>74</col3></row>
+<row><col1>BE</col1><col2>Anne</col2><col3>21333</col3>
+	<col4>21333</col4><col5>1021</col5><col6>70</col3></row>
+<row><col1>BE</col1><col2>Anne</col2><col3>21333</col3>
+	<col4>21333</col4><col5>2011</col5><col6>68</col3></row>
+<row><col1>BSc</col1><col2>John</col2><col3>21531</col3>
+	<col4>21531</col4><col5>1011</col5><col6>94</col3></row>
+<row><col1>BSc</col1><col2>John</col2><col3>21531</col3>
+	<col4>21531</col4><col5>1021</col5><col6>90</col3></row>
+<row><col1>BSc</col1><col2>Tim</col2><col3>21623</col3>
+	<col4>21623</col4><col5>1011</col5><col6>50</col3></row>
+</reltable>
+</center>
+</slide>
+
+<slide>
+<continued>
+Compare this to the previous result:
+<p>
+<center>
+<$>Students <~> Join <~> Marks</$>
+<reltable 5>
+<row><attr1>course</attr1><attr2>name</attr2><attr3>sid</attr3>
+	<attr5>subj</attr5><attr6>mark</attr6></row>
+<row><col1>BE</col1><col2>Anne</col2><col3>21333</col3>
+	<col5>1011</col5><col6>74</col3></row>
+<row><col1>BE</col1><col2>Anne</col2><col3>21333</col3>
+	<col5>1021</col5><col6>70</col3></row>
+<row><col1>BE</col1><col2>Anne</col2><col3>21333</col3>
+	<col5>2011</col5><col6>68</col3></row>
+<row><col1>BSc</col1><col2>John</col2><col3>21531</col3>
+	<col5>1011</col5><col6>94</col3></row>
+<row><col1>BSc</col1><col2>John</col2><col3>21531</col3>
+	<col5>1021</col5><col6>90</col3></row>
+<row><col1>BSc</col1><col2>Tim</col2><col3>21623</col3>
+	<col5>1011</col5><col6>50</col3></row>
+</reltable>
+</center>
+As above, we assume <~> <$>Rename[Marks(<green>sid</green>,subj,mark)](Marks)</$>
+</slide>
+
+<slide>
+<continued>
+Example queries:
+<itemize>
+<item> Who is the owner of account A101?
+<itemize>
+<item> <$>Proj[name](Sel[account=A101](Customer <join> Depositor))</$>
+</itemize>
+<item> Which accounts are held in branches in Horseneck?
+<itemize>
+<item> <$>tmp1 = Sel[address=Horseneck](Account <join> Branch)</$> <br>
+	<$>res <~> = Proj[accountNo](tmp1))</$>
+</itemize>
+<item> Which customers hold accounts at a Brooklyn branch?
+<itemize>
+<item>	<$>tmp1 = Account <join> Branch <join> Customer <join> Depositor</$> <br>
+	<$>res <~> = Proj[name](Sel[address=Brooklyn](tmp1))</$>
+</itemize>
+</itemize>
+</slide>
+
+<slide>
+<heading>Theta Join
+The <em>theta join</em> is a specialised product
+containing only pairs that match on a supplied condition <$>C</$>.
+<p>
+<center>
+<$>r <join><sub>C</sub> s</$> <~> = <~> { <$>(t<sub>1</sub> : t<sub>2</sub>)</$> <~>|<~> <$>t<sub>1</sub> <in> r <and> t<sub>2</sub> <in> s <and> C(t<sub>1</sub> : t<sub>2</sub>)</$> }, <br>
+where <$>r(R),s(S)</$>
+</center>
+<p>
+Examples: <~> <$>(r1 Join[B>E] r2)</$> ... <$>(r1 Join[E<<D<and>C=G] r2)</$>
+<p>
+Can be defined in terms of other RA operations:
+<p>
+<center>
+<$>r <join><sub>C</sub> s</$> <~> = <~> <$>r Join[C] s</$> <~> = <~> <$> Sel[C] ( r <times> s )</$>
+</center>
+<p>
+Unlike natural join, <q>duplicate</q> attributes are not removed.
+<p>
+Note that <~> <$>r <join><sub>true</sub> s <~> = <~> r <times> s</$>.
+</slide>
+
+<slide>
+<continued>
+Example theta join:
+<p>
+<center>
+<table border=0 cellpadding=10>
+<tr><td valign=top align=center>
+<$>r1 Join[D << E] r2</$>
+<p>
+<reltable 7>
+<row><attr1>A</attr1><attr2>B</attr2><attr3>C</attr3><attr4>D</attr4>
+	<attr5>E</attr5><attr6>F</attr6><attr7>G</attr7></row>
+<row><col1>a</col1><col2>1</col2><col3>x</col3><col4>4</col4>
+	<col5>5</col5><col6>b</col6><col7>x</col7></row>
+<row><col1>c</col1><col2>4</col2><col3>z</col3><col4>4</col4>
+	<col5>5</col5><col6>b</col6><col7>x</col7></row>
+<row><col1>e</col1><col2>1</col2><col3>y</col3><col4>4</col4>
+	<col5>5</col5><col6>b</col6><col7>x</col7></row>
+</reltable>
+</td></tr>
+<tr><td><~></td></tr>
+<tr><td valign=top align=center>
+<$>r1 Join[B >> 1 <and> D << E] r2</$>
+<p>
+<reltable 7>
+<row><attr1>A</attr1><attr2>B</attr2><attr3>C</attr3><attr4>D</attr4>
+	<attr5>E</attr5><attr6>F</attr6><attr7>G</attr7></row>
+<row><col1>c</col1><col2>4</col2><col3>z</col3><col4>4</col4>
+	<col5>5</col5><col6>b</col6><col7>x</col7></row>
+</reltable>
+</td></tr>
+</table>
+</center>
+<small>
+<p>
+(Theta join is an important component of most SQL queries; many examples
+of its use to follow)
+</small>
+</slide>
+
+<slide>
+<continued>
+Comparison between join operations:
+<itemize>
+<item> <em>theta join</em> allows arbitrary tests in the condition <br>
+	<small>(and leaves all attributes from the original relations in the result)</small>
+<item> <em>equijoin</em> has only equality tests in the condition <br>
+	<small>(and leaves all attributes from the original relations in the result)</small>
+<item> <em>natural join</em> has only equality tests on common attributes <br>
+	<small>(and removes one of each pair of matching attributes)</small>
+</itemize>
+<small>
+Equijoin is a specialised theta join; natural join is like theta join followed by projection.
+</small>
+</slide>
+
+<slide>
+<heading>Outer Join
+<$>r Join s</$> eliminates all <$>s</$> tuples that do not match some <$>r</$> tuple.
+<p>
+Sometimes, we wish to keep this information, so <em>outer join</em>
+<itemize>
+<item> includes all tuples from each relation in the result
+<item> for pairs of matching tuples, concatenate attributes as for standard join
+<item> for tuples that have no match, assign null to <q>unmatched</q> attributes
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Example (assuming that <$>A</$> and <$>F</$> are the common attributes):
+<p>
+<center>
+<table border=0 cellpadding=10>
+<tr><td align=center><$>r1 OuterJoin r2</$>
+<p>
+<reltable 7>
+<row><attr1>A</attr1><attr2>B</attr2><attr3>C</attr3><attr4>D</attr4>
+	<attr5>E</attr5><attr6>G</attr6></row>
+<row><col1>a</col1><col2>1</col2><col3>x</col3><col4>4</col4>
+	<col5>1</col5><col6>x</col6></row>
+<row><col1>a</col1><col2>1</col2><col3>x</col3><col4>4</col4>
+	<col5>4</col5><col6>y</col6></row>
+<row><col1>b</col1><col2>2</col2><col3>y</col3><col4>5</col4>
+	<col5>2</col5><col6>y</col6></row>
+<row><col1>b</col1><col2>2</col2><col3>y</col3><col4>5</col4>
+	<col5>5</col5><col6>x</col6></row>
+<row><col1>c</col1><col2>4</col2><col3>z</col3><col4>4</col4>
+	<col5>3</col5><col6>x</col6></row>
+<row><col1>d</col1><col2>8</col2><col3>x</col3><col4>5</col4>
+	<col5>null</col5><col6>null</col6></row></row>
+<row><col1>e</col1><col2>1</col2><col3>y</col3><col4>4</col4>
+	<col5>null</col5><col6>null</col6></row></row>
+<row><col1>f</col1><col2>2</col2><col3>z</col3><col4>5</col4>
+	<col5>null</col5><col6>null</col6></row></row>
+</reltable>
+</td></tr>
+</table>
+</center>
+<p>
+Contrast this to the result for <$>R Join S</$> presented earlier.
+</slide>
+
+<slide>
+<continued>
+Another outer join example <small>(compare to earlier similar join):</small>
+<p>
+<center>
+<$>Students <~> OuterJoin <~> Marks</$>
+<reltable 5>
+<row><attr1>course</attr1><attr2>name</attr2><attr3>sid</attr3>
+	<attr5>subj</attr5><attr6>mark</attr6></row>
+<row><col1>BE</col1><col2>Anne</col2><col3>21333</col3>
+	<col5>1011</col5><col6>74</col3></row>
+<row><col1>BE</col1><col2>Anne</col2><col3>21333</col3>
+	<col5>1021</col5><col6>70</col3></row>
+<row><col1>BE</col1><col2>Dave</col2><col3>21876</col3>
+	<col5><small>null</small></col5><col6><small>null</small></col3></row>
+<row><col1>BE</col1><col2>Anne</col2><col3>21333</col3>
+	<col5>2011</col5><col6>68</col3></row>
+<row><col1>BSc</col1><col2>John</col2><col3>21531</col3>
+	<col5>1011</col5><col6>94</col3></row>
+<row><col1>BSc</col1><col2>John</col2><col3>21531</col3>
+	<col5>1021</col5><col6>90</col3></row>
+<row><col1>BSc</col1><col2>Tim</col2><col3>21623</col3>
+	<col5>1011</col5><col6>50</col3></row>
+</reltable>
+</center>
+</slide>
+
+<slide>
+<continued>
+There are three variations of outer join <$>R OuterJoin S</$>:
+<itemize>
+<item> left outer join (<$>LeftOuterJoin</$>) includes all tuples from <$>R</$>
+<item> right outer join (<$>RightOuterJoin</$>) includes all tuples from <$>S</$>
+<item> full outer join (<$>OuterJoin</$>) includes all tuples from <$>R</$> and <$>S</$>
+</itemize>
+Which one to use depends on the application e.g.
+<p>
+If we want to know about all Students, regardless of whether they're enrolled in anything
+<p>
+<center>
+<$>Students LeftOuterJoin Enrolment</$>
+</center>
+</slide>
+
+<slide>
+<continued>
+Operational description of <$>r(R) LeftOuterJoin s(S)</$>:
+<program>
+<$>result</$> = {}
+for each tuple <$>t<sub>1</sub></$> in relation <$>r</$>
+   <$>nmatches</$> = 0
+   for each tuple <$>t<sub>2</sub></$> in relation <$>s</$>
+      if (<$>matches(t<sub>1</sub>,t<sub>2</sub>)</$>)
+         <$>result</$> = <$>result <union> {combine(<$>t<sub>1</sub>,t<sub>2</sub></$>)}</$>
+         <$>nmatches</$>++
+   if (<$>nmatches</$> == 0)
+      <$>result</$> = <$>result <union>
+                 {combine(<$>t<sub>1</sub>,S<sub>null</sub></$>)}</$>
+</program>
+where <$>S<sub>null</sub></$> is a tuple from <$>S</$> with all atributes set to NULL.
+</slide>
+
+<slide>
+<heading>Division
+Consider two relation schemas <$>R</$> and <$>S</$> where <$>S <subset> R</$>.
+<p>
+The <em>division</em> operation is defined on instances <$>r(R)</$>, <$>s(S)</$> as:
+<p>
+<center>
+<$>r / s</$> <~> = <~> <$>r Div s</$> <~> = <~>
+	{ <$>t</$> | <$>t <in> r[R-S] <and> satisfy</$> }
+<p>
+where <~> <$>satisfy</$> <~> = <~> <$><forall> t<sub>s</sub> <in> S ( <exists> t<sub>r</sub> <in> R ( t<sub>r</sub>[S] = t<sub>s</sub> <and> t<sub>r</sub>[R-S] = t ) )</$>
+</center>
+<p>
+Operationally:
+<itemize>
+<item> consider each subset of tuples in <$>R</$> that match on <$>t[R-S]</$>
+<item> for this subset of tuples, take the <$>t[S]</$> values from each
+<item> if this covers all tuples in <$>S</$>, then include <$>t[R-S]</$> in the result
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Example:
+<p>
+<center>
+<table border=0 cellpadding=10>
+<tr>
+<td valign=top align=center>
+<$>R=Proj[D,C](r1)</$> <p>
+<reltable 2>
+<row><attr1>D</attr1><attr2>C</attr2></row>
+<row><col1><red>4</red></col1><col2><green>x</green></col2></row>
+<row><col1><red>4</red></col1><col2><blue>y</blue></col2></row>
+<row><col1><red>4</red></col1><col2>z</col2></row>
+<row><col1>5</col1><col2><green>x</green></col2></row>
+<row><col1>5</col1><col2><blue>y</blue></col2></row>
+<row><col1>5</col1><col2>z</col2></row>
+</reltable>
+</td>
+<td><~~~></td>
+<td valign=top align=center>
+<$>S=Proj[G](r2)</$> <p>
+<reltable 1>
+<row><attr1>G</attr1></row>
+<row><col1><green>x</green></col1></row>
+<row><col1><blue>y</blue></col1></row>
+</reltable>
+</td>
+<td><~~~></td>
+<td valign=top align=center>
+<$>R / S</$> <p>
+<reltable 1>
+<row><attr1>name</attr1></row>
+<row><col1>4</col1></row>
+<row><col1>5</col1></row>
+</reltable>
+</td>
+</tr>
+</table>
+<p>
+Strictly, <$>R/S</$> is <$>R / Rename[S(C)](S)</$>
+</center>
+</slide>
+
+<slide>
+<continued>
+Division handles queries that include the notion <q>for all</q>.
+<p>
+E.g. Which customers have accounts at all branches?</green>
+<p>
+We can answer this as follows:
+<itemize>
+<item> generate a relation of customers and branches where they hold accounts
+<item> generate a relation of all branch names
+<item> find which customers appear in tuples with <em>every</em> branch name
+</itemize>
+</slide>
+
+<slide>
+<continued>
+RA operations for answering the query:
+<itemize>
+<item> customers and branches where they hold accounts
+<itemize>
+<item>	<$>r1 = Account <join> Branch <join> Customer <join> Depositor</$> <br>
+	<$>r2 = Proj [name,branchName] (r1)</$>
+</itemize>
+<item> branch names
+<itemize>
+<item> <$>r3 = Proj[branchName](Branch)</$>
+</itemize>
+<item> customers who appear in tuples with every branch name
+<itemize>
+<item> <$>res <~> = r2 Div r3</$>
+</itemize>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Example of answering the query <small>(in a different database instance):</small>
+<p>
+<center>
+<table border=0 cellpadding=10>
+<tr>
+<td valign=top align=center>
+<$>r2</$> <p>
+<reltable 2>
+<row><attr1>name</attr1><attr2>branchName</attr2></row>
+<row><col1><blue>Davis</blue></col1><col2>Downtown</col2></row>
+<row><col1>Hayes</col1><col2>Round Hill</col2></row>
+<row><col1><red>Jones</red></col1><col2>Brighton</col2></row>
+<row><col1><red>Jones</red></col1><col2>Downtown</col2></row>
+<row><col1><red>Jones</red></col1><col2>Round Hill</col2></row>
+<row><col1><green>Smith</green></col1><col2>Downtown</col2></row>
+<row><col1><green>Smith</green></col1><col2>Round Hill</col2></row>
+</reltable>
+</td>
+<td><~~~></td>
+<td valign=top align=center>
+<$>r3</$> <p>
+<reltable 1>
+<row><attr1>branchName</attr1></row>
+<row><col1>Brighton</col1></row>
+<row><col1>Downtown</col1></row>
+<row><col1>Round Hill</col1></row>
+</reltable>
+</td>
+<td><~~~></td>
+<td valign=top align=center>
+<$>r2/r3</$> <p>
+<reltable 1>
+<row><attr1>name</attr1></row>
+<row><col1>Jones</col1></row>
+</reltable>
+</td>
+</tr>
+</table>
+</center>
+</slide>
+
+<slide>
+<continued>
+Division can be implemented in terms of other RA operations.
+<p>
+Consider <$>R/S</$> where <$>R = X <union> Y</$> and <$>S = Y</$> ...
+<deftable>
+<row>
+<col1> <$>T = Proj[X](R)</$> </col1>
+<col2> <small>generate all potential result tuples</small> </col2>
+</row>
+<row>
+<col1> <$>U = T <times> S</$> </col1>
+<col2> <small>combine potential results with all tuples from <$>S</$></small> </col2>
+</row>
+<row>
+<col1> <$>V = U - R</$> </col1>
+<col2> <small>find any combined tuples that are not in <$>R</$>; <br>
+any potential results which occur with all <$>S</$> values in <$>R</$>
+will be removed; <$>V</$> thus contains potential result tuples which
+do not occur with all <$>S</$> values in <$>R</$></small> </col2>
+</row>
+<row>
+<col1> <$>W = Proj[X](V)</$> </col1>
+<col2> <small>the <$>X</$> parts of these tuples are <q>disqualified</q></small> </col2>
+</row>
+<row>
+<col1> <$>Res = T - W</$> </col1>
+<col2> <small>so remove them to produce the result</small> </col2>
+</row>
+</deftable>
+</slide>
+
+<slide>
+<heading>Aggregation
+Two types of aggregation are common in database queries:
+<itemize>
+<item> accumulating summary values for data in tables
+<itemize>
+<item> typical operations <$>Sum</$>, <$>Average</$>, <$>Count</$>
+<item> many operations work on a single column <br>
+	<small>(e.g. <$>Sum[assets](Branch)</$>)</small>
+</itemize>
+<item> grouping sets of tuples with common values 
+<itemize>
+<item> <$>GroupBy[A<sub>1</sub>...A<sub>n</sub>](R)</$>
+<item> typically we group using only a single attribute
+</itemize>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Example aggregations:
+<p>
+<center>
+<table border=0 cellpadding=10>
+<tr>
+<td valign=top align=center>
+<$>GroupBy[C](r1)</$> <p>
+<reltable 4>
+<row><attr1>A</attr1><attr2>B</attr2><attr3>C</attr3><attr4>D</attr4></row>
+<row><col1>a</col1><col2>1</col2><col3>x</col3><col4>4</col4></row>
+<row><col1>d</col1><col2>8</col2><col3>x</col3><col4>5</col4></row>
+<row><col1>f</col1><col2>2</col2><col3>x</col3><col4>5</col4></row>
+<row><td colspan=4><~></td></row>
+<row><col1>b</col1><col2>2</col2><col3>y</col3><col4>5</col4></row>
+<row><col1>e</col1><col2>1</col2><col3>y</col3><col4>4</col4></row>
+<row><td colspan=4><~></td></row>
+<row><col1>c</col1><col2>4</col2><col3>z</col3><col4>4</col4></row>
+</reltable>
+</td>
+<td><~~~></td>
+<td valign=top align=center>
+<$>Sum[B](r1)</$> <p>
+<reltable 1>
+<row><attr1>Sum</attr1></row>
+<row><col1>18</col1></row>
+</reltable>
+</td>
+<td><~~~></td>
+<td valign=top align=center>
+<$>GroupBy[C]<sub>Sum[B]</sub>(r1)</$> <p>
+<reltable 2>
+<row><attr1>C</attr1><attr2>Sum</attr2></row>
+<row><col1>x</col1><col2>11</col2></row>
+<row><col1>y</col1><col2>3</col2></row>
+<row><col1>z</col1><col2>4</col2></row>
+</reltable>
+</td>
+</tr>
+</table>
+</center>
+</slide>
+
+<slide>
+<heading>Generalised Projection
+In standard projection, we select values of specified attributes.
+<p>
+In <em>generalised projection</em> we perform some computation on the
+attribute value before placing it in the result tuple.
+<p>
+Examples:
+<itemize>
+<item> Display branch assets in Aus$ rather than US$.
+<itemize>
+<item> <$>Proj [branchname,address,assets*0.75] (Branch)</$>
+</itemize>
+<item> Display employee records using age rather than birthday.
+<itemize>
+<item> <$>Proj [id,name,(today-birthdate)/365,salary] (Employee)</$>
+</itemize>
+</itemize>
+</slide>

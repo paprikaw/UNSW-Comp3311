@@ -1,0 +1,36 @@
+#!/usr/local/bin/python3.7
+import sys
+import psycopg2
+if len(sys.argv) < 3:
+    print("Usage:",sys.argv[0],"subject term")
+    exit(1)
+subject = sys.argv[1]
+term = sys.argv[2]
+conn = None
+query = """
+select p.unswid, p.family, p.given
+from   Subjects s
+       join Courses c on (c.subject=s.id)
+       join Terms t on (c.term=t.id)
+       join Course_enrolments e on (e.course=c.id)
+       join People p on (e.student=p.id)
+where  s.code = %s and termName(t.id) = %s
+order  by p.family, p.given
+"""
+try:
+   conn = psycopg2.connect(f"dbname=mymy2")
+   cur = conn.cursor()
+   cur.execute(query, [subject,term])
+   students = cur.fetchall()
+   print(subject,term)
+   if len(students) == 0:
+      print("No students")
+      exit(0)
+   for stu in students:
+      print(stu[0],stu[1]+",",stu[2])
+except psycopg2.Error as err:
+   print("database error: ", err)
+finally:
+   if conn :
+   
+      conn.close()

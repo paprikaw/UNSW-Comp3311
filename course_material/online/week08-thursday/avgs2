@@ -1,0 +1,36 @@
+#!/usr/local/bin/python3.7
+import sys
+import psycopg2
+
+conn = None
+
+# if neither term nor subject, do everything
+allCourses = """
+select distinct c.id, s.code, s.longname, t.starting, termName(t.id)
+from   Courses c 
+       join Course_enrolments e on (c.id=e.course)
+       join Subjects s on (c.subject=s.id)
+       join Terms t on (c.term=t.id)
+order  by t.starting, s.code
+"""
+courseAvg = "select avg(mark) from Course_enrolments where course=%s"
+
+try:
+   conn = psycopg2.connect(f"dbname=mymy2")
+   cur = conn.cursor()
+
+   cur.execute(allCourses)
+   for tup in cur.fetchall():
+      cid, subjCode, subjName, starting, term = tup
+      cur.execute(courseAvg, [cid])
+      avg = cur.fetchone()[0]
+      if avg is None or avg < 0.01:
+         print("None ",subjCode,term,subjName)
+      else:
+         print(f"{avg:0.2f}",subjCode,term,subjName)
+
+except psycopg2.Error as err:
+   print("database error: ", err)
+finally:
+   if conn :
+      conn.close()

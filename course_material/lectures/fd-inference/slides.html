@@ -1,0 +1,265 @@
+<html>
+<head>
+<title>Inference on FDs</title>
+<link href='lib/slides.css' rel='stylesheet' type='text/css'>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML" async></script>
+<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js'></script>
+<link href='https://fonts.googleapis.com/css?family=Lato' rel='stylesheet'>
+<link href='lib/prism.css' rel='stylesheet'>
+<script src='lib/sg.js'></script>
+</head>
+<body>
+ <DIV class='slideCl1' id="s0"  >
+<div class='navCl1'><a href="#s1"><span class='nextArrowCl'>>></span></a> </div> <div class='heading'>Inference on FDs</div><p><ul class='indexUl'  style='font-size: 0.7em;'><li class="i"> <a href="#s1">Closures</a>
+<li class="i"> <a href="#s6">Determining Keys</a>
+<li class="i"> <a href="#s7">Minimal Covers</a>
+</ul></DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Inference on FDs &#9826; [0/11]</div> <DIV class='slideCl1    ' id="s1"  >
+<div class='navCl1'> <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s2"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Closures</div></td><td align='right'></td></tr></table>
+<p>
+Given a set <i>F</i> of <i>fd</i>s, how many new <i>fd</i>s can we derive?
+<p>
+For a finite set of attributes, there must be a finite set of derivable <i>fd</i>s.
+<p>
+The largest collection of dependencies that can be derived from <i>F</i>
+is called the <font color='#0000BB'>closure</font> of <i>F</i> and is denoted <i>F<sup>+</sup></i>.
+<p>
+Closures allow us to answer two interesting questions:
+<ul>
+<li> is a particular dependency <i>X &rarr; Y</i> derivable from <i>F</i>?
+<li> are two sets of dependencies <i>F</i> and <i>G</i> equivalent?
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Inference on FDs &#9826; [1/11]</div> <DIV class='slideCl1    ' id="s2"  >
+<div class='navCl1'><a href="#s1"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s3"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Closures <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+For the question "is <i>X &rarr; Y</i> derivable from <i>F</i>?" ...
+<ul>
+<li> compute the closure <i>F<sup>+</sup></i>;
+	check whether <i>X &rarr; Y &nbsp; &isin; &nbsp; F<sup>+</sup></i>
+</ul>
+<br>
+For the question "are <i>F</i> and <i>G</i> equivalent?" ...
+<ul>
+<li> compute closures <i>F<sup>+</sup></i> and <i>G<sup>+</sup></i>;
+	check whether they're equal
+</ul>
+<br>
+Unfortunately, closures can be very large, e.g.
+<p>
+<small>
+<i>R = ABC, &nbsp;&nbsp;&nbsp; F = { AB &rarr; C, &nbsp; C &rarr; B }</i> <br>
+<i>F<sup>+</sup> = { A &rarr; A, &nbsp; AB &rarr; A, &nbsp;
+	AC &rarr; A, &nbsp; AB &rarr; B, &nbsp;
+	BC &rarr; B, &nbsp; ABC &rarr; B, &nbsp;
+<br> &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+	C &rarr; C, &nbsp; AC &rarr; C, &nbsp;
+	BC &rarr; C, &nbsp; ABC &rarr; C, &nbsp;
+	AB &rarr; AB, &nbsp; . . . . . . ,
+<br> &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+        AB &rarr; ABC, &nbsp; AB &rarr; ABC, &nbsp;
+	C &rarr; B, &nbsp; C &rarr; BC, &nbsp;
+	AC &rarr; B, &nbsp; AC &rarr; AB }</i>
+</small>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Inference on FDs &#9826; [2/11]</div> <DIV class='slideCl1    ' id="s3"  >
+<div class='navCl1'><a href="#s2"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s4"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Closures <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Algorithms based on <i>F<sup>+</sup></i> rapidly become infeasible.
+<p>
+To solve this problem ...
+<ul>
+<li>  use closures based on sets of attributes rather than sets of <i>fd</i>s.
+</ul>
+<p>
+Given a set <i>X</i> of attributes and a set <i>F</i> of <i>fd</i>s,
+the <font color='#0000BB'>closure</font> of <i>X</i> (denoted <i>X<sup>+</sup></i>) is
+<ul>
+<li> the largest set of attributes that can be derived from <i>X</i> using
+<i>F</i>
+</ul>
+<p>
+Determining X+ from {X&rarr;Y, Y&rarr;Z} &nbsp;...&nbsp; X &rarr; XY &rarr; XYZ = X+
+<p>
+For computation, |<i>X<sup>+</sup></i>| is bounded by the number of attributes.
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Inference on FDs &#9826; [3/11]</div> <DIV class='slideCl1    ' id="s4"  >
+<div class='navCl1'><a href="#s3"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s5"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Closures <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<br>
+Algorithm for computing attribute closure:
+<p><pre>
+<font color="#000099">Input:</font> F <small>(set of FDs)</small>, X <small>(starting attributes)</small>
+<font color="#000099">Output:</font> X+ <small>(attribute closure)</small>
+
+Closure = X
+while (not done) {
+   OldClosure = Closure
+   for each A &rarr; B such that A &sub; Closure
+      add B to Closure
+   if (Closure == OldClosure) done = true
+}
+</pre><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Inference on FDs &#9826; [4/11]</div> <DIV class='slideCl1    ' id="s5"  >
+<div class='navCl1'><a href="#s4"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s6"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Closures <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+For the question "is <i>X &rarr; Y</i> derivable from <i>F</i>?" ...
+<ul>
+<li> compute the closure <i>X<sup>+</sup></i>,
+	check whether <i>Y &nbsp; &sub; &nbsp; X<sup>+</sup></i>
+</ul>
+<br>
+For the question "are <i>F</i> and <i>G</i> equivalent?" ...
+<ul>
+<li> for each dependency in <i>G</i>, check whether derivable from <i>F</i>
+<li> for each dependency in <i>F</i>, check whether derivable from <i>G</i>
+<li> if true for all, then 
+	<i>F &rArr; G</i> and <i>G &rArr; F</i>
+	which implies <i>F<sup>+</sup> = G<sup>+</sup></i>
+</ul>
+<br>
+For the question "what are the keys of <i>R</i> implied by <i>F</i>?" ...
+<ul>
+<li> find subsets <i>K &sub; R</i> such that <i>K<sup>+</sup> = R</i>
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Inference on FDs &#9826; [5/11]</div> <DIV class='slideCl1    ' id="s6"  >
+<div class='navCl1'><a href="#s5"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s7"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Determining Keys</div></td><td align='right'></td></tr></table>
+<p>
+Example: determine  primary keys for each of the following:
+<ol>
+<li> <i> FD &nbsp;=&nbsp; { A &rarr; B, C &rarr; D, E &rarr; FG }</i>
+<ul>
+<li> A? &nbsp;A+ = AB, so no ... &nbsp;AB? &nbsp;AB+ = ABCD, so no 
+<li> ACE? &nbsp;ACE+ = ABCDEFG, so yes!
+</ul>
+<br>
+<li> <i> FD &nbsp;=&nbsp; { A &rarr; B, B &rarr; C, C &rarr; D }</i>
+<ul>
+<li> B? &nbsp;B+ = BCD, so no ... &nbsp;A? &nbsp;A+ = ABCD, so yes!
+</ul>
+<br>
+<li> <i> FD &nbsp;=&nbsp; { A &rarr; B, B &rarr; C, C &rarr; A }</i>
+<ul>
+<li> A? &nbsp;A+ = ABC, so yes! ... &nbsp;B? &nbsp;B+ = ABC, so yes!
+</ul>
+</ol>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Inference on FDs &#9826; [6/11]</div> <DIV class='slideCl1    ' id="s7"  >
+<div class='navCl1'><a href="#s6"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s8"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Minimal Covers</div></td><td align='right'></td></tr></table>
+<p>
+For a given application, we can define many different sets of
+<i>fd</i>s with the same closure
+(e.g. <i>F</i> and <i>G</i> where <i>F<sup>+</sup> = G<sup>+</sup></i>)
+<p>
+Which one is best to "model" the application?
+<ul>
+<li> any model has to be complete <small>(i.e. capture entire semantics)</small>
+<li> models should be as small as possible <br>
+	<small>(we use them to check DB validity after update; less checking is better)</small>
+</ul>
+If we can ...
+<ul>
+<li> determine a number of candidate <i>fd</i> sets, <i>F</i>, <i>G</i> and <i>H</i>
+<li> establish that <i>F<sup>+</sup> = G<sup>+</sup> = H<sup>+</sup></i>
+<li> we would then choose the smallest one for our "model"
+</ul>
+Better still, can we <i>derive</i> the smallest complete set of <i>fd</i>s?
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Inference on FDs &#9826; [7/11]</div> <DIV class='slideCl1    ' id="s8"  >
+<div class='navCl1'><a href="#s7"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s9"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Minimal Covers <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<font color='#0000BB'>Minimal cover</font> <i>F<sub>c</sub></i> &nbsp;for a set <i>F</i> of <i>fd</i> s:
+<ul>
+<li> <i>F<sub>c</sub></i> is equivalent to <i>F</i>
+<li> all <i>fd</i>s have the form <i>X &rarr; A</i>
+	<small>(where <i>A</i> is a single attribute)</small>
+<li> it is not possible to make <i>F<sub>c</sub></i> smaller
+<ul>
+<li> either by deleting an <i>fd</i>
+<li> or by deleting an attribute from an <i>fd</i>
+</ul>
+</ul>
+An <i>fd</i> <i>d</i> is redundant if <i>(F-{d})<sup>+</sup> = F<sup>+</sup></i>
+<p>
+An attribute <i>a</i> is redundant if <i>(F-{d}&cup;{d'})<sup>+</sup> = F<sup>+</sup></i> <br>
+<small>(where <i>d'</i> is the same as <i>d</i> but with attribute <i>A</i> removed)</small>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Inference on FDs &#9826; [8/11]</div> <DIV class='slideCl1    ' id="s9"  >
+<div class='navCl1'><a href="#s8"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s10"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Minimal Covers <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Algorithm for computing minimal cover:
+<p><pre>
+<font color="#000099">Inputs</font>: set <i>F</i> of <i>fd</i>s
+<font color="#000099">Output</font>: minimal cover <i>F<sub>c</sub></i> of <i>F</i>
+<i>F<sub>c</sub></i> = <i>F</i>
+Step 1: put <i>f &isin; F<sub>c</sub></i> into canonical form
+Step 2: eliminate redundant attributes from <i>f &isin; F<sub>c</sub></i>
+Step 3: eliminate redundant <i>fd</i>s from <i>F<sub>c</sub></i>
+</pre><p>
+Step 1: put <i>fd</i> s into canonical form
+<p><pre>
+for each <i>f &isin; F<sub>c</sub></i> like <i>X &rarr; {A<sub>1</sub>,...,A<sub>n</sub>}</i>
+    remove <i>X &rarr; {A<sub>1</sub>,...,A<sub>n</sub>}</i> from <i>F<sub>c</sub></i>
+    add <i>X &rarr; A<sub>1</sub></i>, ... <i>X &rarr; A<sub>n</sub></i> to <i>F<sub>c</sub></i>
+end
+</pre><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Inference on FDs &#9826; [9/11]</div> <DIV class='slideCl1    ' id="s10"  >
+<div class='navCl1'><a href="#s9"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s11"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Minimal Covers <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Step 2: eliminate redundant attributes
+<p><pre>
+for each <i>f &isin; F<sub>c</sub></i> like <i>X &rarr; A</i>
+    for each <i>b</i> in <i>X</i>
+        <i>f'</i> = <i>(X-{b}) &rarr; A</i>; &nbsp; <i>G</i> = <i>F<sub>c</sub>&nbsp;-&nbsp;{f}&nbsp;&cup;&nbsp;{f'}</i>
+        if (<i>G<sup>+</sup></i> == <i>F<sub>c</sub><sup>+</sup></i>) <i>F<sub>c</sub></i> = <i>G</i>
+    end
+end
+</pre><p>
+Step 3: eliminate redundant functional dependencies
+<p><pre>
+for each <i>f &isin; F<sub>c</sub></i>
+    <i>G</i> = <i>F<sub>c</sub>&nbsp;-&nbsp;{f}</i>
+    if (<i>G<sup>+</sup></i> == <i>F<sub>c</sub><sup>+</sup></i>) <i>F<sub>c</sub></i> = <i>G</i>
+end
+</pre><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Inference on FDs &#9826; [10/11]</div> <DIV class='slideCl1    ' id="s11"  >
+<div class='navCl1'><a href="#s10"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>   </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Minimal Covers <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<br>
+Example: compute minimal cover
+<p>
+E.g. <i>R = ABC</i>, <i>F = { A &rarr; BC, &nbsp;
+	B &rarr; C, &nbsp; A &rarr; B, &nbsp; AB &rarr; C }</i>
+<p>
+Working ...
+<ul>
+<li> canonical <i>fd</i>s:
+	<i>A &rarr; B, &nbsp; A &rarr; C, &nbsp; B &rarr; C, &nbsp; AB &rarr; C</i>
+<li> redundant attrs: 
+	<i>A &rarr; B, &nbsp; A &rarr; C, &nbsp; B &rarr; C, &nbsp; A<font color="#008800">B</font> &rarr; C</i>
+<li> redundant <i>fd</i>s:
+	<i>A &rarr; B, &nbsp; <font color="#008800">A &rarr; C</font>, &nbsp; B &rarr; C</i>
+</ul>
+This gives the minimal cover &nbsp; <i>F<sub>c</sub> = { A &rarr; B, &nbsp; B &rarr; C }</i>.
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Inference on FDs &#9826; [11/11]</div><p><hr><p>
+<span style='font-size:11px;color: grey;'>Produced: 4 Nov 2020</span>
+ <script src='lib/prism.js'></script>   
+ <script src='lib/sg.js'></script>   
+</body>
+</html>

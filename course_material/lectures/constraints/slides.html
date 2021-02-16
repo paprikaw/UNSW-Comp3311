@@ -1,0 +1,147 @@
+<html>
+<head>
+<title>Constraints</title>
+<link href='lib/slides.css' rel='stylesheet' type='text/css'>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML" async></script>
+<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js'></script>
+<link href='https://fonts.googleapis.com/css?family=Lato' rel='stylesheet'>
+<link href='lib/prism.css' rel='stylesheet'>
+<script src='lib/sg.js'></script>
+</head>
+<body>
+ <DIV class='slideCl1' id="s0"  >
+<div class='navCl1'><a href="#s1"><span class='nextArrowCl'>>></span></a> </div> <div class='heading'>Constraints</div><p><ul class='indexUl'  style='font-size: 0.7em;'><li class="i"> <a href="#s1">Constraints</a>
+<li class="i"> <a href="#s3">Assertions</a>
+</ul></DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Constraints &#9826; [0/6]</div> <DIV class='slideCl1    ' id="s1"  >
+<div class='navCl1'> <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s2"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Constraints</div></td><td align='right'></td></tr></table>
+<p>
+So far, we have considered several kinds of constraints:
+<ul>
+<li> <font color="#0000EE">attribute</font> (column) constraints
+<li> <font color="#CC0000">relation</font> (table) constraints
+<li> <font color="#009900">referential integrity</font> constraints
+</ul>
+Examples:
+<p><pre style="font-size:90%">
+create table Employee (
+   id      <font color="#0000EE">integer</font> <font color="#CC0000">primary key</font>,
+   name    <font color="#0000EE">varchar(40)</font>,
+   salary  <font color="#0000EE">real</font>,
+   age     <font color="#0000EE">integer check (age > 15)</font>,
+   worksIn <font color="#0000EE">integer</font>
+              <font color="#009900">references Department(id)</font>,
+   <font color="#CC0000">constraint PayOk check (salary > age*1000)</font>
+);
+</pre><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Constraints &#9826; [1/6]</div> <DIV class='slideCl1    ' id="s2"  >
+<div class='navCl1'><a href="#s1"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s3"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Constraints <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Column and table constraints ensure validity of one table.
+<p>
+Ref. integrity constraints ensure connections between tables are valid.
+<p>
+However, specifying validity of entire database often
+requires constraints involving multiple tables.
+<p>
+Simple example (from banking domain):
+<p><pre>
+for all Branches b
+   b.assets == (select sum(acct.balance)
+                from   Accounts acct
+                where  acct.branch = b.location)
+</pre><p>
+<p>
+<small>
+i.e. assets of a branch is sum of balances of accounts held at that branch
+</small>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Constraints &#9826; [2/6]</div> <DIV class='slideCl1    ' id="s3"  >
+<div class='navCl1'><a href="#s2"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s4"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Assertions</div></td><td align='right'></td></tr></table>
+<p>
+<font color='#0000BB'>Assertions</font> are schema-level constraints
+<ul>
+<li> typically involving multiple tables
+<li> expressing a condition that must hold at all times
+<li> need to be checked on each change to relevant tables
+<li> if change would cause check to fail, reject change
+</ul>
+SQL syntax for assertions:
+<p><pre>
+CREATE ASSERTION <i>name</i> CHECK (<i>condition</i>)
+</pre><p>
+<small>
+The <i>condition</i> is expressed as "there are no violations in the database"
+<p>
+Implementation: ask a query to find all the violations; check for empty result
+</small>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Constraints &#9826; [3/6]</div> <DIV class='slideCl1    ' id="s4"  >
+<div class='navCl1'><a href="#s3"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s5"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Assertions <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<br>
+<b>Example:</b> #students in any UNSW course must be &lt; 10000
+<p><pre>
+create assertion ClassSizeConstraint check (
+   not exists (
+      select c.id
+      from   Courses c
+             join Enrolments e on (c.id = e.course)
+      group  by c.id
+      having count(e.student) &gt; 9999
+   )
+);
+</pre><p>
+Needs to be checked after <i>every</i>&nbsp; change to either
+<large><code>Courses</code></large> or <large><code>Enrolments</code></large>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Constraints &#9826; [4/6]</div> <DIV class='slideCl1    ' id="s5"  >
+<div class='navCl1'><a href="#s4"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s6"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Assertions <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<br>
+<b>Example:</b> assets of branch = sum of its account balances
+<p><pre>
+create assertion AssetsCheck check (
+   not exists (
+      select branchName from Branches b
+      where  b.assets <>
+             (select sum(a.balance) from Accounts a
+              where a.branch = b.location)
+   )
+);
+</pre><p>
+Needs to be checked after <i>every</i>&nbsp; change to either
+<large><code>Branches</code></large> or <large><code>Accounts</code></large>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Constraints &#9826; [5/6]</div> <DIV class='slideCl1    ' id="s6"  >
+<div class='navCl1'><a href="#s5"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>   </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Assertions <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+On each update, it is expensive
+<ul>
+<li> to determine which assertions need to be checked
+<li> to run the queries which check the assertions
+</ul>
+A database with many assertions would be way too slow.
+<p>
+So, most RDBMSs do <i>not</i>&nbsp; implement general assertions.
+<p>
+Typically, <font color='#0000BB'>triggers</font> are provided as
+<ul>
+<li> a lightweight mechanism for dealing with assertions
+<li> a general event-based programming tool for databases
+</ul>
+Triggers typically enforce</i>&nbsp; assertions rather than <i>checking</i>&nbsp; them
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Constraints &#9826; [6/6]</div><p><hr><p>
+<span style='font-size:11px;color: grey;'>Produced: 12 Oct 2020</span>
+ <script src='lib/prism.js'></script>   
+ <script src='lib/sg.js'></script>   
+</body>
+</html>

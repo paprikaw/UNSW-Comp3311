@@ -1,0 +1,403 @@
+<title>COMP3311 Course Overview
+<footer>COMP3311 20T3 <diamond> Overview <diamond>
+
+<slide>
+<center style="font-size:32pt;color:#336699">COMP3311 Database Systems</center>
+<vspace 1>
+<diagram>Pics/intro/pgsql.jpg
+<vspace 1>
+<table cellpadding="10px">
+<tr><td>Lecturer:</td>
+<td><i>John Shepherd</i> <~> <small>(cs3311@cse.unsw.edu.au)</small>
+</td></tr>
+<tr><td>Admin:</td>
+<td><i>Dylan Brotherston</i> <~> <small>(cs3311@cse.unsw.edu.au)</small>
+</td></tr>
+<tr valign="top">
+<td><nobr>Web Site:</nobr></td>
+<td><small>
+<navy><a href="http://webcms3.cse.unsw.edu.au/COMP3311/20T3/">http://webcms3.cse.unsw.edu.au/COMP3311/20T3/</a></navy> <br>
+or <~> <navy><a href="http://www.cse.unsw.edu.au/~cs3311/">http://www.cse.unsw.edu.au/<tilde>cs3311/</a></navy>
+</small></td></tr>
+</table>
+<p>
+<small>(If Webcms3 is unavailable, try <navy>http://www.cse.unsw.edu.au/<tilde>cs3311/20T3/</navy>)</small>
+</slide>
+
+<slide>
+<heading>Why Study Databases?
+Every significant computer application involves <big>Large Data</big>.
+<p>
+This needs to be:
+<itemize>
+<item> <green>stored</green> <~> <small>(typically on a disk device)</small>
+<item> <green>manipulated</green> <~> <small>(efficiently, usefully)</small>
+<item> <green>shared</green> <~> <small>(by many users, concurrently)</small>
+<item> <blue>transmitted</blue> <~> <small>(all around the Internet)</small>
+</itemize>
+<green>Green</green> stuff handled by databases; <~> <blue>blue</blue> by networks.
+<p>
+<small>
+Challenges in building effective databases:
+efficiency, security, scalability, maintainability,
+availability, integration, new media types <small>(e.g., music)</small>, ...
+</small>
+</slide>
+
+<slide>
+<heading>Databases: Important Themes
+The field of <em>databases</em> deals with:
+<itemize>
+<item> <em>data</em> ... representing application scenarios
+<item> <em>relationships</em> ... amongst data items
+<item> <em>constraints</em> ... on data and relationships
+<item> <em>redundancy</em> ... one source for each data item
+<item> <em>data manipulation</em> ... declarative, procedural
+<item> <em>transactions</em> ... multiple actions, atomic effect
+<item> <em>concurrency</em> ... multiple users sharing data
+<item> <em>scale</em> ... massive amounts of data
+</itemize>
+</slide>
+
+<slide>
+<heading>What is Data? What is a Database?
+According to the Elmasri/Navathe textbook ...
+<p>
+<itemize>
+<item><em>Data</em> = known recorded facts, with implicit meaning
+<small>
+<itemize>
+<item>e.g. a student's name, a product id, a person's address or birthday
+</itemize>
+</small>
+<br>
+<item><em>Database</em> = collection of related data, satisfying constraints
+<small>
+<itemize>
+<item>e.g. a student <i>is enrolled in</i> a course, a product <i>is sold at</i> a store
+</itemize>
+</small>
+<br>
+<item><em>DBMS</em> = database management system
+<small>
+<itemize>
+<item>software to manage data, control access, enforce constraints
+</itemize>
+</small>
+<br>
+<item><em>RDBMS</em> = <em>relational</em> database management system
+<small>
+<itemize>
+<item>e.g. PostgreSQL, SQLite, Oracle, SQL Server, MySQL, ...
+</itemize>
+</small>
+</itemize>
+</slide>
+
+<slide>
+<heading>Studying Databases in CSE
+COMP3311 introduces foundations &amp; technology of databases
+<itemize>
+<item> skills: how to build database-backed applications
+<item> theory: how do you know that what you built was good
+</itemize>
+<br>
+After COMP3311 you can go on to study ...
+<p>
+<small>
+<itemize>
+<sitem>
+COMP9313: managing Big Data 
+ <~> <smaller>(but may not run in 2021)</smaller>
+<sitem>
+COMP9315: how to build relational DBMSs 
+ <~> <smaller>(write your own PostgreSQL)</smaller>
+<sitem>
+COMP9318: techniques for data mining 
+ <~> <smaller>(discovering patterns in DB)</smaller>
+<sitem>
+COMP9319: Web data compression and search 
+ <~> <smaller>(XML data)</smaller>
+<sitem>
+COMP6714: information retrieval, web search 
+ <~> <smaller>(dealing with text data)</smaller>
+<sitem>
+COMP9321: data services 
+ <~> <smaller>(making data available via a network)</smaller>
+</itemize>
+</small>
+</slide>
+
+<slide>
+<heading>Syllabus Overview
+Core syllabus ...
+<itemize>
+<item> Data modelling and database design
+<small>
+<itemize>
+<item> ER model, <brown>ODL</brown>, ER-to-relational
+<item> Relational model <~> <small>(design theory, algebra)</small>
+</itemize>
+</small>
+<item> Database application development
+<small>
+<itemize>
+<item> SQL, views, stored procedures, triggers, aggregates
+<item> SQLite:
+		<~> <tt>sqlite3</tt> <small>(an SQL shell)</small>
+<item> PostgreSQL:
+        <~> <tt>psql</tt> <small>(an SQL shell)</small>,
+        <~> <tt>PLpgSQL</tt> <small>(procedural)</small>,
+<item> Programming language access to databases
+	<~> <small>(Python, <brown>ORMs</brown>)</small>
+</itemize>
+</small>
+</itemize>
+</itemize>
+<br>
+The <brown>brown stuff</brown> is not covered in lectures and is not examinable
+</slide>
+
+<slide>
+<continued>
+More syllabus ...
+<itemize>
+<item> Database management systems (DBMSs)
+<small>
+<itemize>
+<item> <blue>DBMS architecture: query processing, index structures</blue>
+<item> Transaction processing: transactions, <blue>concurrency control, recovery</blue>
+</itemize>
+</small>
+<item> Future of Databases
+<small>
+<itemize>
+<item> <green>Limitations of RDBMS's, potential future technologies</green>
+</itemize>
+</small>
+</itemize>
+<br>
+<blue>Blue</blue> and <green>green stuff</green> is covered only briefly, and is not examinable
+<p>
+To learn more about the <green>green stuff</green>, take COMP9313, ...
+<p>
+To learn more about the <blue>blue stuff</blue>, take COMP9315, ...
+</slide>
+
+<slide>
+<heading>Your Background
+We assume that you ...
+<itemize>
+<item> have experience with procedural programming
+<item> have some background in data structures
+<item> hopefully, have some knowledge of Python
+</itemize>
+<br>
+You might have acquired this background in
+<itemize>
+<item> COMP1511, COMP1531, <green>COMP2521</green>
+</itemize>
+<br>
+If you don't know Python, look at some online tutorials soon.
+<p>
+e.g. https://www.python.org/about/gettingstarted/
+</slide>
+
+<slide>
+<heading>Teaching/Learning
+Stuff that is available for you:
+<itemize>
+<item> <em>Textbooks</em>: describe <em>most</em> syllabus topics in detail
+<item> <em>Topic Videos</em>: summarize <em>all</em> syllabus topics
+<item> <em>Problem-solving sessions</em>: work through examples
+<item> <em>Tutorial sessions</em>: theory questions <small>(+ solutions)</small>
+<item> <em>Prac exercises</em>: lab-like exercises
+<item> <em>Assignments</em>: more detailed practical exercises
+<item> <em>Quizzes</em>: periodic progress check
+</itemize>
+<br>
+All online. <~> If you want on-campus, wait for COMP3311 21T1.
+</slide>
+
+<slide>
+<continued>
+On the course website, you can:
+<itemize>
+<item> find out the latest course news <br>
+	<smaller>(important annoucements will also be emailed)</smaller>
+<item> view the topic-based slides/videos
+<item> get details of tute/prac exercises
+<item> get assignment specs/material
+<item> do the quizzes
+<item> get your questions answered (via the Forums)
+</itemize>
+URL:
+<url webcms3.cse.unsw.edu.au/COMP3311/20T3>https://webcms3.cse.unsw.edu.au/COMP3311/20T3/
+<p>
+<small>(If Webcms3 is unavailable, try <navy>http://www.cse.unsw.edu.au/<tilde>cs3311/20T3/</navy>)</small>
+</slide>
+
+<slide>
+<heading>Assignments
+Three assignments, which are <red>critical</red> for <em>learning</em>
+<enumerate>
+<item> SQL Schema (ER<rightarrow>SQL), 12%, due end week 4
+<item> SQL/PLpgSQL, 16%, due end week 7
+<item> Python/SQL/psycopg2, 14%, due end week 10 
+</enumerate>
+All assignments are done <em>individually</em>, and ...
+<itemize>
+<sitem> submitted via <@>give</@> or Webcms3
+<sitem> automarked <~> <small>(so you must follow specifcation exactly)</small>
+<sitem> plagiarism-checked <~> <small>(copying solutions <$><Rightarrow></$> <brown><b>0</b></brown> mark for course)</small>
+<sitem> rent-a-coder monitored <~> <small>(buying solutions <$><Rightarrow></$> <brown><b>exclusion</b></brown>)</small>
+</itemize>
+</slide>
+
+<slide>
+<heading>Quizzes
+Eight quizzes, each worth 4 marks 
+<itemize>
+<item> cover material in previous few weeks lectures
+<item> aim to check your understanding of recent material
+<item> done via Webcms3 in your own time
+<item> primarily multiple-choice
+<item> held in weeks 2, 3, 4, 5, 7, 8, 9, 10
+<item> released Monday, <~> due Friday 11:59pm
+<item> can be submitted multiple times
+</itemize>
+8<times>4 = 32, which is mapped into a mark out of 18
+<p>
+Heavy penalties for late submission 
+</slide>
+
+<slide>
+<heading>Exam
+The Final Exam includes questions on ...
+<itemize>
+<item> SQL, PLpgSQL, (Python), design exercises, analyses
+<item> 60% prac questions, 40% "theory" questions
+</itemize>
+<p>
+Online, open-web exam during exam period
+<itemize>
+<item> exam is open for 6 hours
+<item> content is what I'd put in a 3-hour in-lab exam
+<item> can work on home machine, or via <@>ssh</@>, or via <@>vlab</@>
+<item> all questions typed in and submitted online (<@>give</@>)
+</itemize>
+<p>
+Sample exam will be available on the course website in Week 10
+</slide>
+
+<slide>
+<heading>Supplementary Assessment Policy
+Everyone gets <b>exactly one chance</b> to pass the Exam
+<p>
+If you attempt the Exam 
+<itemize>
+<item> I assume that you are fit/healthy enough to take it
+<item> no 2nd chance exams, even with a medical certificate
+</itemize>
+All Special Consideration requests:
+<itemize>
+<item> must <em>document</em> how <em>you</em> were affected
+<item> must be submitted to UNSW <small>(useful to email lecturer as well)</small>
+</itemize>
+Supplementary Exams are held ... (maybe) in mid-January!
+</slide>
+
+<slide>
+<heading>Assessment Summary
+Your final mark/grade will be determined as follows:
+<program>
+quizzes = mark for on-line quizzes   (out of 18)
+ass1    = mark for assignment 1      (out of 12)
+ass2    = mark for assignment 2      (out of 16)
+ass3    = mark for assignment 3      (out of 14)
+exam    = mark for final exam        (out of 40)
+okExam  = exam >= 18                 (after scaling)
+
+mark    = ass1 + ass2 + ass3 + quizzes + exam
+
+grade   = HD|DN|CR|PS  if mark >= 50 && okExam
+        = FL           if mark <  50 && okExam
+        = UF           if !okExam
+</program>
+</slide>
+
+<slide>
+<heading>Textbook (options)
+<itemize>
+<item> Elmasri, Navathe <br>
+	<a href="https://www.pearson.com/us/higher-education/program/Elmasri-Fundamentals-of-Database-Systems-7th-Edition/PGM189052.html">Fundamentals of Database Systems</a> <small>(7th ed, 2016)</small>
+<item> Garcia-Molina, Ullman, Widom <br>
+	<a href="http://www-db.stanford.edu/~ullman/dscb.html">Database Systems: The Complete Book</a> <small>(2nd ed, 2008)</small>
+<item> Ramakrishan, Gehrke <br>
+	<a href="http://www.cs.wisc.edu/~dbbook/">Database Management Systems</a> <small>(3rd ed, 2003)</small>
+<item> Silberschatz, Korth, Sudarshan <br>
+	<a href="http://db-book.com/">Database System Concepts</a> <small>(7th ed, 2019)</small>
+<item> Kifer, Bernstein, Lewis <br>
+	<a href="https://www.pearson.com/us/higher-education/program/Kifer-Database-Systems-An-Application-Oriented-Approach-Compete-Version-2nd-Edition/PGM268925.html">Database Systems: Application-Oriented Approach</a> <small>(2nd ed, 2006)</small>
+</itemize>
+Earlier editions of texts are ok
+</slide>
+
+<slide>
+<heading>Database Management Systems
+Two example DBMSs for prac work:
+<itemize>
+<item> SQLite <small>(open-source, free, no server needed)</small>
+<item> PostgreSQL <small>(open-source, free, full-featured)</small>
+</itemize>
+Comments on using a specific DBMS:
+<itemize>
+<item> the primary goal is to learn SQL (a standard)
+<item> the specific DBMS is not especially important **
+<item> but, each DBMS implements non-standard features
+<item> we will use standard SQL as much as possible
+<item> PG docs describe all deviations from standard
+</itemize>
+<br>
+<small>
+** Unless it seriously violates SQL standards ... I mean you, MySQL
+</small>
+</slide>
+
+<slide>
+<heading>Further Reading Material
+The on-line documentation and manuals provided with:
+<itemize>
+<item> <a href="http://www.sqlite.org/docs.html">SQLite</a> are reasonably good
+<item> <a href="http://www.postgresql.org/docs/">PostgreSQL</a> are very good
+<item> <a href="http://www.python.org/">Python</a> are similarly comprehensive
+</itemize>
+Some comments on technology books:
+<itemize>
+<sitem> tend to be expensive and short-lived
+<sitem> many provide just the manual, plus some examples
+<sitem> generally, anything published by O'Reilly is useful
+</itemize>
+<small>Aside: once you understand the concepts, the manual is sufficient</small>
+</slide>
+
+<slide>
+<heading>Home Computing
+Software versions that we'll be running this semester (TBC):
+<itemize>
+<item> PostgreSQL <small>12</small>, <~> SQLite <small>3.27</small>, <~> Python <small>3.7</small>, <~> psycopg2 <small>2.8</small>
+</itemize>
+If you install them at home:
+<itemize>
+<item> get versions <q>close to</q> these
+<item> <red>test all work at CSE before submitting</red>
+</itemize>
+Alternative to installing at home:
+<itemize>
+<item> run them on the CSE servers (grieg) as you would in labs
+<item> use <@>vlab</@> to log in to a CSE server from home
+</itemize>
+<smaller>
+Details on setting up a PostgreSQL server on grieg are in the first Prac Exercise.
+</smaller>
+</slide>

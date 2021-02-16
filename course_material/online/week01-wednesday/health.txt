@@ -1,0 +1,17 @@
+
+Entities ...
+
+Person(+SSN, name)
+Patient(*SSN, address, date-of-birth, ?age)
+Doctor(*SSN, specialty, years-of-experience)
+Pharmacist(*SSN, qualification)
+
+Pharmacy
+Drug
+
+
+
+Relationships ...
+
+Pharmacy -- managed-by -- Pharmacist
+Pharmacist -- manages -- Pharmacy

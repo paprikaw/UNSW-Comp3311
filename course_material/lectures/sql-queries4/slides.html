@@ -1,0 +1,253 @@
+<html>
+<head>
+<title>SQL Queries (iv): Grouping</title>
+<link href='lib/slides.css' rel='stylesheet' type='text/css'>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML" async></script>
+<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js'></script>
+<link href='https://fonts.googleapis.com/css?family=Lato' rel='stylesheet'>
+<link href='lib/prism.css' rel='stylesheet'>
+<script src='lib/sg.js'></script>
+</head>
+<body>
+ <DIV class='slideCl1' id="s0"  >
+<div class='navCl1'><a href="#s1"><span class='nextArrowCl'>>></span></a> </div> <div class='heading'>SQL Queries (iv): Grouping</div><p><ul class='indexUl'  style='font-size: 0.7em;'><li class="i"> <a href="#s1">Grouping</a>
+<li class="i"> <a href="#s4"> Restrictions on <large><code>SELECT</code></large> Lists</a>
+<li class="i"> <a href="#s5">Filtering Groups</a>
+<li class="i"> <a href="#s9">Partitions</a>
+</ul></DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; SQL Grouping &#9826; [0/12]</div> <DIV class='slideCl1    ' id="s1"  >
+<div class='navCl1'> <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s2"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Grouping</div></td><td align='right'></td></tr></table>
+<p>
+<large><code>SELECT-FROM-WHERE</code></large> can be followed by <large><code>GROUP BY</code></large> to:
+<ul>
+<li> partition result relation into groups &nbsp; 
+	<span class="smaller">(according to values of specified attribute)</span>
+<li> summarise (aggregate) some aspects of each group
+<li> output one tuple per group, with grouping attribute and aggregates
+</ul>
+<p>
+<p><div align='center'>
+<img alt="[Diagram:Pics/sql/group-by.png]" src="Pics/sql/group-by.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; SQL Grouping &#9826; [1/12]</div> <DIV class='slideCl1    ' id="s2"  >
+<div class='navCl1'><a href="#s1"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s3"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Grouping <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<b>Example:</b> How many different beers does each brewer make?
+<p><pre style="font-size:90%">
+SELECT   brewer, COUNT(name) as nbeers
+FROM     Beers
+GROUP BY brewer;
+
+       brewer        | nbeers 
+---------------------+--------
+ West City           |      1
+ James Squire        |      5
+ Yullis              |      1
+ Hop Nation          |      4
+ Anderson Valley     |      1
+ Beatnik             |      1
+ Boatrocker          |      3
+ Kizakura            |      1
+ ...
+</pre><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; SQL Grouping &#9826; [2/12]</div> <DIV class='slideCl1    ' id="s3"  >
+<div class='navCl1'><a href="#s2"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s4"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Grouping <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<large><code>GROUP BY</code></large>&nbsp; is used as follows:
+<p><pre>
+SELECT   <i><font color="#0000EE">attributes</font>/aggregations</i>
+FROM     <i>relations</i>
+WHERE    <i>condition</i>
+GROUP BY <i><font color="#0000EE">attributes</font></i>
+</pre><p>
+Semantics:
+<ol>
+<li> apply product and selection as for <large><code>SELECT-FROM-WHERE</code></large>
+<li> partition result into groups based on values of <i>attributes</i>
+<li> apply any aggregation separately to each group
+</ol>
+<br>
+Grouping is typically used in queries involving the phrase "for each".
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; SQL Grouping &#9826; [3/12]</div> <DIV class='slideCl1    ' id="s4"  >
+<div class='navCl1'><a href="#s3"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s5"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070;  Restrictions on <large><code>SELECT</code></large> Lists</div></td><td align='right'></td></tr></table>
+<p>
+When using grouping, every attribute in the <large><code>SELECT</code></large> list must:
+<ul>
+<li> have an aggregation operator applied to it &nbsp;&nbsp; OR
+<li> appear in the <large><code>GROUP-BY</code></large> clause
+</ul>
+<b>Incorrect Example:</b>
+Find the styles associated with each brewer
+<p><pre>
+SELECT   brewer, style
+FROM     Beers
+GROUP BY brewer;
+</pre><p>
+PostgreSQL's response to this query:
+<p><pre style="font-size:90%">
+ERROR: column beers.style must appear in the GROUP BY 
+         clause or be used in an aggregate function
+</pre><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; SQL Grouping &#9826; [4/12]</div> <DIV class='slideCl1    ' id="s5"  >
+<div class='navCl1'><a href="#s4"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s6"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Filtering Groups</div></td><td align='right'></td></tr></table>
+<p>
+<br>
+In some queries, you can use the <large><code>WHERE</code></large> condition to
+eliminate groups.
+<p>
+<b>Example:</b> Average beer price by suburb excluding hotels in The Rocks.
+<p><pre>
+SELECT   b.addr, AVG(s.price)
+FROM     Sells s join Bars b on (s.bar=b.name)
+WHERE    b.addr &lt;&gt; 'The Rocks'
+GROUP BY b.addr;
+</pre><p>
+For conditions on whole groups, use the <large><code>HAVING</code></large> clause.
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; SQL Grouping &#9826; [5/12]</div> <DIV class='slideCl1    ' id="s6"  >
+<div class='navCl1'><a href="#s5"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s7"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Filtering Groups <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<large><code>HAVING</code></large> is used to qualify a <large><code>GROUP-BY</code></large> clause:
+<p><pre>
+SELECT   <i>attributes/aggregations</i>
+FROM     <i>relations</i>
+WHERE    <i>condition<sub>1</sub></i>   <span class='comment'>(on tuples)</span>
+GROUP BY <i>attributes</i>
+HAVING   <i>condition<sub>2</sub></i>;  <span class='comment'>(on group)</span>
+</pre><p>
+Semantics of <large><code>HAVING</code></large>:
+<ol>
+<li> generate the groups as for <large><code>GROUP-BY</code></large>
+<li> discard groups <font color='#0000BB'>not</font> satisfying <large><code>HAVING</code></large> condition
+<li> apply aggregations to remaining groups
+</ol>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; SQL Grouping &#9826; [6/12]</div> <DIV class='slideCl1    ' id="s7"  >
+<div class='navCl1'><a href="#s6"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s8"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Filtering Groups <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<b>Example:</b> Number of styles from brewers who make at least 5 beers?
+<p><pre style="font-size:80%">
+SELECT   brewer, count(name) as nbeers,
+         count(distinct style) as nstyles
+FROM     Beers
+GROUP BY brewer
+HAVING   count(name) > 4
+ORDER BY brewer;
+
+      brewer       | nbeers | nstyles 
+-------------------+--------+---------
+ Bentspoke         |      9 |       7
+ Carlton           |      5 |       2
+ Frenchies         |      5 |       5
+ Hawkers           |      5 |       5
+ James Squire      |      5 |       4
+ One Drop          |      9 |       7
+ Sierra Nevada     |      5 |       5
+ Tallboy and Moose |      5 |       5
+</pre><p>
+<large><code>distinct</code></large> required, otherwise &nbsp;<large><code>nbeers=nstyles</code></large>&nbsp; for all brewers
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; SQL Grouping &#9826; [7/12]</div> <DIV class='slideCl1    ' id="s8"  >
+<div class='navCl1'><a href="#s7"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s9"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Filtering Groups <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<br>
+Alternative formulation of division using &nbsp;<large><code>GROUP-BY</code></large>&nbsp; and &nbsp;<large><code>HAVING</code></large>&nbsp;
+<p>
+<b>Example:</b> Find bars that each sell all of the beers Justin likes.
+<p><pre>
+SELECT DISTINCT S.bar
+FROM   Sells S, Likes L on (S.beer = L.beer)
+WHERE  L.drinker = 'Justin'
+GROUP  BY S.bar
+HAVING count(S.beer) =
+           (SELECT count(beer) FROM Likes
+            WHERE drinker = 'Justin');
+</pre><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; SQL Grouping &#9826; [8/12]</div> <DIV class='slideCl1    ' id="s9"  >
+<div class='navCl1'><a href="#s8"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s10"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Partitions</div></td><td align='right'></td></tr></table>
+<p>
+Sometimes it is useful to
+<ul>
+<li> partition a table into groups
+<li> compute results that apply to each group
+<li> use these results with individual tuples in the group
+</ul>
+Comparison with <large><code>GROUP-BY</code></large>
+<ul>
+<li> <large><code>GROUP-BY</code></large> produces one tuple for each group
+<li> <large><code>PARTITION</code></large> augments each tuple with group-based value(s)
+<li> can use other functions than aggregates <small>(e.g. ranking)</small>
+<li> can use attributes other than the partitioning ones
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; SQL Grouping &#9826; [9/12]</div> <DIV class='slideCl1    ' id="s10"  >
+<div class='navCl1'><a href="#s9"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s11"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Partitions <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<br>
+Syntax for <large><code>PARTITION</code></large>:
+<p><pre>
+SELECT <i>attr<sub>1</sub></i>, <i>attr<sub>2</sub></i>, ...,
+       <i>aggregate<sub>1</sub></i> OVER (PARTITION BY <i>attr<sub>i</sub></i>),
+       <i>aggregate<sub>2</sub></i> OVER (PARTITION BY <i>attr<sub>j</sub></i>), ...
+FROM   <i>Table</i>
+WHERE  <i>condition on attributes</i>
+</pre><p>
+Note: the <i>condition</i> cannot include the <i>aggregate</i> value(s)
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; SQL Grouping &#9826; [10/12]</div> <DIV class='slideCl1    ' id="s11"  >
+<div class='navCl1'><a href="#s10"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s12"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Partitions <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<br>
+<b>Example:</b> show each city with daily temperature and temperature range
+<p>
+Schema: <i>Weather(city,date,temperature)</i>
+<p><pre style="font-size:90%">
+SELECT city, date, temperature
+       min(temperature) OVER (PARTITION BY city) as lowest,
+       max(temperature) OVER (PARTITION BY city) as highest
+FROM   Weather;
+</pre><p>
+Output: <i>Result(city, date, temperature, lowest, highest)</i>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; SQL Grouping &#9826; [11/12]</div> <DIV class='slideCl1    ' id="s12"  >
+<div class='navCl1'><a href="#s11"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>   </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Partitions <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Example showing &nbsp;<large><code>GROUP BY</code></large>&nbsp; and &nbsp;<large><code>PARTITION</code></large>&nbsp; difference:
+<p><br>
+<p><pre style="font-size:90%">
+SELECT city, min(temperature) max(temperature)
+FROM   Weather  GROUP BY city
+</pre><p>
+Result: one tuple for each city &nbsp; <i>Result(city,min,max)</i>
+<p><br><p>
+<p><pre style="font-size:90%">
+SELECT city,  date,  temperature as temp,
+       min(temperature) OVER (PARTITION BY city),
+       max(temperature) OVER (PARTITION BY city)
+FROM   Weather;
+</pre><p>
+Result: one tuple for each temperature measurement.
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; SQL Grouping &#9826; [12/12]</div><p><hr><p>
+<span style='font-size:11px;color: grey;'>Produced: 5 Oct 2020</span>
+ <script src='lib/prism.js'></script>   
+ <script src='lib/sg.js'></script>   
+</body>
+</html>

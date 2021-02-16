@@ -1,0 +1,239 @@
+<title>ER Model
+<footer>COMP3311 20T3 <diamond> ER Model <diamond>
+
+<slide>
+<heading> Entity-Relationship Data Modelling
+<br>
+The world is viewed as a collection of <green>inter-related</green> <navy>entities</navy>.
+<p>
+ER has three major modelling constructs:
+<itemize>
+<item> <em>attribute</em>:
+	<green>data item</green> describing a property of interest
+<item> <em>entity</em>:
+	collection of attributes describing <green>object</green> of interest
+<item> <em>relationship</em>:
+	<green>association</green> between entities (objects)
+</itemize>
+The ER model is not a standard, so notational variations exist
+<p>
+Lecture notes use notation from SKS and GUW books <small>(simple)</small>
+</slide>
+
+<slide>
+<heading> Entity-Relationship (ER) Diagrams
+<em>ER diagrams</em> are a graphical tool for data modelling.
+<p>
+An ER diagram consists of:
+<itemize>
+<item> a collection of <em>entity set</em> definitions
+<item> a collection of <em>relationship set</em> definitions
+<item> <em>attributes</em> associated with entity and relationship sets
+<item> connections between entity and relationship sets 
+</itemize>
+<br>
+<small>
+Terminology abuse:
+<itemize>
+<item> we say <q>entity</q> when we mean <q>entity set</q>
+<item> we say <q>relationship</q> when we mean <q>relationship sets</q>
+<item> we say <q>entity instance</q> ro refer to a particular entity
+</itemize>
+</small>
+</slide>
+
+<slide>
+<continued>
+<b>Example</b> ER diagram:
+<p><br>
+<diagram>Pics/er-rel/er1.png
+</slide>
+
+<slide>
+<continued>
+<b>Example</b> of attribute notations:
+<p>
+<diagram>Pics/er-rel/erattrs.png
+</slide>
+
+<slide>
+<heading>Entity Sets
+An <em>entity set</em> can be viewed as either:
+<itemize>
+<item> a set of entities with the same set of attributes
+	<small>(extensional)</small>
+<item> an abstract description of a class of entities
+	<small>(intensional)</small>
+</itemize>
+<em>Key</em> (<em>superkey</em>): any set of attributes
+<itemize>
+<item> whose set of values are distinct over entity set
+<item> natural <small>(e.g., name+address+birthday)</small>
+	 or artificial <small>(e.g., SSN)</small>
+</itemize>
+<em>Candidate key</em> = minimal superkey <small>(no subset is a key)</small>
+<p>
+<em>Primary key</em> = candidate key chosen by DB designer
+<p>
+Keys are indicated in ER diagrams by underlining
+</slide>
+
+<slide>
+<heading>Keys
+Sometimes primary keys are obvious ...
+<p>
+<diagram>Pics/er-rel/keys
+</slide>
+
+<slide>
+<heading>Example: Identifying Keys
+Candidate keys in the following ER diagram ...
+<p>
+<diagram>Pics/er-rel/keys2
+<br>
+Possibilities:
+<~> {studentID},
+<~> {phone},
+<~> {email},
+<~> {name,address,d-o-b}?
+</slide>
+
+<slide>
+<heading>Relationship Sets
+<em>Relationship</em>: an association among several entities
+<itemize>
+<item> e.g., Customer(9876) <~> <green>is the owner of</green> <~> Account(12345)
+</itemize>
+<em>Relationship set</em>: collection of relationships of the same type
+<p>
+<em>Degree</em> = # entities involved in reln <small>(in ER model, <$><geq> 2</$>)</small>
+<p>
+<em>Cardinality</em> = # associated entities on each side of reln
+<p>
+<em>Participation</em> = must every entity be in the relationship
+<p>
+<b>Example:</b> relationship participation
+<p>
+<diagram>Pics/er-rel/participation.png
+</slide>
+
+<slide>
+<continued>
+<b>Examples:</b> relationship degree
+<p><br>
+<diagram>Pics/er-rel/reln-degree.png
+</slide>
+
+<slide>
+<continued>
+<b>Examples:</b> relationship cardinality
+<p><br>
+<diagram>Pics/er-rel/cardinal.png
+</slide>
+
+<slide>
+<heading>Example: Relationship Semantics
+Semantics of the following relationships ...
+<diagram>Pics/er-rel/example-rel
+</slide>
+
+<slide>
+<continued>
+In some cases, a relationship needs associated attributes.
+<p><br>
+<diagram>Pics/er-rel/relattr.png
+<p><br>
+<small>(Price and quantity are related to products in a particular shop)</small>
+</slide>
+
+<slide>
+<heading>Weak Entity Sets
+Weak entities
+<itemize>
+<item> exist only because of association with strong entities.
+<item> have no key of their own; have a <em>discriminator</em>
+</itemize>
+Example:
+<diagram>Pics/er-rel/weakent.png
+</slide>
+
+<slide>
+<heading>Subclasses and Inheritance
+A <em>subclass</em> of an entity set <$>A</$> is a set of entities:
+<itemize>
+<item> with all attributes of <$>A</$>, plus (usually) it own attributes
+<item> that is involved in all of <$>A</$>'s relationships, plus its own
+</itemize>
+Properties of subclasses:
+<itemize>
+<item> <em>overlapping</em> or <em>disjoint</em> <small>(can an entity be in multiple subclasses?)</small>
+<item> <em>total</em> or <em>partial</em> <small>(does every entity have to also be in a subclass?)</small>
+</itemize>
+Special case: entity has one subclass (<q>B <em>is-a</em> A</q> specialisation)
+<p><br>
+<diagram>Pics/er-rel/is-a
+</slide>
+
+<slide>
+<continued>
+Example:
+<diagram>Pics/er-rel/inherit.png
+</slide>
+
+<slide>
+<heading>Design Using the ER Model
+<br>
+ER model: simple, powerful set of data modelling tools
+<p>
+Some considerations in designing ER models:
+<itemize>
+<item> should an <q>object</q> be represented by an attribute or entity?
+<item> is a <q>concept</q> best expressed as an entity or relationship?
+<item> should we use <$>n</$>-way relationship or several 2-way relationships?
+<item> is an <q>object</q> a strong or weak entity? (usually strong)
+<item> are there subclasses/superclasses within the entities?
+</itemize>
+<small>
+Answers to above are worked out by <i>thinking</i> about the application domain.
+</small>
+</slide>
+
+<slide>
+<heading>Large ER Diagrams
+<br>
+ER diagrams are typically too large to fit on a single screen <br>
+<small>(or a single sheet of paper, if printing)</small>
+<p>
+One commonly used strategy:
+<itemize>
+<item> define entity sets separately, showing attributes
+<item> combine entitities and relationships on a single diagram <br>
+	<small>(but without showing entity attributes)</small>
+<item> if very large design, may use several linked diagrams
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Example of drawing large ER diagram:
+<br>
+<diagram>Pics/er-rel/large-ER
+</slide>
+
+<slide>
+<heading>Summary of ER
+<br>
+ER model is popular for doing conceptual design
+<itemize>
+<item> high-level, models relatively easy to understand
+<item> good expressive power, can capture many details
+</itemize>
+Basic constructs: <~> <em>entities, <~> relationships, <~> attributes</em>
+<p>
+Relationship constraints: <~> <em>total / partial, <~> n:m / 1:n / 1:1</em>
+<p>
+Other constructs: <~> <em>inheritance hierarchies, <~> weak entities</em>
+<p>
+Many notational variants of ER exist <br>
+<small>(especially in the expression of constraints on relationships)</small>
+</slide>

@@ -1,0 +1,501 @@
+<html>
+<head>
+<title>Mapping ER to SQL</title>
+<link href='lib/slides.css' rel='stylesheet' type='text/css'>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML" async></script>
+<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js'></script>
+<link href='https://fonts.googleapis.com/css?family=Lato' rel='stylesheet'>
+<link href='lib/prism.css' rel='stylesheet'>
+<script src='lib/sg.js'></script>
+</head>
+<body>
+ <DIV class='slideCl1' id="s0"  >
+<div class='navCl1'><a href="#s1"><span class='nextArrowCl'>>></span></a> </div> <div class='heading'>Mapping ER to SQL</div><p><ul class='indexUl'  style='font-size: 0.7em;'><li class="i"> <a href="#s1">Mapping ER to SQL</a>
+<li class="i"> <a href="#s2">Reminder: SQL/Relational Model vs ER Model</a>
+<li class="i"> <a href="#s3">Mapping ER to SQL</a>
+<li class="i"> <a href="#s4">Mapping Strong Entities</a>
+<li class="i"> <a href="#s5">Mapping Weak Entities</a>
+<li class="i"> <a href="#s6">Mapping N:M Relationships</a>
+<li class="i"> <a href="#s8">Mapping 1:N Relationships</a>
+<li class="i"> <a href="#s10">Mapping 1:1 Relationships</a>
+<li class="i"> <a href="#s12">Mapping n-way Relationships</a>
+<li class="i"> <a href="#s14">Mapping Composite Attributes</a>
+<li class="i"> <a href="#s16">Mapping Multi-valued Attributes (MVAs)</a>
+<li class="i"> <a href="#s18">Mapping Subclasses</a>
+</ul></DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; ER->SQL Mapping &#9826; [0/26]</div> <DIV class='slideCl1    ' id="s1"  >
+<div class='navCl1'> <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s2"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Mapping ER to SQL</div></td><td align='right'></td></tr></table>
+<p>
+<br>
+We have explored mapping ER designs to relational schemas
+<p>
+SQL schemas are essentially more detailed versions of relational schemas
+<p>
+The mapping is much the same, except that
+<ul>
+<li> you need to provide more details on allowed values
+<li> you can map some ideas from ER that are not in relational schemas
+</ul>
+There are also some ideas from ER than do not map to an SQL schema
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; ER->SQL Mapping &#9826; [1/26]</div> <DIV class='slideCl1    ' id="s2"  >
+<div class='navCl1'><a href="#s1"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s3"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Reminder: SQL/Relational Model vs ER Model</div></td><td align='right'></td></tr></table>
+<p>
+Correspondences between SQL/relational and ER data models:
+<ul>
+<li> attribute<small>(ER)</small> <i>&cong;</i> attribute<small>(Rel)</small>,&nbsp;
+entity<small>(ER)</small> <i>&cong;</i> row/tuple<small>(Rel)</small>
+<li> entity set<small>(ER)</small> <i>&cong;</i> table/relation<small>(Rel)</small>,&nbsp;
+relationship<small>(ER)</small> <i>&cong;</i> table/relation<small>(Rel)</small>
+</ul>
+Differences between SQL and ER models:
+<ul>
+<li> SQL uses tables to model entities <i>and</i> relationships
+<li> SQL has no composite or multi-valued attributes <small>(only atomic)</small>
+<li> SQL has no object-oriented notions <small>(e.g. subclasses, inheritance)</small>
+</ul>
+<small>
+Note that ...
+<ul>
+<li> not all aspects of ER can be represented exactly in an SQL schema
+<li> some aspects of SQL schemas (e.g. domains) do not appear in ER
+</ul>
+</small>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; ER->SQL Mapping &#9826; [2/26]</div> <DIV class='slideCl1    ' id="s3"  >
+<div class='navCl1'><a href="#s2"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s4"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Mapping ER to SQL</div></td><td align='right'></td></tr></table>
+<p>
+Some conventions that we use in mapping ER to SQL
+<ul>
+<li> stop using upper-case for SQL keywords <small>(use &nbsp;<large><code>table</code></large>&nbsp; vs &nbsp;<large><code>TABLE</code></large>&nbsp;)</small>
+<li> all tables based on entities are given plural names
+<li> attributes in entities are given the same name in ER and SQL
+<li> attributes in relationships are given the same name in ER and SQL
+<li> ER key attributes are defined using <large><code>primary key</code></large>
+<li> text-based attributes are defined with type <large><code>text</code></large>, <br>
+	unless there is a size which is obvious from the context
+<li> attribute domains can be PostgreSQL-specific types where useful
+<li> foreign keys within entity tables are named after the relationship
+<li> foreign keys in relationship tables are named <large><code><i>table</i>_id</code></large>
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; ER->SQL Mapping &#9826; [3/26]</div> <DIV class='slideCl1    ' id="s4"  >
+<div class='navCl1'><a href="#s3"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s5"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Mapping Strong Entities</div></td><td align='right'></td></tr></table>
+<p>
+An entity set <i>E</i> with atomic attributes
+	<i>a<sub>1</sub>, a<sub>2</sub>, ... a<sub>n</sub></i>
+<p>
+maps to
+<p>
+A table <i>R</i> with attributes (columns)
+	<i>a<sub>1</sub>, a<sub>2</sub>, ... a<sub>n</sub></i>
+<p>
+Example:
+<p><div align='center'>
+<img alt="[Diagram:Pics/er-sql/strongent.png]" src="Pics/er-sql/strongent.png">
+</div><p>
+<br>
+Note: the key is preserved in the mapping.
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; ER->SQL Mapping &#9826; [4/26]</div> <DIV class='slideCl1    ' id="s5"  >
+<div class='navCl1'><a href="#s4"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s6"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Mapping Weak Entities</div></td><td align='right'></td></tr></table>
+<p>
+Example:
+<p><div align='center'>
+<img alt="[Diagram:Pics/er-sql/mapwkent.png]" src="Pics/er-sql/mapwkent.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; ER->SQL Mapping &#9826; [5/26]</div> <DIV class='slideCl1    ' id="s6"  >
+<div class='navCl1'><a href="#s5"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s7"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Mapping N:M Relationships</div></td><td align='right'></td></tr></table>
+<p>
+Example:
+<p><div align='center'>
+<img alt="[Diagram:Pics/er-rel/mapnnrel.png]" src="Pics/er-rel/mapnnrel.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; ER->SQL Mapping &#9826; [6/26]</div> <DIV class='slideCl1    ' id="s7"  >
+<div class='navCl1'><a href="#s6"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s8"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Mapping N:M Relationships <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<p><pre style="font-size:90%">
+<font color="#000099">create table</font> Customers (
+    custNo  serial primary key,
+    name    text not null,
+    address text  <span class='comment'>-- don't need to know customer's address</span>
+);
+<font color="#000099">create table</font> Accounts (
+    acctNo   char(5) check (acctNo ~ '[A-Z]-[0-9]{3}'),
+    title    text not null,    <span class='comment'>-- acctNos are like 'A-123'</span>
+    balance  float default 0.0,
+    primary key (acctNo)
+);
+<font color="#000099">create table</font> Owns (
+    customer_id integer references Customers(custNo),
+    account_id  char(5) references Accounts(acctNo),
+    last_accessed timestamp,
+    primary key (customer_id, account_id)
+);
+</pre><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; ER->SQL Mapping &#9826; [7/26]</div> <DIV class='slideCl1    ' id="s8"  >
+<div class='navCl1'><a href="#s7"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s9"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Mapping 1:N Relationships</div></td><td align='right'></td></tr></table>
+<p>
+Example:
+<p><div align='center'>
+<img alt="[Diagram:Pics/er-rel/map1nrel2.png]" src="Pics/er-rel/map1nrel2.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; ER->SQL Mapping &#9826; [8/26]</div> <DIV class='slideCl1    ' id="s9"  >
+<div class='navCl1'><a href="#s8"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s10"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Mapping 1:N Relationships <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<p><pre style="font-size:90%">
+<font color="#000099">create table</font> Branches (
+    branchNo serial primary key,
+    address  text not null,
+    assets   currency
+);
+<font color="#000099">create table</font> Customers (
+    custNo  serial primary key,
+    name    text not null,
+    address text,
+    hasHome integer not null, <span class='comment'>-- total participation</span>
+    joined  date not null,
+    foreign key (hasHome) references Branches(branchNo)
+);
+</pre><p>
+<small>
+<large><code>hasHome</code></large> implements the 1:n relationship; &nbsp;<large><code>not null</code></large>&nbsp; implements total participation
+</small>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; ER->SQL Mapping &#9826; [9/26]</div> <DIV class='slideCl1    ' id="s10"  >
+<div class='navCl1'><a href="#s9"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s11"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Mapping 1:1 Relationships</div></td><td align='right'></td></tr></table>
+<p>
+Example:
+<p><div align='center'>
+<img alt="[Diagram:Pics/er-rel/map11rel.png]" src="Pics/er-rel/map11rel.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; ER->SQL Mapping &#9826; [10/26]</div> <DIV class='slideCl1    ' id="s11"  >
+<div class='navCl1'><a href="#s10"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s12"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Mapping 1:1 Relationships <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<p><pre style="font-size:90%">
+<font color="#000099">create table</font> Branches (
+    branchNo serial primary key,
+    address  text not null,
+    assets   currency          <span class='comment'>-- a new branch</span>
+);                             <span class='comment'>--    may have no accounts</span>
+<font color="#000099">create table</font> Managers (
+    empNo    serial primary key,
+    name     text not null,
+    salary   currency not null, <span class='comment'>-- when first employed, </span>
+                                <span class='comment'>--    must have a salary</span>
+    manages  integer not null,  <span class='comment'>-- total participation</span>
+    foreign key (manages) references Branches(branchNo)
+);
+</pre><p>
+<small>
+If both entities have total participation, cannot express this in SQL<br>
+except by putting a (redundant) &nbsp;<large><code>not null</code></large>&nbsp; foreign key in one table
+</small>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; ER->SQL Mapping &#9826; [11/26]</div> <DIV class='slideCl1    ' id="s12"  >
+<div class='navCl1'><a href="#s11"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s13"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Mapping n-way Relationships</div></td><td align='right'></td></tr></table>
+<p>
+Example:
+<p><div align='center'>
+<img alt="[Diagram:Pics/er-sql/map-n-way.png]" src="Pics/er-sql/map-n-way.png">
+</div><p>
+<p>
+A customer accesses one of their accounts at a specific ATM
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; ER->SQL Mapping &#9826; [12/26]</div> <DIV class='slideCl1    ' id="s13"  >
+<div class='navCl1'><a href="#s12"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s14"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Mapping n-way Relationships <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<p><pre style="font-size:90%">
+<font color="#000099">create table</font> Customers (
+    custNo   serial primary key, ...
+);
+<font color="#000099">create table</font> Accounts (
+    acctNo   char(5) ... primary key, ...
+);
+<font color="#000099">create table</font> ATMs (
+    atmID    serial primary key,
+    cash     currency check (cash >= 0),
+    location text not null
+);
+<font color="#000099">create table</font> Withdrawal (
+    customer_id  integer references Customers(custNo),
+    account_id   char(5) references Accounts(acctNo),
+    atm_id       integer references ATMs(atmID),
+    amount       currency not null,
+    when         timestamp default now(),
+    primary key  (customer_id,account_id,atm_id)
+);
+</pre><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; ER->SQL Mapping &#9826; [13/26]</div> <DIV class='slideCl1    ' id="s14"  >
+<div class='navCl1'><a href="#s13"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s15"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Mapping Composite Attributes</div></td><td align='right'></td></tr></table>
+<p>
+Composite attributes are mapped by concatenation or flattening.
+<p>
+Example:
+<p><div align='center'>
+<img alt="[Diagram:Pics/er-rel/mapstrent.png]" src="Pics/er-rel/mapstrent.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; ER->SQL Mapping &#9826; [14/26]</div> <DIV class='slideCl1    ' id="s15"  >
+<div class='navCl1'><a href="#s14"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s16"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Mapping Composite Attributes <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<p><pre style="font-size:90%">
+<span class='comment'>-- Version 1: concatenated</span>
+<font color="#000099">create table</font> People (
+    ssn     integer primary key,
+    name    text not null,
+    address text not null
+);
+<span class='comment'>-- Version 2: flattened</span>
+<font color="#000099">create table</font> People (
+    ssn     integer primary key,
+    given   text not null,
+    family  text,
+    number  integer not null,
+    street  text not null,
+    suburb  text not null,
+    pcode   char(4) not null check (pcode ~ '[0-9]{4}')
+);
+</pre><p>
+<small>
+<large><code>address</code></large> &nbsp;=&nbsp; <large><code>(number::text||' '||street||', '||suburb||' '||pcode)</code></large>
+<p>
+Searching: &nbsp;<large><code>suburb = 'Coogee'</code></large>&nbsp; vs &nbsp;<large><code>address like '%Coogee%'</code></large>&nbsp;
+<p>
+Sorting: &nbsp;<large><code> order by family</code></large>&nbsp; vs &nbsp;can't be done (easily)
+</small>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; ER->SQL Mapping &#9826; [15/26]</div> <DIV class='slideCl1    ' id="s16"  >
+<div class='navCl1'><a href="#s15"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s17"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Mapping Multi-valued Attributes (MVAs)</div></td><td align='right'></td></tr></table>
+<p>
+MVAs are mapped by a new table linking values to their entity.
+<p>
+Example:
+<p><div align='center'>
+<img alt="[Diagram:Pics/er-rel/mapmva.png]" src="Pics/er-rel/mapmva.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; ER->SQL Mapping &#9826; [16/26]</div> <DIV class='slideCl1    ' id="s17"  >
+<div class='navCl1'><a href="#s16"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s18"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Mapping Multi-valued Attributes (MVAs) <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<br>
+<p><pre>
+<font color="#000099">create table</font> People (
+    ssn      integer primary key,
+    name     text not null,
+    birthday date
+);
+<font color="#000099">create table</font> FavColour (
+    person_id integer references People(ssn),
+    colour    text,
+    primary key (person_id,colour)
+);
+</pre><p>
+<small>
+Note that &nbsp;<large><code>colour</code></large>&nbsp; is implicitly &nbsp;<large><code>not null</code></large>&nbsp; because it is part of the primary key
+</small>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; ER->SQL Mapping &#9826; [17/26]</div> <DIV class='slideCl1    ' id="s18"  >
+<div class='navCl1'><a href="#s17"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s19"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Mapping Subclasses</div></td><td align='right'></td></tr></table>
+<p>
+Three different approaches to mapping subclasses to tables:
+<ul>
+<li> ER style
+<small>
+<ul>
+<li> each entity becomes a separate table,
+<li> containing attributes of subclass + FK to superclass table
+</ul>
+</small>
+<li> object-oriented
+<small>
+<ul>
+<li> each entity becomes a separate table,
+<li> inheriting all attributes from all superclasses
+</ul>
+</small>
+<li> single table with nulls
+<small>
+<ul>
+<li> whole class hierarchy becomes one table,
+<li> containing all attributes of all subclasses (null, if unused)
+</ul>
+</small>
+</ul>
+Which mapping is best depends on how data is to be used.
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; ER->SQL Mapping &#9826; [18/26]</div> <DIV class='slideCl1    ' id="s19"  >
+<div class='navCl1'><a href="#s18"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s20"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Mapping Subclasses <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Example of ER-style mapping:
+<p><div align='center'>
+<img alt="[Diagram:Pics/er-rel/mapsubclass.png]" src="Pics/er-rel/mapsubclass.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; ER->SQL Mapping &#9826; [19/26]</div> <DIV class='slideCl1    ' id="s20"  >
+<div class='navCl1'><a href="#s19"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s21"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Mapping Subclasses <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<p><pre style="font-size:90%">
+<font color="#000099">create table</font> People (
+    ssn     integer primary key,
+    name    text not null,
+    address text
+);
+<font color="#000099">create table</font> Employees (
+    person_id integer primary key,
+    salary    currency not null,
+    position  text not null,
+    foreign key (person_id) references People(ssn)
+);
+<font color="#000099">create table</font> Managers (
+    employee_id integer primary key,
+    bonus       currency,
+    foreign key (employee_id)
+                references Employees(person_id)
+);
+</pre><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; ER->SQL Mapping &#9826; [20/26]</div> <DIV class='slideCl1    ' id="s21"  >
+<div class='navCl1'><a href="#s20"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s22"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Mapping Subclasses <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Example of object-oriented mapping:
+<p><div align='center'>
+<img alt="[Diagram:Pics/er-rel/mapsubclass2.png]" src="Pics/er-rel/mapsubclass2.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; ER->SQL Mapping &#9826; [21/26]</div> <DIV class='slideCl1    ' id="s22"  >
+<div class='navCl1'><a href="#s21"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s23"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Mapping Subclasses <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<p><pre style="font-size:90%">
+<font color="#000099">create table</font> People (
+    ssn     integer primary key,
+    name    text not null,
+    address text
+);
+<font color="#000099">create table</font> Employees (
+    ssn       integer primary key,
+    name      text not null,
+    address   text
+    salary    currency not null,
+    position  text not null,
+    foreign key (snn) references People(ssn)
+);
+<font color="#000099">create table</font> Managers (
+    ssn       integer primary key,
+    name      text not null,
+    address   text
+    salary    currency not null,
+    position  text not null,
+    bonus     currency,
+    foreign key (snn) references People(ssn)
+);
+</pre><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; ER->SQL Mapping &#9826; [22/26]</div> <DIV class='slideCl1    ' id="s23"  >
+<div class='navCl1'><a href="#s22"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s24"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Mapping Subclasses <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Example of single-table-with-nulls mapping:
+<p><div align='center'>
+<img alt="[Diagram:Pics/er-rel/mapsubclass3.png]" src="Pics/er-rel/mapsubclass3.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; ER->SQL Mapping &#9826; [23/26]</div> <DIV class='slideCl1    ' id="s24"  >
+<div class='navCl1'><a href="#s23"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s25"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Mapping Subclasses <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<p><pre style="font-size:90%">
+<font color="#000099">create table</font> People (
+    ssn       integer primary key,
+    ptype     char(1)  not null 
+                       check (ptype in ('P','E','M')),
+    name      text not null,
+    address   text
+    salary    currency,
+    position  text,
+    bonus     currency,
+    constraint subclasses check
+               ((ptype = 'P' and salary is null
+                and position is null and bonus is null)
+               or
+                (ptype = 'E' and salary is not null
+                 and position is not null and bonus is null)
+               or
+                (ptype = 'M' and salary is not null
+                 and position is not null and bonus is not null))
+);
+</pre><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; ER->SQL Mapping &#9826; [24/26]</div> <DIV class='slideCl1    ' id="s25"  >
+<div class='navCl1'><a href="#s24"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s26"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Mapping Subclasses <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Example:
+<p><div align='center'>
+<img alt="[Diagram:Pics/er-sql/map-disjoint.png]" src="Pics/er-sql/map-disjoint.png">
+</div><p>
+<br>
+Every employee is either permanent or casual, but not both.
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; ER->SQL Mapping &#9826; [25/26]</div> <DIV class='slideCl1    ' id="s26"  >
+<div class='navCl1'><a href="#s25"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>   </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Mapping Subclasses <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+ER-style mapping to SQL schema:
+<p><pre style="font-size:90%">
+<font color="#000099">create table</font> Employees (
+    empID   serial primary key,
+    name    text not null,
+    address text not null
+);
+<font color="#000099">create table</font> Permanents (
+    employee_id integer primary key,
+    salary      currency not null,
+    foreign key (employee_id) references Employees(empID)
+);
+<font color="#000099">create table</font> Casuals (
+    employee_id integer primary key,
+    pay_rate    currency not null,
+    foreign key (employee_id) references Employees(empID)
+);
+</pre><p>
+Does <i>not</i> capture either participation or disjoint-ness constraints!
+<p>
+<small>
+Would need to program a solution to this e.g web-form that requires user to enter both Employee and subclass info
+</small>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; ER->SQL Mapping &#9826; [26/26]</div><p><hr><p>
+<span style='font-size:11px;color: grey;'>Produced: 10 Feb 2021</span>
+ <script src='lib/prism.js'></script>   
+ <script src='lib/sg.js'></script>   
+</body>
+</html>

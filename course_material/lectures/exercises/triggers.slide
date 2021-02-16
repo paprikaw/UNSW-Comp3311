@@ -1,0 +1,34 @@
+<slide>
+<exercise>Triggers (1)
+Requirement: maintain assets in bank branches
+<itemize>
+<sitem> each branch has assets based on the accounts held there
+<sitem> whenever an account changes, the assets of the corresponding
+        branch should be updated to reflect this change
+</itemize>
+Some possible changes:
+<itemize>
+<sitem> a new account is opened
+<sitem> the amount of money in an account changes
+<sitem> an account moves from one branch to another
+<sitem> an account is closed
+</itemize>
+Implement triggers to maintain <@>Branch.assets</@>
+</slide>
+
+<slide>
+<exercise>Triggers (2)
+Consider a simple airline flights/bookings database:
+<program>
+Airports(<b>id</b>, code, name, city)
+Planes(<b>id</b>, craft, nseats)
+Flights(<b>id</b>, fltNum, plane, source, dest
+        departs, arrives, price, <blue>seatsAvail</blue>)
+Passengers(<b>id</b>, name, address, phone)
+Bookings(<b>pax, flight</b>, paid)
+</program>
+Write triggers to ensure that <@>Flights.seatsAvail</@>
+is consistent with number of <@>Bookings</@> on that flight.
+<p>
+Assume that we never <@>UPDATE</@> a booking <small>(only insert/delete)</small>
+</slide>

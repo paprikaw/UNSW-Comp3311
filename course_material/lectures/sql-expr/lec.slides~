@@ -1,0 +1,254 @@
+<title>SQL Expressions
+<footer>COMP3311 20T3 <diamond> SQL Expressions <diamond>
+
+<slide>
+<heading>Expressions in SQL
+Expressions in SQL involve: objects, constants, operators
+<itemize>
+<item> objects are typically names of attributes <~><smaller>(or PLpgSQL variables)</smaller>
+<item> operators may be symbols (e.g. <@>+</@>, <@>=</@>) or keywords (e.g. <@>between</@>)
+</itemize>
+<br>
+SQL constants are similar to typical programming language constants
+<itemize>
+<item> integers: <@>123</@>, <@>-5</@>; <~~> floats: <@>3.14</@>, <@>1.0e-3</@>; <~~> boolean: <@>true</@>, <@>false</@>
+</itemize>
+<br>
+But strings are substantially different
+<itemize>
+<item> <@>'...'</@> rather than <@>"..."</@>, <~> no <@>\n</@>-like "escape" chars
+<item> escape mechanisms: <~> <@>'O''Brien'</@> <~>or<~> <@>E'O\'Brien'</@> <smaller>(non-standard)</smaller>
+<item> dollar quoting: <@>$$O'Brien$$</@> <~>or<~> <@>$<i>tag</i>$O'Brien$<i>tag</i>$</@>
+</itemize>
+</slide>
+
+<slide>
+<heading>SQL Operators
+Comparison operators are defined on all types:
+<program>
+<<   >>   <<=   >>=   =   <<>>
+</program>
+In PostgreSQL, <~> <@>!=</@><~> is a synonym for <~><@><<>></@>
+	<~> <small>(but there's no <@>==</@>)</small>
+<p>
+Boolean operators <@>AND</@>, <@>OR</@>, <@>NOT</@> are also available
+<p>
+Note <@>AND</@>,<@>OR</@> are not <q>short-circuit</q> in the same way as C's <@>&&</@>,<@>||</@>
+<p>
+Most data types also have type-specific operations available
+<p>
+String comparison (e.g. <$>str<sub>1</sub></$> <@><<</@> <$>str<sub>2</sub></$>) uses dictionary order
+<p>
+<small>
+See PostgreSQL Documentation Chapter 8/9 for data types and operators
+</small>
+</slide>
+
+<slide>
+<continued>
+SQL provides pattern matching for strings via <~><@>LIKE</@><~> and <~><@>NOT LIKE</@>
+<itemize>
+<item> <@>%</@> <~> matches anything <~> (cf. regexp <@>.*</@>)
+<item> <@>_</@> <~> matches any single char <~> (cf. regexp <@>.</@>)
+</itemize>
+Examples:
+<deftable 6>
+<row>
+<col1><@>name LIKE 'Ja%'</@></col1>
+<col2><@>name</@> begins with 'Ja'</col2>
+</row>
+<row>
+<col1><@>name LIKE '_i%'</@></col1>
+<col2><@>name</@> has 'i' as 2nd letter</col2>
+</row>
+<row>
+<col1><@>name LIKE '%o%o%'</@></col1>
+<col2><@>name</@> contains two 'o's</col2>
+</row>
+<row>
+<col1><@>name LIKE '%ith'</@></col1>
+<col2><@>name</@> ends with 'ith'</col2>
+</row>
+<row>
+<col1><@>name LIKE 'John'</@></col1>
+<col2><@>name</@> equals 'John'</col2>
+</row>
+</deftable>
+PostgreSQL also supports case-insensitive matching: <~> <navy><@>ILIKE</@></navy>
+</slide>
+
+<slide>
+<continued>
+PostgreSQL provides <em>regexp</em>-based pattern matching
+via <~><navy><@>~</@></navy><~> and <~><navy><@>!~</@></navy>
+<p>
+Examples (using <small>POSIX</small> regular expressions):
+<deftable 6>
+<row>
+<col1><@>name ~ '^Ja'</@></col1>
+<col2><@>name</@> begins with 'Ja'</col2>
+</row>
+<row>
+<col1><@>name ~ '^.i'</@></col1>
+<col2><@>name</@> has 'i' as 2nd letter</col2>
+</row>
+<row>
+<col1><@>name ~ '.*o.*o.*'</@></col1>
+<col2><@>name</@> contains two 'o's</col2>
+</row>
+<row>
+<col1><@>name ~ 'ith$'</@></col1>
+<col2><@>name</@> ends with 'ith'</col2>
+</row>
+<row>
+<col1><@>name ~ 'John'</@></col1>
+<col2><@>name</@> contains 'John'</col2>
+</row>
+</deftable>
+Also provides case-insensitive matching 
+via <~><navy><@>~*</@></navy><~> and <~><navy><@>!~*</@></navy>
+</slide>
+
+<slide>
+<continued>
+Other operators/functions for string manipulation:
+<itemize>
+<item> <$>str<sub>1</sub></$> <@>||</@> <$>str<sub>2</sub></$> ... return concatenation of <$>str<sub>1</sub></$> and <$>str<sub>2</sub></$>
+<item> <@>lower(</@><$>str</$><@>)</@> ... return lower-case version of <$>str</$>
+<item> <@>substring(</@><$>str</$>,<$>start</$>,<$>count</$><@>)</@> ... extract substring from <$>str</$>
+</itemize>
+<small>Etc. etc. ... consult your local SQL Manual (e.g. PostgreSQL Sec 9.4)</small>
+<p>
+Note that above operations are null-preserving (strict):
+<itemize>
+<item> if any operand is <@>NULL</@>, result is <@>NULL</@>
+<item> beware of <@>(a||' '||b)</@> ... <@>NULL</@> if either of
+	<@>a</@> or <@>b</@> is <@>NULL</@>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Arithmetic operations:
+<sprogram>
++  -  *  /  abs  ceil  floor  power  sqrt  sin  <$>etc.</$>
+</sprogram>
+<em>Aggregations</em> "summarize" a column of numbers in a relation:
+<itemize>
+<item> <@>count(</@><$>attr</$><@>)</@>
+	<~>...<~> number of rows in <$>attr</$> column
+<item> <@>sum(</@><$>attr</$><@>)</@>
+	<~>...<~> sum of values for <$>attr</$>
+<item> <@>avg(</@><$>attr</$><@>)</@>
+	<~>...<~> mean of values for <$>attr</$>
+<item> <@>min/max(</@><$>attr</$><@>)</@>
+	<~>...<~> min/max of values for <$>attr</$>
+</itemize>
+Note: <@>count</@> applies to columns of non-numbers as well.
+</slide>
+
+<slide>
+<heading>The <@>NULL</@> Value
+Expressions containing <@>NULL</@> generally yield <@>NULL</@>.
+<p>
+However, boolean expressions use three-valued logic:
+<reltable 4>
+<row>
+<col1> <$>a</$> </col1>
+<col2> <$>b</$> </col2>
+<col3> <$>a</$> <@>AND</@> <$>b</$> </col3>
+<col4> <$>a</$> <@>OR</@> <$>b</$> </col4>
+</row>
+<row>
+<col1> TRUE </col1>
+<col2> TRUE </col2>
+<col3> TRUE </col3>
+<col4> TRUE </col4>
+</row>
+<row>
+<col1> TRUE </col1>
+<col2> FALSE </col2>
+<col3> FALSE </col3>
+<col4> TRUE </col4>
+</row>
+<row>
+<col1> TRUE </col1>
+<col2> NULL </col2>
+<col3> NULL </col3>
+<col4> TRUE </col4>
+</row>
+<row>
+<col1> FALSE </col1>
+<col2> FALSE </col2>
+<col3> FALSE </col3>
+<col4> FALSE </col4>
+</row>
+<row>
+<col1> FALSE </col1>
+<col2> NULL </col2>
+<col3> FALSE </col3>
+<col4> NULL </col4>
+</row>
+<row>
+<col1> NULL </col1>
+<col2> NULL </col2>
+<col3> NULL </col3>
+<col4> NULL </col4>
+</row>
+</reltable>
+</slide>
+
+<slide>
+<continued>
+Important consequence of <@>NULL</@> behaviour ...
+<p>
+These expressions do not work as (might be) expected:
+<program>
+<$>x</$> = NULL    <$>x</$> <<>> NULL
+</program>
+Both return <@>NULL</@> regardless of the value of <$>x</$>
+<p>
+Can only test for <@>NULL</@> using:
+<program>
+<$>x</$> IS NULL     <$>x</$> IS NOT NULL
+</program>
+</slide>
+
+<slide>
+<heading>Conditional Expressions
+Other ways that SQL provides for dealing with <@>NULL</@>:
+<p>
+<@>coalesce(</@><$>val<sub>1</sub></$><@>,</@><$>val<sub>2</sub></$><@>,</@>...<$>val<sub>n</sub></$><@>)</@>
+<itemize>
+<item> returns first non-null value <$>val<sub>i</sub></$>
+<item> useful for providing a <q>displayable</q> value for nulls
+</itemize>
+E.g. <@>select coalesce(mark,'??') from Marks ...</@>
+<p>
+<@>nullif(</@><$>val<sub>1</sub></$><@>,</@><$>val<sub>2</sub></$><@>)</@>
+<itemize>
+<item> returns <@>NULL</@> if <$>val<sub>1</sub></$> is equal to <$>val<sub>2</sub></$>
+<item> can be used to implement an <q>inverse</q> to <@>coalesce</@>
+</itemize>
+E.g. <@>nullif(mark,'??')</@>
+</slide>
+
+<slide>
+<continued>
+SQL also provides a generalised conditional expression:
+<syntax>
+CASE
+   WHEN <$>test<sub>1</sub></$> THEN <$>result<sub>1</sub></$>
+   WHEN <$>test<sub>2</sub></$> THEN <$>result<sub>2</sub></$>
+   ...
+   ELSE <$>result<sub>n</sub></$>
+END
+</syntax>
+<p>
+E.g. <@>case when mark>=85 then 'HD' ... else '??' end</@>
+<p>
+Tests that yield <@>NULL</@> are treated as <@>FALSE</@>
+<p>
+If no <@>ELSE</@>, and all tests fail, <@>CASE</@> yields <@>NULL</@>
+</slide>
+

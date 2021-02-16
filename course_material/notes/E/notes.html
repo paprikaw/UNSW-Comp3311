@@ -1,0 +1,365 @@
+<html>
+<head>
+<title>Relational DBMSs</title>
+<link href='lib/notes.css' rel='stylesheet' type='text/css'>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML" async></script>
+<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js'></script>
+<link href='lib/prism.css' rel='stylesheet'>
+<script src='lib/sg.js'></script>
+</head>
+<body>
+<div class='heading'>Relational DBMSs</div><p><ul class='indexUl'  style='font-size: 0.7em;'><li class="i"> <a href="#s1">What is an RDBMS?</a>
+<li class="i"> <a href="#s2">Description of Data</a>
+<li class="i"> <a href="#s3">RDBMS Operations</a>
+<li class="i"> <a href="#s4">Access to Data</a>
+<li class="i"> <a href="#s6">Schema/Data Import/Export</a>
+<li class="i"> <a href="#s7">Query Engine</a>
+<li class="i"> <a href="#s8">Privilege/Protection</a>
+<li class="i"> <a href="#s9">Transactions/Concurrency</a>
+<li class="i"> <a href="#s11">RDBMS Architecture</a>
+<li class="i"> <a href="#s12">Examples of RDBMSs</a>
+<li class="i"> <a href="#s14">DB/Application Interaction</a>
+</ul><hr>
+<DIV id="s1">
+<div class='heading'>What is an RDBMS?</div>
+<p>
+A <font color='#0000BB'>relational database management system</font> (RDBMS) is
+<small>
+<ul>
+<li> software designed to support large-scale data-intensive applications
+<li> allowing high-level description of data (domains, constraints)
+<li> with high-level access to the data (relational model, SQL)
+<li> providing efficient storage and retrieval (disk/memory management)
+<li> supporting multiple simultaneous users  (privilege, protection)
+<li> doing multiple simultaneous operations (transactions, concurrency)
+<li> maintaining reliable access to the stored data (backup, recovery)
+</ul>
+</small>
+Note: databases provide <font color='#0000BB'>persistent</font> storage of information
+</DIV>
+<hr>
+<DIV id="s2">
+<div class='heading'>Description of Data</div>
+<p>
+RDBMSs implement <i>&cong;</i> the relational model.
+<p>
+Provide facilities to define:
+<ul>
+<li> domains, attributes, tuples, tables
+<li> constraints (domain, key, reference, ...)
+</ul>
+Variations from the relational model:
+<ul>
+<li> no strict requirement for tables to have keys
+<li> bag semantics, rather than set semantics
+<li> no direct support for multi-table constraints
+</ul>
+</DIV>
+<hr>
+<DIV id="s3">
+<div class='heading'>RDBMS Operations</div>
+<p>
+RDBMSs typically provide at least the following operations:
+<ul>
+<li> create/remove a database
+<li> create/remove/alter table schemas within a database
+<li> insert/delete/update tuples within a table
+<li> queries on data, define named queries (views)
+</ul>
+Most also provide mechanisms for
+<ul>
+<li> defining new data types
+<li> implementing complex constraints (triggers)
+<li> defining/storing procedural code to manipulate data
+<li> creating/managing users of the database
+<li> describing transactional behaviour (see later)
+</ul>
+</DIV>
+<hr>
+<DIV id="s4">
+<div class='heading'>Access to Data</div>
+<p>
+All modern RDBMSs provide access to the data via SQL.
+<p>
+Each RDBMS has its own dialect <i>&cong;</i> the SQL standard.
+<p>
+Most provide SQL via one or more of
+<ul>
+<li> an interactive "shell"
+	&nbsp; <small>(e.g. psql, sqlite3, SQL*Plus, ...)</small>
+<li> programming language APIs
+	&nbsp; <small>(e.g. Java/JDBC, Python, C, ...)</small>
+</ul>
+Some operations are also implemented as utility commands
+<p>
+e.g. PostgreSQL's <large><code>createdb</code></large>, <large><code>dropdb</code></large>, <large><code>createuser</code></large>, ...
+</DIV>
+<hr>
+<DIV id="s5">
+<div class='heading'>Access to Data <span style="font-size:67%">(cont)</span></div>
+<p>
+RDBMSs also provide access to meta-data (catalog).
+<p>
+Meta-data typically presented as collection of tables.
+<p>
+A standard <large><code>INFORMATION_SCHEMA</code></large> exists for meta-data.
+<p>
+DB users interact with catalog via meta-commands:
+<ul>
+<li> PostgreSQL's <large><code>\d</code></large>, <large><code>\d</code></large> <i>Table</i>
+<li> SQLite's <large><code>.schema</code></large>,  <large><code>.schema</code></large> <i>Table</i>
+<li> Oracle's <large><code>select * from tab</code></large>
+</ul>
+DB admin typically also has SQL access to catalog.
+</DIV>
+<hr>
+<DIV id="s6">
+<div class='heading'>Schema/Data Import/Export</div>
+<p>
+RDBMSs typically provide mechanisms for
+<ul>
+<li> loading schemas <small>(typically from a file)</small>
+<li> bulk upload of data into tables <small>(from files)</small>
+<li> saving entire databases (data + meta-data)
+<li> clearing tables &nbsp; <small>(e.g. <large><code>delete from Staff</code></large>)</small>
+<li> clearing schema &nbsp; <small>(not in PostgreSQL)</small>
+</ul>
+Available via command line or interactive SQL shell.
+</DIV>
+<hr>
+<DIV id="s7">
+<div class='heading'>Query Engine</div>
+<p>
+RDBMS query engines implement RA operations
+<ul>
+<li> projection
+	&nbsp; <small>(tuple manipulation; generalised projection)</small>
+<li> selection
+	&nbsp; <small>(tuple filtering; indexes, hashing)</small>
+<li> join
+	&nbsp; <small>(nested-loop, hash-join, indexed-join)</small>
+<li> set operations
+	&nbsp; <small>(union, intersection, difference)</small>
+<li> aggregation
+	&nbsp; <small>(e.g. count, sum, avg, ...)</small>
+<li> grouping
+	&nbsp; <small>(group-by, group filtering (via having))</small>
+</ul>
+</DIV>
+<hr>
+<DIV id="s8">
+<div class='heading'>Privilege/Protection</div>
+<p>
+RDBMSs typically provide role-based user management:
+<ul>
+<li> individual <font color='#0000BB'>users</font> have username/password
+<li> users may be associated with multiple <font color='#0000BB'>roles</font>
+<li> roles are assigned privileges
+	&nbsp; <small>(e.g. create tables, view table R)</small>
+</ul>
+Authentication via username/password gives access to DBs.
+<p>
+Roles determine what can be done within a DB.
+</DIV>
+<hr>
+<DIV id="s9">
+<div class='heading'>Transactions/Concurrency</div>
+<p>
+Often in application programming
+<ul>
+<li> a single application-level operation (transaction)
+<li> involves mutliple DBMS-level operations <small>(e.g. insert, update)</small>
+</ul>
+To faithfully represent the application-level operation:
+<ul>
+<li> either all DBMS-level operations must complete
+<li> or all DBMS-level operations must fail
+</ul>
+If the transaction fails partway
+<ul>
+<li> any completed DBMS operations must be undone
+<li> the DBMS should enforce this automatically
+</ul>
+<i>Transactions</i> treat a group of DBMS operations as atomic.
+</DIV>
+<hr>
+<DIV id="s10">
+<div class='heading'>Transactions/Concurrency <span style="font-size:67%">(cont)</span></div>
+<p>
+For serious applications, the RDBMS must be ACID ...
+<p><table border='0' cellpadding='6'>
+<tr valign=top>
+<td><nobr> <b><font color="#CC0000">A</font></b>tomicity </td> 
+<td></td><td>
+<small>
+Either all operations of transaction are reflected in database or none are.
+</small>
+</td>
+</tr>
+<tr valign=top>
+<td><nobr> <b><font color="#CC0000">C</font></b>onsistency </td>
+<td></td><td>
+<small>
+Execution of a transaction in isolation preserves data consistency
+(i.e. maps a valid DB to a valid DB).
+</small>
+</td>
+</tr>
+<tr valign=top>
+<td><nobr> <b><font color="#CC0000">I</font></b>solation </td>
+<td></td><td>
+<small>
+Transactions are "unaware" of other transactions executing concurrently.
+</small>
+</td>
+</tr>
+<tr valign=top>
+<td><nobr> <b><font color="#CC0000">D</font></b>urability </td>
+<td></td><td>
+<small>
+After successful transaction, changes persist even if system later fails.
+</small>
+</td>
+</tr>
+</table><p>
+DBMSs with these properties provide a strong guarantee that any update
+operation will result in a valid database <small>(no corruption)</small>.
+</DIV>
+<hr>
+<DIV id="s11">
+<div class='heading'>RDBMS Architecture</div>
+<p>
+Typical client-server architecture for modern RDBMS:
+<p>
+<p><div align='center'>
+<img alt="[Diagram:Pic/dbmsarch.png]" src="Pic/dbmsarch.png">
+</div><p>
+<p>
+Core of RDBMS = a relational algebra engine.
+</DIV>
+<hr>
+<DIV id="s12">
+<div class='heading'>Examples of RDBMSs</div>
+<p>
+Examples of ACID (serious) database management systems:
+<ul>
+<li> Oracle
+	&nbsp; <small>(most widely-used commercial RDBMS)</small>
+<li> IBM's DB2 
+	&nbsp; <small>(maybe the best relational <font color='#0000BB'>engine</font> + research backing)</small>
+<li> Microsoft's SQL Server 
+	&nbsp; <small>(solid relational engine + research backing)</small>
+<li> PostgreSQL
+	&nbsp; <small>(open-source, reliable, serious functionality)</small>
+<li> MySQL
+	&nbsp; <small>(open-source, now has sufficient functionality)</small>
+<li> SQLite
+	&nbsp; <small>(open-source, serverless, DB is a single file)</small>
+<li> HyperSQL
+	&nbsp; <small>(open-source, 100% Java, serious functionality)</small>
+<li> <font color="#777777">Informix, Sybase, Ingres,</font> ... have all faded or are fading
+</ul>
+</DIV>
+<hr>
+<DIV id="s13">
+<div class='heading'>Examples of RDBMSs <span style="font-size:67%">(cont)</span></div>
+<p>
+Most serious RDBMS's
+<ul>
+<li> support all of the SQL:92 and SQL:99 standards
+<li> support most of the SQL:2003 and SQL:2008 standards
+</ul>
+Typical variations:
+<ul>
+<li> mechanism for creating unique ID values (e.g. <large><code>SEQUENCE</code></large>)
+<li> mechanism to return part of result set (e.g. <large><code>LIMIT</code></large>)
+<li> extra data types <small>(not defined in standard)</small>
+<li> many additional functions on data values
+<li> don't support all SQL transaction levels
+<li> <large><code>DROP</code></large> <i>Object</i> <large><code>IF EXISTS</code></large>
+</ul>
+</DIV>
+<hr>
+<DIV id="s14">
+<div class='heading'>DB/Application Interaction</div>
+<p>
+Database applications typically involve:
+<ul>
+<li> code in an application language (e.g. Java, Python)
+<li> definitions and queries in SQL (stored in DB)
+<li> procedural code/transactions (stored in DB)
+</ul>
+Code in multiple languages, stored in different places.
+<p>
+Interaction between app.code and DBMS
+<ul>
+<li> is via a "thin pipe" (SQL in, tuples out)
+<li> following old-fashioned file access pattern:
+<p><pre><small>
+open; while (more input) { get next; process; } close
+</small></pre><p>
+</ul>
+</DIV>
+<hr>
+<DIV id="s15">
+<div class='heading'>DB/Application Interaction <span style="font-size:67%">(cont)</span></div>
+<p>
+A typical DB application has several types of code:
+<ul>
+<li> UI (user interface) code, e.g. Python/HTML, Java/Swing
+<li> application/business logic, e.g. Python, Java, PL/SQL
+<li> data access, e.g. PL/SQL, SQL
+</ul>
+Multiple code sources <i>&rArr;</i> software management problems:
+<ul>
+<li> maintaining consistency across code-bases
+<li> minimising cross-talk (separation of concerns)
+</ul>
+Patterns such as Model-View-Controller aim to manage this.
+</DIV>
+<hr>
+<DIV id="s16">
+<div class='heading'>DB/Application Interaction <span style="font-size:67%">(cont)</span></div>
+<p>
+Perfomance issues with data-intensive applications
+<ul>
+<li> minimise traffic between app.code and DB <br>
+	<small>(connection/communication costs are expensive)</small>
+<li> "impedance mismatch" between app.code and DB <br>
+	<small>(DB = tuple-set-at-a-time, Code = object-at-a-time)</small>
+</ul>
+These suggest that
+<ul>
+<li> as much as possible, data manipulation is pushed into DBMS
+<li> but this requires a tight interaction between layers
+</ul>
+<p>
+Software engineering suggests minimal interaction between layers.
+<p>
+This conflict is not yet well-resolved.
+</DIV>
+<hr>
+<DIV id="s17">
+<div class='heading'>DB/Application Interaction <span style="font-size:67%">(cont)</span></div>
+<p>
+Standard paradigm for accessing DB from app.code
+<p><pre>
+<span class='comment'>--  establish connection to DBMS</span>
+db = dbConnect("dbname=X user=Y passwd=Z");
+query = "select a,b from R,S where ... ";
+<span class='comment'>--  invoke query and get handle to result set</span>
+results = dbQuery(db, query);
+<span class='comment'>--  for each tuple in result set</span>
+while (tuple = dbNext(results)) {
+    <span class='comment'>--  process next tuple</span>
+    process(val(tuple,'a'), val(tuple,'b'));
+}
+dbClose(results);
+</pre><p>
+</DIV>
+<p><hr><p>
+<span style='font-size:11px;color: grey;'>Produced: 13 Sep 2020</span>
+ <script src='lib/prism.js'></script>   
+ <script src='lib/sg.js'></script>   
+</body>
+</html>

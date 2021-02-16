@@ -1,0 +1,48 @@
+<html>
+<head><title>Data modelling and OO/ER data models (18)</title>
+<link href='slides.css' rel='stylesheet' type='text/css'>
+<script language="JavaScript">
+<!--
+function getKey(keyStroke) {
+	isNetscape = (navigator.appName.indexOf('Netscape') == 0)
+	eventChooser = (isNetscape) ? keyStroke.which : event.keyCode;
+	which = String.fromCharCode(eventChooser);
+	if (which == ' ') window.location = "slide019.html";
+	if (which == 'n') window.location = "slide019.html";
+	if (which == '') window.location = "slide017.html";
+	if (which == 'b') window.location = "slide017.html";
+}
+document.onkeypress = getKey;
+-->
+</script>
+
+</head>
+<body>
+<a href="slide017.html"><img border=0 alt="[prev]" src="icon/prev.gif"></a>
+<a href="index.html"><span style="font-size:14pt;">18</span></a>
+<a href="slide019.html"><img border=0 alt="[next]" src="icon/next.gif"></a>
+
+<div align='center'><table height='95%' width='92%'><tr><td valign='top'>
+<div align='center'><h3>Classes</h3></div>
+Class declarations have the following syntax:
+<p><center><table cellpadding='8'><tr><td valign='middle' bgcolor='#DDDDDD'><pre>
+interface <i>ClassName</i> : <i>ParentClass</i> { <i>List of Properties</i> }
+</pre></td></tr></table></center><p>
+Example:
+<p><center><table cellpadding='8'><tr><td valign='middle' bgcolor='#DDDDDD'><pre>
+interface Person {
+	attribute string  name;
+	attribute integer height;
+	attribute Enum Gender gender;
+	attribute Struct Date birthday;
+};
+
+interface Employee : Person {
+	attribute float   salary;
+	relationship Company WorksFor
+	     inverse Company::Employs;
+};
+</pre></td></tr></table></center><p>
+</td></tr></table></div>
+</body>
+</html>

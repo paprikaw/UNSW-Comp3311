@@ -1,0 +1,12 @@
+Schedule 1
+T1: R(X)      W(X)      R(Y) W(Y)
+T2:      R(X)      W(X)
+
+
+
+
+
+Schedule2
+T1: R(X) W(X)      R(Y)      W(Y)
+T2:           R(X)      W(X)
+

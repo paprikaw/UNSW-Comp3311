@@ -1,0 +1,218 @@
+<title>SQL Queries (iv): Grouping
+<footer>COMP3311 20T3 <diamond> SQL Grouping <diamond>
+
+<slide>
+<heading>Grouping
+<@>SELECT-FROM-WHERE</@> can be followed by <@>GROUP BY</@> to:
+<itemize>
+<item> partition result relation into groups <~> 
+	<smaller>(according to values of specified attribute)</smaller>
+<item> summarise (aggregate) some aspects of each group
+<item> output one tuple per group, with grouping attribute and aggregates
+</itemize>
+<p>
+<diagram>Pics/sql/group-by
+</slide>
+
+<slide>
+<continued>
+<b>Example:</b> How many different beers does each brewer make?
+<program90>
+SELECT   brewer, COUNT(name) as nbeers
+FROM     Beers
+GROUP BY brewer;
+
+       brewer        | nbeers 
+---------------------+--------
+ West City           |      1
+ James Squire        |      5
+ Yullis              |      1
+ Hop Nation          |      4
+ Anderson Valley     |      1
+ Beatnik             |      1
+ Boatrocker          |      3
+ Kizakura            |      1
+ ...
+</program>
+</slide>
+
+<slide>
+<continued> Semantics of <@>GROUP BY</@>
+<@>GROUP BY</@><~> is used as follows:
+<program>
+SELECT   <i><blue>attributes</blue>/aggregations</i>
+FROM     <i>relations</i>
+WHERE    <i>condition</i>
+GROUP BY <i><blue>attributes</blue></i>
+</program>
+Semantics:
+<enumerate>
+<item> apply product and selection as for <@>SELECT-FROM-WHERE</@>
+<item> partition result into groups based on values of <i>attributes</i>
+<item> apply any aggregation separately to each group
+</enumerate>
+<br>
+Grouping is typically used in queries involving the phrase <q>for each</q>.
+</slide>
+
+<slide>
+<heading> Restrictions on <@>SELECT</@> Lists
+When using grouping, every attribute in the <@>SELECT</@> list must:
+<itemize>
+<item> have an aggregation operator applied to it <~~> OR
+<item> appear in the <@>GROUP-BY</@> clause
+</itemize>
+<b>Incorrect Example:</b>
+Find the styles associated with each brewer
+<program>
+SELECT   brewer, style
+FROM     Beers
+GROUP BY brewer;
+</program>
+PostgreSQL's response to this query:
+<program90>
+ERROR: column beers.style must appear in the GROUP BY 
+         clause or be used in an aggregate function
+</program>
+</slide>
+
+<slide>
+<heading>Filtering Groups
+<br>
+In some queries, you can use the <@>WHERE</@> condition to
+eliminate groups.
+<p>
+<b>Example:</b> Average beer price by suburb excluding hotels in The Rocks.
+<program>
+SELECT   b.addr, AVG(s.price)
+FROM     Sells s join Bars b on (s.bar=b.name)
+WHERE    b.addr <<>> 'The Rocks'
+GROUP BY b.addr;
+</program>
+For conditions on whole groups, use the <@>HAVING</@> clause.
+</slide>
+
+<slide>
+<continued>
+<@>HAVING</@> is used to qualify a <@>GROUP-BY</@> clause:
+<program>
+SELECT   <i>attributes/aggregations</i>
+FROM     <i>relations</i>
+WHERE    <i>condition<sub>1</sub></i>   <comment>(on tuples)</comment>
+GROUP BY <i>attributes</i>
+HAVING   <i>condition<sub>2</sub></i>;  <comment>(on group)</comment>
+</program>
+Semantics of <@>HAVING</@>:
+<enumerate>
+<sitem> generate the groups as for <@>GROUP-BY</@>
+<sitem> discard groups <em>not</em> satisfying <@>HAVING</@> condition
+<sitem> apply aggregations to remaining groups
+</enumerate>
+</slide>
+
+<slide>
+<continued>
+<b>Example:</b> Number of styles from brewers who make at least 5 beers?
+<program80>
+SELECT   brewer, count(name) as nbeers,
+         count(distinct style) as nstyles
+FROM     Beers
+GROUP BY brewer
+HAVING   count(name) > 4
+ORDER BY brewer;
+
+      brewer       | nbeers | nstyles 
+-------------------+--------+---------
+ Bentspoke         |      9 |       7
+ Carlton           |      5 |       2
+ Frenchies         |      5 |       5
+ Hawkers           |      5 |       5
+ James Squire      |      5 |       4
+ One Drop          |      9 |       7
+ Sierra Nevada     |      5 |       5
+ Tallboy and Moose |      5 |       5
+</program>
+<@>distinct</@> required, otherwise <~><@>nbeers=nstyles</@><~> for all brewers
+</slide>
+
+<slide>
+<continued>
+<br>
+Alternative formulation of division using <~><@>GROUP-BY</@><~> and <~><@>HAVING</@><~>
+<p>
+<b>Example:</b> Find bars that each sell all of the beers Justin likes.
+<program>
+SELECT DISTINCT S.bar
+FROM   Sells S, Likes L on (S.beer = L.beer)
+WHERE  L.drinker = 'Justin'
+GROUP  BY S.bar
+HAVING count(S.beer) =
+           (SELECT count(beer) FROM Likes
+            WHERE drinker = 'Justin');
+</program>
+</slide>
+
+<slide>
+<heading>Partitions
+Sometimes it is useful to
+<itemize>
+<item> partition a table into groups
+<item> compute results that apply to each group
+<item> use these results with individual tuples in the group
+</itemize>
+Comparison with <@>GROUP-BY</@>
+<itemize>
+<item> <@>GROUP-BY</@> produces one tuple for each group
+<item> <@>PARTITION</@> augments each tuple with group-based value(s)
+<item> can use other functions than aggregates <small>(e.g. ranking)</small>
+<item> can use attributes other than the partitioning ones
+</itemize>
+</slide>
+
+<slide>
+<continued>
+<br>
+Syntax for <@>PARTITION</@>:
+<syntax>
+SELECT <$>attr<sub>1</sub></$>, <$>attr<sub>2</sub></$>, ...,
+       <$>aggregate<sub>1</sub></$> OVER (PARTITION BY <$>attr<sub>i</sub></$>),
+       <$>aggregate<sub>2</sub></$> OVER (PARTITION BY <$>attr<sub>j</sub></$>), ...
+FROM   <$>Table</$>
+WHERE  <$>condition on attributes</$>
+</syntax>
+Note: the <$>condition</$> cannot include the <$>aggregate</$> value(s)
+</slide>
+
+<slide>
+<continued>
+<br>
+<b>Example:</b> show each city with daily temperature and temperature range
+<p>
+Schema: <$>Weather(city,date,temperature)</$>
+<program90>
+SELECT city, date, temperature
+       min(temperature) OVER (PARTITION BY city) as lowest,
+       max(temperature) OVER (PARTITION BY city) as highest
+FROM   Weather;
+</program>
+Output: <$>Result(city, date, temperature, lowest, highest)</$>
+</slide>
+
+<slide>
+<continued>
+Example showing <~><@>GROUP BY</@><~> and <~><@>PARTITION</@><~> difference:
+<p><br>
+<program90>
+SELECT city, min(temperature) max(temperature)
+FROM   Weather  GROUP BY city
+</program>
+Result: one tuple for each city <~> <$>Result(city,min,max)</$>
+<p><br><p>
+<program90>
+SELECT city,  date,  temperature as temp,
+       min(temperature) OVER (PARTITION BY city),
+       max(temperature) OVER (PARTITION BY city)
+FROM   Weather;
+</program>
+Result: one tuple for each temperature measurement.
+</slide>

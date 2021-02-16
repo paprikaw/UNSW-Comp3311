@@ -1,0 +1,23 @@
+RealEstate(P#, When, Address, Notes, S#, naMe, CarReg)
+
+P = P#  W = When  A = Address  N = Notes
+S = S#  M = Name  C = CarReg
+
+
+P -> A
+A -> P
+S -> M
+S -> C
+PW -> S
+PW -> C 
+
+P+ -> PA
+
+W+ -> W
+
+PW+ -> PWASC -> PWASCM ... N
+
+PWN+ -> PWASCMN
+AWN+ -> PWASCMN
+
+PWNS+ -> PWASCMN

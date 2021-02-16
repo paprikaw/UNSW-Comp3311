@@ -1,0 +1,223 @@
+<title>RA Join Operations
+<footer>COMP3311 20T3 <diamond> RA Join Operations <diamond>
+
+<slide>
+<heading>RA Operations to Combine Relations
+<br>
+Relational algebra has several ways to combine info from relations
+<itemize>
+<item> product <~> ... <~> R <times> S <~> ... <~> <small>select * from R join S on (true)</small>
+<item> natural join <~> ... <~> R <join> S <~> ... <~> <small>select * from R natural join S</small>
+<item> (inner) join <~> ... <~> R <join><sub>C</sub> S <~> ... <~> <small>select * from R join S on (C)</small>
+<item> outer join <~> ... <~> R &#10197;<sub>C</sub> S <~> ... <~> <small>select * from R left outer join S on (C)</small>
+<item> division <~> ... <~> R / S <~> ... <~> <small>see SQL slides for examples</small>
+</itemize>
+Join conditions involve related attributes from the two relations
+<p>
+Frequently, primary-key joined with foreign-key
+</slide>
+
+<slide>
+<heading>Product
+<em>Product</em> (Cartesian product) combines information from
+two relations pairwise on tuples.
+<p>
+<center>
+<$>r <times> s</$> <~> = <~> { <$>(t<sub>1</sub> : t<sub>2</sub>)</$> <~>|<~> <$>t<sub>1</sub> <in> r <and> t<sub>2</sub> <in> s</$> }, <~~~> where <$>r(R), s(S)</$>
+</center>
+<p>
+Each tuple in the result contains all attributes from <$>r</$> and <$>s</$>,
+possibly with some fields renamed to avoid ambiguity.
+<p>
+If <$>t<sub>1</sub> = (A<sub>1</sub>...A<sub>n</sub>)</$> and
+   <$>t<sub>2</sub> = (B<sub>1</sub>...B<sub>n</sub>)</$> then
+   <$>(t<sub>1</sub>:t<sub>2</sub>) = (A<sub>1</sub>...A<sub>n</sub>,B<sub>1</sub>...B<sub>n</sub>)</$>
+<p>
+Result size is <big><em>large</em></big>: <~> |<$>r <times> s</$>| = |<$>r</$>|.|<$>s</$>|
+<~~~>
+Schema: <$>R<union>S</$>
+<p>
+Algorithmic view:
+<program>
+<$>result</$> = {}
+for each tuple <$>t<sub>1</sub></$> in relation <$>r</$>
+    for each tuple <$>t<sub>2</sub></$> in relation <$>s</$>
+        <$>result</$> = <$>result <union> {(<$>t<sub>1</sub>:t<sub>2</sub></$>)}</$> }
+</program>
+</slide>
+
+<slide>
+<continued>
+Example of product:
+<p><br>
+<diagram>Pics/relalg/product
+</slide>
+
+<slide>
+<heading>Natural Join
+<em>Natural join</em> is a specialised product:
+<itemize>
+<item> containing only pairs that match on <em>common</em> attributes
+<item> with one of each pair of common attributes eliminated
+</itemize>
+Consider relation schemas <$>R(ABC..J<green>KLM</green>)</$>,  <$>S(<green>KLM</green>N..XYZ)</$>.
+<p>
+The natural join of relations <$>r(R)</$> and <$>s(S)</$> is defined as:
+<p>
+<center>
+<$>r <join> s</$> <~> = <~> <$>r Join s</$> <~> = <~> 
+	{ <$>(t<sub>1</sub>[ABC..J] : t<sub>2</sub>[K..XYZ])</$> <~>|<~>
+	  <$>t<sub>1</sub> <in> r <and> t<sub>2</sub> <in> s <and> match</$>
+	}
+<p>
+where <~~> <$>match</$> <~> = <~>
+		<$>t<sub>1</sub>[K] = t<sub>2</sub>[K] <and>
+		t<sub>1</sub>[L] = t<sub>2</sub>[L] <and>
+		t<sub>1</sub>[M] = t<sub>2</sub>[M]</$>
+</center>
+<p>
+Algorithmic view:
+<program>
+<$>result</$> = {}
+for each tuple <$>t<sub>1</sub></$> in relation <$>r</$>
+   for each tuple <$>t<sub>2</sub></$> in relation <$>s</$>
+      if (<$>matches(t<sub>1</sub>,t<sub>2</sub>)</$>)
+         <$>result</$> = <$>result <union> {combine(<$>t<sub>1</sub>,t<sub>2</sub></$>)}</$>
+</program>
+</slide>
+
+<slide>
+<continued>
+Example of natural join:
+<p>
+<diagram>Pics/relalg/nat-join
+</slide>
+
+<slide>
+<heading>Theta Join
+The <em>theta join</em> is a specialised product
+containing only pairs that match on a supplied condition <$>C</$>.
+<p>
+<center>
+<$>r <join><sub>C</sub> s</$> <~> = <~> { <$>(t<sub>1</sub> : t<sub>2</sub>)</$> <~>|<~> <$>t<sub>1</sub> <in> r <and> t<sub>2</sub> <in> s <and> C(t<sub>1</sub> : t<sub>2</sub>)</$> }, <br>
+where <$>r(R),s(S)</$>
+</center>
+<p>
+Examples: <~> <$>(r1 Join[B>E] r2)</$> ... <$>(r1 Join[E<<D<and>C=G] r2)</$>
+<p>
+All attribute names are required to be distinct <small>(cf natural join)</small>
+<p>
+Can be defined in terms of other RA operations:
+<p>
+<center>
+<$>r <join><sub>C</sub> s</$> <~> = <~> <$>r Join[C] s</$> <~> = <~> <$> Sel[C] ( r <times> s )</$>
+</center>
+<p>
+Note that <~> <$>r <join><sub>true</sub> s <~> = <~> r <times> s</$>.
+</slide>
+
+<slide>
+<continued>
+Example theta join:
+<p>
+<diagram>Pics/relalg/join2
+<p align="right">(Theta join is the most frequently-used join in SQL queries)</p>
+</slide>
+
+<slide>
+<continued>
+Querying with relational algebra (join) ...
+<itemize>
+<item> Who drinks in Newtown bars?
+<program90>
+NewtownBars(nbar) = Sel[addr=Newtown](Bars)
+Tmp = Frequents Join[bar=nbar] NewtownBars
+Result(drinker) = Proj[drinker](Tmp)
+</program>
+<item> Who drinks beers made by Carlton?
+<program90>
+CarltonBeers = Sel[manf=Carlton](Beers)
+Tmp = Likes Join[beer=name] CarltonBeers
+Result(drinker) = Proj[drinker)Tmp
+</program>
+</itemize>
+<p><br>
+Reminder: projection removes duplicates
+</slide>
+
+<slide>
+<heading>Outer Join
+R <join><sub>C</sub> S does not include in its result
+<itemize>
+<item> values from any R tuples that do not match some S tuple under C
+<item> values from any S tuples that do not match some R tuple under C
+</itemize>
+R &#10197;<sub>C</sub> S (left outer join) includes
+<itemize>
+<item> all tuples that would result from a theta join
+<item> values from all R tuples, even with no matching S tuple
+</itemize>
+For tuples with no match, assign NULL to "unmatched" attributes
+<p><br>
+Variants are <em>right outer join</em> and <em>full outer join</em>
+</slide>
+
+<slide>
+<continued>
+Example left outer join:
+<p>
+<diagram>Pics/relalg/outer
+</slide>
+
+<slide>
+<heading>Division
+Consider two relation schemas <$>R</$> and <$>S</$> where <$>S <subset> R</$>.
+<p>
+The <em>division</em> operation is defined on instances <$>r(R)</$>, <$>s(S)</$> as:
+<p>
+<center>
+<$>r / s</$> <~> = <~> <$>r Div s</$> <~> = <~>
+	{ <$>t</$> | <$>t <in> r[R-S] <and> satisfy</$> }
+<p>
+where <~> <$>satisfy</$> <~> = <~> <$><forall> t<sub>s</sub> <in> S ( <exists> t<sub>r</sub> <in> R ( t<sub>r</sub>[S] = t<sub>s</sub> <and> t<sub>r</sub>[R-S] = t ) )</$>
+</center>
+<p>
+Operationally:
+<itemize>
+<item> consider each subset of tuples in <$>R</$> that match on <$>t[R-S]</$>
+<item> for this subset of tuples, take the <$>t[S]</$> values from each
+<item> if this covers all tuples in <$>S</$>, then include <$>t[R-S]</$> in the result
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Example of division:
+<p><br>
+<diagram>Pics/relalg/division2
+</slide>
+
+<slide>
+<continued>
+Querying with relational algebra (division) ...
+<p>
+Division handles queries that include the notion <q>for all</q>.
+<p>
+E.g. Which beers are sold in all bars?</green>
+<p>
+We can answer this as follows:
+<itemize>
+<item> generate a relation of beers and bars where they are sold
+<itemize>
+<item>	<$>r1 = Proj[beer,bar](Sold)</$>
+</itemize>
+<item> generate a relation of all bars
+<itemize>
+<item> <$>r2 = Rename[r2(bar)](Proj[name](Bars))</$>
+</itemize>
+<item> find which beers appear in tuples with <em>every</em> bar
+<itemize>
+<item> <$>res <~> = r1 <~>Div<~> r2</$>
+</itemize>
+</itemize>
+</slide>

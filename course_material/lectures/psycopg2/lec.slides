@@ -1,0 +1,264 @@
+<title>Psycopg2
+<footer>COMP3311 20T3 <diamond> Psycopg2 <diamond>
+
+<slide>
+<heading>Psycopg2
+Psycopg2 is a Python module that provides
+<itemize>
+<item> a method to connect to PostgreSQL databases
+<item> a collection of DB-related exceptions
+<item> a collection of type and object constructors
+</itemize>
+In order to use Psycopg2 in a Python program
+<program>
+import psycopg2
+</program>
+<small>
+Note:
+<itemize>
+<item> assumes that the <@>psycopg2</@> module is installed on your system
+<item> Psycopg2 is installed on Grieg; installing on a Mac is relatively easy 
+</itemize>
+</small>
+</slide>
+
+<slide>
+<continued>
+Where <@>psycopg2</@> fits in the PL/DB architecture
+<p><br>
+<diagram>Pics/pldb/pypsy-arch
+</slide>
+
+<slide>
+<heading>Database <@>connection</@>s
+<@@>conn = psycopg2.connect(</@@><i>DB_connection_string</i><@@>)</@@>
+<itemize>
+<item> creates a <@>connection</@> object on a named database
+<item> effectively starts a session with the database <small>(cf <@>psql</@>)</small>
+<item> returns a <@>connection</@> object used to access DB
+<item> if can't connect, raises an exception
+</itemize>
+DB connection string components
+<itemize>
+<sitem> <@@>dbname</@@> ... name of database
+<sitem> <@@>user</@@> ... user name <small>(for authentication)</small>
+<sitem> <@@>password</@@> ... user password <small>(for authentication)</small>
+<sitem> <@@>host</@@> ... where is the server running <small>(default=localhost)</small>
+<sitem> <@@>port</@@> ... which port is server listening on <small>(default=5432)</small>
+</itemize>
+On Grieg, only <@>dbname</@> is required.
+</slide>
+
+<slide>
+<heading>Example: connecting to a database
+Simple script that connects and then closes connection
+<program>
+import psycopg2
+
+try:
+   conn = psycopg2.connect("dbname=mydb")
+   print(conn)  <comment># state of connection after opening</comment>
+   conn.close()
+   print(conn)  <comment># state of connection after closing</comment>
+except Exception as e:
+   print("Unable to connect to the database")
+</program>
+which, if <@>mydb</@> is accessible, produces output:
+<program80>
+$ <b>python3 ex1.py</b>
+<<connection object at 0xf67186ec; dsn: 'dbname=mydb', closed: 0>>
+<<connection object at 0xf67186ec; dsn: 'dbname=mydb', closed: 1>>
+</program>
+</slide>
+
+<slide>
+<continued>
+Example: change the script to get databaase name from command line
+<program>
+import sys
+import psycopg2
+
+if len(sys.argv) < 2:
+   print("Usage: opendb DBname")
+   exit(1)
+db = sys.argv[1]
+try:
+   conn = psycopg2.connect("dbname="+db)
+   print(conn)
+   conn.close()
+   print(conn)
+except Exception as e:
+   print(f"Unable to connect to database {db}")
+</program>
+</slide>
+
+<slide>
+<heading>Operations on <@>connection</@>s
+<@@>cur = conn.cursor()</@@>
+<itemize>
+<item> set up a handle for performing queries/updates on database
+<item> must create a <@>cursor</@> before performing any DB operations
+</itemize>
+<br>
+<@@>conn.close()</@@>
+<itemize>
+<item> close the database connection <@>conn</@>
+</itemize>
+<br>
+<@@>conn.commit()</@@>
+<itemize>
+<item> commit changes made to database since last <@>commit()</@>
+</itemize>
+<br>
+Plus many others ... see Psycopg2 documentation
+</slide>
+
+<slide>
+<heading>Database <@>Cursor</@>s
+<@>Cursor</@>s are "pipelines" to the database
+<p>
+<@>Cursor</@> objects allow you to ...
+<itemize>
+<item> execute queries, perform updates, change meta-data
+</itemize>
+Cursors are created from a database <@>connection</@>
+<itemize>
+<item> can create multiple cursors from the same connection
+<item> each cursor handles one DB operation at a time
+<item> but cursors are not isolated <small>(can see each others' changes)</small>
+</itemize>
+To set up a <@>cursor</@> object called <@>cur</@> ...
+<program>
+cur = conn.cursor()
+</program>
+</slide>
+
+<slide>
+<heading>Operations on <@>cursor</@>s
+<@@>cur.execute(</@@><i>SQL_statement</i><@@>, </@@><i>Values</i><@@>)</@@>
+<itemize>
+<item> if supplied, insert values into the SQL statement
+<item> then execute the SQL statement
+<item> results are available via the cursor's fetch methods
+</itemize>
+Examples:
+<program90>
+<comment># run a fixed query</comment>
+cur.execute("select * from R where x = 1");
+
+<comment># run a query with values inserted</comment>
+cur.execute("select * from R where x = %s", (1,))
+cur.execute("select * from R where x = %s", [1])
+
+<comment># run a query stored in a variable</comment>
+query = "select * from Students where name ilike %s"
+pattern = "%mith%"
+cur.execute(query, [pattern])
+</program>
+</slide>
+
+<slide>
+<continued>
+<@@>cur.mogrify(</@@><i>SQL_statement</i><@@>, </@@><i>Values</i><@@>)</@@>
+<itemize>
+<item> return the SQL statement as a string, with values inserted
+<item> useful for checking whether <@>execute()</@> is doing what you want
+</itemize>
+Examples:
+<program80>
+query = "select * from R where x = %s"
+print(cur.mogrify(query, [1]))
+<i>Produces:</i> <brown>b'select * from R where x = 1'</brown>
+
+query = "select * from R where x = %s and y = %s"
+print(cur.mogrify(query, [1,5]))
+<i>Produces:</i> <brown>b'select * from R where x = 1 and y = 5'</brown>
+
+query = "select * from Students where name ilike %s"
+pattern = "%mith%"
+print(cur.mogrify(query, [pattern]))
+<i>Produces:</i> <brown>b"select * from Students where name ilike '%mith%'"</brown>
+
+query = "select * from Students where family = %s"
+fname = "O'Reilly"
+print(cur.mogrify(query, [fname]))
+<i>Produces:</i> <brown>b"select * from Students where family = 'O''Reilly'"</brown>
+</sprogram>
+</slide>
+
+<slide>
+<continued>
+<@@>list = cur.fetchall()</@@>
+<itemize>
+<item> gets all answers for a query and stores in a list of tuples
+<item> can iterate through list of results using Python's <@>for</@>
+</itemize>
+Example:
+<program>
+<comment># table R contains (1,2), (2,1), ...</comment>
+
+cur.execute("select * from R")
+for tup in cur.fetchall():
+   x,y = tup
+   print(x,y)   <comment># or print(tup[0],tup[1])</comment>
+
+<comment># prints</comment>
+<comment>1 2</comment>
+<comment>2 1</comment>
+<comment>...</comment>
+</program>
+</slide>
+
+<slide>
+<continued>
+<@@>tup = cur.fetchone()</@@>
+<itemize>
+<item> gets next result for a query and stores in a tuple
+<item> can iterate through list of results using Python's <@>while</@>
+</itemize>
+Example:
+<program>
+<comment># table R contains (1,2), (2,1), ...</comment>
+
+cur.execute("select * from R")
+while True:
+   t = cur.fetchone()
+   if t == None:
+      break
+   x,y = tup
+   print(x,y)
+
+<comment># prints</comment>
+<comment>1 2</comment>
+<comment>2 1</comment>
+<comment>...</comment>
+</program>
+</slide>
+
+<slide>
+<continued>
+<@@>tup = cur.fetchmany(</@@><i>nTuples</i><@@>)</@@>
+<itemize>
+<item> gets next <i>nTuples</i> results for a query
+<item> stores tuples in a list
+<item> when no results left, returns empty list
+</itemize>
+Example:
+<program>
+<comment># table R contains (1,2), (2,1), ...</comment>
+
+cur.execute("select * from R")
+while True:
+   tups = cur.fetchmany(3)
+   if tups == []:
+      break
+   for tup in tups:
+      x,y = tup
+      print(x,y)
+
+<comment># prints</comment>
+<comment>1 2</comment>
+<comment>2 1</comment>
+<comment>...</comment>
+</program>
+</slide>

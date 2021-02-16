@@ -1,0 +1,5 @@
+Use the beer dataabse for this
+
+Or, in fact, any other database containing strings
+
+Load the aggregate into the database using:  \i concat.sql

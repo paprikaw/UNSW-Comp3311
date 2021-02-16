@@ -1,0 +1,3926 @@
+<html>
+<head>
+<title>SQL: Schemas, Queries, Updates, Views</title>
+<link href='lib/notes.css' rel='stylesheet' type='text/css'>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML" async></script>
+<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js'></script>
+<link href='lib/prism.css' rel='stylesheet'>
+<script src='lib/sg.js'></script>
+</head>
+<body>
+<div class='heading'>SQL: Schemas, Queries, Updates, Views</div><p><ul class='indexUl'  style='font-size: 0.7em;'><li class="i"> <a href="#s1">SQL</a>
+<li class="i"> <a href="#s8">Example Databases</a>
+<li class="i"> <a href="#s9">Example Database #1</a>
+<li class="i"> <a href="#s13">Example Database #2</a>
+<li class="i"> <a href="#s20">SQL Syntax</a>
+<li class="i"> <a href="#s22">SQL Keywords</a>
+<li class="i"> <a href="#s24">SQL Identifiers</a>
+<li class="i"> <a href="#s26">Constants in SQL</a>
+<li class="i"> <a href="#s28">SQL Data Types</a>
+<li class="i"> <a href="#s33">Tuple and Set Literals</a>
+<li class="i"> <a href="#s35">SQL Operators</a>
+<li class="i"> <a href="#s43">The <large><code>NULL</code></large> Value</a>
+<li class="i"> <a href="#s46">SQL: Schemas</a>
+<li class="i"> <a href="#s47">Relational Data Definition</a>
+<li class="i"> <a href="#s49">SQL Data Definition Language</a>
+<li class="i"> <a href="#s50">Defining a Database Schema</a>
+<li class="i"> <a href="#s56">Declaring Keys</a>
+<li class="i"> <a href="#s63">Other Attribute Properties</a>
+<li class="i"> <a href="#s65">Attribute Value Constraints</a>
+<li class="i"> <a href="#s67">Named Constraints</a>
+<li class="i"> <a href="#s68">SQL: Building Databases</a>
+<li class="i"> <a href="#s69">Creating Databases</a>
+<li class="i"> <a href="#s75">Data Modification in SQL</a>
+<li class="i"> <a href="#s77">Insertion</a>
+<li class="i"> <a href="#s82">Insertion from Queries</a>
+<li class="i"> <a href="#s84">Bulk Insertion of Data</a>
+<li class="i"> <a href="#s86">Deletion</a>
+<li class="i"> <a href="#s88">Semantics of Deletion</a>
+<li class="i"> <a href="#s91">Updates</a>
+<li class="i"> <a href="#s94">Changing Tables</a>
+<li class="i"> <a href="#s96">For More Details ...</a>
+<li class="i"> <a href="#s97">SQL: Queries</a>
+<li class="i"> <a href="#s98">Queries</a>
+<li class="i"> <a href="#s99">Queries in SQL</a>
+<li class="i"> <a href="#s100">SELECT Example</a>
+<li class="i"> <a href="#s101">Semantics of <large><code>SELECT</code></large></a>
+<li class="i"> <a href="#s103">Projection in SQL</a>
+<li class="i"> <a href="#s106">Renaming via <tt>AS</tt></a>
+<li class="i"> <a href="#s107">Expressions as Values in Columns</a>
+<li class="i"> <a href="#s108">Text in Result Table</a>
+<li class="i"> <a href="#s109">Selection in SQL</a>
+<li class="i"> <a href="#s111">Multi-relation <large><code>SELECT</code></large> Queries</a>
+<li class="i"> <a href="#s114">Semantics of Multi-Relation <large><code>SELECT</code></large></a>
+<li class="i"> <a href="#s116">Name Clashes in Conditions</a>
+<li class="i"> <a href="#s118">Explicit Tuple Variables</a>
+<li class="i"> <a href="#s121">Explicit Joins</a>
+<li class="i"> <a href="#s124">Outer Join</a>
+<li class="i"> <a href="#s129"> Subqueries</a>
+<li class="i"> <a href="#s134"> The <large><code>IN</code></large> Operator</a>
+<li class="i"> <a href="#s137"> The <large><code>EXISTS</code></large> Function</a>
+<li class="i"> <a href="#s138"> Quantifiers</a>
+<li class="i"> <a href="#s139"> Union, Intersection, Difference</a>
+<li class="i"> <a href="#s141"> Bag Semantics of SQL</a>
+<li class="i"> <a href="#s143"> Forcing Bag/Set Semantics</a>
+<li class="i"> <a href="#s145">Division</a>
+<li class="i"> <a href="#s146">Selection with Aggregation</a>
+<li class="i"> <a href="#s148"> Aggregation operators</a>
+<li class="i"> <a href="#s149">Grouping</a>
+<li class="i"> <a href="#s155"> Restrictions on <large><code>SELECT</code></large> Lists</a>
+<li class="i"> <a href="#s159"> Eliminating Groups</a>
+<li class="i"> <a href="#s164">Partitions and Window Functions</a>
+<li class="i"> <a href="#s169">Complex Queries</a>
+<li class="i"> <a href="#s176">Recursive Queries</a>
+<li class="i"> <a href="#s181">SQL: Views</a>
+<li class="i"> <a href="#s182"> Views</a>
+<li class="i"> <a href="#s187">Renaming View Attributes</a>
+<li class="i"> <a href="#s188">Using Views</a>
+<li class="i"> <a href="#s190">Updating Views</a>
+<li class="i"> <a href="#s194">Evaluating Views</a>
+<li class="i"> <a href="#s198">Materialized Views</a>
+</ul><hr>
+<DIV id="s1">
+<div class='heading'>SQL</div>
+<p>
+<font color='#0000BB'>SQL</font> = <b>S</b>tructured <b>Q</b>uery <b>L</b>anguage
+&nbsp; <small>(sometimes called "sequel")</small>.
+<p>
+SQL is an ANSI/ISO standard language for querying and manipulating 
+relational DBMSs.
+<p>
+Designed to be a "human readable" language comprising:
+<ul>
+<li> data definition facilities
+<li> database modification operations
+<li> database query operations, including:
+<small>
+<ul>
+<li> relational algebra, set operations, aggregation, grouping, ...
+</ul>
+</small>
+</ul>
+</DIV>
+<hr>
+<DIV id="s2">
+<div class='heading'>SQL <span style="font-size:67%">(cont)</span></div>
+<p>
+SQL was developed at IBM (San Jose Lab) during the 1970's,
+and standardised in 1986.
+<p>
+DBMSs typically implement the SQL2 standard &nbsp; <small>(aka SQL-92)</small>.
+<p>
+Unfortunately, they also:
+<ul>
+<li> implement a (large) subset of the standard
+<li> extend the standard in various "useful" ways
+</ul>
+SQL (in some form) looks likely to survive in the next generation
+of database systems.
+<p>
+In these slides, we try to use only <i>standard</i> (portable) SQL2.
+</DIV>
+<hr>
+<DIV id="s3">
+<div class='heading'>SQL <span style="font-size:67%">(cont)</span></div>
+<p>
+Since SQL2, there have been three new proposed standards:
+<p>
+SQL:1999 added e.g.
+<ul>
+<li> boolean and BLOB types, arrays/rows, ...
+<li> procedures programming constructs, triggers
+<li> recursive queries
+<li> OO-like objects, inheritance, ...
+</ul>
+SQL:2003 ...
+<ul>
+<li> standardised some SQL:1999 extensions
+<li> added a standard for meta-data (catalogues)
+<li> standardised stored procedures (SQL/PSM)
+<li> added a new <large><code>MERGE</code></large> statement ("upsert")
+<li> defined interfaces to C, Java, XML, object systems, ...
+</ul>
+SQL:2008 added additional support for XML.
+</DIV>
+<hr>
+<DIV id="s4">
+<div class='heading'>SQL <span style="font-size:67%">(cont)</span></div>
+<p>
+Major DBMSs (Oracle, DB2, SQLServer, PostgreSQL MySQL):
+<ul>
+<li> implement most/all of SQL2
+<li> implement much of SQL:1999
+<li> implement some of SQL:2003
+<li> omit difficult-to-implement features e.g. assertions
+</ul>
+PostgreSQL ...
+<ul>
+<li> implements almost all of SQL2 &nbsp; <small>(see documentation)</small>
+<li> does not implement: recursive queries, assertions
+<li> provides non-standard mechanisms for: updatable views
+<li> currently has PLpgSQL, will also have SQL/PSM soon
+</ul>
+</DIV>
+<hr>
+<DIV id="s5">
+<div class='heading'>SQL <span style="font-size:67%">(cont)</span></div>
+<p>
+SQL provides high-level, declarative access to data.
+<p>
+However, SQL is not a Turing-complete programming language.
+<p>
+Applications typically embed evaluation of SQL queries into PL's:
+<ul>
+<li> Java and the JDBC API
+<li> PHP/Perl/Tcl and their various DBMS bindings
+<li> RDBMS-specific programming languages <br>
+	<small>(e.g. Oracle's PL/SQL, PostgreSQL's PLpgSQL)</small>
+<li> C and low-level library interfaces to DBMS engine <br>
+	<small>(e.g. Oracle's OCI, PostgreSQL's libpq)</small>
+</ul>
+</DIV>
+<hr>
+<DIV id="s6">
+<div class='heading'>SQL <span style="font-size:67%">(cont)</span></div>
+<p>
+SQL's query sub-language is based on <font color='#0000BB'>relational algebra</font>.
+<p>
+Relational algebra:
+<ul>
+<li> formal language of expressions mapping tables<i>&rarr;</i>tables
+<li> comprising three basic operations ...
+<ul>
+<li> <font color='#0000BB'>select</font>: <small>filter table rows via a condition on attributes</small>
+<li> <font color='#0000BB'>project</font>: <small>filter table columns by name</small>
+<li> <font color='#0000BB'>join</font>: <small>combines two tables via a condition</small>
+</ul>
+<li> along with set operations (union, intersection, difference)
+<li> and a variety of aggregates (including min(), max(), count(), etc)
+</ul>
+</DIV>
+<hr>
+<DIV id="s7">
+<div class='heading'>SQL <span style="font-size:67%">(cont)</span></div>
+<p>
+Example relational algebra operations:
+<p><div align='center'>
+<img alt="[Diagram:Pic/sql/relalg.png]" src="Pic/sql/relalg.png">
+</div><p>
+</DIV>
+<hr>
+<DIV id="s8">
+<div class='heading'>Example Databases</div>
+<p>
+In order to demonstrate aspects of SQL, we use two databases:
+<ul>
+<li> <large><code>bank</code></large>: customers, accounts, branches, ...
+<li> <large><code>beer</code></large>: beers, bars, drinkers, ...
+</ul>
+These databases are available for you to play with.
+</DIV>
+<hr>
+<DIV id="s9">
+<div class='heading'>Example Database #1</div>
+<p>
+ER design for a simple banking application:
+<p><div align='center'>
+<img alt="[Diagram:Pic/sql/schema2.png]" src="Pic/sql/schema2.png">
+</div><p>
+</DIV>
+<hr>
+<DIV id="s10">
+<div class='heading'>Example Database #1 <span style="font-size:67%">(cont)</span></div>
+<p>
+Relational schema corresponding to the ER design:
+<p><div align='center'>
+<img alt="[Diagram:Pic/sql/rschema2.png]" src="Pic/sql/rschema2.png">
+</div><p>
+</DIV>
+<hr>
+<DIV id="s11">
+<div class='heading'>Example Database #1 <span style="font-size:67%">(cont)</span></div>
+<p>
+We will use the following instance of this schema:
+<p>
+<b>Branch</b> relation/table instance:
+<p><pre><small>
+ branchName |    address     | assets 
+------------+----------------+--------
+ Clovelly   | Clovelly Rd.   |   1000
+ Coogee     | Coogee Bay Rd. |  40000
+ Maroubra   | Anzac Pde.     |  17000
+ Randwick   | Alison Rd.     |  20000
+ UNSW       | near Library   |   3000
+</small></pre><p>
+<b>Customer</b> relation/table instance:
+<p><pre><small>
+  name  |    address     | customerNo | homebranch 
+--------+----------------+------------+------------
+ Adam   | Belmore Rd.    |      12345 | Randwick
+ Bob    | Rainbow St.    |      32451 | Coogee
+ Chuck  | Clovelly Rd.   |      76543 | Clovelly
+ David  | Anzac Pde.     |      82199 | UNSW
+ George | Anzac Pde.     |      81244 | Maroubra
+ Graham | Malabar Rd.    |      92754 | Maroubra
+ Greg   | Coogee Bay Rd. |      22735 | Coogee
+ Jack   | High St.       |      12666 | Randwick
+</small></pre><p>
+</DIV>
+<hr>
+<DIV id="s12">
+<div class='heading'>Example Database #1 <span style="font-size:67%">(cont)</span></div>
+<p>
+<b>Account</b> relation/table instance:
+<p><pre><small>
+ branchName | accountNo | balance 
+------------+-----------+---------
+ UNSW       | U-245     |    1000
+ UNSW       | U-291     |    2000
+ Randwick   | R-245     |   20000
+ Coogee     | C-123     |   15000
+ Coogee     | C-124     |   25000
+ Clovelly   | Y-123     |    1000
+ Maroubra   | M-222     |    5000
+ Maroubra   | M-225     |   12000
+</small></pre><p>
+<b>Owner</b> relation/table instance:
+<p><pre><small>
+ account | customer 
+---------+----------
+ U-245   |    12345
+ U-291   |    12345
+ U-291   |    12666
+ R-245   |    12666
+ C-123   |    32451
+ C-124   |    22735
+ Y-123   |    76543
+ M-222   |    92754
+ M-225   |    12345
+</small></pre><p>
+</DIV>
+<hr>
+<DIV id="s13">
+<div class='heading'>Example Database #2</div>
+<p>
+ER design for beers/bars/drinkers database:
+<p><div align='center'>
+<img alt="[Diagram:Pic/sql/schema.png]" src="Pic/sql/schema.png">
+</div><p>
+</DIV>
+<hr>
+<DIV id="s14">
+<div class='heading'>Example Database #2 <span style="font-size:67%">(cont)</span></div>
+<p>
+Relational schema corresponding to the ER design:
+<p><div align='center'>
+<img alt="[Diagram:Pic/sql/rschema.png]" src="Pic/sql/rschema.png">
+</div><p>
+</DIV>
+<hr>
+<DIV id="s15">
+<div class='heading'>Example Database #2 <span style="font-size:67%">(cont)</span></div>
+<p>
+We will use the following instance of this schema:
+<p>
+<b>Bars</b> relation/table instance:
+<p><pre><small>
+       name       |   addr    | license 
+------------------+-----------+---------
+ Australia Hotel  | The Rocks |  123456
+ Coogee Bay Hotel | Coogee    |  966500
+ Lord Nelson      | The Rocks |  123888
+ Marble Bar       | Sydney    |  122123
+ Regent Hotel     | Kingsford |  987654
+ Royal Hotel      | Randwick  |  938500
+</small></pre><p>
+<b>Drinkers</b> relation/table instance:
+<p><pre><small>
+  name  |   addr   |   phone    
+--------+----------+------------
+ Adam   | Randwick | 9385-4444 
+ Gernot | Newtown  | 9415-3378 
+ John   | Clovelly | 9665-1234 
+ Justin | Mosman   | 9845-4321 
+</small></pre><p>
+</DIV>
+<hr>
+<DIV id="s16">
+<div class='heading'>Example Database #2 <span style="font-size:67%">(cont)</span></div>
+<p>
+<b>Beers</b> relation/table instance:
+<p><pre><small>
+        name         |     manf      
+---------------------+---------------
+ 80/-                | Caledonian
+ Bigfoot Barley Wine | Sierra Nevada
+ Burragorang Bock    | George IV Inn
+ Crown Lager         | Carlton
+ Fosters Lager       | Carlton
+ Invalid Stout       | Carlton
+ Melbourne Bitter    | Carlton
+ New                 | Toohey's
+ Old                 | Toohey's
+ Old Admiral         | Lord Nelson
+ Pale Ale            | Sierra Nevada
+ Premium Lager       | Cascade
+ Red                 | Toohey's
+ Sheaf Stout         | Toohey's
+ Sparkling Ale       | Cooper's
+ Stout               | Cooper's
+ Three Sheets        | Lord Nelson
+ Victoria Bitter     | Carlton
+</small></pre><p>
+</DIV>
+<hr>
+<DIV id="s17">
+<div class='heading'>Example Database #2 <span style="font-size:67%">(cont)</span></div>
+<p>
+<b>Frequents</b> relation/table instance:
+<p><pre><small>
+ drinker |       bar        
+---------+------------------
+ Adam    | Coogee Bay Hotel
+ Gernot  | Lord Nelson
+ John    | Coogee Bay Hotel
+ John    | Lord Nelson
+ John    | Australia Hotel
+ Justin  | Regent Hotel
+ Justin  | Marble Bar
+</small></pre><p>
+</DIV>
+<hr>
+<DIV id="s18">
+<div class='heading'>Example Database #2 <span style="font-size:67%">(cont)</span></div>
+<p>
+<b>Likes</b> relation/table instance:
+<p><pre><small>
+ drinker |        beer         
+---------+---------------------
+ Adam    | Crown Lager
+ Adam    | Fosters Lager
+ Adam    | New
+ Gernot  | Premium Lager
+ Gernot  | Sparkling Ale
+ John    | 80/-
+ John    | Bigfoot Barley Wine
+ John    | Pale Ale
+ John    | Three Sheets
+ Justin  | Sparkling Ale
+ Justin  | Victoria Bitter
+</small></pre><p>
+</DIV>
+<hr>
+<DIV id="s19">
+<div class='heading'>Example Database #2 <span style="font-size:67%">(cont)</span></div>
+<p>
+<b>Sells</b> relation/table instance:
+<p><pre><small>
+       bar        |       beer       | price 
+------------------+------------------+-------
+ Australia Hotel  | Burragorang Bock |  3.50
+ Coogee Bay Hotel | New              |  2.25
+ Coogee Bay Hotel | Old              |  2.50
+ Coogee Bay Hotel | Sparkling Ale    |  2.80
+ Coogee Bay Hotel | Victoria Bitter  |  2.30
+ Lord Nelson      | Three Sheets     |  3.75
+ Lord Nelson      | Old Admiral      |  3.75
+ Marble Bar       | New              |  2.80
+ Marble Bar       | Old              |  2.80
+ Marble Bar       | Victoria Bitter  |  2.80
+ Regent Hotel     | New              |  2.20
+ Regent Hotel     | Victoria Bitter  |  2.20
+ Royal Hotel      | New              |  2.30
+ Royal Hotel      | Old              |  2.30
+ Royal Hotel      | Victoria Bitter  |  2.30
+</small></pre><p>
+</DIV>
+<hr>
+<DIV id="s20">
+<div class='heading'>SQL Syntax</div>
+<p>
+SQL definitions, queries and statements are composed of:
+<ul>
+<li> <font color='#0000BB'>comments</font> ... <large><font color=#009900><b><code>--</code></b></font></large> comments to end of line
+<li> <font color='#0000BB'>identifiers</font> ... similar to regular programming languages
+<li> <font color='#0000BB'>keywords</font> ... a large set (e.g. <large><code>CREATE</code></large>, <large><code>SELECT</code></large>, <large><code>TABLE</code></large>)
+<li> <font color='#0000BB'>data types</font> ... a small set (e.g. <large><code>integer</code></large>, <large><code>varchar</code></large>, <large><code>date</code></large>)
+<li> <font color='#0000BB'>operators</font> ... similar to regular programming languages
+<li> <font color='#0000BB'>constants</font> ... similar to regular programming languages
+</ul>
+<i>Similar</i> means "often the same, but not always</a> ...
+<ul>
+<li> <large><code>'John'</code></large>, <large><code>'blue'</code></large>, <large><code>'it''s'</code></large> are <font color='#0000BB'>strings</font>
+<li> <large><code>"Students"</code></large>, <large><code>"Really Silly!"</code></large> are <font color='#0000BB'>identifiers</font>
+</ul>
+</DIV>
+<hr>
+<DIV id="s21">
+<div class='heading'>SQL Syntax <span style="font-size:67%">(cont)</span></div>
+<p>
+While SQL identifiers and keywords are case-insensitive, we generally:
+<ul>
+<li> write keywords in upper case &nbsp; <small>(until it becomes annoying)</small> <br>
+	e.g. <large><code>SELECT</code></large>, <large><code>FROM</code></large>, <large><code>WHERE</code></large>, <large><code>CREATE</code></large>, ...
+<li> write relation names with an initial upper-case letter <br>
+	e.g. <large><code>Customers</code></large>, <large><code>Students</code></large>, <large><code>Owns</code></large>, <large><code>EnrolledIn</code></large>
+<li> write attribute names in all lower-case <br>
+	e.g. <large><code>id</code></large>, <large><code>name</code></large>, <large><code>partNumber</code></large>, <large><code>isActive</code></large>
+</ul>
+We follow the above conventions when writing programs.
+<p>
+We ignore the above conventions when typing in lectures.
+</DIV>
+<hr>
+<DIV id="s22">
+<div class='heading'>SQL Keywords</div>
+<p>
+A categorised list of frequently-used SQL92 keywords:
+<p><pre><small>
+<b>Querying</b>        <b>Defining Data</b>   <b>Changing Data</b>
+SELECT          CREATE          INSERT
+FROM            TABLE           INTO
+WHERE           INTEGER         VALUES
+GROUP BY        REAL            UPDATE
+HAVING          VARCHAR         SET
+ORDER BY        CHAR            DELETE
+DESC            KEY             DROP
+EXISTS          PRIMARY         ALTER
+IS NULL         FOREIGN
+NOT NULL        REFERENCES
+IN              CONSTRAINT
+DISTINCT        CHECK
+AS
+</small></pre><p>
+<small>
+There are 225 reserved words in SQL92 ... not a small language.
+</small>
+</DIV>
+<hr>
+<DIV id="s23">
+<div class='heading'>SQL Keywords <span style="font-size:67%">(cont)</span></div>
+<p>
+A list of PostgreSQL's SQL keywords:
+<p><pre><small>
+ALL           DEFERRABLE    IS           OVERLAPS
+ANALYSE       DESC          ISNULL       PRIMARY
+ANALYZE       DISTINCT      JOIN         PUBLIC
+AND           DO            LEADING      REFERENCES
+ANY           ELSE          LEFT         RIGHT
+AS            END           LIKE         SELECT
+ASC           EXCEPT        LIMIT        SESSION_USER
+BETWEEN       FALSE         NATURAL      SOME
+BINARY        FOR           NEW          TABLE
+BOTH          FOREIGN       NOT          THEN
+CASE          FREEZE        NOTNULL      TO
+CAST          FROM          NULL         TRAILING
+CHECK         FULL          OFF          TRUE
+COLLATE       GROUP         OFFSET       UNION
+COLUMN        HAVING        OLD          UNIQUE
+CONSTRAINT    ILIKE         ON           USER
+CROSS         IN            ONLY         USING
+CURRENT_DATE  INITIALLY     OR           VERBOSE
+CURRENT_TIME  INNER         ORDER        WHEN
+CURRENT_USER  INTERSECT     OUTER        WHERE
+DEFAULT       INTO
+</small></pre><p>
+<small>
+Note that some SQL92 reserved words are not reserved words in PostgreSQL.
+</small>
+</DIV>
+<hr>
+<DIV id="s24">
+<div class='heading'>SQL Identifiers</div>
+<p>
+Names are used to identify
+<ul>
+<li> database objects such as tables, attributes, views, ...
+<li> meta-objects such as types, functions, constraints, ...
+</ul>
+Identifiers in SQL use similar conventions to programming languages
+	<small>i.e. a sequence of alpha-numerics, starting with an alphabetic.</small>
+<p>
+Can create arbitrary indentifiers by enclosing in <large><code>"..."</code></large>
+<p>
+Example identifiers:
+<p><pre>
+employee    student   Courses
+last_name   "That's a Great Name!"
+</pre><p>
+<small>Oracle SQL also allows unquoted hash (<large><code>#</code></large>) and dollar (<large><code>$</code></large>) in identifiers.</small>
+</DIV>
+<hr>
+<DIV id="s25">
+<div class='heading'>SQL Identifiers <span style="font-size:67%">(cont)</span></div>
+<p>
+Since SQL does not distinguish case, the following are all treated
+as being the same identifier:
+<p><pre>
+employee   Employee   EmPlOyEe
+</pre><p>
+Most RDBMSs will let you give the same name to different kinds of objects
+(e.g. a table called <large><code>Beer</code></large> and an attribute called <large><code>Beer</code></large>).
+<p>
+Some common naming conventions:
+<ul>
+<li>
+name tables representing entitites via plural nouns <br>
+(e.g. <large><code>Drinkers</code></large>, <large><code>TheDrinkers</code></large>, <large><code>AllDrinkers</code></large>, ...)
+<li>
+name foreign key attributes after the table they refer to <br>
+(e.g. <large><code>beer</code></large> in the <large><code>Sells</code></large> relation)
+</ul>
+</DIV>
+<hr>
+<DIV id="s26">
+<div class='heading'>Constants in SQL</div>
+<p>
+Numeric constants have same syntax as programming languages, e.g.
+<p><pre>
+10    3.14159    2e-5    6.022e23 
+</pre><p>
+<p>
+String constants are written in single quotes, e.g.
+<p><pre>
+'John'   'some text'   '!%#%!$'   'O''Brien'
+'"'   '[A-Z]{4}\d{4}'   'a VeRy! LoNg String'
+</pre><p>
+PostgreSQL provides extended strings containing <large><code>\</code></large> escapes, e.g.
+<p><pre>
+E'\n'   E'O\'Brien'   E'[A-Z]{4}\\d{4}'   E'John'
+</pre><p>
+Boolean constants: <large><code>TRUE</code></large> <small>and</small> <large><code>FALSE</code></large>
+<p>
+<small>PostgreSQL also allows <large><code>'t'</code></large>, <large><code>'true'</code></large>, <large><code>'yes'</code></large>,
+	<large><code>'f'</code></large>, <large><code>'false'</code></large>, <large><code>'no'</code></large></small>
+</DIV>
+<hr>
+<DIV id="s27">
+<div class='heading'>Constants in SQL <span style="font-size:67%">(cont)</span></div>
+<p>
+Other kinds of constants are typically written as strings.
+<p>
+Dates: <large><code>'2008-04-13'</code></large>, &nbsp; Times: <large><code>'13:30:15'</code></large>
+<p>
+Timestamps: <large><code>'2004-10-19 10:23:54'</code></large> 
+<p>
+PostgreSQL also recognises: <large><code>'January 26 11:05:10 1988 EST'</code></large>
+<p>
+Time intervals: <large><code>'10 minutes'</code></large>, &nbsp; <large><code>'5 days, 6 hours'</code></large>
+<p>
+PostgreSQL also has IP address, XML, etc. data types.
+</DIV>
+<hr>
+<DIV id="s28">
+<div class='heading'>SQL Data Types</div>
+<p>
+All attributes in SQL relations are typed &nbsp;
+<small>(i.e. have domain specified)</small>
+<p>
+SQL supports a small set of useful built-in data types: <br>
+text string, number <small>(integer,real)</small>, date, boolean, binary
+<p>
+Various type conversions are available (e.g. date to string, string to date,
+integer to real) and applied automatically "where they make sense".
+<p>
+Basic domain (type) checking is performed automatically.
+<p>
+The <large><code>NULL</code></large> value is treated as a member of all data types.
+<p>
+No structured data types are available <small>(in SQL2)</small>.
+</DIV>
+<hr>
+<DIV id="s29">
+<div class='heading'>SQL Data Types <span style="font-size:67%">(cont)</span></div>
+<p>
+Various kinds of number types are available:
+<ul>
+<li> <large><code>INTEGER</code></large> (or <large><code>INT</code></large>), <large><code>SMALLINT</code></large>
+	&nbsp;...&nbsp; 32/16-bit integers 
+<li> <large><code>REAL</code></large>, <large><code>DOUBLE PRECISION</code></large>
+	&nbsp;...&nbsp; 32/64-bit floating point
+<li> <large><code>NUMBER(</code></large><i>d</i><large><code>,</code></large><i>p</i><large><code>)</code></large>
+&nbsp;...&nbsp; fixed-point reals (<i>d</i> digits, <i>p</i> after dec.pt.)
+</ul>
+PostgreSQL also provides ...
+<ul>
+<li> <large><code>serial</code></large>: auto-generated integer values for primary keys
+<li> <large><code>currency</code></large>: fixed-point reals, displayed as strings <large><code>$1,000.00</code></large>
+</ul>
+</DIV>
+<hr>
+<DIV id="s30">
+<div class='heading'>SQL Data Types <span style="font-size:67%">(cont)</span></div>
+<p>
+Two string types are available:
+<ul>
+<li> <large><code>CHAR(</code></large><i>n</i><large><code>)</code></large> &nbsp;...&nbsp; uses <i>n</i> bytes, left-justified, blank-padded
+<li> <large><code>VARCHAR(</code></large><i>n</i><large><code>)</code></large> &nbsp;...&nbsp; uses 0..<i>n</i> bytes, no padding
+</ul>
+String types can be coerced by blank-padding or truncation.
+<p><pre>
+'abc'::CHAR(2) = 'ab'     'abc'::CHAR(4) = 'abc '
+</pre><p>
+PostgreSQL also provides <large><code>TEXT</code></large> for arbitrary strings
+<ul>
+<li> convenient; no need to worry "how long is a name?"
+<li> efficient &nbsp; <small>(different to some other DBMSs)</small>
+<li> but not part of SQL standard
+</ul>
+</DIV>
+<hr>
+<DIV id="s31">
+<div class='heading'>SQL Data Types <span style="font-size:67%">(cont)</span></div>
+<p>
+Dates are simply specially-formatted strings, with a range of
+operations to implement date semantics.
+<p>
+Format is typically &nbsp;<large><code>YYYY-MM-DD</code></large>&nbsp;, e.g. <large><code>'1998-08-02'</code></large>
+<p>
+Accepts other formats (and has format-conversion functions), but
+beware of two-digit years &nbsp; <small>(year 2000)</small>
+<p>
+Comparison operators implement <i>before</i> (<large><code>&lt;</code></large>) and <i>after</i> (<large><code>&gt;</code></large>).
+<p>
+Subtraction counts number of days between two dates.
+<p>
+<small>Etc. etc. ... consult your local SQL Manual</small>
+</DIV>
+<hr>
+<DIV id="s32">
+<div class='heading'>SQL Data Types <span style="font-size:67%">(cont)</span></div>
+<p>
+PostgreSQL also supports several non-standard data types.
+<ul>
+<li> generic text string data i.e. <large><code>text</code></large>
+<li> arbitrary binary data <small>(BLOBs)</small> i.e. <large><code>bytea</code></large>
+<li> geometric data types e.g. <large><code>point</code></large>, <large><code>circle</code></large>, <large><code>polygon</code></large>, ...
+</ul>
+Also, extends relational model so that a single attribute
+can contain an array/matrix of values, e.g.
+<p><pre><small>
+CREATE TABLE Employees (
+       empid     integer primary key,
+       name      text,
+       pay_rate  float[]
+);
+INSERT INTO Employees VALUES
+       (1234, 'John', '{35.00,45.00,60.00}');
+SELECT pay_rate[2] FROM Employees ...
+</small></pre><p>
+</DIV>
+<hr>
+<DIV id="s33">
+<div class='heading'>Tuple and Set Literals</div>
+<p>
+Tuple and set constants are both written as:
+<p><pre>
+( <i>val<sub>1</sub>, val<sub>2</sub>, val<sub>3</sub>,</i> ... )
+</pre><p>
+The correct interpretation is worked out from the context.
+<p>
+Examples:
+<p><pre><small>
+INSERT INTO Student(stude#, name, course)
+VALUES (2177364, 'Jack Smith', 'BSc')
+       <span class='comment'>-- tuple literal</span>
+
+CREATE TABLE Academics (
+       id   integer,
+       name varchar(40),
+       job  varchar(10) CHECK
+               job IN ('Lecturer', 'Tutor');
+               <span class='comment'>-- set literal</span>
+</small></pre><p>
+</DIV>
+<hr>
+<DIV id="s34">
+<div class='heading'>Tuple and Set Literals <span style="font-size:67%">(cont)</span></div>
+<p>
+SQL data types provide coarse-grained control over values.
+<p>
+If more fine-grained control over values is needed:
+<ul>
+<li> constraints can express more precise conditions
+<li> new "data types" can be defined 
+</ul>
+Examples:
+<p><pre>
+CREATE DOMAIN PositiveInt AS INTEGER
+   CHECK (VALUE > 0);
+CREATE DOMAIN Colour AS 
+   CHECK (VALUE IN ('red','yellow','green','blue','violet'));
+CREATE TABLE T (
+   x Colour,
+   y PositiveInt,
+   z INTEGER CHECK (z BETWEEN 10 AND 20)
+);
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s35">
+<div class='heading'>SQL Operators</div>
+<p>
+Comparison operators are defined on all types:
+<p><pre>
+&lt;   &gt;   &lt;=   &gt;=   =   &lt;&gt;  (or !=)
+</pre><p>
+Boolean operators <large><code>AND</code></large>, <large><code>OR</code></large>, <large><code>NOT</code></large> are also available
+<p>
+Note <large><code>AND</code></large>,<large><code>OR</code></large> are not "short-circuit" in the same way as C's <large><code>&&</code></large>,<large><code>||</code></large>
+<p>
+Most data types also have type-specific operations available
+<p>
+<small>
+See PostgreSQL Documentation Chapter 8/9 for data types and operators
+</small>
+</DIV>
+<hr>
+<DIV id="s36">
+<div class='heading'>SQL Operators <span style="font-size:67%">(cont)</span></div>
+<p>
+<b>String comparison:</b>
+<ul>
+<li> <i>str<sub>1</sub></i> <large><code>&lt;</code></large> <i>str<sub>2</sub></i>
+&nbsp;...&nbsp; compare using dictionary order
+<li> <i>str</i> <large><code>LIKE</code></large> <i>pattern</i>
+&nbsp;...&nbsp; matches string to pattern 
+</ul>
+Pattern-matching uses SQL-specific pattern expressions:
+<ul>
+<li> <large><code>%</code></large> matches anything &nbsp; (like <large><code>.*</code></large>)
+<li> <large><code>_</code></large> matches any single char &nbsp; (like <large><code>.</code></large>)
+</ul>
+</DIV>
+<hr>
+<DIV id="s37">
+<div class='heading'>SQL Operators <span style="font-size:67%">(cont)</span></div>
+<p>
+Examples (using SQL92 pattern matching):
+<p><table border='0' cellpadding='6'>
+<tr valign=top>
+<td><nobr><large><code>Name LIKE 'Ja%'</code></large></td>
+<td></td><td><large><code>Name</code></large> begins with 'Ja'</td>
+</tr>
+<tr valign=top>
+<td><nobr><large><code>Name LIKE '_i%'</code></large></td>
+<td></td><td><large><code>Name</code></large> has 'i' as 2nd letter</td>
+</tr>
+<tr valign=top>
+<td><nobr><large><code>Name LIKE '%o%o%'</code></large></td>
+<td></td><td><large><code>Name</code></large> contains two 'o's</td>
+</tr>
+<tr valign=top>
+<td><nobr><large><code>Name LIKE '%ith'</code></large></td>
+<td></td><td><large><code>Name</code></large> ends with 'ith'</td>
+</tr>
+<tr valign=top>
+<td><nobr><large><code>Name LIKE 'John'</code></large></td>
+<td></td><td><large><code>Name</code></large> matches 'John'</td>
+</tr>
+</table><p>
+PostgreSQL also supports case-insensitive match: <large><code>ILIKE</code></large>
+</DIV>
+<hr>
+<DIV id="s38">
+<div class='heading'>SQL Operators <span style="font-size:67%">(cont)</span></div>
+<p>
+Most Unix-based DBMSs utilise the regexp library
+<ul>
+<li> to provide full <small>POSIX</small> regular expression matching
+</ul>
+PostgreSQL uses the <large><code>~</code></large> operator for this:
+<p><pre>
+<i>Attr</i> ~ '<i>RegExp</i>'
+</pre><p>
+PostgreSQL also provides full-text searching <small>(see doc)</small>
+</DIV>
+<hr>
+<DIV id="s39">
+<div class='heading'>SQL Operators <span style="font-size:67%">(cont)</span></div>
+<p>
+Examples (using <small>POSIX</small> regular expressions):
+<p><table border='0' cellpadding='6'>
+<tr valign=top>
+<td><nobr><large><code>Name ~ '^Ja'</code></large></td>
+<td></td><td><large><code>Name</code></large> begins with 'Ja'</td>
+</tr>
+<tr valign=top>
+<td><nobr><large><code>Name ~ '^.i'</code></large></td>
+<td></td><td><large><code>Name</code></large> has 'i' as 2nd letter</td>
+</tr>
+<tr valign=top>
+<td><nobr><large><code>Name ~ '.*o.*o.*'</code></large></td>
+<td></td><td><large><code>Name</code></large> contains two 'o's</td>
+</tr>
+<tr valign=top>
+<td><nobr><large><code>Name ~ 'ith$'</code></large></td>
+<td></td><td><large><code>Name</code></large> ends with 'ith'</td>
+</tr>
+<tr valign=top>
+<td><nobr><large><code>Name ~ 'John'</code></large></td>
+<td></td><td><large><code>Name</code></large> matches 'John'</td>
+</tr>
+</table><p>
+</DIV>
+<hr>
+<DIV id="s40">
+<div class='heading'>SQL Operators <span style="font-size:67%">(cont)</span></div>
+<p>
+<b>String manipulation:</b>
+<ul>
+<li> <i>str<sub>1</sub></i> <large><code>||</code></large> <i>str<sub>2</sub></i> ... return concatenation of <i>str<sub>1</sub></i> and <i>str<sub>2</sub></i>
+<li> <large><code>lower(</code></large><i>str</i><large><code>)</code></large> ... return lower-case version of <i>str</i>
+<li> <large><code>substring(</code></large><i>str</i>,<i>start</i>,<i>count</i><large><code>)</code></large> ... extract chars from <i>str</i>
+</ul>
+<small>Etc. etc. ... consult your local SQL Manual (e.g. PostgreSQL Sec 9.4)</small>
+<p>
+Note that above operations are null-preserving (strict):
+<ul>
+<li> if any operand is <large><code>NULL</code></large>, result is <large><code>NULL</code></large>
+<li> beware of <large><code>(a||' '||b||' '||c)</code></large> ... <large><code>NULL</code></large> if any of
+	<large><code>a</code></large>, <large><code>b</code></large>, <large><code>c</code></large> are null
+</ul>
+</DIV>
+<hr>
+<DIV id="s41">
+<div class='heading'>SQL Operators <span style="font-size:67%">(cont)</span></div>
+<p>
+Arithmetic operations:
+<p><pre><small>
++  -  *  /  abs  ceil  floor  power  sqrt  sin  
+</small></pre><p>
+Aggregations apply to a column of numbers in a relation:
+<ul>
+<li> <large><code>count(</code></large><i>attr</i><large><code>)</code></large>
+	&nbsp;...&nbsp; number of rows in <i>attr</i> column
+<li> <large><code>sum(</code></large><i>attr</i><large><code>)</code></large>
+	&nbsp;...&nbsp; sum of values for <i>attr</i>
+<li> <large><code>avg(</code></large><i>attr</i><large><code>)</code></large>
+	&nbsp;...&nbsp; mean of values for <i>attr</i>
+<li> <large><code>min/max(</code></large><i>attr</i><large><code>)</code></large>
+	&nbsp;...&nbsp; min/max of values for <i>attr</i>
+</ul>
+Note: <large><code>count</code></large> applies to columns of non-numbers as well.
+</DIV>
+<hr>
+<DIV id="s42">
+<div class='heading'>SQL Operators <span style="font-size:67%">(cont)</span></div>
+<p>
+<large><code>NULL</code></large> in arithmetic operation always yields <large><code>NULL</code></large>, e.g.
+<p><pre>
+3 + NULL = NULL      1 / NULL = NULL
+</pre><p>
+<large><code>NULL</code></large> in aggregations is ignored <small>(treated as unknown)</small>, e.g.
+<p><pre>
+sum(1,2,3,4,5,6)       = 21
+sum(1,2,NULL,4,NULL,6) = 13
+avg(1,2,3,4,5)         = 3
+avg(NULL,2,NULL,4)     = 3
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s43">
+<div class='heading'>The <large><code>NULL</code></large> Value</div>
+<p>
+Expressions containing <large><code>NULL</code></large> generally yield <large><code>NULL</code></large>.
+<p>
+However, boolean expressions use three-valued logic:
+<p><table border='1' cellpadding='2'>
+<tr align=center>
+<td> <i>a</i> </td>
+<td> <i>b</i> </td>
+<td> <i>a</i> <large><code>AND</code></large> <i>b</i> </td>
+<td> <i>a</i> <large><code>OR</code></large> <i>b</i> </td>
+</tr>
+<tr align=center>
+<td> TRUE </td>
+<td> TRUE </td>
+<td> TRUE </td>
+<td> TRUE </td>
+</tr>
+<tr align=center>
+<td> TRUE </td>
+<td> FALSE </td>
+<td> FALSE </td>
+<td> TRUE </td>
+</tr>
+<tr align=center>
+<td> TRUE </td>
+<td> NULL </td>
+<td> NULL </td>
+<td> TRUE </td>
+</tr>
+<tr align=center>
+<td> FALSE </td>
+<td> FALSE </td>
+<td> FALSE </td>
+<td> FALSE </td>
+</tr>
+<tr align=center>
+<td> FALSE </td>
+<td> NULL </td>
+<td> FALSE </td>
+<td> NULL </td>
+</tr>
+<tr align=center>
+<td> NULL </td>
+<td> NULL </td>
+<td> NULL </td>
+<td> NULL </td>
+</tr>
+</tr>
+</table><p>
+</DIV>
+<hr>
+<DIV id="s44">
+<div class='heading'>The <large><code>NULL</code></large> Value <span style="font-size:67%">(cont)</span></div>
+<p>
+Important consequence of <large><code>NULL</code></large> behaviour ...
+<p>
+These expressions do not work as (might be) expected:
+<p><pre>
+<i>x</i> = NULL    <i>x</i> &lt;&gt; NULL
+</pre><p>
+Both return <large><code>NULL</code></large> regardless of the value of <i>x</i>
+<p>
+Can only test for <large><code>NULL</code></large> using:
+<p><pre>
+<i>x</i> IS NULL     <i>x</i> IS NOT NULL
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s45">
+<div class='heading'>The <large><code>NULL</code></large> Value <span style="font-size:67%">(cont)</span></div>
+<p>
+Other ways PostgeSQL provides for dealing with <large><code>NULL</code></large>:
+<p>
+<large><code>coalesce(</code></large><i>Val<sub>1</sub></i><large><code>,</code></large><i>Val<sub>2</sub></i><large><code>,</code></large>...<i>Val<sub>n</sub></i><large><code>)</code></large>
+<ul>
+<li> returns first non-null value <i>Val<sub>i</sub></i>
+<li> useful for providing a "displayable" value for nulls
+</ul>
+<large><code>nullif(</code></large><i>Val<sub>1</sub></i><large><code>,</code></large><i>Val<sub>2</sub></i><large><code>)</code></large>
+<ul>
+<li> returns null if <i>Val<sub>1</sub></i> is equal to <i>Val<sub>2</sub></i>
+<li> can be used to provide inverse of <large><code>coalesce()</code></large>
+</ul>
+</DIV>
+<hr>
+<DIV id="s46">
+<div class='heading'>SQL: Schemas</div>
+<p>
+</DIV>
+<hr>
+<DIV id="s47">
+<div class='heading'>Relational Data Definition</div>
+<p>
+In order to give a relational data model, we need to:
+<ul>
+<li> describe tables
+<li> describe attributes that comprise tables
+<li> describe any constraints on the data
+</ul>
+A <font color='#0000BB'>relation schema</font> defines an individual table.
+<p>
+A <font color='#0000BB'>database schema</font> is a collection of relation schemas that
+defines the structure of and constraints on an entire database.
+</DIV>
+<hr>
+<DIV id="s48">
+<div class='heading'>Relational Data Definition <span style="font-size:67%">(cont)</span></div>
+<p>
+So far, we have given relational schemas informally, e.g.
+<ul>
+<li> individual relation schemas
+<p><pre><small>
+Account(<b>accountNo</b>, <i>branchName</i>, balance)
+Branch(<b>branchNo</b>, address, assets)
+Customer(<b>customerNo</b>, name, address, <i>homeBranch</i>)
+Owner(<i>customer</i>,<i>branch</i>)
+</small></pre><p>
+<li> database schemas
+<p><div align='center'>
+<img alt="[Diagram:Pic/sql/rschema2.png]" src="Pic/sql/rschema2.png">
+</div><p>
+</ul>
+</DIV>
+<hr>
+<DIV id="s49">
+<div class='heading'>SQL Data Definition Language</div>
+<p>
+S<b>Q</b>L is normally considered to be a query language.
+<p>
+However, it also has a data definition sub-language (DDL)
+for describing database schemas.
+<p>
+The SQL DDL allows us to specify:
+<ul>
+<li> names of tables
+<li> names and domains for attributes
+<li> various types of constraints <small>(e.g. primary/foreign keys)</small>
+</ul>
+It also provides mechanisms for performance tuning <small>(see later)</small>.
+</DIV>
+<hr>
+<DIV id="s50">
+<div class='heading'>Defining a Database Schema</div>
+<p>
+Relations (tables) are described using:
+<p><pre>
+CREATE TABLE <i>RelName</i> (
+    <i>attribute<sub>1</sub> &nbsp; domain<sub>1</sub> &nbsp; constraints</i>,
+    <i>attribute<sub>2</sub> &nbsp; domain<sub>2</sub> &nbsp; constraints</i>,
+    ...
+    <i>table</i>-<i>level constraints</i>, ...
+)
+</pre><p>
+<small>
+where <i>constraints</i> can include details about primary keys, foreign
+keys, default values, and constraints on attribute values.
+</small>
+<p>
+This not only defines the table schema but also creates an empty
+instance of the table.
+<p>
+Tables are removed via &nbsp;&nbsp; <large><code>DROP TABLE</code></large> <i>RelName</i><large><code>;</code></large>
+</DIV>
+<hr>
+<DIV id="s51">
+<div class='heading'>Defining a Database Schema <span style="font-size:67%">(cont)</span></div>
+<p>
+Consider the relational diagram for the example schema:
+<p><div align='center'>
+<img alt="[Diagram:Pic/sql/rschema2.png]" src="Pic/sql/rschema2.png">
+</div><p>
+<small>
+This shows explicitly the connection between foreign key attributes
+and their corresponding key attributes.
+<p>
+The SQL DDL provides notation for expressing this in the table definition.
+</small>
+</DIV>
+<hr>
+<DIV id="s52">
+<div class='heading'>Defining a Database Schema <span style="font-size:67%">(cont)</span></div>
+<p>
+SQL DDL for the example schema:
+<p><pre>
+CREATE TABLE Branch (
+    name          varchar(30),
+    address       varchar(50),
+    assets        float,
+    PRIMARY KEY   (name)
+);
+</pre><p>
+&nbsp;<br>
+<small>
+Note: <large><code>name</code></large> is required to be unique and not null
+</small>
+</DIV>
+<hr>
+<DIV id="s53">
+<div class='heading'>Defining a Database Schema <span style="font-size:67%">(cont)</span></div>
+<p>
+More SQL DDL for the example schema:
+<p><pre>
+CREATE TABLE Customer (
+    customerNo    integer,
+    name          varchar(40),
+    address       varchar(50),
+    homeBranch    varchar(30) not null,
+    PRIMARY KEY   (customerNo),
+    FOREIGN KEY   (homeBranch)
+                  REFERENCES Branch(name)
+);
+</pre><p>
+&nbsp;<br>
+<small>
+Note: the <large><code>not null</code></large> captures total participation,
+i.e. every customer has a home branch.
+</small>
+</DIV>
+<hr>
+<DIV id="s54">
+<div class='heading'>Defining a Database Schema <span style="font-size:67%">(cont)</span></div>
+<p>
+More SQL DDL for the example schema:
+<p><pre>
+CREATE TABLE Account (
+    accountNo     char(5),
+    heldAtBranch  varchar(30) not null,
+    balance       float,
+    PRIMARY KEY   (accountNo),
+    FOREIGN KEY   (heldAtBranch)
+                  REFERENCES Branch(name)
+);
+</pre><p>
+&nbsp;<br>
+<small>
+Note: the <large><code>not null</code></large> captures total participation,
+i.e. every accountis held at some branch.
+</small>
+</DIV>
+<hr>
+<DIV id="s55">
+<div class='heading'>Defining a Database Schema <span style="font-size:67%">(cont)</span></div>
+<p>
+More SQL DDL for the example schema:
+<p><pre>
+CREATE TABLE OwnedBy (
+    account       char(5),
+    customer      integer,
+    PRIMARY KEY   (account,customer),
+    FOREIGN KEY   (account)
+                  REFERENCES Account(accountNo),
+    FOREIGN KEY   (customer)
+                  REFERENCES Customer(customerNo)
+);
+</pre><p>
+<small>
+Note: it is not possible in SQL to capture the semantics
+that Accounts are required to be owned by some Customer.
+</small>
+</DIV>
+<hr>
+<DIV id="s56">
+<div class='heading'>Declaring Keys</div>
+<p>
+Primary keys:
+<ul>
+<li> if a single attribute, declare with attribute, &nbsp; e.g.
+<p><pre>
+accountNo char(5) PRIMARY KEY,
+</pre><p>
+<li> if several attributes, declare with table constraints, &nbsp; e.g.
+<p><pre>
+name    varchar(40),
+address varchar(50),
+...
+PRIMARY KEY (name,address)
+</pre><p>
+</ul>
+</DIV>
+<hr>
+<DIV id="s57">
+<div class='heading'>Declaring Keys <span style="font-size:67%">(cont)</span></div>
+<p>
+If we want to define a numeric primary key, e.g.
+<p><pre>
+CREATE TABLE R ( id INTEGER PRIMARY KEY, ... );
+</pre><p>
+we still have the problem of generating unique values.
+<p>
+Most DBMSs provide a mechanism to
+<ul>
+<li> generating a squence of unique values
+<li> ensuring that tuples don't get assigned the same value
+</ul>
+PostgreSQL's version:
+<p><pre>
+CREATE TABLE R ( id SERIAL PRIMARY KEY, ... );
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s58">
+<div class='heading'>Declaring Keys <span style="font-size:67%">(cont)</span></div>
+<p>
+Foreign keys:
+<ul>
+<li> if a single attribute, specify <i>Relation(Attribute)</i>, &nbsp; e.g. 
+<p><pre>
+customer integer
+           REFERENCES Customer(customerNo)
+<span class='comment'>-- or</span>
+customer integer REFERENCES Customer
+<span class='comment'>-- or</span>
+FOREIGN KEY (customer)
+           REFERENCES Customer(customerNo)
+</pre><p>
+</ul>
+</DIV>
+<hr>
+<DIV id="s59">
+<div class='heading'>Declaring Keys <span style="font-size:67%">(cont)</span></div>
+<p>
+Foreign keys: <small>(cont)</small>
+<ul>
+<li> if several attributes, specify in table constraints, &nbsp; e.g.
+<p><pre>
+name  varchar(40),
+addr  varchar(50),
+...
+FOREIGN KEY (name,addr)
+        REFERENCES Person(name,address)
+</pre><p>
+</ul>
+<small>
+If defining foreign keys with table constraints, must use <large><code>FOREIGN KEY</code></large> keywords.
+</small>
+</DIV>
+<hr>
+<DIV id="s60">
+<div class='heading'>Declaring Keys <span style="font-size:67%">(cont)</span></div>
+<p>
+Declaring foreign keys assures <b>referential integrity</b>.
+<p>
+Example:
+<p>
+<large><code>Account.branchName</code></large> refers to primary key of <large><code>Branch</code></large>
+<p>
+If we want to delete a tuple from <large><code>Branch</code></large>, and there are tuples
+in <large><code>Account</code></large> that refer to it, we could ...
+<ul>
+<li> <b>reject</b> the deletion <small>(PostgreSQL/Oracle default behaviour)</small>
+<li> <b>set-NULL</b> the foreign key attributes in <large><code>Account</code></large> records
+<li> <b>cascade</b> the deletion and remove <large><code>Account</code></large> records
+</ul>
+</DIV>
+<hr>
+<DIV id="s61">
+<div class='heading'>Declaring Keys <span style="font-size:67%">(cont)</span></div>
+<p>
+Can force the alternative delete behaviours via e.g.
+<p><pre>
+<span class='comment'>-- to cascade deletes</span>
+customer integer
+           REFERENCES Customer(customerNo)
+           ON DELETE CASCADE
+
+<span class='comment'>-- to set foreign keys to NULL</span>
+customer integer
+           REFERENCES Customer(customerNo)
+           ON DELETE SET NULL
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s62">
+<div class='heading'>Declaring Keys <span style="font-size:67%">(cont)</span></div>
+<p>
+Example of different deletion strategies:
+<p><div align='center'>
+<img alt="[Diagram:Pic/sql/delete.png]" src="Pic/sql/delete.png">
+</div><p>
+</DIV>
+<hr>
+<DIV id="s63">
+<div class='heading'>Other Attribute Properties</div>
+<p>
+Can specify that an attribute must have a non-null value, e.g.
+<p><pre>
+barcode varchar(20) NOT NULL,
+price   float NOT NULL
+</pre><p>
+&nbsp; <br>
+Can specify that an attribute must have a unique value, e.g.
+<p><pre>
+barcode varchar(20) UNIQUE,
+isbn    varchar(15) UNIQUE NOT NULL
+</pre><p>
+&nbsp; <br>
+Primary keys are automatically &nbsp; <large><code>UNIQUE NOT NULL</code></large>.
+<p>
+</DIV>
+<hr>
+<DIV id="s64">
+<div class='heading'>Other Attribute Properties <span style="font-size:67%">(cont)</span></div>
+<p>
+Can specify a <large><code>DEFAULT</code></large> value for an attribute
+<ul>
+<li> will be assigned to attribute if no value is supplied during insert
+</ul>
+<b>Example:</b>
+<p><pre><small>
+CREATE TABLE Account (
+    accountNo  char(5) PRIMARY KEY,
+    branchName varchar(30)
+                 REFERENCES Branch(name)
+                 DEFAULT 'Central',
+    balance    float DEFAULT 0.0
+);
+
+INSERT INTO Account(accountNo) VALUES ('A-456')
+<span class='comment'>-- produces the tuple</span>
+Account('A-456','Central',0.0)
+</small></pre><p>
+</DIV>
+<hr>
+<DIV id="s65">
+<div class='heading'>Attribute Value Constraints</div>
+<p>
+In fact, <large><code>NOT NULL</code></large> is a special case of a constraint on the
+value that an attribute is allowed to take.
+<p>
+SQL has a more general mechanism for specifying such constraints.
+<p><pre>
+<i>attrName</i>  <i>type</i>  CHECK ( <i>condition</i> )
+</pre><p>
+The <i>Condition</i> can be arbitrarily complex, and may even
+involve other attributes, relations and <large><code>SELECT</code></large> queries.
+<p>
+<small>
+(but many RDBMSs (e.g. Oracle and PostgreSQL) don't allow <large><code>SELECT</code></large> in <large><code>CHECK</code></large>)
+</small>
+</DIV>
+<hr>
+<DIV id="s66">
+<div class='heading'>Attribute Value Constraints <span style="font-size:67%">(cont)</span></div>
+<p>
+<b>Example:</b>
+<p><pre>
+CREATE TABLE Example
+(
+   gender CHAR(1) CHECK (gender IN ('M','F')),
+   Xvalue INT     NOT NULL,
+   Yvalue INT     CHECK (Yvalue > Xvalue),
+   Zvalue FLOAT   CHECK (Zvalue >
+                          (SELECT MAX(price)
+                           FROM   Sells)
+                  )
+);
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s67">
+<div class='heading'>Named Constraints</div>
+<p>
+Any constraint in an SQL DDL can be named via
+<p><pre>
+CONSTRAINT  <i>constraintName</i>  <i>constraint</i>
+</pre><p>
+Example:
+<p><pre>
+CREATE TABLE Example
+(
+   gender CHAR(1) CONSTRAINT GenderCheck
+                  CHECK (gender IN ('M','F')),
+   Xvalue INT     NOT NULL,
+   Yvalue INT     CONSTRAINT XYOrder
+                  CHECK (Yvalue > Xvalue),
+);
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s68">
+<div class='heading'>SQL: Building Databases</div>
+<p>
+</DIV>
+<hr>
+<DIV id="s69">
+<div class='heading'>Creating Databases</div>
+<p>
+Mechanism for creating databases is typically DBMS-specific.
+<p>
+Many implement a (non-standard) SQL-like statement:
+<p><pre>
+CREATE DATABASE <i>DBname</i>;
+</pre><p>
+Many provide an external command, e.g PostgreSQL's
+<p><pre>
+$ <b>createdb</b> <i>DBname</i>
+</pre><p>
+Produces an empty database (no tables, etc) called <i>DBname</i>
+</DIV>
+<hr>
+<DIV id="s70">
+<div class='heading'>Creating Databases <span style="font-size:67%">(cont)</span></div>
+<p>
+A database can be completely removed (no backup) via
+<p><pre>
+$ <b>dropdb</b> <i>DBname</i>
+</pre><p>
+This removes all tuples, all tables, all traces of <i>DBname</i>
+<p>
+Tables can be removed from a database schema via:
+<p><pre>
+DROP <i>TableName</i>
+</pre><p>
+All tuples can be removed from a table via:
+<p><pre>
+DELETE FROM <i>TableName</i>
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s71">
+<div class='heading'>Creating Databases <span style="font-size:67%">(cont)</span></div>
+<p>
+Loading a schema with PostgreSQL:
+<p><pre>
+$ <b>createdb mydb</b>
+$ <b>psql mydb</b>
+...
+mydb=# <b>\i schema.sql</b>
+...
+</pre><p>
+or
+<p><pre>
+$ <b>psql -f schema.sql mydb</b>
+</pre><p>
+Running the above as:
+<p><pre>
+$ <b>psql -a -f schema.sql mydb</b>
+</pre><p>
+intersperses messages with the schema definition.
+<p>
+Useful for debugging, since errors appear in context.
+</DIV>
+<hr>
+<DIV id="s72">
+<div class='heading'>Creating Databases <span style="font-size:67%">(cont)</span></div>
+<p>
+Re-loading schemas is not well-supported in PostgreSQL.
+<p>
+Simplest approach is:
+<p><pre>
+$ <b>dropdb mydb</b>
+$ <b>createdb mydb</b>
+$ <b>psql -f schema.sql mydb</b>
+</pre><p>
+An alternative is to leave DB but drop all tables:
+<p><pre>
+$ <b>psql mydb</b>
+...
+mydb=# <b>drop Table1;</b>
+mydb=# <b>drop Table2;</b>
+<span class='comment'>etc. etc. in correct order</span>
+mydb=# <b>\i schema.sql</b>
+...
+</pre><p>
+&nbsp;<br>
+<small>
+Later, we'll see how to write functions to automate this.
+</small>
+</DIV>
+<hr>
+<DIV id="s73">
+<div class='heading'>Creating Databases <span style="font-size:67%">(cont)</span></div>
+<p>
+The entire contents of a database may be dumped:
+<p><pre>
+$ <b>pg_dump mydb &gt; mydb.dump</b>
+</pre><p>
+Dumps all definitions needed to re-create entire DB
+<ul>
+<li> table definitions (<large><code>create table</code></large>)
+<li> constraints, including PKs and FKs
+<li> all data from all tables
+<li> domains, stored procedures, triggers, etc.
+</ul>
+Some things change appearance, but mean the same thing <br>
+<small>
+(e.g. <large><code>varchar(30)</code></large> becomes <large><code>character varying(30)</code></large>, etc.)
+</small>
+</DIV>
+<hr>
+<DIV id="s74">
+<div class='heading'>Creating Databases <span style="font-size:67%">(cont)</span></div>
+<p>
+Dumps may be used for backup/restore or copying DBs
+<p><pre>
+$ <b>pg_dump mydb &gt; mydb.dump</b>  <span class='comment'>-- backup</span>
+$ <b>createdb newdb</b>
+$ <b>psql newdb -f mydb.dump</b>    <span class='comment'>-- copy</span>
+</pre><p>
+Result: <large><code>newdb</code></large> is a snapshot/copy of <large><code>mydb</code></large>.
+<ul>
+<li> however, different object identifiers
+<li> as changes are made, the two DBs will diverge
+</ul>
+</DIV>
+<hr>
+<DIV id="s75">
+<div class='heading'>Data Modification in SQL</div>
+<p>
+SQL provides mechanisms for modifying data (tuples) in tables:
+<ul>
+<li> <large><code>INSERT</code></large> ... add a new tuple into a table
+<li> <large><code>DELETE</code></large> ... remove tuples from a table <small>(via condition)</small>
+<li> <large><code>UPDATE</code></large> ... modify values in exiting tuples <small>(via condition)</small>
+</ul>
+Constraint checking is applied automatically on any change.
+<p>
+<small>
+(See description of relational model for details of which checking applied when)
+</small>
+</DIV>
+<hr>
+<DIV id="s76">
+<div class='heading'>Data Modification in SQL <span style="font-size:67%">(cont)</span></div>
+<p>
+Also provides mechanisms for modifying table meta-data:
+<ul>
+<li> <large><code>CREATE TABLE</code></large> ... create a new empty table
+<li> <large><code>DROP TABLE</code></large> ... remove table from database <small>(incl. tuples)</small>
+<li> <large><code>ALTER TABLE</code></large> ... change properties of existing table
+</ul>
+Analogous operations are available on other kinds of database objects, e.g.
+<ul>
+<li> <large><code>CREATE VIEW</code></large>, &nbsp; <large><code>CREATE FUNCTION</code></large>, &nbsp; <large><code>CREATE RULE</code></large>, ...
+<li> <large><code>DROP VIEW</code></large>, &nbsp; <large><code>DROP FUNCTION</code></large>, &nbsp; <large><code>DROP RULE</code></large>, ...
+<li> no <large><code>UPDATE</code></large> on these; use <large><code>CREATE OR REPLACE</code></large>
+</ul>
+</DIV>
+<hr>
+<DIV id="s77">
+<div class='heading'>Insertion</div>
+<p>
+Accomplished via the <large><code>INSERT</code></large> operation:
+<p><pre>
+INSERT INTO <i>RelationName</i>
+VALUES (<i>val<sub>1</sub></i>, <i>val<sub>2</sub></i>, <i>val<sub>3</sub></i>, ...)
+
+INSERT INTO <i>RelationName</i>(<i>Attr<sub>1</sub></i>, <i>Attr<sub>2</sub></i>, ...)
+VALUES (<i>valForAttr<sub>1</sub></i>, <i>valForAttr<sub>2</sub></i>, ...)
+</pre><p>
+Each form adds a single new tuple into <i>RelationName</i>.
+</DIV>
+<hr>
+<DIV id="s78">
+<div class='heading'>Insertion <span style="font-size:67%">(cont)</span></div>
+<p>
+<large><code>INSERT INTO </code></large><i>R</i><large><code> VALUES (</code></large><i>v<sub>1</sub></i><large><code>,</code></large><i>v<sub>2</sub></i><large><code>,...)</code></large>
+<ul>
+<li> values must be supplied for all attributes of <i>R</i>
+<li> in same order as appear in <large><code>CREATE TABLE</code></large> statement
+</ul>
+<large><code>INSERT INTO </code></large><i>R</i><large><code>(</code></large><i>A<sub>1</sub></i><large><code>,</code></large><i>A<sub>2</sub></i><large><code>,...) VALUES (</code></large><i>v<sub>1</sub></i><large><code>,</code></large><i>v<sub>2</sub></i><large><code>,...)</code></large>
+<ul>
+<li> can specify any subset of attributes of <i>R</i>
+<li> values must match attribute specification order
+<li> unspecified attributes are assigned default or null
+</ul>
+</DIV>
+<hr>
+<DIV id="s79">
+<div class='heading'>Insertion <span style="font-size:67%">(cont)</span></div>
+<p>
+<b>Example:</b> Add the fact that Justin likes 'Old'.
+<p><pre>
+INSERT INTO Likes VALUES ('Justin','Old');
+<span class='comment'>-- or --</span>
+INSERT INTO Likes(drinker,beer)
+       VALUES('Justin', 'Old');
+<span class='comment'>-- or --</span>
+INSERT INTO Likes(beer,drinker)
+       VALUES('Old','Justin');
+</pre><p>
+<b>Example:</b> Add a new drinker with unknown phone number.
+<p><pre>
+INSERT INTO Drinkers(name,addr)
+       VALUES('Frank','Coogee');
+<span class='comment'>-- which inserts the tuple ...</span>
+('Frank', 'Coogee', null)
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s80">
+<div class='heading'>Insertion <span style="font-size:67%">(cont)</span></div>
+<p>
+<b>Example:</b> insertion with default values
+<p><pre>
+ALTER TABLE Likes
+   ALTER COLUMN beer SET DEFAULT 'New';
+ALTER TABLE Likes
+   ALTER COLUMN drinker SET DEFAULT 'Joe';
+
+INSERT INTO Likes(drinker)
+       VALUES('Fred');
+INSERT INTO Likes(beer)
+       VALUES('Sparkling Ale');
+
+<span class='comment'>-- inserts the two new tuples ...</span>
+('Fred', 'New')
+('Joe', 'Sparkling Ale')
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s81">
+<div class='heading'>Insertion <span style="font-size:67%">(cont)</span></div>
+<p>
+<b>Example:</b> insertion with insufficient values.
+<p>
+E.g. specify that drinkers' phone numbers cannot be <large><code>NULL</code></large>.
+<p><pre>
+ALTER TABLE Drinkers
+   ALTER COLUMN phone SET NOT NULL;
+</pre><p>
+And then try to insert a new drinker whose phone number we don't know:
+<p><pre>
+INSERT INTO Drinkers(name,addr)
+       VALUES ('Zoe', 'Manly');
+
+ERROR: ExecInsert: Fail to add null value
+       in not null attribute phone
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s82">
+<div class='heading'>Insertion from Queries</div>
+<p>
+Can use the result of a query to perform insertion of multiple
+tuples at once.
+<p><pre>
+   INSERT INTO <i>Relation</i> ( <i>Subquery</i> );
+</pre><p>
+<p>
+Tuples of <i>Subquery</i> must be projected into a suitable format
+(i.e. matching the tuple-type of <i>Relation</i> ).
+</DIV>
+<hr>
+<DIV id="s83">
+<div class='heading'>Insertion from Queries <span style="font-size:67%">(cont)</span></div>
+<p>
+<b>Example:</b>
+Create a relation of potential drinking buddies (i.e. people who
+go to the same bars as each other).
+<p><pre><small>
+CREATE TABLE DrinkingBuddies (
+   drinker varchar(20) references Drinkers(name),
+   buddy   varchar(20) references Drinkers(name),
+   primary key (drinker,buddy)
+);
+
+INSERT INTO DrinkingBuddies (
+   SELECT a.drinker AS drinker,
+          b.drinker AS buddy
+   FROM   Frequents a, Frequents b
+   WHERE  a.bar = b.bar AND a.drinker <> b.drinker
+);
+</small></pre><p>
+<small>
+Note: this is better done as a view (treat this as a materialized view).
+</small>
+</DIV>
+<hr>
+<DIV id="s84">
+<div class='heading'>Bulk Insertion of Data</div>
+<p>
+Tuples may be inserted individually:
+<p><pre>
+insert into Stuff(x,y,s) values (2,4,'green');
+insert into Stuff(x,y,s) values (4,8,null);
+insert into Stuff(x,y,s) values (8,null,'red');
+...
+</pre><p>
+but this is tedious if 1000's of tuples are involved.
+<p>
+It is also inefficient, because all relevant constraints are
+checked after insertion of each tuple.
+</DIV>
+<hr>
+<DIV id="s85">
+<div class='heading'>Bulk Insertion of Data <span style="font-size:67%">(cont)</span></div>
+<p>
+Most DBMSs provide non-SQL methods for bulk insertion:
+<ul>
+<li> using a compact representation for each tuple
+<li> loading all tuples without constraint checking
+<li> doing all constraint checks at the end
+</ul>
+Downside: if even one tuple is buggy, none are inserted.
+<p>
+Example: PostgreSQL's <large><code>copy</code></large> statement:
+<p><pre>
+copy Stuff(x,y,s) from stdin;
+2       4       green
+4       8       \N
+8       \N      red
+\.
+</pre><p>
+Can also copy from a named file.
+</DIV>
+<hr>
+<DIV id="s86">
+<div class='heading'>Deletion</div>
+<p>
+Accomplished via the <large><code>DELETE</code></large> operation:
+<p><pre>
+DELETE FROM <i>Relation</i>
+WHERE  <i>Condition</i>
+</pre><p>
+Removes all tuples from <i>Relation</i> that satisfy <i>Condition</i>.
+<p>
+<b>Example:</b> Justin no longer likes Sparkling Ale.
+<p><pre>
+DELETE FROM Likes
+WHERE drinker = 'Justin'
+      AND beer = 'Sparkling Ale';
+</pre><p>
+<b>Special case:</b> Make relation <i>R</i> empty.
+<p><pre>
+DELETE FROM R;
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s87">
+<div class='heading'>Deletion <span style="font-size:67%">(cont)</span></div>
+<p>
+<b>Example:</b> remove all expensive beers from sale.
+<p><pre>
+DELETE FROM Sells
+WHERE price >= 3.00;
+</pre><p>
+<b>Example:</b> remove all drinkers with no fixed address.
+<p><pre>
+DELETE FROM Drinkers
+WHERE addr IS NULL;
+</pre><p>
+This fails if such Drinkers are referenced in other tables.
+</DIV>
+<hr>
+<DIV id="s88">
+<div class='heading'>Semantics of Deletion</div>
+<p>
+Method A for &nbsp; <large><code>DELETE FROM</code></large> <i>R</i> <large><code>WHERE</code></large> <i>Cond</i> :
+<p><pre>
+FOR EACH tuple T in R DO
+    IF T satisfies Cond THEN
+        remove T from relation R
+    END
+END
+</pre><p>
+Method B for &nbsp; <large><code>DELETE FROM</code></large> <i>R</i> <large><code>WHERE</code></large> <i>Cond</i> :
+<p><pre>
+FOR EACH tuple T in R DO
+    IF T satisfies Cond THEN
+        make a note of this T
+    END
+END
+FOR EACH noted tuple T DO
+    remove T from relation R
+END
+</pre><p>
+Does it matter which method is used?
+</DIV>
+<hr>
+<DIV id="s89">
+<div class='heading'>Semantics of Deletion <span style="font-size:67%">(cont)</span></div>
+<p>
+<b>Example:</b>
+Delete all beers for which there is another beer by the same manufacturer.
+<p><pre>
+DELETE FROM Beers b
+WHERE EXISTS
+      (SELECT name
+       FROM   Beers
+       WHERE  manf = b.manf 
+              AND name <> b.name);
+</pre><p>
+Does the query result in ...
+<ul>
+<li> deletion of all beers by brewers who make multiple beers
+<li> deletion of all but the "last beer" by such brewers
+</ul>
+Note: PostgreSQL disallows deletions with correlated subqueries
+<small>(the <large><code>FROM</code></large> clause can be only a table name).</small>
+</DIV>
+<hr>
+<DIV id="s90">
+<div class='heading'>Semantics of Deletion <span style="font-size:67%">(cont)</span></div>
+<p>
+Example continued ...
+<p>
+Different results come from different evaluation methods ..
+<ul>
+<li> Method A: iterate and evaluate condition for each beer
+<small>
+<ul>
+<li> consider a manufacturer <i>M</i> who makes two beers <i>A</i> and <i>B</i>
+<li> when we reach <i>A</i>, there are two beers by <i>M</i>, so delete <i>A</i>
+<li> when we reach <i>B</i>, there are no other beers by <i>M</i>, so not deleted
+</ul>
+</small>
+<li> Method B: evalute condition and then do all deletions
+<small>
+<ul>
+<li> both <i>A</i> and <i>B</i> test positive, and so both are deleted
+</ul>
+</small>
+</ul>
+<small>
+Most RDBMSs use Method B, which matches natural semantics of <large><code>DELETE</code></large>.
+</small>
+</DIV>
+<hr>
+<DIV id="s91">
+<div class='heading'>Updates</div>
+<p>
+An update allows you to modify values of specified attributes
+in specified tuples of a relation:
+<p><pre>
+UPDATE <i>R</i>
+SET    <i>list of assignments</i>
+WHERE  <i>Condition</i>
+</pre><p>
+Each tuple in relation <i>R</i> that satisfies <i>Condition</i>
+has the assignments applied to it.
+<p>
+Assignments may:
+<ul>
+<li> assign constant values to attributes, <br>
+	e.g. <large><code>SET price = 2.00</code></large>
+<li> use existing values in the tuple to compute new values, <br>
+	e.g. <large><code>SET price = price * 0.5</code></large>
+</ul>
+</DIV>
+<hr>
+<DIV id="s92">
+<div class='heading'>Updates <span style="font-size:67%">(cont)</span></div>
+<p>
+<b>Example:</b> Adam changes his phone number.
+<p><pre>
+UPDATE Drinkers
+SET    phone = '9385-2222'
+WHERE  name = 'Adam';
+</pre><p>
+<b>Example:</b> John moves to Coogee.
+<p><pre>
+UPDATE Drinkers
+SET    addr = 'Coogee',
+       phone = '9665-4321'
+WHERE  name = 'John';
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s93">
+<div class='heading'>Updates <span style="font-size:67%">(cont)</span></div>
+<p>
+Can update many tuples at once &nbsp; <small>(all tuples that satisfy condition)</small>
+<p>
+<b>Example:</b> Make $3 the maximum price for beer.
+<p><pre>
+UPDATE Sells
+SET    price = 3.00
+WHERE  price > 3.00;
+</pre><p>
+<b>Example:</b> Increase beer prices by 10%.
+<p><pre>
+UPDATE Sells
+SET    price = price * 1.10;
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s94">
+<div class='heading'>Changing Tables</div>
+<p>
+Accomplished via the <large><code>ALTER TABLE</code></large> operation:
+<p><pre>
+ALTER TABLE <i>Relation</i> <i>Modifications</i>
+</pre><p>
+Some possible modifications are:
+<ul>
+<li> add a new column (attribute)
+	&nbsp; <small>(set value to <large><code>NULL</code></large> unless default given)</small>
+<li> change properties of an existing attribute
+	&nbsp; <small>(e.g. constraints)</small>
+<li> remove an attribute
+</ul>
+</DIV>
+<hr>
+<DIV id="s95">
+<div class='heading'>Changing Tables <span style="font-size:67%">(cont)</span></div>
+<p>
+<b>Example:</b> Add phone numbers for hotels.
+<p><pre>
+ALTER TABLE Bars
+   ADD phone char(10) DEFAULT 'Unlisted';
+</pre><p>
+This appends a new column to the table and sets value
+for this attribute to <large><code>'Unlisted'</code></large> in every tuple.
+<p>
+Specific phone numbers can subsequently be added via:
+<p><pre>
+UPDATE Bars
+SET    phone = '9665-0000'
+WHERE  name = 'Coogee Bay Hotel';
+</pre><p>
+If no default value is given, new column is set to all <large><code>NULL</code></large>.
+</DIV>
+<hr>
+<DIV id="s96">
+<div class='heading'>For More Details ...</div>
+<p>
+Full details are in the PostgreSQL Reference Manual.
+<p>
+See the section "SQL Commands", which has entries for
+<ul>
+<li> <large><code>INSERT</code></large>, &nbsp; <large><code>DELETE</code></large>, &nbsp; <large><code>UPDATE</code></large>
+<li> <large><code>CREATE</code></large> <i>X</i>, &nbsp; <large><code>DROP</code></large> <i>Y</i>, &nbsp; <large><code>ALTER</code></large> <i>Z</i>
+</ul>
+<small>
+You will become very familiar with some of these commands by end of session.
+</small>
+</DIV>
+<hr>
+<DIV id="s97">
+<div class='heading'>SQL: Queries</div>
+<p>
+</DIV>
+<hr>
+<DIV id="s98">
+<div class='heading'>Queries</div>
+<p>
+A <font color='#0000BB'>query</font> is a <font color='#0000BB'>declarative program</font> that retrieves
+data from a database.
+<p>
+Analogous to an expression in relational algebra.
+<p>
+But SQL does not implement relational algebra precisely.
+<p>
+Queries are used in two ways in RDBMSs:
+<ul>
+<li> interactively &nbsp; <small>(e.g. in <large><code>psql</code></large>)</small>
+<small>
+<ul>
+<li> the entire result is displayed in tabular format on the output
+</ul>
+</small>
+<li> by a program &nbsp; <small>(e.g. in a PLpgSQL function)</small>
+<small>
+<ul>
+<li> the result tuples are consumed one-at-a-time by the program
+</ul>
+</small>
+</ul>
+</DIV>
+<hr>
+<DIV id="s99">
+<div class='heading'>Queries in SQL</div>
+<p>
+The most common kind of SQL statement is the <tt>SELECT</tt> query:
+<p><pre>
+SELECT <i>attributes</i>
+FROM   <i>relations</i>
+WHERE  <i>condition</i>
+</pre><p>
+The result of this statement is a relation,
+which is typically displayed on output.
+<p>
+The <large><code>SELECT</code></large> statement contains the functionality of select,
+project and join from the relational algebra.
+</DIV>
+<hr>
+<DIV id="s100">
+<div class='heading'>SELECT Example</div>
+<p>
+The question "What beers are made by Toohey's?", can be phrased:
+<p><pre><small>
+SELECT Name FROM Beers WHERE Manf = 'Toohey''s';
+</small></pre><p>
+This gives a subset of the <large><code>Beers</code></large> relation, displayed as:
+<p><pre><small>
+    name     
+-------------
+ New
+ Old
+ Red
+ Sheaf Stout
+</small></pre><p>
+<p>
+<small>
+Notes:
+<ul>
+<li> upper- and lower-case are not distinguished, except in strings.
+<li> quotes are escaped by doubling them (<large><code>''''</code></large> is like C <large><code>'\''</code></large>)
+</ul>
+</small>
+</DIV>
+<hr>
+<DIV id="s101">
+<div class='heading'>Semantics of <large><code>SELECT</code></large></div>
+<p>
+For SQL <large><code>SELECT</code></large> statement on a single relation:
+<p><pre>
+SELECT <i>Attributes</i>
+FROM   <i>R</i>
+WHERE  <i>Condition</i>
+</pre><p>
+Formal semantics (relational algebra):
+<p>
+<div class='center'>
+<i>Proj[Attributes]( Sel[Condition]( R ) )</i>
+</div>
+</DIV>
+<hr>
+<DIV id="s102">
+<div class='heading'>Semantics of <large><code>SELECT</code></large> <span style="font-size:67%">(cont)</span></div>
+<p>
+Operationally, we think in terms of a <i>tuple variable</i>
+ranging over all tuples of the relation.
+<p>
+Operational semantics:
+<p><pre>
+FOR EACH tuple T in R DO
+    check whether T satisfies the condition
+                        in the WHERE clause
+    IF it does THEN
+        print the attributes of T that are
+            specified in the SELECT clause
+    END
+END
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s103">
+<div class='heading'>Projection in SQL</div>
+<p>
+For a relation <i>R</i> and attributes <i>X &sube; R</i>,
+the relational algebra expression
+&nbsp; <i><span style="font-size:150%">&pi;</span><sub>X</sub>(R)</i> &nbsp;
+is implemented in SQL as:
+<p><pre>
+SELECT <i>X</i> FROM <i>R</i>
+</pre><p>
+<b>Example:</b> Names of drinkers = <i><span style="font-size:150%">&pi;</span><sub>Name</sub>(Drinkers)</i>
+<p><pre>
+SELECT Name FROM Drinkers;
+
+  name  
+--------
+ Adam
+ Gernot
+ John
+ Justin
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s104">
+<div class='heading'>Projection in SQL <span style="font-size:67%">(cont)</span></div>
+<p>
+<b>Example:</b> Names/addresses of drinkers = <i><span style="font-size:150%">&pi;</span><sub>Name,Addr</sub>(Drinkers)</i>
+<p><pre>
+SELECT Name, Addr FROM Drinkers;
+
+  name  |   addr   
+--------+----------
+ Adam   | Randwick
+ Gernot | Newtown
+ John   | Clovelly
+ Justin | Mosman
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s105">
+<div class='heading'>Projection in SQL <span style="font-size:67%">(cont)</span></div>
+<p>
+The symbol <large><code>*</code></large> denotes a list of <font color='#0000BB'>all</font> attributes.
+<p>
+<b>Example:</b> All information about drinkers = <i>(Drinkers)</i>
+<p><pre>
+SELECT * FROM Drinkers;
+
+  name  |   addr   |   phone    
+--------+----------+------------
+ Adam   | Randwick | 9385-4444 
+ Gernot | Newtown  | 9415-3378 
+ John   | Clovelly | 9665-1234 
+ Justin | Mosman   | 9845-4321 
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s106">
+<div class='heading'>Renaming via <tt>AS</tt></div>
+<p>
+<p>
+SQL implements renaming (<i>&rho;</i>) via the <large><code>AS</code></large> clause within <large><code>SELECT</code></large>.
+<p>
+<b>Example:</b> rename Beers(name,manf) to Beers(beer,brewer)
+<p><pre>
+SELECT name AS beer, manf AS Brewer
+FROM Beers;
+
+        beer         |    brewer     
+---------------------+---------------
+ 80/-                | Caledonian
+ Bigfoot Barley Wine | Sierra Nevada
+ Burragorang Bock    | George IV Inn
+ Crown Lager         | Carlton
+ Fosters Lager       | Carlton
+...
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s107">
+<div class='heading'>Expressions as Values in Columns</div>
+<p>
+<large><code>AS</code></large> can also be used to introduce <font color='#0000BB'>computed</font> values
+<small>(generalised projection)</small>
+<p>
+<b>Example:</b> display beer prices in Yen, rather than dollars
+<p><pre><small>
+SELECT bar, beer, price*120 AS PriceInYen  FROM Sells;
+
+       bar        |       beer       |    priceinyen    
+------------------+------------------+------------------
+ Australia Hotel  | Burragorang Bock |              420
+ Coogee Bay Hotel | New              |              270
+ Coogee Bay Hotel | Old              |              300
+ Coogee Bay Hotel | Sparkling Ale    | 335.999994277954
+ Coogee Bay Hotel | Victoria Bitter  | 275.999994277954
+ Lord Nelson      | Three Sheets     |              450
+ Lord Nelson      | Old Admiral      |              450
+ ...
+</small></pre><p>
+</DIV>
+<hr>
+<DIV id="s108">
+<div class='heading'>Text in Result Table</div>
+<p>
+Trick: to put specific text in output columns
+<ul>
+<li> use string constant expression with <large><code>AS</code></large>
+</ul>
+<b>Example:</b> using Likes(drinker, beer)
+<p><pre><small>
+SELECT drinker, 'likes Cooper''s' AS WhoLikes
+FROM   Likes
+WHERE  beer = 'Sparkling Ale';
+
+ drinker |    wholikes    
+---------+----------------
+ Gernot  | likes Cooper's
+ Justin  | likes Cooper's
+</small></pre><p>
+</DIV>
+<hr>
+<DIV id="s109">
+<div class='heading'>Selection in SQL</div>
+<p>
+The relational algebra expression
+&nbsp; <i><span style="font-size:150%">&sigma;</span><sub>Cond</sub>(Rel)</i> &nbsp;
+is implemented in SQL as:
+<p><pre>
+SELECT * FROM Rel WHERE Cond
+</pre><p>
+<b>Example:</b> All about the bars at The Rocks
+<p><pre><small>
+SELECT * FROM Bars WHERE Addr='The Rocks';
+
+      name       |   addr    | license 
+-----------------+-----------+---------
+ Australia Hotel | The Rocks |  123456
+ Lord Nelson     | The Rocks |  123888
+(2 rows)
+</small></pre><p>
+The condition can be an arbitrarily complex boolean-valued
+expression using the operators mentioned previously.
+</DIV>
+<hr>
+<DIV id="s110">
+<div class='heading'>Selection in SQL <span style="font-size:67%">(cont)</span></div>
+<p>
+<b>Example:</b> Find the price that The Regent charges for New
+<p><pre><small>
+SELECT price
+FROM   Sells
+WHERE  bar = 'Regent Hotel' AND beer = 'New';
+
+ price 
+-------
+   2.2
+</small></pre><p>
+This can be formatted better via <large><code>to_char</code></large>, e.g.
+<p><pre><small>
+SELECT to_char(price,'$99.99') AS price
+FROM   Sells
+WHERE  bar = 'Regent Hotel' AND beer = 'New';
+
+  price  
+---------
+ $  2.20
+</small></pre><p>
+<large><code>to_char()</code></large> supports a wide range of conversions.
+</DIV>
+<hr>
+<DIV id="s111">
+<div class='heading'>Multi-relation <large><code>SELECT</code></large> Queries</div>
+<p>
+Syntax is similar to simple <large><code>SELECT</code></large> queries:
+<p><pre>
+SELECT <i>Attributes</i>
+FROM   <i>R1, R2, ...</i>
+WHERE  <i>Condition</i>
+</pre><p>
+Difference is that <large><code>FROM</code></large> clause contains a list of relations.
+<p>
+Also, the condition typically includes cross-relation (join) conditions.
+</DIV>
+<hr>
+<DIV id="s112">
+<div class='heading'>Multi-relation <large><code>SELECT</code></large> Queries <span style="font-size:67%">(cont)</span></div>
+<p>
+<b>Example:</b> Find the brewers whose beers John likes.
+<p><pre>
+SELECT Manf as brewer
+FROM   Likes, Beers
+WHERE  beer = name AND drinker = 'John';
+
+    brewer     
+---------------
+ Caledonian
+ Sierra Nevada
+ Sierra Nevada
+ Lord Nelson
+</pre><p>
+Note: duplicates could be eliminated by using <large><code>DISTINCT</code></large>.
+</DIV>
+<hr>
+<DIV id="s113">
+<div class='heading'>Multi-relation <large><code>SELECT</code></large> Queries <span style="font-size:67%">(cont)</span></div>
+<p>
+The above example corresponds to a relational algebra evaluation like:
+<p><pre>
+BeerDrinkers = Likes Join[beer=name] Beers
+JohnsBeers   = Sel[drinker=John](BeerDrinkers)
+Brewers      = Proj[manf](JohnsBeers)
+Result       = Rename[manf->brewer](Brewers)
+</pre><p>
+The SQL compiler knows how to translate tests
+<ul>
+<li> involving attributes from two relations into a join
+<li> involving attributes from one relations into a selection
+</ul>
+</DIV>
+<hr>
+<DIV id="s114">
+<div class='heading'>Semantics of Multi-Relation <large><code>SELECT</code></large></div>
+<p>
+For SQL <large><code>SELECT</code></large> statement on several relations:
+<p><pre>
+SELECT <i>Attributes</i>
+FROM   <i>R1, R2, ... Rn</i>
+WHERE  <i>Condition</i>
+</pre><p>
+Formal semantics (relational algebra):
+<p>
+<div class='center'>
+<i>Proj[Attributes]( Sel[Condition]( R1 &times; R2 &times; ... Rn ) )</i>
+</div>
+</DIV>
+<hr>
+<DIV id="s115">
+<div class='heading'>Semantics of Multi-Relation <large><code>SELECT</code></large> <span style="font-size:67%">(cont)</span></div>
+<p>
+Operational semantics of <large><code>SELECT</code></large>:
+<p><pre><small>
+FOR EACH tuple T1 in R1 DO
+    FOR EACH tuple T2 in R2 DO
+        ...
+            check WHERE condition for current
+               assignment of T1, T2, ... vars
+            IF holds THEN
+               print attributes of T1, T2, ...
+                           specified in SELECT
+            END
+        ...
+    END
+END
+</small></pre><p>
+<small>
+Requires one tuple variable for each relation, and nested loops over relations.
+This is <font color='#0000BB'>not</font> how it's actually computed!
+</small>
+</DIV>
+<hr>
+<DIV id="s116">
+<div class='heading'>Name Clashes in Conditions</div>
+<p>
+If a selection condition
+<ul>
+<li> refers to two relations
+<li> the relations have attributes with the same name
+</ul>
+use the relation name to disambiguate.
+<p>
+<b>Example:</b> Which hotels have the same name as a beer?
+<p><pre>
+SELECT Bars.name
+FROM   Bars, Beers
+WHERE  Bars.name = Beers.name;
+</pre><p>
+<small><font color="#777777">(The answer to this query is empty, but there is nothing special about this)</font></small>
+</DIV>
+<hr>
+<DIV id="s117">
+<div class='heading'>Name Clashes in Conditions <span style="font-size:67%">(cont)</span></div>
+<p>
+Can use such qualified names, even if there is no ambiguity:
+<p><pre>
+   SELECT Sells.beer
+   FROM   Sells
+   WHERE  Sells.price > 3.00;
+</pre><p>
+Advice:
+<ul>
+<li> qualify attribute names only when absolutely necessary
+</ul>
+Note:
+<ul>
+<li> SQL's <large><code>AS</code></large> operator is only for renaming output
+<li> it provides no help with disambiguation
+</ul>
+</DIV>
+<hr>
+<DIV id="s118">
+<div class='heading'>Explicit Tuple Variables</div>
+<p>
+The relation-dot-attribute convention doesn't help
+if we happen to use the same relation twice in a <large><code>SELECT</code></large>.
+<p>
+To handle this, we need to define new names for each "instance"
+of the relation in the <large><code>FROM</code></large> clause.
+<p>
+Syntax:
+<p><pre>
+SELECT r1.a, r2.b
+FROM   R r1, R r2
+WHERE  r1.a = r2.a
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s119">
+<div class='heading'>Explicit Tuple Variables <span style="font-size:67%">(cont)</span></div>
+<p>
+<b>Example:</b> Find pairs of beers by the same manufacturer.
+<p><pre><small>
+SELECT b1.name, b2.name
+FROM   Beers b1, Beers b2
+WHERE  b1.manf = b2.manf AND b1.name &lt; b2.name;
+
+        name         |       name       
+---------------------+------------------
+ Crown Lager         | Fosters Lager
+ Crown Lager         | Invalid Stout
+ Crown Lager         | Melbourne Bitter
+ Crown Lager         | Victoria Bitter
+ Fosters Lager       | Invalid Stout
+ Fosters Lager       | Melbourne Bitter
+ ...
+</small></pre><p>
+<small>
+The second part of the condition is used to avoid:
+<ul>
+<li> pairing a beer with itself &nbsp; e.g. <large><code>(New,New)</code></large>
+<li> same pairs with different order &nbsp; e.g. <large><code>(New,Old) (Old,New)</code></large>
+</ul>
+</small>
+</DIV>
+<hr>
+<DIV id="s120">
+<div class='heading'>Explicit Tuple Variables <span style="font-size:67%">(cont)</span></div>
+<p>
+A common alternative syntax for
+<p><pre>
+SELECT r1.a, r2.b
+FROM   R r1, R r2
+WHERE  r1.a = r2.a
+</pre><p>
+uses the <large><code>as</code></large> keyword
+<p><pre>
+SELECT r1.a, r2.b
+FROM   R <b>as</b> r1, R <b>as</b> r2
+WHERE  r1.a = r2.a
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s121">
+<div class='heading'>Explicit Joins</div>
+<p>
+SQL supports syntax for explicit joins:
+<p><pre>
+SELECT...FROM A natural join B
+SELECT...FROM A join B using (<i>A<sub>1</sub></i>,...,<i>A<sub>n</sub></i>)
+SELECT...FROM A join B on <i>Condition</i>
+</pre><p>
+The <large><code>natural join</code></large> and <large><code>join using</code></large> forms assume
+that the join attributes are named the same in each relation.
+</DIV>
+<hr>
+<DIV id="s122">
+<div class='heading'>Explicit Joins <span style="font-size:67%">(cont)</span></div>
+<p>
+<b>Example:</b> Find the beers sold at bars where John drinks
+<p><pre>
+SELECT Sells.bar, beer, price
+FROM   Sells, Frequents
+WHERE  drinker = 'John'
+       AND Sells.bar = Frequents.bar;
+</pre><p>
+could also be expressed as
+<p><pre>
+SELECT bar, beer, price
+FROM   Sells natural join Frequents
+WHERE  drinker='John';
+       <span class='comment'>-- joins on the only common attribute: bar</span>
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s123">
+<div class='heading'>Explicit Joins <span style="font-size:67%">(cont)</span></div>
+<p>
+The example could also be expressed as
+<p><pre>
+SELECT bar, beer, price
+FROM   Sells join Frequents using (bar)
+WHERE  drinker='John';
+       <span class='comment'>-- only one bar attribute in join result</span>
+</pre><p>
+or
+<p><pre>
+SELECT Sells.bar, beer, price
+FROM   Sells join Frequents
+           on Sells.bar = Frequents.bar
+WHERE  drinker='John';
+       <span class='comment'>-- bar attribute occurs twice in join result</span>
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s124">
+<div class='heading'>Outer Join</div>
+<p>
+Join only produces tuples where there are matching values
+in both of the relations involved in the join.
+<p>
+Often, it is useful to produce results for all tuples in
+one relation, even if it has no matches in the other.
+<p>
+Consider the query: for each region, find out who drinks there.
+</DIV>
+<hr>
+<DIV id="s125">
+<div class='heading'>Outer Join <span style="font-size:67%">(cont)</span></div>
+<p>
+A regular join only gives results for regions where people
+drink.
+<p><pre><small>
+SELECT B.addr, F.drinker
+FROM   Bars as B join Frequents as F
+       on (bar = name)
+ORDER BY addr;
+
+   addr    | drinker 
+-----------+---------
+ Coogee    | Adam
+ Coogee    | John
+ Kingsford | Justin
+ Sydney    | Justin
+ The Rocks | John
+</small></pre><p>
+But what if we want a result that shows all regions,
+even if there are no drinkers there?
+</DIV>
+<hr>
+<DIV id="s126">
+<div class='heading'>Outer Join <span style="font-size:67%">(cont)</span></div>
+<p>
+An <font color='#0000BB'>outer join</font> solves this problem.
+<p>
+For <i>R</i> <large><code>OUTER JOIN</code></large> <i>S</i>
+<ul>
+<li> all "tuples" in <i>R</i> have an entry in the result
+<li> if a tuple from <i>R</i> matches a tuple in <i>S</i>, <br>
+	we get the normal join result tuple
+<li> if a tuple from <i>R</i> has no matches in <i>S</i>, <br>
+	the attributes supplied by <i>S</i> are <large><code>NULL</code></large>
+</ul>
+This outer join variant is called <large><code>LEFT OUTER JOIN</code></large>.
+</DIV>
+<hr>
+<DIV id="s127">
+<div class='heading'>Outer Join <span style="font-size:67%">(cont)</span></div>
+<p>
+Solving the example query with an outer join:
+<p><pre><small>
+SELECT B.addr, F.drinker
+FROM   Bars as B
+          left outer join
+       Frequents as F
+          on (bar = name)
+ORDER BY B.addr;
+
+    addr    | drinker 
+------------+---------
+ Coogee     | Adam
+ Coogee     | John
+ Kingsford  | Justin
+ Randwick   | 
+ Sydney     | Justin
+ The Rocks  | John
+</small></pre><p>
+Note that Randwick is now mentioned
+<small>(because of the Royal Hotel)</small>.
+</DIV>
+<hr>
+<DIV id="s128">
+<div class='heading'>Outer Join <span style="font-size:67%">(cont)</span></div>
+<p>
+Many RDBMSs provide three variants of outer join:
+<ul>
+<li> <i>R</i> <large><code>LEFT OUTER JOIN</code></large> <i>S</i>
+<ul>
+<li> behaves as described above
+</ul>
+<li> <i>R</i> <large><code>RIGHT OUTER JOIN</code></large> <i>S</i>
+<ul>
+<li> includes all tuples from <i>S</i> in the result
+<li> <large><code>NULL</code></large>-fills any <i>S</i> tuples with no matches in <i>R</i>
+</ul>
+<li> <i>R</i> <large><code>FULL OUTER JOIN</code></large> <i>S</i>
+<ul>
+<li> includes all tuples from <i>R</i> and <i>S</i> in the result
+<li> those without matches in other relation are <large><code>NULL</code></large>-filled
+</ul>
+</ul>
+</DIV>
+<hr>
+<DIV id="s129">
+<div class='heading'> Subqueries</div>
+<p>
+The result of a <large><code>SELECT-FROM-WHERE</code></large> query can be used in the
+<large><code>WHERE</code></large> clause of another query.
+<p>
+<b>Simplest Case:</b> Subquery returns a single, unary tuple
+<p>
+Can treat the result as a single constant value and use in expressions.
+<p>
+Syntax:
+<p><pre>
+SELECT *
+FROM   R
+WHERE  R.a = (SELECT x FROM S WHERE Cond)
+             <span class='comment'>-- assume only one result</span>
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s130">
+<div class='heading'> Subqueries <span style="font-size:67%">(cont)</span></div>
+<p>
+<b>Example:</b>
+Find bars that serve New at the same price as the Coogee Bay Hotel
+charges for VB.
+<p><pre><small>
+SELECT bar
+FROM   Sells
+WHERE  beer = 'New' AND
+       price =
+          (SELECT price
+           FROM   Sells
+           WHERE  bar = 'Coogee Bay Hotel'
+                  AND beer = 'Victoria Bitter');
+
+     bar     
+-------------
+ Royal Hotel
+</small></pre><p>
+<small>
+The inner query finds the price of VB at the CBH, and uses
+this as an argument to a test in the outer query.
+</small>
+</DIV>
+<hr>
+<DIV id="s131">
+<div class='heading'> Subqueries <span style="font-size:67%">(cont)</span></div>
+<p>
+Note the potential ambiguity in references to attributes of <large><code>Sells</code></large>
+<p><pre><small>
+SELECT <b>bar</b>
+FROM   Sells
+WHERE  <b>beer</b> = 'New' AND
+       price =
+          (SELECT price
+           FROM   Sells
+           WHERE  <b><font color="#0000EE">bar</font></b> = 'Coogee Bay Hotel'
+                  AND <b><font color="#0000EE">beer</font></b> = 'Victoria Bitter');
+</small></pre><p>
+This introduces notions of scope: an attribute refers to the most
+closely nested relation with that attribute.
+<p>
+Parentheses around the subquery are required (and set the scope).
+</DIV>
+<hr>
+<DIV id="s132">
+<div class='heading'> Subqueries <span style="font-size:67%">(cont)</span></div>
+<p>
+Note also that the query could be answered via:
+<p><pre><small>
+SELECT s1.bar
+FROM   Sells as s1, Sells as s2
+WHERE  s1.beer = 'New'
+       AND s1.price = s2.price 
+       AND s2.bar = 'Coogee Bay Hotel'
+       AND s2.beer = 'Victoria Bitter';
+</small></pre><p>
+In general, expressing a query via joins will be much more
+efficient than expressing it with sub-queries.
+</DIV>
+<hr>
+<DIV id="s133">
+<div class='heading'> Subqueries <span style="font-size:67%">(cont)</span></div>
+<p>
+<b>Complex Case:</b> Subquery returns multiple unary tuples.
+<p>
+Treat it as a list of values, and use the various operators
+on lists/sets (e.g. <large><code>IN</code></large>).
+<p>
+<b>Complex Case:</b> Subquery returns a relation.
+<p>
+Most of the "list operators" also work on relations.
+<p>
+
+</DIV>
+<hr>
+<DIV id="s134">
+<div class='heading'> The <large><code>IN</code></large> Operator</div>
+<p>
+Tests whether a specified tuple is contained in a relation.
+<p>
+<i>tuple</i> <large><code>IN</code></large> <i>relation</i> &nbsp; is true iff the tuple
+is contained in the relation.
+<p>
+Conversely for &nbsp; <i>tuple</i> <large><code>NOT IN</code></large> <i>relation</i>.
+<p>
+Syntax:
+<p><pre>
+SELECT *
+FROM   R
+WHERE  R.a IN (SELECT x FROM S WHERE Cond)
+              <span class='comment'>-- assume multiple results</span>
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s135">
+<div class='heading'> The <large><code>IN</code></large> Operator <span style="font-size:67%">(cont)</span></div>
+<p>
+<b>Example:</b>
+Find the name and brewer of beers that John likes.
+<p><pre>
+SELECT *
+FROM   Beers
+WHERE  name IN
+          (SELECT beer
+           FROM   Likes
+           WHERE  drinker = 'John');
+
+        name         |     manf      
+---------------------+---------------
+ 80/-                | Caledonian
+ Bigfoot Barley Wine | Sierra Nevada
+ Pale Ale            | Sierra Nevada
+ Three Sheets        | Lord Nelson
+</pre><p>
+The subexpression answers the question "What are the names
+of the beers that John likes?"
+</DIV>
+<hr>
+<DIV id="s136">
+<div class='heading'> The <large><code>IN</code></large> Operator <span style="font-size:67%">(cont)</span></div>
+<p>
+Note that this query can be answered equally well without using <large><code>IN</code></large>.
+<p><pre>
+SELECT Beers.name, Beers.manf
+FROM   Beers, Likes
+WHERE  Likes.drinker = 'John' AND
+       Likes.beer = Beers.name;
+
+        name         |     manf      
+---------------------+---------------
+ 80/-                | Caledonian
+ Bigfoot Barley Wine | Sierra Nevada
+ Pale Ale            | Sierra Nevada
+ Three Sheets        | Lord Nelson
+</pre><p>
+The version with the subquery corresponds more closely to the way the
+original query was expressed, and is probably "more natural".
+<p>
+The subquery version is, however, potentially less efficient.
+</DIV>
+<hr>
+<DIV id="s137">
+<div class='heading'> The <large><code>EXISTS</code></large> Function</div>
+<p>
+<large><code>EXISTS(</code></large><i>relation</i><large><code>)</code></large> is true iff the relation is non-empty.
+<p>
+<b>Example:</b>
+Find the beers that are the unique beer by their manufacturer.
+<p><pre>
+SELECT name, manf
+FROM   Beers b1
+WHERE  NOT EXISTS
+          (SELECT *
+           FROM   Beers
+           WHERE  manf = b1.manf
+                  AND name != b1.name);
+</pre><p>
+Note the scoping rule: to refer to outer <large><code>Beers</code></large> in the
+inner subquery, we need to define a named tuple variable
+(in this example <large><code>b1</code></large>).
+<p>
+A subquery that refers to values from a surrounding query
+is called a <b>correlated subquery</b>.
+</DIV>
+<hr>
+<DIV id="s138">
+<div class='heading'> Quantifiers</div>
+<p>
+<large><code>ANY</code></large> and <large><code>ALL</code></large> behave as existential and universal quantifiers
+respectively.
+<p>
+<b>Example:</b> Find the beers sold for the highest price.
+<p><pre>
+SELECT beer
+FROM   Sells
+WHERE  price &gt;=
+          ALL(SELECT price FROM sells);
+</pre><p>
+Beware: in common use, "any" and "all" are often synonyms.
+<p>
+E.g. "I'm better than any of you" vs. "I'm better than all of you".
+</DIV>
+<hr>
+<DIV id="s139">
+<div class='heading'> Union, Intersection, Difference</div>
+<p>
+SQL implements the standard set operations on "union-compatible"
+relations:
+<p><table border='0' cellpadding='6'>
+<tr valign=top>
+<td><nobr><i>R1</i> <large><code>UNION</code></large> <i>R2</i></td>
+<td></td><td>set of tuples in either <i>R1</i> or <i>R2</i></td>
+</tr>
+<tr valign=top>
+<td><nobr><i>R1</i> <large><code>INTERSECT</code></large> <i>R2</i></td>
+<td></td><td>set of tuples in both <i>R1</i> and <i>R2</i></td>
+</tr>
+<td><nobr><i>R1</i> <large><code>EXCEPT</code></large> <i>R2</i></td>
+<td></td><td>set of tuples in <i>R1</i> but not <i>R2</i></td>
+</tr>
+</table><p>
+<small>
+Oracle deviates from the SQL standard and uses <large><code>MINUS</code></large>
+for <large><code>EXCEPT</code></large>; PostgreSQL follows the standard.
+</small>
+</DIV>
+<hr>
+<DIV id="s140">
+<div class='heading'> Union, Intersection, Difference <span style="font-size:67%">(cont)</span></div>
+<p>
+<b>Example:</b>
+Find the drinkers and beers such that the drinker likes
+the beer and frequents a bar that sells it.
+<p><pre>
+(SELECT * FROM Likes)
+INTERSECT
+(SELECT drinker,beer
+ FROM   Sells natural join Frequents);
+
+ drinker |      beer       
+---------+-----------------
+ Adam    | New
+ John    | Three Sheets
+ Justin  | Victoria Bitter
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s141">
+<div class='heading'> Bag Semantics of SQL</div>
+<p>
+An SQL relation is really a <b>bag</b> (<b>multiset</b>):
+<ul>
+<li> it may contain the same tuple more than once
+<li> unlike lists, there is no specified order on the elements
+<li> example: <i>{1, 2, 1, 3}</i> is a bag and is not a set
+</ul>
+This changes the semantics of the "set" operators
+<large><code>UNION</code></large>, <large><code>INTERSECT</code></large> and <large><code>MINUS</code></large>.
+</DIV>
+<hr>
+<DIV id="s142">
+<div class='heading'> Bag Semantics of SQL <span style="font-size:67%">(cont)</span></div>
+<p>
+<b>Bag Union</b>
+<p>
+Sum the times an element appears in the two bags
+<ul>
+<li> example: &nbsp; <i>{1,2,1} &nbsp; &cup; &nbsp; {1,2,3} &nbsp; = &nbsp; {1,1,1,2,2,3}</i>
+</ul>
+<b>Bag Intersection</b>
+<p>
+Take the minimum number of occurrences from each bag.
+<ul>
+<li> example: &nbsp; <i>{1,2,1} &nbsp; &cap; &nbsp; {1,2,3} &nbsp; = &nbsp; {1,2}</i>
+</ul>
+<b>Bag Difference</b>
+<p>
+Proper-subract the number of occurrences in the two bags.
+<ul>
+<li> example: &nbsp; <i>{1,2,1} &nbsp; - &nbsp; {1,2,3} &nbsp; = &nbsp; {1}</i>
+</ul>
+</DIV>
+<hr>
+<DIV id="s143">
+<div class='heading'> Forcing Bag/Set Semantics</div>
+<p>
+Default result for <large><code>SELECT-FROM-WHERE</code></large> is a bag.
+<p>
+Default result for <large><code>UNION</code></large>, <large><code>INTERSECT</code></large>, <large><code>MINUS</code></large> is a set.
+<p>
+Why the difference?
+<p>
+A bag can be produced faster because no need to worry about eliminating
+duplicates (which typically requires sorting).
+<p>
+Can force set semantics with &nbsp; <large><code>SELECT DISTINCT</code></large>.
+<p>
+Can force bag semantics with &nbsp; <large><code>UNION ALL</code></large>, ...
+</DIV>
+<hr>
+<DIV id="s144">
+<div class='heading'> Forcing Bag/Set Semantics <span style="font-size:67%">(cont)</span></div>
+<p>
+<b>Example:</b> What beer manufacturers are there?
+<p><pre>
+SELECT DISTINCT manf FROM Beers;
+
+     manf      
+---------------
+ Caledonian
+ Carlton
+ Cascade
+ Cooper's
+ George IV Inn
+ Lord Nelson
+ Sierra Nevada
+ Toohey's
+</pre><p>
+Note that the result is sorted.
+<p>
+If we omit <large><code>DISTINCT</code></large>, we get 18 unsorted tuples in the result.
+</DIV>
+<hr>
+<DIV id="s145">
+<div class='heading'>Division</div>
+<p>
+Not all SQL implementations provide a divide operator, but the same effect
+can be achieved by combination of existing operations.
+<p>
+<b>Example:</b> Find bars that each sell all of the beers Justin likes.
+<p><pre>
+SELECT DISTINCT a.bar
+FROM   Sells a
+WHERE  NOT EXISTS (
+           (SELECT beer FROM Likes
+            WHERE drinker = 'Justin')
+           EXCEPT
+           (SELECT beer FROM Sells b
+            WHERE bar = a.bar)
+       );
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s146">
+<div class='heading'>Selection with Aggregation</div>
+<p>
+Selection clauses can contain aggregation operations.
+<p>
+<b>Example:</b> What is the average price of New?
+<p><pre>
+SELECT AVG(price)
+FROM   Sells
+WHERE  beer = 'New';
+
+       avg        
+------------------
+ 2.38749998807907
+</pre><p>
+<small>
+Note:
+<ul>
+<li> the bag semantics of SQL gives the correct result here
+<li> the price for New in all hotels will be included, even if two hotels sell
+it at the same price
+<li> if we used set semantics, we'd get the average of all the
+<font color='#0000BB'>different</font> prices for New.
+</ul>
+</small>
+</DIV>
+<hr>
+<DIV id="s147">
+<div class='heading'>Selection with Aggregation <span style="font-size:67%">(cont)</span></div>
+<p>
+If we want set semantics, we can force using <large><code>DISTINCT</code></large>.
+<p>
+<b>Example:</b> How many different bars sell beer?
+<p><pre>
+SELECT COUNT(DISTINCT bar)
+FROM   Sells;
+
+ count 
+-------
+     6
+</pre><p>
+Without <large><code>DISTINCT</code></large>, the result is 15 ... the number of
+entries in the <large><code>Sells</code></large> table.
+</DIV>
+<hr>
+<DIV id="s148">
+<div class='heading'> Aggregation operators</div>
+<p>
+The following operators apply to a list (bag) of
+<font color='#0000BB'>numeric</font> values in one column of a relation:
+<p><pre>
+SUM   AVG   MIN   MAX   COUNT
+</pre><p>
+The notation <large><code>COUNT(*)</code></large> gives the number of tuples in a relation.
+<p>
+<b>Example:</b> How many different beers are there?
+<p><pre>
+SELECT COUNT(*) FROM Beers;
+
+ count 
+-------
+    18
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s149">
+<div class='heading'>Grouping</div>
+<p>
+<large><code>SELECT-FROM-WHERE</code></large> can be followed by <large><code>GROUP BY</code></large> to:
+<ul>
+<li> partition result relation into groups
+	<br><small>(according to values of specified attribute)</small>
+<li> summarise some (several) aspects of each group
+<li> output relation contains one tuple per group
+</ul>
+<p>
+<b>Example:</b> How many beers does each brewer make?
+<p>
+There is one entry for each beer by each brewer in the
+<large><code>Beers</code></large> table ...
+</DIV>
+<hr>
+<DIV id="s150">
+<div class='heading'>Grouping <span style="font-size:67%">(cont)</span></div>
+<p>
+The following gives us a list of brewers:
+<p><pre>
+SELECT manf FROM Beers;
+</pre><p>
+The number of occurrences of each brewer is the number of
+beers that they make.
+<p>
+Ordering the list makes it much easier to work out:
+<p><pre>
+SELECT manf FROM Beers ORDER BY manf;
+</pre><p>
+but we still need to count length of runs by hand.
+</DIV>
+<hr>
+<DIV id="s151">
+<div class='heading'>Grouping <span style="font-size:67%">(cont)</span></div>
+<p>
+If we <font color='#0000BB'>group</font> the runs, we can <large><code>count(*)</code></large> them:
+<p><pre>
+SELECT   manf, COUNT(manf)
+FROM     Beers
+GROUP BY manf;
+
+     manf      | count 
+---------------+-------
+ Caledonian    |     1
+ Carlton       |     5
+ Cascade       |     1
+ Cooper's      |     2
+ George IV Inn |     1
+ Lord Nelson   |     2
+ Sierra Nevada |     2
+ Toohey's      |     4
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s152">
+<div class='heading'>Grouping <span style="font-size:67%">(cont)</span></div>
+<p>
+<large><code>GROUP BY</code></large> is used as follows:
+<p><pre>
+   SELECT   <i>attributes/aggregations</i>
+   FROM     <i>relations</i>
+   WHERE    <i>condition</i>
+   GROUP BY <i>attribute</i>
+</pre><p>
+Semantics:
+<ol>
+<li> apply product and selection as for <large><code>SELECT-FROM-WHERE</code></large>
+<li> partition result into groups based on values of <i>attribute</i>
+<li> apply any aggregation separately to each group
+</ol>
+</DIV>
+<hr>
+<DIV id="s153">
+<div class='heading'>Grouping <span style="font-size:67%">(cont)</span></div>
+<p>
+The query
+<p><pre><small>
+select manf,count(manf) from Beers group by manf;
+</small></pre><p>
+first produces a partitioned relation 
+and then counts the number of tuples in each partition:
+<p>
+<p><div align='center'>
+<img alt="[Diagram:Pic/sql/groupby.png]" src="Pic/sql/groupby.png">
+</div><p>
+</DIV>
+<hr>
+<DIV id="s154">
+<div class='heading'>Grouping <span style="font-size:67%">(cont)</span></div>
+<p>
+Grouping is typically used in queries involving the phrase
+"for each".
+<p>
+<b>Example:</b>
+For each drinker, find the average price of New at the bars they go to.
+<p><pre><small>
+SELECT   drinker, AVG(price) as "Avg.Price"
+FROM     Frequents, Sells
+WHERE    beer = 'New'
+         AND Frequents.bar = Sells.bar
+GROUP BY drinker;
+
+ drinker | Avg.Price 
+---------+-----------
+ Adam    |      2.25
+ John    |      2.25
+ Justin  |       2.5
+</small></pre><p>
+</DIV>
+<hr>
+<DIV id="s155">
+<div class='heading'> Restrictions on <large><code>SELECT</code></large> Lists</div>
+<p>
+When using grouping, every attribute in the <large><code>SELECT</code></large> list must:
+<ul>
+<li> have an aggregation operator applied to it &nbsp;&nbsp; OR
+<li> appear in the <large><code>GROUP-BY</code></large> clause
+</ul>
+<b>Incorrect Example:</b>
+Find the hotel that sells 'New' cheapest.
+<p><pre>
+SELECT bar, MIN(price)
+FROM   Sells
+WHERE  beer = 'New';
+</pre><p>
+PostgreSQL's response to this query:
+<p><pre>
+ERROR: Attribute sells.bar must be GROUPed
+        or used in an aggregate function
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s156">
+<div class='heading'> Restrictions on <large><code>SELECT</code></large> Lists <span style="font-size:67%">(cont)</span></div>
+<p>
+How to answer the query: Which bar sells 'New' cheapest?
+<p><pre>
+SELECT bar
+FROM   Sells
+WHERE  beer = 'New' AND
+       price <= (SELECT MIN(price)
+                 FROM   Sells
+                 WHERE  beer = 'New');
+
+     bar      
+--------------
+ Regent Hotel
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s157">
+<div class='heading'> Restrictions on <large><code>SELECT</code></large> Lists <span style="font-size:67%">(cont)</span></div>
+<p>
+Also, cannot use grouping to simply re-order results.
+<p>
+<b>Incorrect Example:</b>
+Print beers grouped by their manufacturer.
+<p><pre>
+SELECT name, manf FROM Beers
+GROUP BY manf;
+
+ERROR: Attribute beers.name must be GROUPed
+       or used in an aggregate function
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s158">
+<div class='heading'> Restrictions on <large><code>SELECT</code></large> Lists <span style="font-size:67%">(cont)</span></div>
+<p>
+How to print beers grouped by their manufacturer?
+<p><pre>
+SELECT name, manf FROM Beers
+ORDER BY manf;
+
+        name         |     manf      
+---------------------+---------------
+ 80/-                | Caledonian
+ Crown Lager         | Carlton
+ Fosters Lager       | Carlton
+ Invalid Stout       | Carlton
+ Melbourne Bitter    | Carlton
+ Victoria Bitter     | Carlton
+ Premium Lager       | Cascade
+...
+</pre><p>
+<large><code>ORDER BY</code></large> can be applied to multiple attributes.
+</DIV>
+<hr>
+<DIV id="s159">
+<div class='heading'> Eliminating Groups</div>
+<p>
+In some queries, you can use the <large><code>WHERE</code></large> condition to
+eliminate groups.
+<p>
+<b>Example:</b> Average beer price by suburb excluding hotels in The Rocks.
+<p><pre>
+SELECT   Bars.addr, AVG(Sells.price)
+FROM     Sells, Bars
+WHERE    Bars.addr != 'The Rocks'
+         AND Sells.bar = Bars.name
+GROUP BY Bars.addr;
+</pre><p>
+For more complex conditions on groups, use the <large><code>HAVING</code></large> clause.
+</DIV>
+<hr>
+<DIV id="s160">
+<div class='heading'> Eliminating Groups <span style="font-size:67%">(cont)</span></div>
+<p>
+<large><code>HAVING</code></large> is used to qualify a <large><code>GROUP-BY</code></large> clause:
+<p><pre>
+SELECT   <i>attributes/aggregations</i>
+FROM     <i>relations</i>
+WHERE    <i>condition</i> (on tuples)
+GROUP BY <i>attribute</i>
+HAVING   <i>condition</i> (on group);
+</pre><p>
+Semantics of <large><code>HAVING</code></large>:
+<ol>
+<li> generate the groups as for <large><code>GROUP-BY</code></large>
+<li> eliminate groups <font color='#0000BB'>not</font> satisfying <large><code>HAVING</code></large> condition
+<li> apply aggregations to remaining groups
+</ol>
+<small>
+Note: <large><code>HAVING</code></large> condition can use relations/variables from <large><code>FROM</code></large>
+just like <large><code>WHERE</code></large> condition, but variables range over each group.
+</small>
+</DIV>
+<hr>
+<DIV id="s161">
+<div class='heading'> Eliminating Groups <span style="font-size:67%">(cont)</span></div>
+<p>
+<b>Example:</b> Find the average price of common beers  (i.e.
+those that are served in more than one hotel).
+<p><pre>
+SELECT   beer,
+         to_char(AVG(price),'9.99')
+           as "$$$"
+FROM     Sells
+GROUP BY beer
+HAVING   COUNT(bar) > 1;
+
+      beer       |  $$$   
+-----------------+-------
+ New             |  2.39
+ Old             |  2.53
+ Victoria Bitter |  2.40
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s162">
+<div class='heading'> Eliminating Groups <span style="font-size:67%">(cont)</span></div>
+<p>
+The <large><code>HAVING</code></large> condition can have components that do not
+use aggregation.
+<p>
+<b>Example:</b> Find the average price of beers that are either
+commonly served (in more than one hotel) or are manufactured by Cooper's.
+<p><pre>
+SELECT beer, AVG(price)
+FROM   Sells
+GROUP BY beer
+HAVING COUNT(bar) > 1
+       OR beer in
+           (SELECT name
+            FROM   beers
+            WHERE  manf = 'Cooper''s');
+
+      beer       |       avg        
+-----------------+------------------
+ New             | 2.38749998807907
+ Old             | 2.53333330154419
+ Sparkling Ale   | 2.79999995231628
+ Victoria Bitter | 2.39999997615814
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s163">
+<div class='heading'> Eliminating Groups <span style="font-size:67%">(cont)</span></div>
+<p>
+GROUP-BY and HAVING also provide an alternative formulation
+for division.
+<p>
+<b>Example:</b> Find bars that each sell all of the beers Justin likes.
+<p><pre>
+SELECT DISTINCT S.bar
+FROM   Sells S, Likes L
+WHERE  S.beer = L.beer
+       AND L.drinker = 'Justin'
+GROUP BY bar
+HAVING count(S.beer) =
+           (SELECT count(beer) FROM Likes
+            WHERE drinker = 'Justin');
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s164">
+<div class='heading'>Partitions and Window Functions</div>
+<p>
+Sometimes it is useful to
+<ul>
+<li> partition a table into groups
+<li> compute results that apply to each group
+<li> use these results with individual tuples in the group
+</ul>
+Comparison with <large><code>GROUP-BY</code></large>
+<ul>
+<li> <large><code>GROUP-BY</code></large> produces one tuple for each group
+<li> <large><code>PARTITION</code></large> augments each tuple with group-based value(s)
+<li> can use other functions than aggregates <small>(e.g. ranking)</small>
+<li> can use attributes other than the partitioning ones
+</ul>
+</DIV>
+<hr>
+<DIV id="s165">
+<div class='heading'>Partitions and Window Functions <span style="font-size:67%">(cont)</span></div>
+<p>
+Syntax for <large><code>PARTITION</code></large>:
+<p><pre>
+SELECT <i>attr<sub>1</sub></i>, <i>attr<sub>2</sub></i>, ...,
+       <i>aggregate<sub>1</sub></i> OVER (PARTITION BY <i>attr<sub>i</sub></i>),
+       <i>aggregate<sub>2</sub></i> OVER (PARTITION BY <i>attr<sub>j</sub></i>), ...
+FROM   <i>Table</i>
+WHERE  <i>condition on attributes</i>
+</pre><p>
+Note: the <i>condition</i> cannot include the <i>aggregate</i> value(s)
+</DIV>
+<hr>
+<DIV id="s166">
+<div class='heading'>Partitions and Window Functions <span style="font-size:67%">(cont)</span></div>
+<p>
+Example: show each city with daily temperature and temperature range
+<p>
+Schema: <i>Weather(city,date,temperature)</i>
+<p><pre>
+SELECT  city,  date,  temperature as temp,
+        min(temperature) OVER (PARTITION BY city) as lowest,
+        max(temperature) OVER (PARTITION BY city) as highest
+FROM    Weather;
+</pre><p>
+Output: <i>Result(city, date, temp, lowest, highest)</i>
+</DIV>
+<hr>
+<DIV id="s167">
+<div class='heading'>Partitions and Window Functions <span style="font-size:67%">(cont)</span></div>
+<p>
+Example showing <large><code>GROUP BY</code></large> and <large><code>PARTITION</code></large> difference:
+<p><pre>
+SELECT city, min(temperature) max(temperature)
+FROM   Weather  GROUP BY city
+</pre><p>
+Result: one tuple for each city &nbsp; <i>Result(city,min,max)</i>
+<p><pre>
+SELECT city,  date,  temperature as temp,
+       min(temperature) OVER (PARTITION BY city),
+       max(temperature) OVER (PARTITION BY city)
+FROM   Weather;
+</pre><p>
+Result: one tuple for each temperature measurement.
+</DIV>
+<hr>
+<DIV id="s168">
+<div class='heading'>Partitions and Window Functions <span style="font-size:67%">(cont)</span></div>
+<p>
+Example: get a list of low-scoring students in each course
+<br> <small>(low-scoring = mark is less than average mark for class)</small>
+<p>
+Schema: <i>Enrolment(course,student,mark)</i>
+<p>
+Approach:
+<ul>
+<li> generate tuples containing <i>(student,mark,classAvg)</i>
+<li> select just those tuples satisfying <i>(mark &lt; classAvg)</i>
+</ul>
+Implementation of first step via window function
+<p><pre>
+SELECT course, student, mark,
+       avg(mark) OVER (PARTITION BY course)
+FROM   Enrolments;
+</pre><p>
+We now look at several ways to complete this data request ...
+</DIV>
+<hr>
+<DIV id="s169">
+<div class='heading'>Complex Queries</div>
+<p>
+For complex queries, it is often useful to
+<ul>
+<li> break the query into a collection of smaller queries
+<li> define the top-level query in terms of these
+</ul>
+This can be accomplished in three ways in SQL:
+<ul>
+<li> views &nbsp; <small>(discussed in detail below)</small>
+<li> subqueries in the <large><code>FROM</code></large> clause
+<li> subqueries in a <large><code>WITH</code></large> clause
+</ul>
+&nbsp;<br>
+<small>
+Note that we cannot "correlate" such subqueries in the same way
+as we can subqueries in the <large><code>WHERE</code></large> clause.
+</small>
+</DIV>
+<hr>
+<DIV id="s170">
+<div class='heading'>Complex Queries <span style="font-size:67%">(cont)</span></div>
+<p>
+Defining complex queries using views:
+<p><pre>
+CREATE VIEW CourseMarksAndAverages(course,student,mark,avg)
+AS
+SELECT course, student, mark,
+       avg(mark) OVER (PARTITION BY course)
+FROM   Enrolments;
+
+SELECT course, student, mark
+FROM   CourseMarksAndAverages
+WHERE  mark &lt; avg;
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s171">
+<div class='heading'>Complex Queries <span style="font-size:67%">(cont)</span></div>
+<p>
+In the general case:
+<p><pre>
+CREATE VIEW <i>View<sub>1</sub></i>(<i>a,b,c,d</i>) AS <i>Query<sub>1</sub></i>;
+CREATE VIEW <i>View<sub>2</sub></i>(<i>e,f,g</i>) AS <i>Query<sub>2</sub></i>;
+...
+SELECT <i>a</i>,<i>f</i> FROM <i>View<sub>1</sub></i>, <i>View<sub>2</sub></i> WHERE <i>c</i> = <i>e</i>;
+</pre><p>
+Notes:
+<ul>
+<li> look like tables &nbsp; <small>("virtual" tables)</small>
+<li> exist as objects in the database &nbsp; <small>(stored queries)</small>
+<li> useful if specific query is required frequently
+</ul>
+</DIV>
+<hr>
+<DIV id="s172">
+<div class='heading'>Complex Queries <span style="font-size:67%">(cont)</span></div>
+<p>
+Defining complex queries using <large><code>FROM</code></large> subqueries:
+<p><pre>
+SELECT course, student, mark
+FROM   (SELECT course, student, mark,
+               avg(mark) OVER (PARTITION BY course)
+        FROM   Enrolments) AS CourseMarkAndAverages
+WHERE  mark &lt; avg;
+</pre><p>
+Avoids the need to define views.
+</DIV>
+<hr>
+<DIV id="s173">
+<div class='heading'>Complex Queries <span style="font-size:67%">(cont)</span></div>
+<p>
+In the general case:
+<p><pre>
+SELECT <i>attributes</i>
+FROM   (<i>Query<sub>1</sub></i>) AS X,
+       (<i>Query<sub>2</sub></i>) AS Y,
+       ...
+WHERE  X.a = Y.b AND <i>other conditions</i>
+</pre><p>
+Notes:
+<ul>
+<li> must provide name for each subquery, even if never used
+<li> subquery table inherits attribute names from query <br>
+	<small>(e.g. in the above, we assume that <i>Query<sub>1</sub></i> returns an attribute called <large><code>a</code></large>)</small>
+</ul>
+</DIV>
+<hr>
+<DIV id="s174">
+<div class='heading'>Complex Queries <span style="font-size:67%">(cont)</span></div>
+<p>
+Defining complex queries using <large><code>WITH</code></large>:
+<p><pre>
+WITH CourseMarksAndAverages AS
+     (SELECT course, student, mark,
+             avg(mark) OVER (PARTITION BY course)
+      FROM   CourseEnrolments)
+SELECT course, student, mark, avg
+FROM   CourseMarksAndAverages
+WHERE  mark &lt; avg;
+</pre><p>
+Avoids the need to define views.
+</DIV>
+<hr>
+<DIV id="s175">
+<div class='heading'>Complex Queries <span style="font-size:67%">(cont)</span></div>
+<p>
+In the general case:
+<p><pre>
+WITH   <i>Name<sub>1</sub></i>(a,b,c) AS (<i>Query<sub>1</sub></i>),
+       <i>Name<sub>2</sub></i> AS (<i>Query<sub>1</sub></i>), ...
+SELECT <i>attributes</i>
+FROM   <i>Name<sub>1</sub></i>, <i>Name<sub>2</sub></i>, ...
+WHERE  <i>conditions with attributes of Name<sub>1</sub> and Name<sub>2</sub></i>
+</pre><p>
+Notes:
+<ul>
+<li> <i>Name<sub>1</sub></i>, etc. are like temporary tables
+<li> named tables inherit attribute names from query
+</ul>
+</DIV>
+<hr>
+<DIV id="s176">
+<div class='heading'>Recursive Queries</div>
+<p>
+<large><code>WITH</code></large> also provides the basis for recursive queries.
+<p>
+Recursive queries are structured as:
+<p><pre>
+WITH RECURSIVE <i>Recurs</i>(<i>attributes</i>) AS (
+     SELECT ... <i>not involving Recurs</i>
+   UNION
+     SELECT ... FROM <i>Recurs</i>, ...
+)
+SELECT <i>attributes</i>
+FROM   <i>Recurs</i>, ...
+WHERE  <i>condition involving Recurs attributes</i>
+</pre><p>
+<small>
+Useful for scenarios in which we need to traverse multi-level relationships.
+</small>
+</DIV>
+<hr>
+<DIV id="s177">
+<div class='heading'>Recursive Queries <span style="font-size:67%">(cont)</span></div>
+<p>
+Simple example involving a "virtual" table.
+<p>
+Sum the numbers from 1 to 100:
+<p><pre>
+WITH RECURSIVE t(n) AS (
+     SELECT 1
+   UNION
+     SELECT n+1 FROM t WHERE n < 100
+)
+SELECT sum(n) FROM t;
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s178">
+<div class='heading'>Recursive Queries <span style="font-size:67%">(cont)</span></div>
+<p>
+In the general case:
+<p><pre>
+WITH RECURSIVE <i>Recurs</i>(<i>attributes</i>) AS (
+     <i>Q<sub>1</sub></i> (non-recursive query)
+   UNION
+     <i>Q<sub>2</sub></i> (recursive query)
+)
+SELECT * FROM <i>Recurs</i>;
+</pre><p>
+Requires the use of several temporary tables:
+<ul>
+<li> <i>Result</i> is the final result of evaluating the query
+<li> <i>Working</i>, <i>Temp</i> hold intermediate results 
+</ul>
+</DIV>
+<hr>
+<DIV id="s179">
+<div class='heading'>Recursive Queries <span style="font-size:67%">(cont)</span></div>
+<p>
+How recursion works:
+<p><pre>
+<i>Working</i> =  <i>Result</i> = evaluate <i>Q<sub>1</sub></i>
+while (<i>Working</i> table is not empty) {
+    <i>Temp</i> = evaluate <i>Q<sub>2</sub></i>, using <i>Working</i> in place of <i>Recurs</i>
+    <i>Temp</i> = <i>Temp</i> - <i>Result</i>
+    <i>Result</i> = <i>Result</i> UNION <i>Temp</i>
+    <i>Working</i> = <i>Temp</i>
+}
+</pre><p>
+&nbsp;
+<small>
+I.e. generate new tuples until we see nothing not already seen.
+</small>
+</DIV>
+<hr>
+<DIV id="s180">
+<div class='heading'>Recursive Queries <span style="font-size:67%">(cont)</span></div>
+<p>
+Example: count number of each sub-part in a given part.
+<p>
+Schema: <i>Parts(part, sub_part, quantity)</i>
+<p><pre><small>
+WITH RECURSIVE IncludedParts(sub_part, part, quantity) AS (
+    SELECT sub_part, part, quantity
+    FROM   Parts WHERE part = <i>GivenPart</i>
+  UNION ALL
+    SELECT p.sub_part, p.part, p.quantity
+    FROM   IncludedParts i, Parts p
+    WHERE  p.part = i.sub_part
+  )
+SELECT sub_part, SUM(quantity) as total_quantity
+FROM   IncludedParts
+GROUP  BY sub_part
+</small></pre><p>
+</DIV>
+<hr>
+<DIV id="s181">
+<div class='heading'>SQL: Views</div>
+<p>
+</DIV>
+<hr>
+<DIV id="s182">
+<div class='heading'> Views</div>
+<p>
+A <font color='#0000BB'>view</font> is like a "virtual relation" defined via a query.
+<p>
+View definition and removal:
+<p><pre>
+CREATE VIEW <i>ViewName</i> AS <i>Query</i>
+
+CREATE VIEW <i>ViewName</i> [ (<i>AttributeNames</i>) ]
+AS <i>Query</i>
+
+DROP VIEW <i>ViewName</i>
+</pre><p>
+The <i>Query</i> may be any SQL query, involving
+<ul>
+<li> other views &nbsp; <small>(<i>intensional relations</i>)</small>
+<li> stored tables &nbsp; <small>(<i>extensional relations</i>)</small>
+</ul>
+</DIV>
+<hr>
+<DIV id="s183">
+<div class='heading'> Views <span style="font-size:67%">(cont)</span></div>
+<p>
+The stored tables in a view are referred to as <font color='#0000BB'>base tables</font>.
+<p>
+Views are defined only after their base tables are defined.
+<p>
+A view is valid only as long as its underlying query is valid.
+<p>
+Dropping a view has no effect on the base tables.
+</DIV>
+<hr>
+<DIV id="s184">
+<div class='heading'> Views <span style="font-size:67%">(cont)</span></div>
+<p>
+<b>Example:</b>
+An avid Carlton drinker might not be interested in any other kinds of beer.
+<p><pre>
+CREATE VIEW  MyBeers  AS
+   SELECT name, manf
+   FROM   Beers
+   WHERE  manf = 'Carlton';
+
+SELECT * FROM MyBeers;
+
+       name       |  manf   
+------------------+---------
+ Crown Lager      | Carlton
+ Fosters Lager    | Carlton
+ Invalid Stout    | Carlton
+ Melbourne Bitter | Carlton
+ Victoria Bitter  | Carlton
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s185">
+<div class='heading'> Views <span style="font-size:67%">(cont)</span></div>
+<p>
+A view might not use all attributes of the base relations.
+<p>
+<b>Example:</b> We don't really need the address of inner-city hotels.
+<p><pre>
+CREATE VIEW  InnerCityHotels  AS
+   SELECT name, license
+   FROM   Bars
+   WHERE  addr in ('The Rocks','Sydney');
+
+SELECT * FROM InnerCityHotels;
+
+      name       | license 
+-----------------+---------
+ Australia Hotel |  123456
+ Lord Nelson     |  123888
+ Marble Bar      |  122123
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s186">
+<div class='heading'> Views <span style="font-size:67%">(cont)</span></div>
+<p>
+A view might use computed attribute values.
+<p>
+<b>Example:</b> Number of beers produced by each brewer.
+<p><pre>
+CREATE VIEW BeersBrewed AS
+   SELECT manf as brewer,
+          count(*) as nbeers
+   FROM   beers GROUP BY manf;
+
+SELECT * FROM BeersBrewed;
+
+    brewer     | nbeers 
+---------------+--------
+ Caledonian    |      1
+ Carlton       |      5
+ Cascade       |      1
+ ...
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s187">
+<div class='heading'>Renaming View Attributes</div>
+<p>
+This can be achieved in two different ways:
+<p><pre>
+CREATE VIEW  InnerCityHotels  AS
+   SELECT name AS pub, license AS lic
+   FROM   Bars
+   WHERE  addr IN ('The Rocks', 'Sydney');
+
+CREATE VIEW  InnerCityHotels(pub,lic)  AS
+   SELECT name, license
+   FROM   Bars
+   WHERE  addr IN ('The Rocks', 'Sydney');
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s188">
+<div class='heading'>Using Views</div>
+<p>
+Views can be used in queries as if they were stored relations.
+<p>
+However, they differ from stored relations in two important respects:
+<ul>
+<li> their "value" can change without being explicitly modified <br>
+	<small>(i.e. a view may change whenever one of its base tables is updated)</small>
+<li> they may not be able to be explicitly modified (updated) <br>
+	<small>(only a certain simple kinds of views can be explicitly updated)</small>
+</ul>
+</DIV>
+<hr>
+<DIV id="s189">
+<div class='heading'>Using Views <span style="font-size:67%">(cont)</span></div>
+<p>
+<b>Example:</b> of view changing when base table changes.
+<p><pre>
+SELECT * FROM InnerCityHotels;
+      name       | license 
+-----------------+---------
+ Australia Hotel |  123456
+ Lord Nelson     |  123888
+ Marble Bar      |  122123
+
+<span class='comment'>-- then the Lord Nelson goes broke</span>
+DELETE FROM Bars WHERE name = 'Lord Nelson';
+
+<span class='comment'>-- no explict update has been made to InnerCityHotels</span>
+SELECT * FROM InnerCityHotels;
+      name       | license 
+-----------------+---------
+ Australia Hotel |  123456
+ Marble Bar      |  122123
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s190">
+<div class='heading'>Updating Views</div>
+<p>
+Explicit updates are allowed on views satisfying the following:
+<ul>
+<li> the view involves a single relation <large><code>R</code></large>
+<li> the <large><code>WHERE</code></large> clause does not involve <large><code>R</code></large> in a subquery
+<li> the <large><code>WHERE</code></large> clause only uses attributes from the <large><code>SELECT</code></large>
+</ul>
+Attributes not in the view's <large><code>SELECT</code></large> will be set to <large><code>NULL</code></large>
+in the base relation after an insert into the view.
+</DIV>
+<hr>
+<DIV id="s191">
+<div class='heading'>Updating Views <span style="font-size:67%">(cont)</span></div>
+<p>
+<b>Example:</b> Our <large><code>InnerCityHotel</code></large> view is not updatable.
+<p><pre>
+INSERT INTO InnerCityHotels
+VALUES ('Jackson''s on George', '9876543');
+</pre><p>
+creates a new tuple in the <large><code>Bars</code></large> relation:
+<p><pre>
+(Jackson's on George,  NULL,  9876543)
+</pre><p>
+when we <large><code>SELECT</code></large> from the view, this new tuple does not
+satisfy the view condition:
+<p><pre>
+addr IN ('The Rocks', 'Sydney')
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s192">
+<div class='heading'>Updating Views <span style="font-size:67%">(cont)</span></div>
+<p>
+If we had chosen to omit the <large><code>license</code></large> attribute instead,
+it would be updatable:
+<p><pre>
+CREATE VIEW CityHotels AS
+   SELECT name,addr FROM Bars
+   WHERE  addr IN ('The Rocks', 'Sydney');
+
+INSERT INTO CityHotels 
+VALUES ('Jackson''s on George', 'Sydney');
+</pre><p>
+creates a new tuple in the <large><code>Bars</code></large> relation:
+<p><pre>
+(Jackson's on George, Sydney, NULL)
+</pre><p>
+which would appear in the view after the insertion.
+</DIV>
+<hr>
+<DIV id="s193">
+<div class='heading'>Updating Views <span style="font-size:67%">(cont)</span></div>
+<p>
+Updatable views in PostgreSQL require us to specify explicitly
+how updates are done:
+<p><pre>
+CREATE RULE InsertCityHotel AS
+   ON INSERT TO CityHotels
+   DO INSTEAD
+      INSERT INTO Bars VALUES
+         (new.name, new.addr, NULL);
+
+CREATE RULE UpdateCityHotel AS
+   ON UPDATE TO CityHotels
+   DO INSTEAD
+      UPDATE Bars
+      SET    addr = new.addr
+      WHERE  name = old.name;
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s194">
+<div class='heading'>Evaluating Views</div>
+<p>
+Two alternative ways of implementing views:
+<ul>
+<li> re-writing rules (or macros)
+<ul>
+<li> when a view is used in a query, the query is re-written
+<li> after rewriting, becomes a query only on base relations
+</ul>
+<li> explicit stored relations (called <font color='#0000BB'>materialized views</font>)
+<ul>
+<li> the view is stored as a real table in the database
+<li> updated appropriately when base tables are modified
+</ul>
+</ul>
+<small>
+The difference: underlying query evaluated either at query time or at update time.
+</small>
+</DIV>
+<hr>
+<DIV id="s195">
+<div class='heading'>Evaluating Views <span style="font-size:67%">(cont)</span></div>
+<p>
+<b>Example:</b> Using the <large><code>InnerCityHotels</code></large> view.
+<p><pre>
+CREATE VIEW  InnerCityHotels  AS
+   SELECT name, license
+   FROM   Bars
+   WHERE  addr IN ('The Rocks', 'Sydney');
+
+SELECT name
+FROM   InnerCityHotels
+WHERE  license = '123456';
+
+<span class='comment'>--is rewritten into the following form before execution</span>
+
+SELECT name
+FROM   Bars
+WHERE  addr IN ('The Rocks', 'Sydney')
+       AND license = '123456';
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s196">
+<div class='heading'>Evaluating Views <span style="font-size:67%">(cont)</span></div>
+<p>
+Demonstrate the rewriting process via relational algebra.
+<p>
+Some abbreviations
+<ul>
+<li> <large><code>n</code></large> = <large><code>name</code></large>, <large><code>l</code></large> = <large><code>license</code></large>
+<li> <large><code>L</code></large> = <large><code>license = ''123456'</code></large>
+<li> <large><code>A</code></large> = <large><code>addr IN ('The Rocks', 'Sydney')</code></large>
+</ul>
+View definition in RA:
+<p><pre>
+InnerCityHotels = <i><span style="font-size:150%">&pi;</span><sub>(n,l)</sub></i>(<i><span style="font-size:150%">&sigma;</span><sub>(A)</sub></i>(Bars))
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s197">
+<div class='heading'>Evaluating Views <span style="font-size:67%">(cont)</span></div>
+<p>
+Rewriting of query involving a view:
+<p><pre>
+= SELECT name from InnerCityHotels
+  WHERE license = '123456'
+
+= <i><span style="font-size:150%">&pi;</span><sub>(n)</sub></i>(<i><span style="font-size:150%">&sigma;</span><sub>(L)</sub></i>(InnerCityHotels))
+= <i><span style="font-size:150%">&pi;</span><sub>(n)</sub></i>(<i><span style="font-size:150%">&sigma;</span><sub>(L)</sub></i>(<i><span style="font-size:150%">&pi;</span><sub>(n,l)</sub></i>(<i><span style="font-size:150%">&sigma;</span><sub>(A)</sub></i>(Bars))))
+= <i><span style="font-size:150%">&pi;</span><sub>(n)</sub></i>(<i><span style="font-size:150%">&pi;</span><sub>(n,l)</sub></i>(<i><span style="font-size:150%">&sigma;</span><sub>(L)</sub></i>(<i><span style="font-size:150%">&sigma;</span><sub>(A)</sub></i>(Bars))))
+= <i><span style="font-size:150%">&pi;</span><sub>(n)</sub></i>(<i><span style="font-size:150%">&sigma;</span><sub>(L)</sub></i>(<i><span style="font-size:150%">&sigma;</span><sub>(A)</sub></i>(Bars)))
+= <i><span style="font-size:150%">&pi;</span><sub>(n)</sub></i>(<i><span style="font-size:150%">&sigma;</span><sub>(L & A)</sub></i>(Bars))
+= <i><span style="font-size:150%">&pi;</span><sub>(n)</sub></i>(<i><span style="font-size:150%">&sigma;</span><sub>(A & L)</sub></i>(Bars))
+
+= SELECT name FROM Bars
+  WHERE addr IN ('The Rocks', 'Sydney')
+        AND license = '123456'
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s198">
+<div class='heading'>Materialized Views</div>
+<p>
+Naive implementation of materialized views:
+<ul>
+<li> replace view table by re-evaluating query after each update
+</ul>
+Clearly this costs space and makes updates more expensive.
+<p>
+However, in a situation where
+<ul>
+<li> updates are infrequent compared to queries on the view
+<li> the cost of "computing" the view is expensive
+</ul>
+this approach provides substantial benefits.
+<p>
+Materialized views are used extensively in data warehouses.
+</DIV>
+<p><hr><p>
+<span style='font-size:11px;color: grey;'>Produced: 13 Sep 2020</span>
+ <script src='lib/prism.js'></script>   
+ <script src='lib/sg.js'></script>   
+</body>
+</html>

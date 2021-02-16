@@ -1,0 +1,1747 @@
+<title>Relational Design Theory
+
+<slide>
+<heading>Relational Design Theory
+As noted earlier, the relational model is:
+<itemize>
+<item> simple, uniform, well-defined, formal, ...
+</itemize>
+Such properties tend to lead to useful mathematical theories.
+<p>
+One important theory developed for the relational model involves the
+notion of <em>functional dependency</em> (<$>fd</$> ).
+<p>
+Like constraints, assertions, etc. functional dependencies
+are drawn from the semantics of the application domain.
+<p>
+Essentially, <$>fd</$> 's describe how individual attributes are related.
+</slide>
+
+<slide>
+<continued>
+Functional dependencies
+<itemize>
+<item> are a kind of constraint among attributes within a relation
+<item> that have implications for <q>good</q> relational schema design
+</itemize>
+What we study here:
+<itemize>
+<item> basic theory and definition of <em>functional dependencies</em>
+<item> methodology for improving schema designs (<em>normalisation</em>)
+</itemize>
+The aim of studying this:
+<itemize>
+<item> improve understanding of relationships among data
+<item> gain enough formalism to assist practical database design
+</itemize>
+</slide>
+
+<slide>
+<heading>Relational Design and Redundancy
+A <em>good</em> relational database design:
+<itemize>
+<item> must capture <i>all</i> of the necessary attributes/associations
+<item> should do this with a <i>minimal</i> amount of stored information
+</itemize>
+Minimal stored information <$><Rightarrow></$> no redundant data.
+<p>
+In database design, <em>redundancy</em> is generally a <q>bad thing</q>:
+<itemize>
+<item> causes problems maintaining consistency after updates
+</itemize>
+However, it can sometimes lead to performance improvements
+<itemize>
+<item> e.g. may be able to avoid a join to collect bits of data together
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Consider the following relation defining bank accounts/branches:
+<p>
+<reltable 6>
+<row>
+  <col1><b>accountNo</b></col1>
+  <col2><b>balance</b></col2>
+  <col3><b>customer</b></col3>
+  <col4><b>branch</b></col4>
+  <col5><b>address</b></col5>
+  <col6><b>assets</b></col6>
+</row>
+<row>
+  <col1>A-101</col1>
+  <col2>500</col2>
+  <col3>1313131</col3>
+  <col4>Downtown</col4>
+  <col5>Brooklyn</col5>
+  <col6>9000000</col6>
+</row>
+<row>
+  <col1>A-102</col1>
+  <col2>400</col2>
+  <col3>1313131</col3>
+  <col4>Perryridge</col4>
+  <col5>Horseneck</col5>
+  <col6>1700000</col6>
+</row>
+<row>
+  <col1>A-113</col1>
+  <col2>600</col2>
+  <col3>9876543</col3>
+  <col4><brown>Round Hill</brown></col4>
+  <col5><brown>Horseneck</brown></col5>
+  <col6><brown>8000000</brown></col6>
+</row>
+<row>
+  <col1>A-201</col1>
+  <col2>900</col2>
+  <col3>9876543</col3>
+  <col4>Brighton</col4>
+  <col5>Brooklyn</col5>
+  <col6>7100000</col6>
+</row>
+<row>
+  <col1>A-215</col1>
+  <col2>700</col2>
+  <col3>1111111</col3>
+  <col4>Mianus</col4>
+  <col5>Horseneck</col5>
+  <col6>400000</col6>
+</row>
+<row>
+  <col1>A-222</col1>
+  <col2>700</col2>
+  <col3>1111111</col3>
+  <col4>Redwood</col4>
+  <col5>Palo Alto</col5>
+  <col6>2100000</col6>
+</row>
+<row>
+  <col1>A-305</col1>
+  <col2>350</col2>
+  <col3>1234567</col3>
+  <col4><brown>Round Hill</brown></col4>
+  <col5><brown>Horseneck</brown></col5>
+  <col6><brown>8000000</brown></col6>
+</row>
+</reltable>
+<p>
+<small>
+We need to be careful updating this data, otherwise we may introduce inconsistencies.
+</small>
+</slide>
+
+<slide>
+<continued>
+Insertion anomaly:
+<itemize>
+<item> when we insert a new record, we need to check that branch data is consistent with existing tuples
+</itemize>
+Update anomaly:
+<itemize>
+<item> if a branch changes address, we need to update all tuples referring to that branch
+</itemize>
+Deletion anomaly:
+<itemize>
+<item> if we remove information about the last account at a branch, all of the branch information disappears
+</itemize>
+<small>
+(If we <em>do</em> manage to avoid inconsistencies, the cost is additional updates)
+</small>
+</slide>
+
+<slide>
+<continued>
+Insertion anomaly example (insert account A-306 at Round Hill):
+<p>
+<reltable 6>
+<row>
+  <col1><b>accountNo</b></col1>
+  <col2><b>balance</b></col2>
+  <col3><b>customer</b></col3>
+  <col4><b>branch</b></col4>
+  <col5><b>address</b></col5>
+  <col6><b>assets</b></col6>
+</row>
+<row>
+  <col1>A-101</col1>
+  <col2>500</col2>
+  <col3>1313131</col3>
+  <col4>Downtown</col4>
+  <col5>Brooklyn</col5>
+  <col6>9000000</col6>
+</row>
+<row>
+  <col1>A-102</col1>
+  <col2>400</col2>
+  <col3>1313131</col3>
+  <col4>Perryridge</col4>
+  <col5>Horseneck</col5>
+  <col6>1700000</col6>
+</row>
+<row>
+  <col1>A-113</col1>
+  <col2>600</col2>
+  <col3>9876543</col3>
+  <col4>Round Hill</col4>
+  <col5>Horseneck</col5>
+  <col6><em><green>8000000</green></em></col6>
+</row>
+<row>
+  <col1>A-201</col1>
+  <col2>900</col2>
+  <col3>9876543</col3>
+  <col4>Brighton</col4>
+  <col5>Brooklyn</col5>
+  <col6>7100000</col6>
+</row>
+<row>
+  <col1>A-215</col1>
+  <col2>700</col2>
+  <col3>1111111</col3>
+  <col4>Mianus</col4>
+  <col5>Horseneck</col5>
+  <col6>400000</col6>
+</row>
+<row>
+  <col1>A-222</col1>
+  <col2>700</col2>
+  <col3>1111111</col3>
+  <col4>Redwood</col4>
+  <col5>Palo Alto</col5>
+  <col6>2100000</col6>
+</row>
+<row>
+  <col1>A-305</col1>
+  <col2>350</col2>
+  <col3>1234567</col3>
+  <col4>Round Hill</col4>
+  <col5>Horseneck</col5>
+  <col6><em><green>8000000</green></em></col6>
+</row>
+<row>
+  <col1>A-306</col1>
+  <col2>800</col2>
+  <col3>1111111</col3>
+  <col4>Round Hill</col4>
+  <col5>Horseneck</col5>
+  <col6><em>8000800</em></col6>
+</row>
+</reltable>
+</slide>
+
+<slide>
+<continued>
+Update anomaly example (update Round Hill branch address):
+<p>
+<reltable 6>
+<row>
+  <col1><b>accountNo</b></col1>
+  <col2><b>balance</b></col2>
+  <col3><b>customer</b></col3>
+  <col4><b>branch</b></col4>
+  <col5><b>address</b></col5>
+  <col6><b>assets</b></col6>
+</row>
+<row>
+  <col1>A-101</col1>
+  <col2>500</col2>
+  <col3>1313131</col3>
+  <col4>Downtown</col4>
+  <col5>Brooklyn</col5>
+  <col6>9000000</col6>
+</row>
+<row>
+  <col1>A-102</col1>
+  <col2>400</col2>
+  <col3>1313131</col3>
+  <col4>Perryridge</col4>
+  <col5>Horseneck</col5>
+  <col6>1700000</col6>
+</row>
+<row>
+  <col1>A-113</col1>
+  <col2>600</col2>
+  <col3>9876543</col3>
+  <col4>Round Hill</col4>
+  <col5><em>Palo Alto</em></col5>
+  <col6>8000000</col6>
+</row>
+<row>
+  <col1>A-201</col1>
+  <col2>900</col2>
+  <col3>9876543</col3>
+  <col4>Brighton</col4>
+  <col5>Brooklyn</col5>
+  <col6>7100000</col6>
+</row>
+<row>
+  <col1>A-215</col1>
+  <col2>700</col2>
+  <col3>1111111</col3>
+  <col4>Mianus</col4>
+  <col5>Horseneck</col5>
+  <col6>400000</col6>
+</row>
+<row>
+  <col1>A-222</col1>
+  <col2>700</col2>
+  <col3>1111111</col3>
+  <col4>Redwood</col4>
+  <col5>Palo Alto</col5>
+  <col6>2100000</col6>
+</row>
+<row>
+  <col1>A-305</col1>
+  <col2>350</col2>
+  <col3>1234567</col3>
+  <col4>Round Hill</col4>
+  <col5><em><green>Horseneck</green></em></col5>
+  <col6>8000000</col6>
+</row>
+</reltable>
+</slide>
+
+<slide>
+<continued>
+Deletion anomaly example (remove account A-101):
+<p>
+<reltable 6>
+<row>
+  <col1><b>accountNo</b></col1>
+  <col2><b>balance</b></col2>
+  <col3><b>customer</b></col3>
+  <col4><b>branch</b></col4>
+  <col5><b>address</b></col5>
+  <col6><b>assets</b></col6>
+</row>
+<row>
+  <col1><em>A-101</em></col1>
+  <col2><em>500</em></col2>
+  <col3><em>1313131</em></col3>
+  <col4><em>Downtown</em></col4>
+  <col5><em>Brooklyn</em></col5>
+  <col6><em>9000000</em></col6>
+</row>
+<row>
+  <col1>A-102</col1>
+  <col2>400</col2>
+  <col3>1313131</col3>
+  <col4>Perryridge</col4>
+  <col5>Horseneck</col5>
+  <col6>1700000</col6>
+</row>
+<row>
+  <col1>A-113</col1>
+  <col2>600</col2>
+  <col3>9876543</col3>
+  <col4>Round Hill</col4>
+  <col5>Horseneck</col5>
+  <col6>8000000</col6>
+</row>
+<row>
+  <col1>A-201</col1>
+  <col2>900</col2>
+  <col3>9876543</col3>
+  <col4>Brighton</col4>
+  <col5>Brooklyn</col5>
+  <col6>7100000</col6>
+</row>
+<row>
+  <col1>A-215</col1>
+  <col2>700</col2>
+  <col3>1111111</col3>
+  <col4>Mianus</col4>
+  <col5>Horseneck</col5>
+  <col6>400000</col6>
+</row>
+<row>
+  <col1>A-222</col1>
+  <col2>700</col2>
+  <col3>1111111</col3>
+  <col4>Redwood</col4>
+  <col5>Palo Alto</col5>
+  <col6>2100000</col6>
+</row>
+<row>
+  <col1>A-305</col1>
+  <col2>350</col2>
+  <col3>1234567</col3>
+  <col4>Round Hill</col4>
+  <col5>Horseneck</col5>
+  <col6>8000000</col6>
+</row>
+</reltable>
+<p>
+Where is the Downtown branch located? What are its assets?
+</slide>
+
+<slide>
+<heading>Database Design (revisited)
+To avoid these kinds of update problems:
+<itemize>
+<item> <em>decompose</em> the relation <$>U</$> into several smaller relations <$>R<sub>i</sub></$>
+<item> where each <$>R<sub>i</sub></$> has minimal overlap with other <$>R<sub>j</sub></$>
+</itemize>
+<small>
+Typically, each <$>R<sub>i</sub></$> contains information about one entity (e.g. branch, customer, ...)</small>
+<p>
+This leads to a (bottom-up) database design procedure:
+<itemize>
+<sitem> start from an unstructured collection of attributes
+<sitem> use normalisation (via <$>fd</$>s) to impose structure
+<sitem> final schema is a collection of tables
+<sitem> final schema has minimal redundancy (normalised)
+</itemize>
+</slide>
+
+<slide>
+<continued>
+This contrasts with our earlier (top-down) design procedure:
+<itemize>
+<item> structure data at conceptual level (ER design)
+<item> then map to <q>physical</q> level (relational design)
+<item> final schema is a collection of tables
+</itemize>
+It appears that ER-design-then-relational-mapping
+<itemize>
+<item> leads to a collection of well-structured tables
+<item> which is similar to a normalised schema
+</itemize>
+So why do we need a dependency theory and normalisation procedure to deal with redundancy?
+</slide>
+
+<slide>
+<continued>
+Some reasons ...
+<enumerate>
+<item> ER design does not guarantee minimal redundancy
+<small>
+<itemize>
+<item> dependency theory allows us to check designs for residual problems
+</itemize>
+</small>
+<item> Normalisation can be viewed as (semi)automated design
+<small>
+<itemize>
+<item> determine all of the attributes in the problem domain
+<item> collect them all together in a <q>super-relation</q> <~> <small>(with update anomalies)</small>
+<item> provide information about how attributes are related
+<item> apply normalisation to decompose into non-redundant relations
+</itemize>
+</small>
+</enumerate>
+</slide>
+
+<slide>
+<heading>Notation/Terminology
+Most texts adopt the following terminology:
+<p>
+<deftable>
+<row>
+  <col1>Relation<br>schemas</col1>
+  <col2>
+  upper-case letters, denoting set of all attributes
+  (e.g. <$>R</$>, <$>S</$>, <$>P</$>, <$>Q</$> )
+  </col2>
+</row>
+<row>
+  <col1>Relation<br>instances</col1>
+  <col2>
+  lower-case letter corresponding to schema
+  (e.g. <$>r(R)</$>, <$>s(S)</$>, <$>p(P)</$>, <$>q(Q)</$> )
+  </col2>
+</row>
+<row>
+  <col1>Tuples</col1>
+  <col2>
+  lower-case letters <~> (e.g. <$>t</$>, <$>t'</$>, <$>t<sub>1</sub></$>, <$>u</$>, <$>v</$> )
+  </col2>
+</row>
+<row>
+  <col1>Attributes</col1>
+  <col2>
+  upper-case letters from start of alphabet
+  (e.g. <$>A</$>, <$>B</$>, <$>C</$>, <$>D</$> )
+  </col2>
+</row>
+<row>
+  <col1>Sets of<br>attributes</col1>
+  <col2>
+  simple concatenation of attribute names
+  (e.g. <$>X=ABCD</$>, <$>Y=EFG</$> )
+  </col2>
+</row>
+<row>
+  <col1>Attributes<br> in tuples</col1>
+  <col2>
+  tuple[attrSet] (e.g. <$>t[ABCD]</$>, <$>t[X]</$>)
+  </col2>
+</row>
+</deftable>
+</slide>
+
+<slide>
+<heading>Functional Dependency
+A relation instance <$>r(R)</$> satisfies a dependency <$>X <rightarrow> Y</$> if
+<itemize>
+<item> for any <$>t, u <in> r</$>, <~> <$>t[X] = u[X] <~> <Rightarrow> <~> t[Y] = u[Y]</$>
+</itemize>
+In other words, if two tuples in <$>R</$> agree in their values for the
+set of attributes <$>X</$>, then they must also agree in their values for
+the set of attributes <$>Y</$>.
+<p>
+We say that <q><$>Y</$> is <em>functionally dependent</em> on <$>X</$></q>.
+<p>
+Attribute sets <$>X</$> and <$>Y</$> may overlap;
+trivially true that <$>X <rightarrow> X</$>.
+<p>
+Notes:
+<itemize>
+<sitem> the single arrow <$><rightarrow></$> denotes <q>functional dependency</q>
+<sitem> <$>X <rightarrow> Y</$> can also be read as <q><$>X</$> determines <$>Y</$></q>
+<sitem> the double arrow <$><Rightarrow></$> denotes <q>logical implication</q>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+The above definition talks about dependency within a relation instance <$>r(R)</$>.
+<p>
+Much more important for design is the notion of dependency across all possible
+instances of the relation (i.e. a schema-based dependency).
+<p>
+This is a simple generalisation of the previous definition:
+<itemize>
+<item> for any <$>t, u <in> <b>any</b> r(R)</$>, <~> <$>t[X] = u[X] <~> <Rightarrow> <~> t[Y] = u[Y]</$>
+</itemize>
+Useful because such dependencies reflect the semantics of the problem.
+</slide>
+
+<slide>
+<continued>
+Consider the following instance <$>r(R)</$> of the relation schema <$>R(ABCDE)</$>:
+<p>
+<reltable 5>
+<row>
+  <col1><b><$>A</$></b><~~~><~~~></col1>
+  <col2><b><$>B</$></b><~~~><~~~></col2>
+  <col3><b><$>C</$></b><~~~><~~~></col3>
+  <col4><b><$>D</$></b><~~~><~~~></col4>
+  <col5><b><$>E</$></b><~~~><~~~></col5>
+</row>
+<row>
+  <col1><$>a<sub>1</sub></$></col1>
+  <col2><$>b<sub>1</sub></$></col2>
+  <col3><$>c<sub>1</sub></$></col3>
+  <col4><$>d<sub>1</sub></$></col4>
+  <col5><$>e<sub>1</sub></$></col5>
+</row>
+<row>
+  <col1><$>a<sub>2</sub></$></col1>
+  <col2><$>b<sub>1</sub></$></col2>
+  <col3><$>c<sub>2</sub></$></col3>
+  <col4><$>d<sub>2</sub></$></col4>
+  <col5><$>e<sub>1</sub></$></col5>
+</row>
+<row>
+  <col1><$>a<sub>3</sub></$></col1>
+  <col2><$>b<sub>2</sub></$></col2>
+  <col3><$>c<sub>1</sub></$></col3>
+  <col4><$>d<sub>1</sub></$></col4>
+  <col5><$>e<sub>1</sub></$></col5>
+</row>
+<row>
+  <col1><$>a<sub>4</sub></$></col1>
+  <col2><$>b<sub>2</sub></$></col2>
+  <col3><$>c<sub>2</sub></$></col3>
+  <col4><$>d<sub>2</sub></$></col4>
+  <col5><$>e<sub>1</sub></$></col5>
+</row>
+<row>
+  <col1><$>a<sub>5</sub></$></col1>
+  <col2><$>b<sub>3</sub></$></col2>
+  <col3><$>c<sub>3</sub></$></col3>
+  <col4><$>d<sub>1</sub></$></col4>
+  <col5><$>e<sub>1</sub></$></col5>
+</row>
+</reltable>
+<p>
+What kind of dependencies can we observe among the attributes in r(R)?
+</slide>
+
+<slide>
+<continued>
+Since the values of <$>A</$> are unique, it follows from the <$>fd</$> definition that:
+<p>
+<center>
+<$>A <rightarrow> B, <~~> A <rightarrow> C, <~~> A <rightarrow> D, <~~> A <rightarrow> E</$>
+</center>
+<p>
+It also follows that <$>A <rightarrow> BC</$> <~> <small>(or any other subset of <$>ABCDE</$>).</small>
+<p>
+This can be summarised as <~> <$>A <rightarrow> BCDE</$> 
+<p>
+From our understanding of primary keys, <$>A</$> is a PK.
+</slide>
+
+<slide>
+<continued>
+<p>
+Since the values of <$>E</$> are always the same, it follows that:
+<p>
+<center>
+<$>A <rightarrow> E, <~~> B <rightarrow> E, <~~> C <rightarrow> E, <~~> D <rightarrow> E</$>
+</center>
+<p>
+Note: <b>cannot</b> generally summarise above by <~> <$>ABCD <rightarrow> E</$>
+<p>
+<small>(However, <$>ABCD <rightarrow> E</$> does happen to be true in this example)</small>
+<p>
+In general, <~~> <$>A <rightarrow> Y, <~> B <rightarrow> Y <~~> <notRightarrow> <~~> AB <rightarrow> Y</$>
+</slide>
+
+<slide>
+<continued>
+Other observations:
+<itemize>
+<item> combinations of <$>BC</$> are unique, therefore <~> <$>BC <rightarrow> ADE</$>
+<item> combinations of <$>BD</$> are unique, therefore <~> <$>BD <rightarrow> ACE</$>
+<item> if <$>C</$> values match, so do <$>D</$> values, therefore <~> <$>C <rightarrow> D</$>
+<item> however, <$>D</$> values don't determine <$>C</$> values, so <~> <$>D <notRightarrow> C</$>
+</itemize>
+We could derive many other dependencies, e.g. <~> <$>AE <rightarrow> BC</$>, ...
+<p>
+In practice, choose a minimal set of <$>fd</$>s (<em>basis</em>)
+<itemize>
+<sitem> from which all other <$>fd</$>s can be derived
+<sitem> which typically captures useful problem-domain information
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Can we generalise some ideas about functional dependency? <br>
+<p>
+E.g. are there dependencies that hold for <i>any</i> relation?
+<p>
+Yes, but they're rather uninteresting ones such as:
+<p>
+<center>
+<$>t[ABC] = u[ABC] <~><Rightarrow><~> t[AB] = u[AB]</$> <~> giving <~> <$>ABC <rightarrow> AB</$>
+</center>
+<p>
+which generalises to <~> <$>Y <subset> X <~> <Rightarrow> <~> X <rightarrow> Y</$>.
+<p>
+E.g. do some dependencies suggest the existence of others?
+<p>
+Yes, and this is much more interesting ... there are a number of
+<em>rules of inference</em> that allow us to <em>derive</em> dependencies. 
+</slide>
+
+<slide>
+<heading>Inference Rules
+<em>Armstrong's rules</em> are complete, general rules of inference on <$>fd</$>s.
+<p>
+F1. <em>Reflexivity</em> <~> e.g. <~> <$>X <rightarrow> X</$>
+<small>
+<itemize>
+<item> a formal statement of <i>trivial dependencies</i>; useful for derivations
+</itemize>
+</small>
+F2. <em>Augmentation</em> <~> e.g. <~> <$>X <rightarrow> Y <~><Rightarrow><~> XZ <rightarrow> YZ</$>
+<small>
+<itemize>
+<item> if a dependency holds, then we can freely expand its left hand side
+</itemize>
+</small>
+F3. <em>Transitivity</em> <~> e.g. <~> <$>X <rightarrow> Y, Y <rightarrow> Z <~><Rightarrow><~> X <rightarrow> Z</$>
+<small>
+<itemize>
+<item> the <q>most powerful</q> inference rule; useful in multi-step derivations
+</itemize>
+</small>
+</slide>
+
+<slide>
+<continued>
+While Armstrong's rules are complete, other useful rules exist:
+<p>
+F4. <em>Additivity</em> <~> e.g. <~> <$>X <rightarrow> Y, X <rightarrow> Z <~> <Rightarrow> <~> X <rightarrow> YZ</$>
+<small>
+<itemize>
+<item> useful for constructing new right hand sides of <$>fd</$>s (also called <em>union</em>)
+</itemize>
+</small>
+F5. <em>Projectivity</em> <~> e.g. <~> <$>X <rightarrow> YZ <~> <Rightarrow> <~> X <rightarrow> Y, X <rightarrow> Z</$>
+<small>
+<itemize>
+<item> useful for reducing right hand sides of <$>fd</$>s (also called <em>decomposition</em>)
+</itemize>
+</small>
+F6. <em>Pseudotransitivity</em> <~> e.g. <~> <$>X <rightarrow> Y, YZ <rightarrow> W <~> <Rightarrow> <~> XZ <rightarrow> W</$>
+<small>
+<itemize>
+<item> shorthand for a common transitivity derivation
+</itemize>
+</small>
+</slide>
+
+<slide>
+<continued>
+Using rules and a set <$>F</$> of given <$>fd</$>s, we can determine what other
+<$>fd</$>s hold.
+<p>
+Example (derivation of <$>AB <rightarrow> GH</$>):
+<p>
+<center>
+<$>R = ABCDEFGHIJ</$>
+<p>
+<$>F = { AB <rightarrow> E, <~> AG <rightarrow> J, <~> BE <rightarrow> I, <~> E <rightarrow> G, <~> GI <rightarrow> H }</$>
+<p>
+<table 3>
+<row>
+<col1> 1. <~> </col1>
+<col2> <$>AB <rightarrow> E</$> </col2>
+<col3> (given) </col3>
+</row>
+<row>
+<col1> 2. <~> </col1>
+<col2> <$>AB <rightarrow> AB</$> </col2>
+<col3> (using F1) </col3>
+</row>
+<row>
+<col1> 3. <~> </col1>
+<col2> <$>AB <rightarrow> B</$> </col2>
+<col3> (using F5 on 2) </col3>
+</row>
+<row>
+<col1> 4. <~> </col1>
+<col2> <$>AB <rightarrow> BE</$> </col2>
+<col3> (using F4 on 1,3) </col3>
+</row>
+<row>
+<col1> 5. <~> </col1>
+<col2> <$>BE <rightarrow> I</$> </col2>
+<col3> (given) </col3>
+</row>
+</table>
+</center>
+</slide>
+
+<slide>
+<continued>
+Continuing the derivation ...
+<p>
+<center>
+<table 3>
+<row>
+<col1> 6. <~> </col1>
+<col2> <$>AB <rightarrow> I</$> </col2>
+<col3> (using F3 on 4,5) </col3></row>
+<row>
+<col1> 7. <~> </col1>
+<col2> <$>E <rightarrow> G</$> </col2>
+<col3> (given) </col3></row>
+<row>
+<col1> 8. <~> </col1>
+<col2> <$>AB <rightarrow> G</$> </col2>
+<col3> (using F3 on 1,7) </col3></row>
+<row>
+<col1> 9. <~> </col1>
+<col2> <$>AB <rightarrow> GI</$> </col2>
+<col3> (using F4 on 6,8) </col3></row>
+<row>
+<col1> 10. </col1>
+<col2> <$>GI <rightarrow> H</$> </col2>
+<col3> (given) </col3></row>
+<row>
+<col1> 11. </col1>
+<col2> <$>AB <rightarrow> H</$> </col2>
+<col3> (using F3 on 6,8) </col3></row>
+<row>
+<col1> 12. </col1>
+<col2> <$>GI <rightarrow> GI</$> </col2>
+<col3> (using F1) </col3></row>
+<row>
+<col1> 13. </col1>
+<col2> <$>GI <rightarrow> I</$> </col2>
+<col3> (using F5 on 12) </col3></row>
+<row>
+<col1> 14. </col1>
+<col2> <$>AB <rightarrow> GH</$> </col2>
+<col3> (using F4 on 8,11) </col3></row>
+</table>
+</center>
+</slide>
+
+<slide>
+<heading>Closures
+Given a set <$>F</$> of <$>fd</$>s, how many new <$>fd</$>s can we derive?
+<p>
+For a finite set of attributes, there must be a finite set of <$>fd</$>s.
+<p>
+The largest collection of dependencies that can be derived from <$>F</$>
+is called the <em>closure</em> of <$>F</$> and is denoted <$>F<sup>+</sup></$>.
+<p>
+Closures allow us to answer two interesting questions:
+<itemize>
+<item> is a particular dependency <$>X <rightarrow> Y</$> derivable from <$>F</$>?
+<item> are two sets of dependencies <$>F</$> and <$>G</$> equivalent?
+</itemize>
+</slide>
+
+<slide>
+<continued>
+For the question <q>is <$>X <rightarrow> Y</$> derivable from <$>F</$>?</q> ...
+<itemize>
+<item> compute the closure <$>F<sup>+</sup></$>;
+	check whether <$>X <rightarrow> Y <~> <in> <~> F<sup>+</sup></$>
+</itemize>
+For the question <q>are <$>F</$> and <$>G</$> equivalent?</q> ...
+<itemize>
+<item> compute closures <$>F<sup>+</sup></$> and <$>G<sup>+</sup></$>;
+	check whether they're equal
+</itemize>
+Unfortunately, closures on even small sets of functional dependencies
+can be very large.
+<p>
+Algorithms based on <$>F<sup>+</sup></$> rapidly become infeasible.
+</slide>
+
+<slide>
+<continued>
+Example (of <$>fd</$> closure):
+<p>
+<small>
+<$>R = ABC, <~~~> F = { AB <rightarrow> C, <~> C <rightarrow> B }</$> <br>
+<$>F<sup>+</sup> = { A <rightarrow> A, <~> AB <rightarrow> A, <~>
+	AC <rightarrow> A, <~> AB <rightarrow> B, <~>
+	BC <rightarrow> B, <~> ABC <rightarrow> B, <~>
+<br> <~~~> <~~~> <~~~>
+	C <rightarrow> C, <~> AC <rightarrow> C, <~>
+	BC <rightarrow> C, <~> ABC <rightarrow> C, <~>
+	AB <rightarrow> AB, <~> . . . . . . ,
+<br> <~~~> <~~~> <~~~>
+        AB <rightarrow> ABC, <~> AB <rightarrow> ABC, <~>
+	C <rightarrow> B, <~> C <rightarrow> BC, <~>
+	AC <rightarrow> B, <~> AC <rightarrow> AB }</$>
+</small>
+<p>
+To solve this problem, use closures based on sets of attributes rather than sets of <$>fd</$>s.
+<p>
+Given a set <$>X</$> of attributes and a set <$>F</$> of <$>fd</$>s,
+the largest set of attributes that can be derived from <$>X</$> using
+<$>F</$>, is called the <em>closure</em> of <$>X</$>
+(denoted <$>X<sup>+</sup></$>).
+<p>
+We can prove <small>(using additivity)</small> that <~~> <$>(X <rightarrow> Y) <in> F<sup>+</sup></$> <~> iff <~> <$>Y <subset> X<sup>+</sup></$>.
+<p>
+For computation, <$>| X<sup>+</sup> |</$> is bounded by the number of attributes.
+</slide>
+
+<slide>
+<continued>
+For the question <q>is <$>X <rightarrow> Y</$> derivable from <$>F</$>?</q> ...
+<itemize>
+<item> compute the closure <$>X<sup>+</sup></$>,
+	check whether <$>Y <~> <subset> <~> X<sup>+</sup></$>
+</itemize>
+For the question <q>are <$>F</$> and <$>G</$> equivalent?</q> ...
+<itemize>
+<item> for each dependency in <$>G</$>, check whether derivable from <$>F</$>
+<item> for each dependency in <$>F</$>, check whether derivable from <$>G</$>
+<item> if true for all, then 
+	<$>F <Rightarrow> G</$> and <$>G <Rightarrow> F</$>
+	which implies <$>F<sup>+</sup> = G<sup>+</sup></$>
+</itemize>
+</slide>
+
+<slide>
+<heading>Closure Algorithm
+<program>
+Inputs: set <$>F</$> of <$>fd</$>s
+        set <$>X</$> of attributes
+Output: closure of <$>X</$> (i.e. <$>X<sup>+</sup></$>)
+
+<$>X<sup>+</sup></$> = <$>X</$>
+stillChanging = true;
+while (stillChanging) {
+    stillChanging = false;
+    for each <$>W <rightarrow> Z</$> in <$>F</$> {
+        if (<$>W <subseteq> X<sup>+</sup></$>) and not (<$>Z <subseteq> X<sup>+</sup></$>) {
+            <$>X<sup>+</sup></$> = <$>X<sup>+</sup> <union> Z</$>
+            stillChanging = true;
+        }
+    }
+}
+</program>
+</slide>
+
+<slide>
+<continued>
+E.g. <$>R = ABCDEF</$>, <$>F = { AB <rightarrow> C,<~> BC <rightarrow> AD,<~> D <rightarrow> E,<~> CF <rightarrow> B }</$>
+<p>
+Does <$>AB <rightarrow> D</$> follow from <$>F</$>?
+<~~~>
+Solve by checking <$>D <in> AB<sup>+</sup></$>.
+<p>
+Computing <$>AB<sup>+</sup></$>:
+<p>
+<center>
+<table 3>
+<row>
+<col1> 1. <~> </col1>
+<col2> <$>AB<sup>+</sup> = AB</$> </col2>
+<col3> (initially) </col3></row>
+<row>
+<col1> 2. <~> </col1>
+<col2> <$>AB<sup>+</sup> = ABC</$> </col2>
+<col3> (using <$>AB <rightarrow> C</$>) </col3></row>
+<row>
+<col1> 3. <~> </col1>
+<col2> <$>AB<sup>+</sup> = ABCD</$> </col2>
+<col3> (using <$>BC <rightarrow> AD</$>) </col3></row>
+<row>
+<col1> 4. <~> </col1>
+<col2> <$>AB<sup>+</sup> = ABCDE</$> </col2>
+<col3> (using <$>D <rightarrow> E</$>) </col3></row>
+</table>
+</center>
+<p>
+Since <$>D</$> is in <$>AB<sup>+</sup></$>, then <$>AB <rightarrow> D</$> does follow from <$>F</$>.
+</slide>
+
+<slide>
+<continued>
+E.g. <$>R = ABCDEF</$>, <$>F = { AB <rightarrow> C,<~> BC <rightarrow> AD,<~> D <rightarrow> E,<~> CF <rightarrow> B }</$>
+<p>
+Does <$>D <rightarrow> A</$> follow from <$>F</$>?
+<~~~>
+Solve by checking <$>A <in> D<sup>+</sup></$>.
+<p>
+Computing <$>D<sup>+</sup></$>:
+<p>
+<center>
+<table 3>
+<row>
+<col1> 1. <~> </col1>
+<col2> <$>D<sup>+</sup> = D</$> </col2>
+<col3> (initially) </col3></row>
+<row>
+<col1> 2. <~> </col1>
+<col2> <$>D<sup>+</sup> = DE</$> </col2>
+<col3> (using <$>D <rightarrow> E</$>) </col3></row>
+</table>
+</center>
+<p>
+Since <$>A</$> is not in <$>D<sup>+</sup></$>, then <$>D <rightarrow> A</$> does not follow from <$>F</$>.
+</slide>
+
+<slide>
+<continued>
+E.g. <$>R = ABCDEF</$>, <$>F = { AB <rightarrow> C,<~> BC <rightarrow> AD,<~> D <rightarrow> E,<~> CF <rightarrow> B }</$>
+<p>
+What are the keys of <$>R</$>?
+<p>
+Solve by finding <$>X <subset> R</$> such that <$>X<sup>+</sup> = R</$>.
+<p>
+From previous examples, we know <$>AB</$> and <$>D</$> are not keys.
+<p>
+This also implies that <$>A</$> and <$>B</$> alone are not keys.
+<p>
+So how to find keys? Try all combinations of <$>ABCDEF</$> ...
+<p>
+E.g. maybe <$>ACF</$> is a key ...
+</slide>
+
+<slide>
+<continued>
+Computing <$>ACF<sup>+</sup></$>:
+<p>
+<center>
+<table 3>
+<row>
+<col1> 1. <~> </col1>
+<col2> <$>ACF<sup>+</sup> = ACF</$> </col2>
+<col3> (initially) </col3></row>
+<row>
+<col1> 2. <~> </col1>
+<col2> <$>ACF<sup>+</sup> = ABCF</$> </col2>
+<col3> (using <$>CF <rightarrow> B</$>) </col3></row>
+<row>
+<col1> 3. <~> </col1>
+<col2> <$>ACF<sup>+</sup> = ABCDF</$> </col2>
+<col3> (using <$>BC <rightarrow> AD</$>) </col3></row>
+<row>
+<col1> 4. <~> </col1>
+<col2> <$>ACF<sup>+</sup> = ABCDEF</$> </col2>
+<col3> (using <$>D <rightarrow> E</$>) </col3></row>
+</table>
+</center>
+<p>
+Since <$>ACF<sup>+</sup> = R</$>, <~> <$>ACF</$> is a key <~~> (as is <$>ABF</$>).
+</slide>
+
+<slide>
+<heading>Minimal Covers
+For a given application, we can define many different sets of
+<$>fd</$>s with the same closure
+(e.g. <$>F</$> and <$>G</$> where <$>F<sup>+</sup> = G<sup>+</sup></$>)
+<p>
+Which one is best to <q>model</q> the application?
+<itemize>
+<item> any model has to be complete <small>(i.e. capture entire semantics)</small>
+<item> models should be as small as possible <br>
+	<small>(we use them to check DB validity after update; less checking is better)</small>
+</itemize>
+If we can ...
+<itemize>
+<sitem> determine a number of candidate <$>fd</$> sets, <$>F</$>, <$>G</$> and <$>H</$>
+<sitem> establish that <$>F<sup>+</sup> = G<sup>+</sup> = H<sup>+</sup></$>
+<sitem> we would then choose the smallest one for our <q>model</q>
+</itemize>
+Better still, can we <i>derive</i> the smallest complete set of <$>fd</$>s?
+</slide>
+
+<slide>
+<continued>
+<em>Minimal cover</em> <$>F<sub>c</sub></$> for a set <$>F</$> of <$>fd</$>s:
+<itemize>
+<item> <$>F<sub>c</sub></$> is equivalent to <$>F</$>
+<item> all <$>fd</$>s have the form <$>X <rightarrow> A</$>
+	<small>(where <$>A</$> is a single attribute)</small>
+<item> it is not possible to make <$>F<sub>c</sub></$> smaller
+<itemize>
+<sitem> either by deleting an <$>fd</$>
+<sitem> or by deleting an attribute from an <$>fd</$>
+</itemize>
+</itemize>
+An <$>fd</$> <$>d</$> is redundant if <$>(F-{d})<sup>+</sup> = F<sup>+</sup></$>
+<p>
+An attribute <$>a</$> is redundant if <$>(F-{d}<union>{d'})<sup>+</sup> = F<sup>+</sup></$> <br>
+<small>(where <$>d'</$> is the same as <$>d</$> but with attribute <$>A</$> removed)</small>
+</slide>
+
+<slide>
+<continued>
+Algorithm for computing minimal cover:
+<sprogram>
+Inputs: set <$>F</$> of <$>fd</$>s
+Output: minimal cover <$>F<sub>c</sub></$> of <$>F</$>
+
+<$>F<sub>c</sub></$> = <$>F</$>
+Step 1:
+    put <$>f <in> F<sub>c</sub></$> into canonical form
+Step 2:
+    eliminate redundant attributes from <$>f <in> F<sub>c</sub></$>
+Step 3:
+    eliminate redundant <$>fd</$>s from <$>F<sub>c</sub></$>
+</sprogram>
+</slide>
+
+<slide>
+<continued>
+Step 1: put <$>fd</$>s into canonical form
+<sprogram>
+for each <$>f <in> F<sub>c</sub></$> like <$>X <rightarrow> {A<sub>1</sub>,..,A<sub>n</sub>}</$>
+    <$>F<sub>c</sub></$> = <$>F<sub>c</sub> - {f}</$>
+    for each <$>a</$> in <$>{A<sub>1</sub>,..,A<sub>n</sub>}</$>
+        <$>F<sub>c</sub></$> = <$>F<sub>c</sub><~><union><~>{X <rightarrow> a}</$>
+    end
+end
+</sprogram>
+</slide>
+
+<slide>
+<continued>
+Step 2: eliminate redundant attributes
+<sprogram>
+for each <$>f <in> F<sub>c</sub></$> like <$>X <rightarrow> A</$>
+    for each <$>b</$> in <$>X</$>
+        <$>f'</$> = <$>(X-{b}) <rightarrow> A</$>;
+        <$>G</$> = <$>F<sub>c</sub><~>-<~>{f}<~><union><~>{f'}</$>
+        if (<$>G<sup>+</sup></$> == <$>F<sub>c</sub><sup>+</sup></$>) <$>F<sub>c</sub></$> = <$>G</$>
+    end
+end
+</sprogram>
+</slide>
+
+<slide>
+<continued>
+Step 3: eliminate redundant functional dependencies
+<sprogram>
+for each <$>f <in> F<sub>c</sub></$>
+    <$>G</$> = <$>F<sub>c</sub><~>-<~>{f}</$>
+    if (<$>G<sup>+</sup></$> == <$>F<sub>c</sub><sup>+</sup></$>) <$>F<sub>c</sub></$> = <$>G</$>
+end
+</sprogram>
+<vspace 2>
+Note: we often assume that any supplied <$>F</$> is minimal.
+</slide>
+
+<slide>
+<continued>
+E.g. <$>R = ABC</$>, <$>F = { A <rightarrow> BC, <~>
+	B <rightarrow> C, <~> A <rightarrow> B, <~> AB <rightarrow> C }</$>
+<p>
+Compute the minimal cover:
+<itemize>
+<item> canonical <$>fd</$>s:
+	<$>A <rightarrow> B, <~> A <rightarrow> C, <~> B <rightarrow> C, <~> AB <rightarrow> C</$>
+<item> redundant attrs: 
+	<$>A <rightarrow> B, <~> A <rightarrow> C, <~> B <rightarrow> C, <~> A<green>B</green> <rightarrow> C</$>
+<item> redundant <$>fd</$>s:
+	<$>A <rightarrow> B, <~> <green>A <rightarrow> C</green>, <~> B <rightarrow> C</$>
+</itemize>
+This gives the minimal cover <~> <$>F<sub>c</sub> = { A <rightarrow> B, <~> B <rightarrow> C }</$>.
+</slide>
+
+<slide>
+<heading>Normalization
+<em>Normalization</em>: branch of relational theory providing design insights.
+<p>
+The goals of normalization:
+<itemize>
+<item> be able to characterise the level of redundancy in a relational schema
+<item> provide mechanisms for transforming schemas to remove redundancy
+</itemize>
+<p>
+Normalization draws heavily on the theory of functional dependencies.
+</slide>
+
+<slide>
+<heading>Normal Forms
+Normalization theory defines six <em>normal forms</em> (NFs).
+<p>
+Each normal form:
+<itemize>
+<item> involves a set of dependency properties that a schema must satisfy
+<item> gives guarantees about presence/absence of update anomalies
+</itemize>
+Higher normal forms have less redundancy <$><Rightarrow></$> less update problems.
+</slide>
+
+<slide>
+<continued>
+Must first decide which normal form <$>rNF</$> is <q>acceptable</q>.
+<p>
+The normalization process:
+<itemize>
+<item> check whether each relation in schema is in <$>rNF</$>
+<item> if a relation is not in <$>rNF</$>
+<itemize>
+<sitem> partition into sub-relations where each is closer to <$>rNF</$>
+</itemize>
+<item> repeat until all relations in schema are in <$>rNF</$>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+A brief history of normal forms:
+<itemize>
+<item> First,Second,Third Normal Forms (1NF,2NF,3NF) <small>(Codd 1972)</small>
+<item> Boyce-Codd Normal Form (BCNF) <small>(1974)</small>
+<item> Fourth Normal Form (4NF) <small>(Zaniolo 1976, Fagin 1977)</small>
+<item> Fifth Normal Form (5NF) <small>(Fagin 1979)</small>
+</itemize>
+NF hierarachy: <~> 5NF <$><Rightarrow></$> 4NF <$><Rightarrow></$> BCNF <$><Rightarrow></$> 3NF <$><Rightarrow></$> 2NF <$><Rightarrow></$> 1NF
+<p>
+1NF allows most redundancy; <~> 5NF allows least redundancy.
+</slide>
+
+<slide>
+<continued>
+<center>
+<deftable 3>
+<row>
+  <col1>1NF</col1>
+  <col2>
+    all attributes have atomic values <br>
+    we assume this as part of relational model
+  </col2>
+</row>
+<row>
+  <col1>2NF</col1>
+  <col2>
+    all non-key attributes fully depend on key <br>
+    (i.e. no partial dependencies) <br>
+    avoids much redundancy <br>
+  </col2>
+</row>
+<row>
+  <col1>3NF<br>BCNF</col1>
+  <col2>
+    no attributes dependent on non-key attrs<br>
+    (i.e. no transitive dependencies) <br>
+    avoids remaining redundancy <br>
+  </col2>
+</row>
+<row>
+  <col1>4NF</col1>
+  <col2>
+    removes problems due to multivalued dependencies
+  </col2>
+</row>
+<row>
+  <col1>5NF</col1>
+  <col2>
+    removes problems due to join dependencies
+  </col2>
+</row>
+</deftable>
+</center>
+</slide>
+
+<slide>
+<continued>
+In practice, BCNF and 3NF are the most important. <br>
+<small>(these are generally the <q>acceptable normal forms</q> for relational design)</small>
+<p>
+Boyce-Codd Normal Form (BCNF):
+<itemize>
+<item> eliminates all redundancy due to functional dependencies
+<item> but may not preserve original functional dependencies
+</itemize>
+Third Normal Form (3NF):
+<itemize>
+<item> eliminates most (but not all) redundancy due to <$>fd</$>s
+<item> guaranteed to preserve all functional dependencies
+</itemize>
+</slide>
+
+<slide>
+<heading>Relation Decomposition
+The standard transformation technique to remove redundancy:
+<itemize>
+<item> <em>decompose</em> relation <$>R</$> into relations <$>S</$> and <$>T</$>
+</itemize>
+<p>
+We accomplish decomposition by
+<itemize>
+<item> selecting (overlapping) subsets of attributes 
+<item> forming new relations based on attribute subsets
+</itemize>
+Properties: <~> <$>R = S <union> T, <~> S <intersect> T <neq> {}</$> <~> and ideally <~> <$>r(R) = s(S) <join> t(T)</$>
+<p>
+We may require several decompositions to achieve acceptable NF.
+<p>
+<em>Normalization algorithms</em> tell us how to choose <$>S</$> and <$>T</$>.
+</slide>
+
+<slide>
+<heading>Schema Design
+Consider the following relation for <$>BankLoans</$>:
+<center>
+<reltable 6>
+<row>
+  <col1><b>branchName</b></col1>
+  <col2><b>branchCity</b></col2>
+  <col3><b>assets</b></col3>
+  <col4><b>custName</b></col4>
+  <col5><b>loanNo</b></col5>
+  <col6><b>amount</b></col6>
+</row>
+<row>
+  <col1>Downtown</col1>
+  <col2>Brooklyn</col2>
+  <col3>9000000</col3>
+  <col4>Jones</col4>
+  <col5>L-17</col5>
+  <col6>1000</col6>
+</row>
+<row>
+  <col1>Redwood</col1>
+  <col2>Palo Alto</col2>
+  <col3>2100000</col3>
+  <col4>Smith</col4>
+  <col5>L-23</col5>
+  <col6>2000</col6>
+</row>
+<row>
+  <col1>Perryridge</col1>
+  <col2>Horseneck</col2>
+  <col3>1700000</col3>
+  <col4>Hayes</col4>
+  <col5>L-15</col5>
+  <col6>1500</col6>
+</row>
+<row>
+  <col1>Downtown</col1>
+  <col2>Brooklyn</col2>
+  <col3>9000000</col3>
+  <col4>Jackson</col4>
+  <col5>L-15</col5>
+  <col6>1500</col6>
+</row>
+<row>
+  <col1>Mianus</col1>
+  <col2>Horseneck</col2>
+  <col3>400000</col3>
+  <col4>Jones</col4>
+  <col5>L-93</col5>
+  <col6>500</col6>
+</row>
+<row>
+  <col1>Round Hill</col1>
+  <col2>Horseneck</col2>
+  <col3>8000000</col3>
+  <col4>Turner</col4>
+  <col5>L-11</col5>
+  <col6>900</col6>
+</row>
+<row>
+  <col1>North Town</col1>
+  <col2>Rye</col2>
+  <col3>3700000</col3>
+  <col4>Hayes</col4>
+  <col5>L-16</col5>
+  <col6>1300</col6>
+</row>
+</reltable>
+</center>
+</slide>
+
+<slide>
+<continued>
+The <$>BankLoans</$> relation exhibits update anomalies (insert, update, delete).
+<p>
+The cause of these problems can be stated in terms of <$>fd</$>s
+<itemize>
+<item> a branch is located in one city <~> <$>branchName <rightarrow> branchCity</$>
+<item> a branch may handle many loans <~> <$>branchName <notrightarrow> loanNo</$>
+</itemize>
+In other words, some attributes are determined by <$>branchName</$>,
+while others are not.
+<p>
+This suggests that we have two separate notions (branch and loan)
+mixed up in a single relation
+</slide>
+
+<slide>
+<continued>
+To improve the design, decompose the <$>BankLoans</$> relation.
+<p>
+The following decomposition is not helpful:
+<p>
+<~~~> <$>Branch(branchName, branchCity, assets)</$> <br>
+<~~~> <$>CustLoan(custName, loanNo, amount)</$>
+<p>
+because we lose information <small>(which branch is a loan held at?)</small>
+<p>
+Clearly, we need to leave some <q>connection</q> between the new relations,
+so that we can reconstruct the original information if needed.
+<p>
+Another possible decomposition:
+<p>
+<~~~> <$>BranchCust(branchName, branchCity, assets, custName)</$> <br>
+<~~~> <$>CustLoan(custName, loanNo, amount)</$>
+</slide>
+
+<slide>
+<continued>
+The <$>BranchCust</$> relation instance:
+<center>
+<reltable 4>
+<row>
+  <col1><b>branchName</b></col1>
+  <col2><b>branchCity</b></col2>
+  <col3><b>assets</b></col3>
+  <col4><b>custName</b></col4>
+</row>
+<row>
+  <col1>Downtown</col1>
+  <col2>Brooklyn</col2>
+  <col3>9000000</col3>
+  <col4>Jones</col4>
+</row>
+<row>
+  <col1>Redwood</col1>
+  <col2>Palo Alto</col2>
+  <col3>2100000</col3>
+  <col4>Smith</col4>
+</row>
+<row>
+  <col1>Perryridge</col1>
+  <col2>Horseneck</col2>
+  <col3>1700000</col3>
+  <col4>Hayes</col4>
+</row>
+<row>
+  <col1>Downtown</col1>
+  <col2>Brooklyn</col2>
+  <col3>9000000</col3>
+  <col4>Jackson</col4>
+</row>
+<row>
+  <col1>Mianus</col1>
+  <col2>Horseneck</col2>
+  <col3>400000</col3>
+  <col4>Jones</col4>
+</row>
+<row>
+  <col1>Round Hill</col1>
+  <col2>Horseneck</col2>
+  <col3>8000000</col3>
+  <col4>Turner</col4>
+</row>
+<row>
+  <col1>North Town</col1>
+  <col2>Rye</col2>
+  <col3>3700000</col3>
+  <col4>Hayes</col4>
+</row>
+</reltable>
+</center>
+</slide>
+
+<slide>
+<continued>
+The <$>CustLoan</$> relation instance:
+<p>
+<center>
+<reltable 3>
+<row>
+  <col1><b>custName</b></col1>
+  <col2><b>loanNo</b></col2>
+  <col3><b>amount</b></col3>
+</row>
+<row>
+  <col1>Jones</col1>
+  <col2>L-17</col2>
+  <col3>1000</col3>
+</row>
+<row>
+  <col1>Smith</col1>
+  <col2>L-23</col2>
+  <col3>2000</col3>
+</row>
+<row>
+  <col1>Hayes</col1>
+  <col2>L-15</col2>
+  <col3>1500</col3>
+</row>
+<row>
+  <col1>Jackson</col1>
+  <col2>L-15</col2>
+  <col3>1500</col3>
+</row>
+<row>
+  <col1>Jones</col1>
+  <col2>L-93</col2>
+  <col3>500</col3>
+</row>
+<row>
+  <col1>Turner</col1>
+  <col2>L-11</col2>
+  <col3>900</col3>
+</row>
+<row>
+  <col1>Hayes</col1>
+  <col2>L-16</col2>
+  <col3>1300</col3>
+</row>
+</reltable>
+</center>
+</slide>
+
+<slide>
+<continued>
+The result:
+<p>
+<$>BranchCust</$> still has redundancy problems.
+<p>
+<$>CustLoan</$> doesn't, but there is potential confusion over L-15.
+<p>
+But even worse, when we put these relations back together to try to
+re-create the original relation, we get some extra tuples!
+<p>
+Not good.
+</slide>
+
+<slide>
+<continued>
+The result of <$>Join(BranchCust,CustLoan)</$>
+<p>
+<reltable 6>
+<row>
+  <col1><b>branchName</b></col1>
+  <col2><b>branchCity</b></col2>
+  <col3><b>assets</b></col3>
+  <col4><b>custName</b></col4>
+  <col5><b>loanNo</b></col5>
+  <col6><b>amount</b></col6>
+</row>
+<row>
+  <col1>Downtown</col1>
+  <col2>Brooklyn</col2>
+  <col3>9000000</col3>
+  <col4>Jones</col4>
+  <col5>L-17</col5>
+  <col6>1000</col6>
+</row>
+<row>
+  <col1><em>Downtown</em></col1>
+  <col2><em>Brooklyn</em></col2>
+  <col3><em>9000000</em></col3>
+  <col4><em>Jones</em></col4>
+  <col5><em>L-93</em></col5>
+  <col6><em>500</em></col6>
+</row>
+<row>
+  <col1>Redwood</col1>
+  <col2>Palo Alto</col2>
+  <col3>2100000</col3>
+  <col4>Smith</col4>
+  <col5>L-23</col5>
+  <col6>2000</col6>
+</row>
+<row>
+  <col1>Perryridge</col1>
+  <col2>Horseneck</col2>
+  <col3>1700000</col3>
+  <col4>Hayes</col4>
+  <col5>L-15</col5>
+  <col6>1500</col6>
+</row>
+<row>
+  <col1><em>Perryridge</em></col1>
+  <col2><em>Horseneck</em></col2>
+  <col3><em>1700000</em></col3>
+  <col4><em>Hayes</em></col4>
+  <col5><em>L-16</em></col5>
+  <col6><em>1300</em></col6>
+</row>
+<row>
+  <col1>Downtown</col1>
+  <col2>Brooklyn</col2>
+  <col3>9000000</col3>
+  <col4>Jackson</col4>
+  <col5>L-15</col5>
+  <col6>1500</col6>
+</row>
+<row>
+  <col1>Mianus</col1>
+  <col2>Horseneck</col2>
+  <col3>400000</col3>
+  <col4>Jones</col4>
+  <col5>L-93</col5>
+  <col6>500</col6>
+</row>
+<row>
+  <col1><em>Mianus</em></col1>
+  <col2><em>Horseneck</em></col2>
+  <col3><em>400000</em></col3>
+  <col4><em>Jones</em></col4>
+  <col5><em>L-17</em></col5>
+  <col6><em>1000</em></col6>
+</row>
+<row>
+  <col1>Round Hill</col1>
+  <col2>Horseneck</col2>
+  <col3>8000000</col3>
+  <col4>Turner</col4>
+  <col5>L-11</col5>
+  <col6>900</col6>
+</row>
+<row>
+  <col1>North Town</col1>
+  <col2>Rye</col2>
+  <col3>3700000</col3>
+  <col4>Hayes</col4>
+  <col5>L-16</col5>
+  <col6>1300</col6>
+</row>
+<row>
+  <col1><em>North Town</em></col1>
+  <col2><em>Rye</em></col2>
+  <col3><em>3700000</em></col3>
+  <col4><em>Hayes</em></col4>
+  <col5><em>L-15</em></col5>
+  <col6><em>1500</em></col6>
+</row>
+</reltable>
+</slide>
+
+<slide>
+<continued>
+This is clearly not a successful decomposition.
+<p>
+The fact that we ended up with extra tuples was symptomatic of losing
+some critical <q>connection</q> information during the decomposition.
+<p>
+Such a decomposition is called a <em>lossy decomposition</em>.
+<p>
+In a good decomposition, we should be able to reconstruct the
+original relation exactly:
+<p>
+<center>
+if <$>R</$> is decomposed into <$>S</$> and <$>T</$>, then <$>Join(S,T) = R</$>
+</center>
+<p>
+Such a decomposition is called <em>lossless join decomposition</em>.
+</slide>
+
+<slide>
+<heading>Boyce-Codd Normal Form
+A relation schema <$>R</$> is in BCNF w.r.t a set <$>F</$> of functional dependencies iff:
+<itemize>
+<item> for all <$>fd</$>s <$>X <rightarrow> Y</$> in <$>F<sup>+</sup></$>
+<item> either <$>X <rightarrow> Y</$> is trivial (i.e. <$>Y <subset> X</$>)
+<item> or <$>X</$> is a superkey
+</itemize>
+A DB schema is in BCNF if all relation schemas are in BCNF.
+<p>
+<small>
+Observations:
+<itemize>
+<sitem> any two-attribute relation is in BCNF
+<sitem> any relation with key <$>K</$>, other attributes <$>X</$>, and <$>K <rightarrow> X</$> is in BCNF
+</itemize>
+</small>
+</slide>
+
+<slide>
+<continued>
+If we transform a schema into BCNF, we are guaranteed:
+<itemize>
+<item> no update anomalies due to <$>fd</$>-based redundancy
+<item> lossless join decomposition
+</itemize>
+However, we are <em>not</em> guaranteed:
+<itemize>
+<item> all <$>fd</$>s from the original schema exist in the new schema
+</itemize>
+<p>
+This may be a problem if the <$>fd</$>s contain significant semantic
+information about the problem domain.
+<p>
+If we need to preserve dependencies, use 3NF.
+</slide>
+
+<slide>
+<heading>BCNF Decomposition
+The following algorithm converts an arbitrary schema to BCNF:
+<program>
+Inputs: schema <$>R</$>, set <$>F</$> of <$>fd</$>s
+Output: set <$>Res</$> of BCNF schemas
+
+<$>Res</$> = {R};
+while (any schema <$>S <in> Res</$> is not in BCNF) {
+    choose an <$>fd</$> <$>X <rightarrow> Y</$> on <$>S</$> that violates BCNF
+    <$>Res</$> = <$>(Res-S) <union> (S-Y) <union> XY</$>
+}
+</program>
+</slide>
+
+<slide>
+<continued>
+Example (the <$>BankLoans</$> schema):
+<p>
+<$>BankLoans(branchName,  branchCity, assets, custName, loanNo, amount)</$>
+<p>
+Has functional dependencies <$>F</$>
+<itemize>
+<item> <$>branchName <rightarrow> assets,branchCity</$>
+<item> <$>loanNo <rightarrow> amount,branchName</$>
+</itemize>
+The key for <$>BankLoans</$> is <$>branchName,custName,loanNo</$>
+</slide>
+
+<slide>
+<continued>
+Applying the BCNF algorithm:
+<itemize>
+<item> check <$>BankLoans</$> relation ... it is not in BCNF <br>
+	<small>(<$>branchName <rightarrow> assets,branchCity</$> violates BCNF
+	 criteria; LHS is not a key)</small>
+<item> to fix ... decompose <$>BankLoans</$> into
+<p>
+<~~~> <$>Branch(branchName, branchCity, assets)</$> <br>
+<~~~> <$>LoanInfo(branchName, custName, loanNo, amount)</$>
+<item> check <$>Branch</$> relation ... it is in BCNF <br>
+	<small>(the only nontrivial <$>fd</$>s have LHS=<$>branchName</$>, which is a key)</small>
+</itemize>
+<small>(continued)</small>
+</slide>
+
+<slide>
+<continued>
+Applying the BCNF algorithm (cont):
+<itemize>
+<item> check <$>LoanInfo</$> relation ... it is not in BCNF <br>
+	<small>(<$>loanNo <rightarrow> amount,branchName</$> violates BCNF
+	criteria; LHS is not a key)</small>
+<item> to fix ... decompose <$>LoanInfo</$> into
+<p>
+<~~~> <$>Loan(branchName, loanNo, amount)</$> <br>
+<~~~> <$>Borrower(custName, loanNo)</$>
+<item> check <$>Loan</$> ... it is in BCNF
+<item> check <$>Borrower</$> ... it is in BCNF
+</itemize>
+</slide>
+
+<slide>
+<heading>Third Normal Form
+A relation schema <$>R</$> is in 3NF w.r.t a set <$>F</$> of functional dependencies iff:
+<itemize>
+<item> for all <$>fd</$>s <$>X <rightarrow> Y</$> in <$>F<sup>+</sup></$>
+<item> either <$>X <rightarrow> Y</$> is trivial (i.e. <$>Y <subset> X</$>)
+<item> or <$>X</$> is a superkey
+<item> or <$>Y</$> is a single attribute from a key
+</itemize>
+A DB schema is in 3NF if all relation schemas are in 3NF.
+<p>
+<small>The extra condition represents a slight weakening of BCNF requirements.</small>
+</slide>
+
+<slide>
+<continued>
+If we transform a schema into 3NF, we are guaranteed:
+<itemize>
+<item> lossless join decomposition
+<item> the new schema preserves all of the <$>fd</$>s from the original schema
+</itemize>
+However, we are <em>not</em> guaranteed:
+<itemize>
+<item> no update anomalies due to <$>fd</$>-based redundancy
+</itemize>
+<p>
+Whether to use BCNF or 3NF depends on overall design considerations.
+</slide>
+
+<slide>
+<continued>
+The following algorithm converts an arbitrary schema to 3NF:
+<program>
+Inputs: schema <$>R</$>, set <$>F</$> of <$>fd</$>s
+Output: set <$>Res</$> of 3NF schemas
+
+let <$>F<sub>c</sub></$> be a minimal cover for <$>F</$>
+<$>Res</$> = {}
+for each <$>fd</$> <$>X <rightarrow> Y</$> in <$>F<sub>c</sub></$> {
+    if (no schema <$>S <in> Res</$> contains <$>XY</$>) {
+        <$>Res</$> = <$>Res <union> XY</$>
+    }
+}
+if (no schema <$>S <in> Res</$> contains a candidate key for <$>R</$>) {
+    <$>K</$> = any candidate key for <$>R</$>
+    <$>Res</$> = <$>Res <union> K</$>
+}
+</program>
+</slide>
+
+<slide>
+<heading>Database Design Methodology
+To achieve a <q>good</q> database design:
+<itemize>
+<item> identify attributes, entities, relationships <~> <$><rightarrow></$> <~> ER design
+<item> map ER design to relational schema
+<item> identify constraints <small>(including keys and functional dependencies)</small>
+<item> apply BCNF/3NF algorithms to produce normalized schema
+</itemize>
+<small>
+Note: may subsequently need to <q>denormalise</q> if the design yields inadequate performance.
+</small>
+</slide>

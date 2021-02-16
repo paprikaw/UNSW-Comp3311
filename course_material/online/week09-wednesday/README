@@ -1,0 +1,11 @@
+
+Python scripts on the mymyunsw database
+
+stu = finds student name+zID, given partial name
+
+ts  = prints transcript, using q8() function from Ass2
+      detecting the final record could be done differently
+
+ts1 = prints transcript, using query from q8() function
+      incomplete; needs to have all of the WAM calculation
+      added in Python

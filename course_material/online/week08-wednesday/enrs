@@ -1,0 +1,45 @@
+#!/usr/local/bin/python3.7
+# at cse #!/usr/bin/python3
+import sys
+import psycopg2
+
+if len(sys.argv) < 2:
+    print("Usage:",sys.argv[0],"term")
+    exit(1)
+term = sys.argv[1]
+conn = None
+cur = None
+
+checkTerm = "select id from Terms where termName(id) = %s"
+query = """
+select c.id, s.code, s.longname, count(*)
+from   Courses c 
+       join Subjects s on (c.subject=s.id)
+       join Terms t on (c.term=t.id)
+       join Course_enrolments e on (e.course=c.id)
+where  termName(t.id) = %s
+group  by c.id, s.code, s.longname
+order  by s.code
+"""
+try:
+   conn = psycopg2.connect("dbname=mymy2")
+   cur = conn.cursor()
+   cur.execute(checkTerm, [term])
+   tup = cur.fetchone()
+   if not tup:
+      print("Invalid term",term)
+      exit(1)
+   cur.execute(query, [term])
+   allCourses = cur.fetchall()
+   #print(allCourses)
+   for tup in allCourses:
+      cid,code,title,count = tup
+      print(f"{count:5d} {code} {title}")
+   #cur.close()
+except psycopg2.Error as err:
+   print("database error: ", err)
+finally:
+   if cur:
+      cur.close()
+   if conn:
+      conn.close()

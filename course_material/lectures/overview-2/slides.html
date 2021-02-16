@@ -1,0 +1,76 @@
+<html>
+<head>
+<title>Overview - Addendum</title>
+<link href='lib/slides.css' rel='stylesheet' type='text/css'>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML" async></script>
+<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js'></script>
+<link href='https://fonts.googleapis.com/css?family=Lato' rel='stylesheet'>
+<link href='lib/prism.css' rel='stylesheet'>
+<script src='lib/sg.js'></script>
+</head>
+<body>
+ <DIV class='slideCl1' id="s0"  >
+<div class='navCl1'><a href="#s1"><span class='nextArrowCl'>>></span></a> </div> <div class='heading'>Overview - Addendum</div><p><ul class='indexUl'  style='font-size: 0.7em;'><li class="i"> <a href="#s1">Overview of the Databases Field</a>
+<li class="i"> <a href="#s2">Database Application Development</a>
+<li class="i"> <a href="#s3">Database System Architecture</a>
+</ul></DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Overview (ii) &#9826; [0/4]</div> <DIV class='slideCl1    ' id="s1"  >
+<div class='navCl1'> <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s2"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Overview of the Databases Field</div></td><td align='right'></td></tr></table>
+<p>
+<br>
+<p><div align='center'>
+<img alt="[Diagram:Pics/intro/overview.png]" src="Pics/intro/overview.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Overview (ii) &#9826; [1/4]</div> <DIV class='slideCl1    ' id="s2"  >
+<div class='navCl1'><a href="#s1"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s3"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Database Application Development</div></td><td align='right'></td></tr></table>
+<p>
+A variation on standard software engineering process:
+<ol>
+<li> <font color="#777777">analyse application requirements</font>
+<li> develop a data model to meet these requirements
+<li> check data model for redundancy <span class="smaller">(using relational theory)</span>
+<li> implement the data model as relational schema
+<li> <font color="#777777">define operations (transactions) on this model</font>
+<li> implement operations via SQL and procedural PLs
+<li> construct a program interface to these operations
+<li> <font color="#777777">monitor performance and "tune" the schema/operations</font>
+</ol>
+At some point, populate the database <small>(may be via interface)</small>
+<p>
+During the course, we consider these in the order 2, 4, 6, 7, 3
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Overview (ii) &#9826; [2/4]</div> <DIV class='slideCl1    ' id="s3"  >
+<div class='navCl1'><a href="#s2"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s4"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Database System Architecture</div></td><td align='right'></td></tr></table>
+<p>
+The typical environment for a modern DBMS is:
+<p><div align='center'>
+<img alt="[Diagram:Pics/intro/dbms-arch.png]" src="Pics/intro/dbms-arch.png">
+</div><p>
+<p>
+<small>SQL queries and results travel along the client<i>&harr;</i>server links</small>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Overview (ii) &#9826; [3/4]</div> <DIV class='slideCl1    ' id="s4"  >
+<div class='navCl1'><a href="#s3"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>   </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Database System Architecture <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<br>
+SQLite is not a client-server system:
+<p><br>
+<p><div align='center'>
+<img alt="[Diagram:Pics/intro/dbms-arch2.png]" src="Pics/intro/dbms-arch2.png">
+</div><p>
+<p><br>
+<small>
+Although it does have an API for use from programming languages.
+</small>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Overview (ii) &#9826; [4/4]</div><p><hr><p>
+<span style='font-size:11px;color: grey;'>Produced: 12 Sep 2020</span>
+ <script src='lib/prism.js'></script>   
+ <script src='lib/sg.js'></script>   
+</body>
+</html>

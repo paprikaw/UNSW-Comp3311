@@ -1,0 +1,2295 @@
+<title>Extending Relational Databases
+
+<slide>
+<heading>Limitations of Basic SQL
+What we have seen of SQL so far:
+<itemize>
+<item> data definition language
+	<~> <small>(<@>create table(...)</@>)</small>
+<item> constraints
+	<~> <small>(domain, key, referential integrity)</small>
+<item> query language
+	<~> <small>(<@>select...from...where...</@>)</small>
+<item> views
+	<~> <small>(give names to SQL queries)</small>
+</itemize>
+This is not sufficient to write complete applications.
+<p>
+More <em>extensibility</em> and <em>programmability</em> are needed.
+</slide>
+
+<slide>
+<heading>Extending SQL
+Ways in which standard SQL might be extended:
+<itemize>
+<item> new data types
+	<small>(incl. constraints, I/O, indexes, ...)</small>
+<item> object-orientation
+<item> more powerful constraint checking
+<item> packaging/parameterizing queries
+<item> more functions/aggregates for use in queries
+<item> event-based triggered actions 
+</itemize>
+All are required to assist in application development.
+</slide>
+
+<slide>
+<section>User-defined Data Types
+</slide>
+
+<slide>
+<heading>SQL Data Types
+SQL data definition language provides:
+<itemize>
+<item> atomic types: integer, float, character, boolean
+<item> ability to define tuple types <small>(<@>create table</@>)</small>
+</itemize>
+Other programming languages allow programmers add new types.
+<p>
+SQL also provides mechanisms to define new types:
+<itemize>
+<item> basic types: <@>CREATE DOMAIN ... AS</@> <$>BaseType</$> ...
+<item> enumerated types: <@>CREATE TYPE ... AS ENUM (</@> <$>Vals</$> <@>)</@>
+<item> tuple types: <@>CREATE TYPE ... AS (</@> <$>Attrs</$> <@>)</@>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Defining an atomic type <small>(as specialisation of existing type)</small>:
+<syntax>
+CREATE DOMAIN <$>DomainName</$> [AS] <$>DataType</$>
+[ DEFAULT <$>expression</$> ]
+[ CONSTRAINT <$>ConstrName</$> <$>constraint</$>]
+</syntax>
+Example:
+<program>
+create domain UnswCourseCode as text
+    check (value ~ '[A-Z]{4}[0-9]{4}');
+</program>
+which can then be used like other SQL atomic types, e.g.
+<program>
+create table Course (
+    id    integer,
+    code  UnswCourseCode,
+    ...
+);
+</program>
+</slide>
+
+<slide>
+<continued>
+Defining an enumerated type:
+<syntax>
+CREATE TYPE <$>TypeName</$> AS ENUM
+( <$>Str<sub>1</sub></$>, <$>Str<sub>2</sub></$>, ... <$>Str<sub>n</sub></$> )
+</syntax>
+Examples:
+<program>
+create type Color as enum
+    ('red','orange','yellow','green','blue','violet');
+
+create type Grade as enum
+    ('FL','PS','CR','DN','HD');
+</program>
+Note: defines values and an ordering on the values
+<p>
+e.g. <@>'FL' << 'PS' << 'CR' << 'DN' << 'HD'</@>
+</slide>
+
+<slide>
+<continued>
+Difference between domains and enumerated types:
+<program>
+create domain mood1 text
+   check (value in ('sad','ok','happy'));
+
+create type mood2 as enum ('sad','ok','happy');
+</program>
+Example:
+<program>
+select 'sad'::mood1 < 'happy'::mood1;
+</program>
+Returns false; values are compared as text strings.
+<program>
+select 'sad'::mood2 < 'happy'::mood2;
+</program>
+Returns true; values are compared as ordered enum constants.
+</slide>
+
+<slide>
+<continued>
+Defining a tuple type:
+<syntax>
+CREATE TYPE <$>TypeName</$> AS
+( <$>AttrName<sub>1</sub></$> <$>DataType<sub>1</sub></$>, <$>AttrName<sub>2</sub></$> <$>DataType<sub>2</sub></$>, ...)
+</syntax>
+Examples:
+<program>
+create type ComplexNumber as ( r float, i float );
+
+create type CourseInfo as (
+    course   UnswCourseCode,
+    syllabus text,
+    lecturer text
+);
+</program>
+If attributes need constraints, can be supplied by using a <@>DOMAIN</@>.
+</slide>
+
+<slide>
+<continued>
+Other ways that tuple types are defined in SQL:
+<itemize>
+<item> <@>CREATE TABLE</@> <$>T</$>
+	<~> <small>(effectively creates tuple type <$>T</$>)</small>
+<item> <@>CREATE VIEW</@> <$>V</$>
+	<~> <small>(effectively creates tuple type <$>V</$>)</small>
+</itemize>
+<p>
+<@>CREATE TYPE</@> is different from <@>CREATE TABLE</@>:
+<itemize>
+<item> does <b>not</b> create a new (empty) table
+<item> does <b>not</b> provide for key constraints
+<item> does <b>not</b> have explicit specification of domain constraints
+</itemize>
+The main use of tuple types: <br>
+as result types of functions that return tuples or sets.
+</slide>
+
+<slide>
+<continued>
+<@>CREATE TYPE</@> has one more very important use ...
+<p>
+For specifying full details of new (atomic) types:
+<itemize>
+<item> how to parse/display values of the type
+<item> converting external to internal representation
+<item> defining storage parameters for internal representation
+<item> function for statistical analysis of type (for query optimiser)
+</itemize>
+<small>
+See PostgreSQL Manual (e.g. SQL reference and Section 34.11) for details.
+</small>
+</slide>
+
+<slide>
+<section>Programming with SQL
+</slide>
+
+<slide>
+<heading>SQL as a Programming Language
+SQL is a powerful language for manipulating relational data.
+<p>
+But it is <em>not</em> a powerful <em>programming language</em>.
+<p>
+At some point in developing complete database applications
+<itemize>
+<item> we need to implement user interactions
+<item> we need to control sequences of database operations
+<item> we need to process query results in complex ways
+</itemize>
+and SQL cannot do any of these.
+<p>
+SQL cannot even do something as simple as factorial!
+<p>
+<small>
+Ok ... so PostgreSQL added a factorial operator ... but it's non-standard.
+</small>
+</slide>
+
+<slide>
+<heading>What's wrong with SQL?
+Consider the problem of withdrawal from a bank account:
+<p>
+<i>If a bank customer attempts to withdraw more funds than
+they have in their account, then indicate "Insufficient Funds",
+otherwise update the account</i>
+<p>
+An attempt to implement this in SQL:
+<sprogram>
+select 'Insufficient Funds'
+from   Accounts
+where  acctNo = <i>AcctNum</i> and balance << <i>Amount</i>;
+update Accounts
+set    balance = balance - <i>Amount</i>
+where  acctNo = <i>AcctNum</i> and balance >= <i>Amount</i>;
+select 'New balance: '||balance
+from   Accounts
+where  acctNo = <i>AcctNum</i>;
+</sprogram>
+</slide>
+
+<slide>
+<continued>
+Two possible evaluation scenarios:
+<itemize>
+<item> displays <q>Insufficient Funds</q>, <@>UPDATE</@> has no effect, displays unchanged balance
+<item> <@>UPDATE</@> occurs as required, displays changed balance
+</itemize>
+Some problems:
+<itemize>
+<sitem> SQL doesn't allow parameterisation (e.g. <i>AcctNum</i>)
+<sitem> always attempts <@>UPDATE</@>, even when it knows it's invalid
+<sitem> need to evaluate <@>(balance << </@><i>Amount</i><@>)</@> test twice
+<sitem> always displays balance, even when not changed
+</itemize>
+To accurately express the <q>business logic</q>,
+we need facilities like conditional execution and parameter passing.
+</slide>
+
+<slide>
+<heading>Database Programming
+Database programming requires a combination of
+<itemize>
+<item> manipulation of data in DB <~> <small>(via SQL)</small>
+<item> conventional programming <~> <small>(via procedural code)</small>
+</itemize>
+This combination is realised in a number of ways:
+<itemize>
+<item> passing SQL commands via a <q>call-level</q> interface <br>
+<small><gray>(prog lang is decoupled from DBMS; most flexible; e.g. Java/JDBC, PHP)</gray></small>
+<item> embedding SQL into augmented programming languages <br>
+<small><gray>(requires pre-processor for language; typically DBMS-specific; e.g. SQL/C)</gray></small>
+<item> special-purpose programming languages in the DBMS <br>
+<small><gray>(closely integrated with DBMS; enable extensibility; e.g. PL/SQL, PLpgSQL)</gray></small>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Combining <red>SQL</red> and <green>procedural</green> code solves the <q>withdrawal</q> problem:
+<sprogram>
+<green>create function
+    withdraw(<blue>acctNum</blue> text, <blue>amount</blue> integer) returns text
+declare bal integer;
+begin
+    set bal = (<red>select balance
+               from   Accounts
+               where  acctNo = <blue>acctNum</blue></red>);
+    if (bal << <blue>amount</blue>) then
+        return 'Insufficient Funds';
+    else
+        <red>update Accounts
+        set    balance = balance - <blue>amount</blue>
+        where  acctNo = <blue>acctNum</blue></red>;
+        set bal = (<red>select balance
+                   from   Accounts
+                   where  acctNo = <blue>acctNum</blue></red>);
+        return 'New Balance: ' || bal;
+    end if
+end;</green>
+</sprogram>
+<small>(This example is actually a stored procedure, using SQL/PSM syntax)</small>
+</slide>
+
+<slide>
+<section>Stored Procedures
+</slide>
+
+<slide>
+<heading>Stored Procedures
+<em>Stored procedures</em>
+<itemize>
+<sitem> procedures/functions that are stored in DB along with data
+<sitem> written in a language combining SQL and procedural ideas
+<sitem> provide a way to extend operations available in database
+<sitem> executed within the DBMS <~>
+	<small>(close coupling with query engine)</small>
+</itemize>
+Benefits of using stored procedures:
+<itemize>
+<sitem> code executed inside DBMS is fast with large data
+<sitem> user-defined functions can be nicely integrated with SQL
+<sitem> procedures are managed like other DBMS data <small>(ACID)</small>
+<sitem> procedures and the data they manipulate are held together
+</itemize>
+</slide>
+
+<slide>
+<heading>SQL/PSM
+SQL/PSM is a 1996 standard for SQL stored procedures. <br>
+<p>
+<small>(PSM = <b>P</b>ersistent <b>S</b>tored <b>M</b>odules)</small>
+<p>
+Syntax for PSM procedure/function definitions:
+<syntax>
+CREATE PROCEDURE <$>ProcName</$> ( <$>Params</$> )
+<red>[</red> <$>local</$> <$>declarations</$> <red>]</red>
+<$>procedure</$> <$>body</$> ;
+
+CREATE FUNCTION <$>FuncName</$> ( <$>Params</$> )
+RETURNS <$>Type</$>
+<red>[</red> <$>local</$> <$>declarations</$> <red>]</red>
+<$>function</$> <$>body</$> ;
+</syntax>
+Parameters have three modes: <~> <@>IN</@>, <~> <@>OUT</@>, <~> <@>INOUT</@>
+</slide>
+
+<slide>
+<continued>
+SQL/PSM Syntax:
+<syntax>
+BEGIN <$>statements</$> END;
+
+SET <$>var</$> = <$>expression</$>;
+<comment>-- where <$>expression</$> may be an SQL query</comment>
+
+IF <$>cond_1</$> THEN <$>statements_1</$>
+ELSIF <$>cond_2</$> THEN <$>statements_2</$>
+ELSE <$>statements_n</$>
+END IF;
+</syntax>
+</slide>
+
+<slide>
+<continued>
+More SQL/PSM syntax:
+<syntax>
+<$>LoopName</$>: LOOP
+    <$>statements</$>
+    LEAVE <$>LoopName</$>;
+    <$>more statements</$>
+END LOOP;
+
+WHILE <$>condition</$> DO
+    <$>statements</$>
+END WHILE;
+
+FOR <$>LoopName</$> AS <$>CursorName</$>
+    CURSOR FOR <$>Query</$> DO
+    <$>statements</$>
+END FOR;
+</syntax>
+</slide>
+
+<slide>
+<continued>
+<b>Example</b>: Find cost of Toohey's New beer at a specified bar
+<p>
+Default behaviour: return price charged for New at that bar.
+<program>
+function CostOfNew(string) returns float;
+</program>
+How to deal with the case: New is not sold at that bar?
+<itemize>
+<item> use exception-handling <small>(e.g. Java)</small>
+<item> return null or negative value to indicate error
+<item> return two values: price and/or status
+</itemize>
+In PSM, could use return-value <em>plus</em> <@>OUT</@>-mode parameter.
+</slide>
+
+<slide>
+<continued>
+Using a <@>NULL</@> return value ...
+<program>
+CREATE FUNCTION
+    CostOfNew(IN <blue>pub</blue> VARCHAR)
+    RETURNS FLOAT
+DECLARE cost FLOAT;
+BEGIN
+    SET cost = (SELECT price FROM Sells
+                WHERE  beer = 'New' and
+                       bar = <blue>pub</blue>);
+    <comment>-- cost is null if not sold in bar</comment>
+    RETURN cost;
+END;
+</program>
+</slide>
+
+<slide>
+<continued>
+How this function is used:
+<program>
+DECLARE myCost FLOAT;
+...
+SET myCost = CostOfNew('The Regent',ok);
+IF (myCost is not null) THEN
+    ... do something with the cost ...
+ELSE
+    ... handle not having a cost ...
+END IF;
+</program>
+</slide>
+
+<slide>
+<continued>
+Using an <@>OUT</@> parameter ...
+<program>
+CREATE FUNCTION
+    CostOfNew(IN <blue>pub</blue> VARCHAR,
+              OUT <green>status</green> BOOLEAN)
+    RETURNS FLOAT
+DECLARE cost FLOAT;
+BEGIN
+    SET cost = (SELECT price FROM Sells
+                WHERE  beer = 'New' and
+                       bar = <blue>pub</blue>);
+    SET <green>status</green> = (cost IS NOT NULL);
+    RETURN cost;
+END;
+</program>
+</slide>
+
+<slide>
+<continued>
+How this function is used:
+<program>
+DECLARE myCost FLOAT;
+DECLARE ok BOOLEAN;
+...
+SET myCost = CostOfNew('The Regent',ok);
+IF (ok) THEN
+    ... do something with the cost ...
+ELSE
+    ... handle not having a cost ...
+END IF;
+</program>
+</slide>
+
+<slide>
+<continued>
+<b>Example</b>: Find the sum of the first 100 integers.
+<p>
+Without using any functions at all:
+<program>
+DECLARE i integer;
+DECLARE sum integer;
+...
+SET sum = 0; SET i = 1;
+WHILE (i <= 100) DO
+    SET sum = sum + i;
+    SET i = i + 1;
+END WHILE;
+</program>
+</slide>
+
+<slide>
+<continued>
+Sum(100) using a regular function to add two numbers:
+<program>
+CREATE FUNCTION
+    add(IN a integer, IN b integer) RETURNS integer
+BEGIN
+    return a + b;
+END;
+</program>
+which would be used as:
+<program>
+WHILE (i < 20) DO
+    set sum = add(sum,i);
+    set i = i + 1;
+END WHILE;
+</program>
+</slide>
+
+<slide>
+<continued>
+Sum(100) using a procedure with an <@>INOUT</@> parameter:
+<program>
+CREATE PROCEDURE
+    accum(INOUT sum integer, IN val integer)
+BEGIN
+    set sum = sum + val;
+END;
+</program>
+which would be used as:
+<program>
+WHILE (i < 20) DO
+    accum(sum,i);
+    set i = i + 1;
+END WHILE;
+</program>
+</slide>
+
+<slide>
+<heading>PSM in Real DBMSs
+Unfortunately, the PSM standard was developed after most DBMSs
+had their own stored procedure language
+<p>
+<$><Rightarrow></$> no DBMS implements the PSM standard exactly.
+<p>
+IBM's DB2 and MySQL implement the SQL/PSM closely
+	<small>(but not exactly)</small>
+<p>
+Oracle's PL/SQL is moderately close to the SQL/PSM standard
+<small>
+<itemize>
+<sitem> syntax differences e.g. <@>EXIT</@> vs <@>LEAVE</@>, <~> <@>DECLARE</@> only needed once, ...
+<sitem> extra programming features e.g. packages, exceptions, input/output
+</itemize>
+</small>
+PostgreSQL's PLpgSQL is close to PL/SQL <small>(95% compatible)</small>
+<p>
+<small>
+<itemize>
+<sitem> has only functions (but can return <@>void</@>); limited exceptions; no i/o
+<sitem> PLpgSQL function bodies are defined within a string
+<sitem> PLpgSQL is just one of a number of languages for stored procedures
+</itemize>
+</small>
+</slide>
+
+<slide>
+<section>PLpgSQL
+<small>
+(PostgreSQL Manual: Chapter 38: PLpgSQL)
+</small>
+</slide>
+
+<slide>
+<heading>PLpgSQL
+<term>PLpgSQL</term> = <b>P</b>rocedural <b>L</b>anguage extensions to <b>P</b>ost<b>g</b>re<b>SQL</b>
+<p>
+A PostgreSQL-specific language integrating features of:
+<itemize>
+<item> procedural programming and SQL programming
+</itemize>
+Functions are stored in the database with the data.
+<p>
+Provides a means for <em>extending DBMS functionality</em>, e.g.
+<itemize>
+<sitem> implementing constraint checking <small>(triggered functions)</small>
+<sitem> complex query evaluation <small>(e.g. recursive)</small>
+<sitem> complex computation of column values
+<sitem> detailed control of displayed results
+</itemize>
+</slide>
+
+<slide>
+<continued>
+The PLpgSQL interpreter
+<itemize>
+<sitem> executes procedural code and manages variables
+<sitem> calls PostgreSQL engine to evaluate SQL statements
+</itemize>
+<diagram>Pic/engine.png
+</slide>
+
+<slide>
+<heading>Defining PLpgSQL Functions
+PLpgSQL functions are created (and inserted into db) via:
+<syntax>
+CREATE OR REPLACE
+   <navy><$>funcName</$>(<$>arg1type</$>, <$>arg2type</$>, ....)
+   RETURNS <$>rettype</$></navy>
+AS <green>'
+DECLARE
+   <$>variable</$> <$>declarations</$>
+BEGIN
+   <$>code</$> <$>for</$> <$>function</$>
+END;'</green> LANGUAGE plpgsql;
+</syntax>
+<p><br>
+Note: the entire function body is a single SQL string.
+</slide>
+
+<slide>
+<continued>
+Reasons for defining functions as strings:
+<itemize>
+<item> allows functions to be defined in different languages
+<item> simplifies the SQL parser
+</itemize>
+Problems with defining functions as strings:
+<itemize>
+<item> requires a change of <q>lexical level</q>
+<item> leads to complex, error-prone definitions like:
+<sprogram>
+create function Fun(name text) returns text
+as '
+begin  return ''It''''s fun, ''||name||''!'';  end;
+' language plpgsql;
+</sprogram>
+</itemize>
+<small>
+To fix the last problem, PostgreSQL 8 has introduced a new quoting
+mechanism, somewhat like <q>here-documents</q> in shell/Perl/PHP.
+</small>
+</slide>
+
+<slide>
+<continued>
+Comparison of old/new quoting mechanisms for functions:
+<program>
+<comment>-- old style quoting</comment>
+create function Fun(name text) returns text
+as '
+begin
+    return ''It''''s fun, ''||name||''!'';
+end;
+' language plpgsql;
+
+<comment>-- new style quoting</comment>
+create function Fun(name text) returns text
+as $$
+begin
+    return 'It''s fun, '||name||'!';
+end;
+$$ language plpgsql;
+</program>
+The <@>$$</@> may contain an embedded identifier
+	<small>(e.g. the function name)</small>.
+</slide>
+
+<slide>
+<continued>
+Solution to <q>withdrawal</q> problem in PLpgSQL:
+<program>
+CREATE OR REPLACE FUNCTION
+   withdraw(acctNum text, amount real) RETURNS text AS $$
+DECLARE
+   current REAL;  newbalance REAL;
+BEGIN
+   <red>SELECT <blue>INTO current</blue> balance
+   FROM Accounts WHERE  acctNo = acctNum;</blue>
+   IF (amount >> current) THEN
+      return 'Insufficient Funds';
+   ELSE
+      newbalance := current - amount;
+      <blue>UPDATE Accounts
+      SET    balance = newbalance
+      WHERE  acctNo = acctNum;</blue>
+      return 'New Balance: '||newbalance;
+   END IF;
+END;
+$$ LANGUAGE plpgsql;
+</program>
+</slide>
+
+<slide>
+<continued>
+If a PLpgSQL function definition is syntactically correct
+<itemize>
+<sitem> the function is stored in the database
+<sitem> but is not completely checked until executed
+</itemize>
+Common errors:
+<itemize>
+<item> using a variable with same name as some attribute <br>
+	<small>(the variable hides the attribute, so queries using the attribute fail <q>inexplicably</q>)</small>
+<item> forgetting to use <@>''</@> in body if using old-style quoting
+</itemize>
+Warning: PLpgSQL's error messages can sometimes be obscure.
+<p>
+<small>
+However, the PLpgSQL parser and error messages have improved
+<em>considerably</em> in recent versions.
+</small>
+</slide>
+
+<slide>
+<heading>PLpgSQL Function Parameters
+All parameters are passed by value in PLpgSQL.
+<p>
+Within a function, parameters can be referred to:
+<itemize>
+<item> using positional notation (<@>$1</@>, <@>$2</@>, ...)
+<item> via <em>aliases</em>, supplied either
+<itemize>
+<item> as part of the declarations
+	<~> <small>(e.g. <@>a alias for $1; b alias for $2)</@>)</small>
+<item> as part of the function header
+	<~> <small>(e.g. <@>f(a int, b int)</@>)</small>
+</itemize>
+</itemize>
+Nowadays, the last way is preferred <small>(i.e. like <q>normal</q> functions)</small>
+</slide>
+
+<slide>
+<continued>
+Example: a function to add two integers (old style)
+<program>
+CREATE OR REPLACE FUNCTION
+    <navy>add(int, int) RETURNS int</navy>
+AS '
+DECLARE
+    x alias for $1;  <comment>-- alias for parameter</comment>
+    y alias for $2;  <comment>-- alias for parameter</comment>
+    sum integer;     <comment>-- local variable</comment>
+BEGIN
+    sum := x + y;
+    return sum;      <comment>-- return result</comment>
+END;
+' LANGUAGE plpgsql;
+</program>
+<b>Beware:</b> do not ever give parameters the same names as attributes.
+</slide>
+
+<slide>
+<continued>
+Example: a function to add two integers (new style)
+<program>
+CREATE OR REPLACE FUNCTION
+    <navy>add(x int, y int) RETURNS int</navy>
+AS $add$
+DECLARE
+    sum integer;     <comment>-- local variable</comment>
+BEGIN
+    sum := x + y;
+    return sum;      <comment>-- return result</comment>
+END;
+$add$ LANGUAGE plpgsql;
+</program>
+<b>Beware:</b> do not ever give parameters the same names as attributes.
+</slide>
+
+<slide>
+<continued>
+Example: a function to add two values (polymorphic)
+<program>
+CREATE OR REPLACE FUNCTION
+    <navy>add(x anyelement, y anyelement) RETURNS anyelement</navy>
+AS $add$
+BEGIN
+    return x + y;
+END;
+$add$ LANGUAGE plpgsql;
+</program>
+Restrictions:
+<itemize>
+<item> requires <@>x</@> and <@>y</@> to have values of the same <q>add-able</q> type
+<item> does not allow definition of <@>sum anyelement</@> to hold result
+</itemize>
+</slide>
+
+<slide>
+<continued>
+PLpgSQL allows overloading <small>(i.e. same name, different arg types).</small>
+<p>
+Examples:
+<sprogram>
+CREATE FUNCTION add(int, int) RETURNS int AS
+$$ BEGIN return $1+$2; END; $$ LANGUAGE plpgsql;
+
+CREATE FUNCTION add(int, int, int) RETURNS int AS
+$$ BEGIN return $1+$2+$3; END; $$ LANGUAGE plpgsql;
+
+CREATE FUNCTION add(char(1), int) RETURNS int AS
+$$ BEGIN return ascii($1)+$2; END; $$ LANGUAGE plpgsql;
+</sprogram>
+But must differ in result types, so <b>cannot</b> also define:
+<sprogram>
+CREATE FUNCTION add(char(1), int) RETURNS char AS
+$$ BEGIN return chr(ascii($1)+$2); END; $$ LANGUAGE plpgsql;
+</sprogram>
+<small>
+i.e. cannot have two functions that look like <@>add(char(1),int)</code>.
+</small>
+</slide>
+
+<slide>
+<heading>Function Return Types
+A PostgreSQL function can return a value which is
+<itemize>
+<item> an atomic data type <~> (e.g. <@>integer, float, boolean, ...</@>)
+<item> a tuple <~> (e.g. table record type or tuple type)
+<item> a set of atomic values <~> (like a table column)
+<item> a set of tuples <~> (i.e. a table)
+</itemize>
+A function returning a set of tuples is similar to a view.
+</slide>
+
+<slide>
+<continued>
+Examples of different function return types:
+<program>
+create function factorial(int) returns int ...
+create function EmployeeOfMonth(date) returns Employee ...
+create function allSalaries() returns setof int ...
+create function OlderEmployees returns setof Employee
+</program>
+<small>
+The <@>OlderEmployees</@> function returns an instance of the <@>Employee</@> table.
+</small>
+<p>
+Functions can also return <q>generic</q> tuples:
+<program>
+create function f(int) returns setof record ...
+<comment>-- which is used as e.g.</comment>
+select * from f(3) as T(a integer, b float) where ...
+</program>
+<small>
+The last example says that <q>the call <@>f(3)</@> returns a table T(a,b)</q>.
+</small>
+</slide>
+
+<slide>
+<continued>
+Different kinds of functions are invoked in different ways:
+<itemize>
+<item> function fD() returning a single atomic data value
+<program>
+select fD();  <comment>-- like an attribute called fD</comment>
+</program>
+<item> function fT() returning a single tuple (record)
+<program>
+select fT();  <comment>-- like a (x,y,z) tuple-value</comment>
+select * from fT() ... <comment>-- like a 1-row table</comment>
+</program>
+<item> function fS() returning set of atomic values or records
+<program>
+select * from fS() ... <comment>-- like a table called fS</comment>
+</program>
+</itemize>
+</slide>
+
+<slide>
+<heading>Using PLpgSQL Functions
+PLpgSQL functions can be invoked in several contexts:
+<itemize>
+<item> as part of a <@>SELECT</@> statement
+<program>
+select <blue>myFunction</blue>(arg1,arg2);
+select * from <blue>myTableFunction</blue>(arg1,arg2);
+</program>
+<small>(either on the command line or within another PLpgSQL function)</small>
+<item> as part of the execution of another PLpgSQL function
+<program>
+PERFORM <blue>myVoidFunction</blue>(arg1,arg2);
+result := <blue>myOtherFunction</blue>(arg1);
+</program>
+<item> automatically, via an insert/delete/update trigger
+<program>
+create trigger T before update on R
+  for each row execute procedure <blue>myCheck</blue>();
+</program>
+</itemize>
+</slide>
+
+<slide>
+<heading>What's Wrong with PLpgSQL?
+Some things to beware of:
+<itemize>
+<item> doesn't provide any i/o facilities  <~> <small>(except <@>RAISE NOTICE</@>)</small>
+<small>
+<itemize>
+<item> the aim is to build computations on tables that SQL alone can't do
+</itemize>
+</small>
+<item> functions are not syntax-checked when loaded into DB
+<item> error messages are sometimes not particularly helpful
+</itemize>
+<vspace 2>
+Summary: debugging PLpgSQL can sometimes be tricky.
+</slide>
+
+<slide>
+<continued>
+Some other <q>deficiencies</q>, compared to Oracle's PL/SQL
+<itemize>
+<sitem> no fine-grained transaction control within functions
+<small>
+<itemize>
+<sitem> deliberate design decision to simplify PostgreSQL functions
+<sitem> each function executes as part of a single transaction
+</itemize>
+</small>
+<item> functions are defined as strings
+<small>
+<itemize>
+<sitem> change of <q>lexical scope</q> can sometimes be confusing
+</itemize>
+</small>
+<item> (slightly) less powerful exception handling mechanism
+<small>
+<itemize>
+<sitem> can <@>RAISE</@> exception to abort function/transaction
+<sitem> can also use <@>RAISE</@> to report problems and continue
+</itemize>
+</small>
+</itemize>
+<small>
+Nowadays, PLpgSQL has almost the same syntax as PL/SQL.
+</small>
+</slide>
+
+<slide>
+<heading>Data Types
+PLpgSQL constants and variables can be defined using:
+<itemize>
+<item> standard SQL data types <~> <small>(<@>CHAR, DATE, NUMBER, ...</@>)</small>
+<item> user-defined PostgreSQL data types <~> <small>(e.g. <@>Point</@>)</small>
+<item> a special structured record type <~> <small>(<@>RECORD</@>)</small>
+<item> table-row types <~> <small>(e.g. <@>Branches%ROWTYPE</@>)</small>
+<item> types of existing variables <~> <small>(e.g. <@>Branches.location%TYPE</@>)</small>
+</itemize>
+There is also a <@>CURSOR</@> type for interacting with SQL.
+</slide>
+
+<slide>
+<continued>
+Record variables are defined:
+<itemize>
+<item> using a <q>placeholder</q> <@>RECORD</@> type, <small>e.g.</small>
+<program>
+account RECORD;
+</program>
+<small>(the actual type is fixed when the variable is bound to a query)</small>
+<p>
+<item> by deriving a type from an existing database table, <small>e.g.</small>
+<program>
+account <red>Accounts%ROWTYPE;</red>
+</program>
+<item> as aliases for <q>tuple type</q> parameters, <small>e.g.</small>
+<program>
+CREATE FUNCTION summary(<red>Accounts</red>)
+RETURNS integer AS '
+DECLARE account alias for $1 ...
+</program>
+</itemize>
+<small>
+Record components referenced via attribute name <~> e.g. <@>account.branchName</@>
+</small>
+</slide>
+
+<slide>
+<continued>
+Variables can also be defined in terms of:
+<itemize>
+<item> the type of an existing variable or table column
+<item> the type of an existing table row (implict <@>RECORD</@> type)
+</itemize>
+<b>Examples:</b>
+<program>
+quantity    INTEGER;
+start_qty   quantity%TYPE;
+
+employee    Employees%ROWTYPE;
+
+name        Employees.name%TYPE;
+</program>
+</slide>
+
+<slide>
+<heading>Syntax/Control Structures
+A standard assignment operator is available:
+<deftable>
+<row>
+<col1>Assignment</col1>
+<col2> <$>var</$> <@>:=</@> <$>expr</$> <br> <@>SELECT</@> <$>expr</$> <@>INTO</@> <$>var</$> </col2>
+</row>
+<row>
+<col1>Selection</col1>
+<col2>
+<syntax>
+IF <$>C<sub>1</sub></$> THEN <$>S<sub>1</sub></$>
+ELSIF <$>C<sub>2</sub></$> THEN <$>S<sub>2</sub></$> ...
+ELSE <$>S</$> END IF
+</syntax>
+</col2>
+</row>
+<row>
+<col1>Iteration</col1>
+<col2>
+<syntax>
+LOOP <$>S</$> END LOOP
+WHILE <$>C</$> LOOP <$>S</$> END LOOP
+FOR <$>rec_var</$> IN <$>Query</$> LOOP ...
+FOR <$>int_var</$> IN <$>lo</$>..<$>hi</$> LOOP ...
+</syntax>
+</col2>
+</row>
+</deftable>
+</slide>
+
+<slide>
+<heading>SELECT...INTO
+Can capture query results via:
+<syntax>
+SELECT <$>Exp<sub>1</sub></$>,<$>Exp<sub>2</sub></$>,...,<$>Exp<sub>n</sub></$>
+INTO   <$>Var<sub>1</sub></$>,<$>Var<sub>2</sub></$>,...,<$>Var<sub>n</sub></$>
+FROM   <$>TableList</$>
+WHERE  <$>Condition</$> ...
+</syntax>
+The semantics:
+<itemize>
+<item> execute the query as usual
+<item> return <q>projection list</q> (<$>Exp<sub>1</sub></$>,<$>Exp<sub>2</sub></$>,...) as usual
+<item> assign each <$>Exp<sub>i</sub></$> to corresponding <$>Var<sub>i</sub></$>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Assigning a simple value via <@>SELECT...INTO</@>:
+<program>
+<comment>-- cost is local var, price is attr</comment>
+SELECT price INTO cost
+FROM   StockList
+WHERE  item = 'Cricket Bat';
+cost := cost * (1+tax_rate);
+total := total + cost;
+</program>
+The current PostgreSQL parser also allows this syntax:
+<program>
+SELECT INTO cost price
+FROM   StockList
+WHERE  item = 'Cricket Bat';
+</program>
+</slide>
+
+<slide>
+<continued>
+Assigning whole rows via <@>SELECT...INTO</@>:
+<program>
+DECLARE
+   emp    Employees%ROWTYPE;
+   eName  text;
+   pay    real;
+BEGIN
+   SELECT * INTO emp
+   FROM Employees WHERE id = 966543;
+   eName := emp.name;
+   ...
+   SELECT name,salary INTO eName,pay
+   FROM Employees WHERE id = 966543;
+END;
+</program>
+</slide>
+
+<slide>
+<continued>
+In the case of a PLpgSQL statement like
+<program>
+select a into b from R where ...
+</program>
+If the selection returns no tuples
+<itemize>
+<item> the variable <@>b</@> gets the value <@>NULL</@>
+</itemize>
+If the selection returns multiple tuples
+<itemize>
+<item> the variable <@>b</@> gets the value from the first tuple
+</itemize>
+</slide>
+
+<slide>
+<continued>
+If the above behaviour is too <q>generous</q>, try:
+<program>
+select a into <blue>strict</blue> b from R where ...
+</program>
+If the selection returns no tuples
+<itemize>
+<item> the exception <@>NO_DATA_FOUND</@> is thrown
+</itemize>
+If the selection returns multiple tuples
+<itemize>
+<item> the exception <@>TOO_MANY_ROWS</@> is thrown
+</itemize>
+This behaviour matches Oracle's default behaviour.
+</slide>
+
+<slide>
+<continued>
+An alternative way of tracking <@>NO_DATA_FOUND</@> ...
+<p>
+Use the special variable <@>FOUND</@> ...
+<itemize>
+<item> local to each function, set false at start of function
+<item> set true if a <@>SELECT</@> finds at least one tuple
+<item> set true if <@>INSERT/DELETE/UPDATE</@> affects at least one tuple
+<item> otherwise, remains as <@>FALSE</@>
+</itemize>
+Example of use:
+<program>
+select a into b from R where ...
+if (not found) then
+    <comment>-- handle case where no matching tuples b</comment>
+</program>
+</slide>
+
+<slide>
+<heading>INSERT ... RETURNING
+Can capture values from tuples inserted into DB:
+<syntax>
+INSERT INTO <$>Table(...)</$> VALUES
+(<$>Val<sub>1</sub></$>, <$>Val<sub>2</sub></$>, ... <$>Val<sub>n</sub></$>)
+RETURNING <$>ProjectionList</$> INTO <$>VarList</$>
+</syntax>
+Useful for recording id values generated for <@>serial</@> PKs:
+<program>
+declare newid integer;
+...
+insert into T(id,a,b,c) values (default,2,3,'red')
+returning id into newid;
+<comment>-- which used to be done as ...</comment>
+select nextval('T_id_seq') into newid;
+insert into T(id,a,b,c) values(newid,2,3,'red');
+</program>
+</slide>
+
+<slide>
+<heading>Exceptions
+PostgreSQL 8 introduced execption handling to PLpgSQL:
+<syntax>
+BEGIN
+    <$>Statements...</$>
+EXCEPTION
+    WHEN <$>Exceptions<sub>1</sub></$> THEN
+        <$>StatementsForHandler<sub>1</sub></$>
+    WHEN <$>Exceptions<sub>2</sub></$> THEN
+        <$>StatementsForHandler<sub>2</sub></$>
+    ...
+END;
+</syntax>
+Each <$>Exceptions<sub>i</sub></$> is an <@>OR</@> list of exception names, e.g.
+<program>
+division_by_zero OR  floating_point_exception OR ...
+</program>
+A list of exceptions is in Appendix A of the PostgreSQL Manual.
+</slide>
+
+<slide>
+<continued>
+When an exception occurs:
+<itemize>
+<item> control is transferred to the relevant exception handling code
+<item> all database changes so far in this transaction are undone
+<item> all function variables retain their current values
+<item> handler executes and then transaction aborts <small>(and function exits)</small>
+</itemize>
+If no handler at given scoping level, exception passed to next outer level.
+<p>
+Default exception handlers at outermost level simply exit and log error.
+</slide>
+
+<slide>
+<continued>
+Example of exception handling:
+<program>
+<comment>-- table T contains one tuple ('Tom','Jones')</comment>
+declare
+    x integer := 3;
+begin
+    update T set firstname = 'Joe' where lastname = 'Jones';
+    <comment>-- table T now contains ('Joe','Jones')</comment>
+    x := x + 1;
+    y := x / 0;
+exception
+    when division_by_zero then
+        <comment>-- update on T is rolled back to ('Tom','Jones')</comment>
+        raise notice 'caught division_by_zero';
+        return x;
+        <comment>-- value returned is 4</comment>
+end;
+</program>
+</slide>
+
+<slide>
+<continued>
+The <@>RAISE</@> operator generates server log entries, <small>e.g.</small>
+<program>
+RAISE DEBUG 'Simple message';
+RAISE NOTICE 'User = %',user_id;
+RAISE EXCEPTION 'Fatal: value was %',value;
+</program>
+There are several levels of severity:
+<itemize>
+<item> <@>DEBUG</@>, <@>LOG</@>, <@>INFO</@>, <@>NOTICE</@>, <@>WARNING</@>, and <@>EXCEPTION</@>
+<item> not all severities generate a message to the client
+</itemize>
+<@>RAISE EXCEPTION</@> also generates a <@>RAISE_EXCEPTION</@> exception.
+<p>
+<small>
+The server log for your PostgreSQL server is located in /srvr/<i>YOU</i>/pgsql823/logfile
+</small>
+</slide>
+
+<slide>
+<heading>Cursors
+A <em>cursor</em> is a variable that can be used to access
+the result of a particular SQL query.
+<p>
+<diagram>Pic/cursor.png
+<p>
+Cursors move sequentially from row to row
+<~> <small>(cf. file pointers in C)</small>.
+</slide>
+
+<slide>
+<continued>
+Simplest way to use cursors: implicitly via <@>FOR...IN</@>
+<p>
+Requires: <@>RECORD</@> variable or <$>Table</$><@>%ROWTYPE</@> variable
+<p>
+Example:
+<program>
+CREATE FUNCTION totsal() RETURNS REAL AS $$
+DECLARE
+   emp RECORD;   total REAL := 0;
+BEGIN
+   FOR emp IN SELECT * FROM Employees
+   LOOP
+      total := total + emp.salary;
+   END LOOP;
+   return total;
+END; $$ LANGUAGE plpgsql;
+</program>
+This style accounts for 95% of cursor usage.
+</slide>
+
+<slide>
+<continued>
+Sidetrack ...
+<p>
+Of course, the previous example would be better done as:
+<program>
+CREATE FUNCTION totsal() RETURNS REAL AS $$
+DECLARE
+   total REAL;
+BEGIN
+   SELECT sum(salary) INTO total FROM Employees;
+   return total;
+END;$$ LANGUAGE plpgsql;
+</program>
+<small>
+The iteration/summation can be done much more efficiently as an aggregation.
+</small>
+</slide>
+
+<slide>
+<continued>
+Sidetrack ... <small>(cont.)</small>
+<p>
+It could also be done as a view:
+<program>
+CREATE VIEW totsalView AS
+SELECT sum(salary) INTO total FROM Employees;
+</program>
+But note the different usage:
+<program>
+<comment>-- Which departments have a budget 
+-- greater than the total salary bill?</comment>
+SELECT d.name FROM Department
+WHERE d.budget > totsal();
+<comment>-- versus</comment>
+SELECT d.name FROM Department
+WHERE d.budget > (SELECT * FROM totsalView);
+</program>
+</slide>
+
+<slide>
+<continued>
+Basic operations on cursors: <@>OPEN</@>, <@>FETCH</@>, <@>CLOSE</@>:
+<program>
+<comment>-- assume ... e CURSOR FOR SELECT * FROM Employees;</comment>
+<blue>OPEN</blue> e;
+LOOP
+   <blue>FETCH</blue> e INTO emp;
+   EXIT WHEN NOT <blue>FOUND</blue>;
+   total := total + emp.salary;
+END LOOP;
+<blue>CLOSE</blue> e;
+...
+</program>
+The <@>FETCH</@> operation can also extract components of a row:
+<program>
+FETCH e INTO my_id, my_name, my_salary;
+</program>
+<small>
+There must be one variable, of the correct type, for each column
+in the result.
+</small>
+<p>
+Note: low-level cursor operations are rarely used in practice.
+</slide>
+
+<slide>
+<continued>
+Ways to declare cursors:
+<program>
+DECLARE
+   a REFCURSOR;   <comment>-- unbound cursor</comment>
+   b CURSOR FOR   <comment>-- bound cursor</comment>
+     SELECT * FROM Emp WHERE salary > $1;
+   <comment>-- parameterised cursor</comment>
+   c CURSOR (base real) IS
+     SELECT * FROM Emp WHERE salary > base;
+BEGIN
+   <comment>-- all access the same result set</comment>
+   OPEN a FOR SELECT * FROM Emp WHERE salary > $1;
+   OPEN b;
+   OPEN c($1);
+   ...
+END;
+</program>
+</slide>
+
+<slide>
+<heading>Dynamically Generated Queries
+<@>EXECUTE</@> takes a string and executes it as an SQL query.
+<p>
+Examples:
+<program>
+EXECUTE 'SELECT * FROM Employees';
+EXECUTE 'SELECT * FROM '||'Employees';
+EXECUTE 'SELECT * FROM '||quote_ident($1);
+EXECUTE 'DELETE FROM Accounts '||
+        'WHERE holder='||quote_literal($1);
+</program>
+<@>EXECUTE</@> <$>string</$> can be used in any context
+where the query <$>string</$> could have been used.
+<p>
+This mechanism allows us to <em>construct</em> queries <q>on the fly</q>.
+</slide>
+
+<slide>
+<continued>
+Example: a wrapper for updating a single text field
+<sprogram>
+CREATE OR REPLACE FUNCTION set(TEXT,TEXT,TEXT) RETURNS INT
+AS $$
+DECLARE
+   theTable alias for $1;  theField alias for $2;
+   theValue alias for $3;  query TEXT;
+BEGIN
+   query := 'UPDATE ' || quote_ident(theTable);
+   query := query || ' SET ' || quote_ident(theField);
+   query := query || ' = ' || quote_literal(theValue);
+   EXECUTE query;
+   RETURN NULL;
+END; $$ LANGUAGE plpgsql;
+</sprogram>
+which could be used as e.g.
+<sprogram>
+SELECT set('branches','address','Beach St.');
+</sprogram>
+</slide>
+
+<slide>
+<continued>
+One limitation of <@>EXECUTE</@>:
+<itemize>
+<item> cannot use <@>SELECT INTO</@> in dynamic queries
+</itemize>
+Needs to be expressed instead as:
+<program>
+tuple R%rowtype; n int;
+EXECUTE 'select * from R where id='||n INTO tuple;
+<comment>-- or</comment>
+x int; y int; z text;
+EXECUTE 'select a,b,c from R where id='||n INTO x,y,z;
+</program>
+<small>
+Notes:
+<itemize>
+<sitem> if query returns multiple tuples, first one is stored
+<sitem> if query returns zero tuples, all nulls are stored
+</itemize>
+</small>
+</slide>
+
+<slide>
+<heading>Functions Returning Tables
+PLpgSQL functions can return tables by using a return type
+<syntax>
+CREATE OR REPLACE
+   <$>funcName</$>(<$>arg1type</$>, <$>arg2type</$>, ....)
+   RETURNS SETOF <$>rowType</$>
+</syntax>
+Example:
+<sprogram>
+CREATE OR REPLACE FUNCTION
+   valuableEmployees(REAL) RETURNS SETOF Employees
+AS $$
+DECLARE
+   e RECORD;
+BEGIN
+   FOR e IN SELECT * FROM Employees WHERE salary >> $1
+   LOOP
+      <blue>RETURN NEXT</blue> e;  <comment>-- accumulates tuples</comment>
+   END LOOP;
+   <blue>RETURN</blue>;  <comment>-- returns accumulated tuples</comment>
+END; $$ language plpgsql;
+</sprogram>
+</slide>
+
+<slide>
+<continued>
+Functions returning <@>SETOF </@><$>rowType</$> are used like tables.
+<p>
+Example:
+<sprogram>
+select * from valuableEmployees(50000);
+ id |  name  | salary 
+----+--------+--------
+  1 | David  |  75000
+  2 | John   |  70000
+  3 | Andrew |  75000
+  4 | Peter  |  55000
+  8 | Wendy  |  60000
+(5 rows)
+</sprogram>
+<@>SETOF</@> functions look similar to parameterised views.
+</slide>
+
+<slide>
+<continued>
+A difference between views and functions returning a <@>SETOF</@>:
+<itemize>
+<item> <@>CREATE VIEW</@> produces a <q>virtual</q> table definition <br>
+	<small>(table definitions induce a row type with same name as table e.g. <@>Accounts</@>)</small>
+<item> <@>SETOF</@> functions require an existing tuple type
+</itemize>
+In examples above, we used existing <@>Employees</@> tuple type.
+<p>
+In general, you need to define the tuple return type via
+<syntax>
+CREATE TYPE <$>NewTupleType</$> AS (
+    <$>attr<sub>1</sub></$>  <$>type<sub>1</sub></$>,
+    <$>attr<sub>2</sub></$>  <$>type<sub>2</sub></$>,
+    ...
+    <$>attr<sub>n</sub></$>  <$>type<sub>n</sub></$>
+);
+</syntax>
+</slide>
+
+<slide>
+<continued>
+Example of using tuple types ... valuableEmployees() revisited:
+<sprogram>
+CREATE TYPE <blue>EmpInfo</blue> as
+   name  varchar(50),
+   pay   integer
+);
+CREATE OR REPLACE FUNCTION
+   valuableEmployees(REAL) RETURNS SETOF <blue>EmpInfo</blue>
+AS $$
+DECLARE
+   emp RECORD;
+   inf <green>EmpInfo%ROWTYPE</green>;
+BEGIN
+   FOR emp IN SELECT * FROM Employees WHERE salary >> $1
+   LOOP
+      inf.name := emp.name;  inf.pay = emp.salary;
+      RETURN NEXT inf;  <comment>-- accumulates tuples</comment>
+   END LOOP;
+   RETURN;  <comment>-- returns accumulated tuples</comment>
+END; $$ LANGUAGE plpgsql;
+</sprogram>
+</slide>
+
+<slide>
+<heading>SQL Functions
+PostgreSQL functions require you to specify a language.
+<p>
+In our examples, we have used primarily PLpgSQL.
+<p>
+Other PostgreSQL function languages: SQL, Tcl, Perl, ...
+<p>
+SQL functions provide a mechanism for parameterised views.
+</slide>
+
+<slide>
+<continued>
+Recall the <@>ValuableEmployees</@> example from above.
+<p>
+If we know that the minimum salary for a valuable employee
+will always be <dollar>50,000, we can solve the problem very simply as:
+<program>
+create or replace view ValuableEmployees as
+select * from Employees where salary >> 50000;
+</program>
+</slide>
+
+<slide>
+<continued>
+If we want to allow minimum valuable salary to change,
+we need a way of replacing <dollar>50,000 by a supplied value.
+<p>
+SQL functions provide a simple mechanism for this:
+<program>
+create or replace function
+    ValuableEmployees(integer) returns setof Employees
+as $$
+select * from Employees where salary >> $1
+$$ language sql;
+</program>
+</slide>
+
+<slide>
+<continued>
+Differences between SQL and PLpSQL functions
+<itemize>
+<item> SQL function bodies are a single SQL statement
+<item> SQL functions cannot use named parameters <br>
+	<small>(required to use positional parameter notation: <dollar>1, <dollar>2, <dollar>3)</small>
+<item> SQL functions have no <@>RETURN</@> <br>
+	<small>(their result is the result of the SQL statement)</small>
+<item> return types can be atomic, tuple, or <@>setof</@> tuples
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Comparison of SQL and PLpgSQL functions:
+<sprogram>
+create function add(int,int) returns int
+as $$ begin return ($1 + $2); end;
+$$ language plpgsql;
+
+create function add(int,int) returns int
+as $$ select $1 + $2 $$ language sql;
+
+create function fac(n int) returns int
+as $$
+begin
+    if (n = 0) then return 1;
+    else return n * fac(n-1);
+    end if;
+end;
+$$ language plpgsql;
+
+create function fac(int) returns int
+as $$
+   select case when $1 = 0 then 1
+          else $1 * fac($1-1) end
+$$ language sql;
+</sprogram>
+</slide>
+
+
+<slide>
+<continued>
+More comparison of SQL and PLpgSQL functions:
+<sprogram>
+create or replace function
+   valuableEmployees(REAL) returns setof Employees
+as $$
+    select * from Employees where salary >> $1
+$$ language sql;
+
+create or replace function
+   valuableEmployees(REAL) returns setof Employees
+as $$
+declare
+   e record;
+begin
+   for e in select * from Employees where salary >> $1
+   loop  return next e;  end loop;
+   return;
+end; $$ language plpgsql;
+</sprogram>
+</slide>
+
+<slide>
+<heading>Extra Thoughts on Functions
+PostgreSQL provides a variety of abstraction mechanisms.
+<p>
+Always try to define <q>functions</q> as simply as possible.
+<p>
+E.g.
+<itemize>
+<sitem> best defined as view? SQL function? PLpgSQL function?
+<sitem> if PLpgSQL, do we need explicit cursor or is <@>FOR</@> loop ok?
+<sitem> do we need to dynamically construct a query string?
+<sitem> or can we simply use substitution of parameter values?
+</itemize>
+</slide>
+
+<slide>
+<heading>Further Examples
+More examples of PLpgSQL procedures may be found in
+<itemize>
+<item> the PostgreSQL documentation
+<p>
+/home/cs3311/web/08s1/doc/pgsql830/plpgsql.html
+<item> the PostgreSQL distribution
+<p>
+/home/jas/systems/postgresql-8.2.3/src/test/regress/sql/plpgsql.sql
+<item> the OpenACS system (web content management)
+<p>
+/home/jas/systems/openacs-3.2.5/www/doc/sql
+<small>(OpenACS makes extensive use of stored procedures and triggers)</small>
+</itemize>
+</slide>
+
+<slide>
+<section>User-defined Aggregates
+</slide>
+
+<slide>
+<heading>Aggregates
+Aggregates reduce a collection of values into a single result.
+<p>
+Examples:
+	<~> <@>count(</@><$>Tuples</$><@>)</@>,
+	<~> <@>sum(</@><$>Numbers</$><@>)</@>,
+	<~> <@>avg(</@><$>Numbers</$><@>)</@>, <~> etc.
+<p>
+The action of an aggregate function can be viewed as:
+<program>
+AggState = initial state
+for each item V {
+    <comment># incorporate V into AggState</comment>
+    AggState = newState(AggState, V)
+}
+return final(AggState)
+</program>
+</slide>
+
+<slide>
+<continued>
+Defining a new aggregate in PostgreSQL requires:
+<itemize>
+<item> description of the input (base) item type
+<item> description of the state type
+<item> value(s) for the initial state
+<item> state transition function
+<item> function to compute result from final state <small>(optional)</small>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+New aggregates defined using <@>CREATE AGGREGATE</@> statement:
+<syntax>
+CREATE AGGREGATE <$>AggName</$> (
+    basetype  = <$>BaseType</$>,
+    stype     = <$>StateType</$>,
+    initcond  = <$>InitialValue</$>,
+    sfunc     = <$>NewStateFunction</$>,
+    finalfunc = <$>FinalResFunction</$>
+);
+</syntax>
+<@>initcond</@> is optional; defaults to <@>NULL</@> <br>
+<@>finalfunc</@> is optional; defaults to identity function
+</slide>
+
+<slide>
+<continued>
+The state transition function always has type:
+<syntax>
+function newState(<$>StateType</$>,<$>BaseType</$>) returns <$>StateType</$>
+</syntax>
+The final function always has type
+<syntax>
+function finalValue(<$>StateType</$>) returns <$>ResultType</$>
+</syntax>
+<$>ResultType</$> may be the same as the <$>StateType</$> <br>
+or may be a component of the <$>StateType</$>
+</slide>
+
+<slide>
+<continued>
+Example: <@>sum2</@> sums two columns of integers
+<sprogram>
+create type IntPair as (x int, y int);
+
+create function
+    AddPair(sum int, p IntPair) returns int
+as $$
+begin return p.x+p.y+sum; end;
+$$ language plpgsql;
+
+create aggregate sum2 (
+    basetype  = IntPair,
+    stype     = int,
+    initcond  = 0,
+    sfunc     = AddPair
+);
+</sprogram>
+</slide>
+
+<slide>
+<heading>Constraints and Assertions
+</slide>
+
+<slide>
+<heading>Constraints
+So far, we have considered several kinds of constraints:
+<itemize>
+<item> <blue>attribute</blue> (column) constraints
+<item> <brown>tuple</brown> (row) constraints
+<item> <red>relation</red> (table) constraints
+<item> <green>referential integrity</green> constraints
+</itemize>
+Examples:
+<sprogram>
+create table Employee (
+   id      <blue>integer</blue> <red>primary key</red>,
+   name    <blue>varchar(40)</blue>,
+   salary  <blue>real</blue>,
+   age     <blue>integer check (age > 15)</blue>,
+   worksIn <blue>integer</blue>
+              <green>references Department(id)</green>,
+   <brown>constraint PayOk check (salary > age*1000)</brown>
+);
+</sprogram>
+</slide>
+
+<slide>
+<heading>An Aside on Constraints
+When discussing SQL DDL, we indicated that attribute
+constraints could not involve queries on other tables.
+<p>
+E.g. it is not possible to specify something like:
+<program>
+create table R (x integer, y integer);
+create table S (
+    a integer check (a > (select max(x) from R)),
+    b integer check (b not in (select y from R))
+);
+</program>
+</slide>
+
+<slide>
+<continued>
+In fact, it is possible to implement arbitrary constraints
+<itemize>
+<sitem> define a function returning boolean
+<sitem> pass the attribute(s) to be checked as parameters
+<sitem> perform arbitrary checks in the function
+</itemize>
+Example:
+<program>
+create table R (x integer, y integer);
+create table S (
+    a integer check (biggerThanX(a)),
+    b integer check (notInY(b))
+);
+</program>
+</slide>
+
+<slide>
+<continued>
+Where <@>biggerThanX</@> and <@>notInY</@> are defined as:
+<sprogram>
+create function biggerThanX(a integer) returns boolean
+as $$
+declare mx integer;
+begin
+    select max(x) into mx from R;
+    return (a > mx);
+end;
+$$ language plpgsql;
+
+create function notInY(b integer) returns boolean
+as $$
+begin
+    select * from R where y = b;
+    return (not FOUND);
+end;
+$$ language plpgsql;
+</sprogram>
+</slide>
+
+<slide>
+<heading>Assertions
+Column and table constraints ensure validity of one table.
+<p>
+RI constraints ensure connections between tables are valid.
+<p>
+In order to specify the conditions for validity of an entire database,
+we need to to be able to express more complex multi-table constraints.
+<p>
+Simple example:
+<sprogram>
+for all Branches b
+    b.assets = (select sum(acct.balance)
+                from   Accounts acct
+                where  acct.branch = b.location)
+</sprogram>
+<small>
+i.e. the assets of a branch is the sum of balances of accounts held at that branch
+</small>
+</slide>
+
+<slide>
+<continued>
+<em>Assertions</em> are schema-level constraints
+<itemize>
+<item> typically involving multiple tables
+<item> expressing a condition that must hold at all times
+<item> need to be checked for each update on relevant tables
+<item> cause update to be rejected if check fails
+</itemize>
+Usage:
+<syntax>
+CREATE ASSERTION <$>name</$> CHECK (<$>condition</$>)
+</syntax>
+</slide>
+
+<slide>
+<continued>
+<b>Example:</b> <small>no course at UNSW is allowed more than 999 enrolments</small>
+<sprogram>
+create assertion ClassSizeConstraint check (
+    not exists (
+        select c.id from Course c, Enrolment e
+        where  c.id = e.course
+        group  by c.id
+        having count(e.student) >> 999
+    )
+)
+</sprogram>
+Needs to be checked
+<itemize>
+<item> after each change to <@>Enrolment</@>
+	<~> <small>(changes to <@>Course</@>?)</small>
+<item> however the change occurs
+	<~> <small>(e.g explicit insert,cascaded delete,...)</small>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+<b>Example:</b> <small>the assets of a bank branch are the sum of its account balances</small>
+<sprogram>
+create assertion AssetsCheck check (
+    not exists (
+        select branchName from Branch b
+        where  b.assets <>
+               (select sum(a.balance) from Accounts a
+                         where a.branch = b.location)
+    )
+)
+</sprogram>
+Needs to be checked
+<itemize>
+<item> after each change to <@>Branch</@> or <@>Account</@>
+</itemize>
+<small>
+In this example, it might be more useful if we could <i>force</i> this condition to hold after account updates.
+</small>
+</slide>
+
+<slide>
+<continued>
+On each update, it is expensive
+<itemize>
+<item> to determine which assertions need to be checked
+<item> to run the queries which check the assertions
+</itemize>
+A database with many assertions would be <b>very</b> slow.
+<p>
+So, most RDBMSs do not implement general assertions.
+<p>
+<em>Triggers</em> are provided as
+<itemize>
+<item> a lightweight mechanism for dealing with assertions
+<item> a general event-based programming tool for databases
+</itemize>
+</slide>
+
+<slide>
+<heading>Triggers
+</slide>
+
+<slide>
+<heading>Triggers
+<em>Triggers</em> are
+<itemize>
+<item> procedures stored in the database
+<item> activated in response to database events
+	<~> <small>(e.g.updates)</small>
+</itemize>
+<em>Active databases</em> = databases using triggers extensively.
+<p>
+Examples of uses for triggers:
+<itemize>
+<item> checking schema-level constraints on update
+<item> maintaining summary data 
+<item> performing multi-table updates <small>(to maintain assertions)</small>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Triggers provide event-condition-action (ECA) programming:
+<itemize>
+<item> an <em>event</em> activates the trigger
+<item> on activation, the trigger checks a <em>condition</em>
+<item> if the condition holds, a procedure is executed
+	<small>(the <em>action</em>)</small>
+</itemize>
+<small>
+Some typical variations on this:
+<itemize>
+<item> execute the action before, after or instead of the triggering event
+<item> can refer to both old and new values of updated tuples
+<item> can limit updates to a particular set of attributes
+<item> perform action: once for each modified tuple, once for all modified tuples
+</itemize>
+</small>
+</slide>
+
+<slide>
+<continued>
+SQL <q>standard</q> syntax for defining triggers:
+<syntax>
+CREATE TRIGGER <$>TriggerName</$>
+{AFTER|BEFORE}  <$>Event1</$> [ OR <$>Event2</$> ... ]
+[ FOR EACH ROW ]
+ON <$>TableName</$>
+[ WHEN ( <$>Condition</$> ) ]
+<$>Block of Procedural/SQL Code</$> ;
+</syntax>
+Possible <$>Events</$> are <@>INSERT</@>, <@>DELETE</@>, <@>UPDATE</@>.
+<p>
+<@>FOR EACH ROW</@> clause ...
+<itemize>
+<item> if present, code is executed on each modified tuple
+<item> if not present, code is executed once after all tuples are modified,
+	just before changes are finally <@>COMMIT</@>ed
+</itemize>
+</slide>
+
+<slide>
+<heading>Example Trigger
+<b>Example:</b> department salary totals
+<p>
+Scenario:
+<sprogram>
+Employee(id, name, address, dept, <blue>salary</blue>, ...)
+Department(id, name, manager, <blue>totSal</blue>, ...)
+</sprogram>
+An assertion that we wish to maintain:
+<sprogram>
+create assertion TotalSalary check (
+    not exists (
+        select d.id from Department d
+        where  d.totSal <>
+               (select sum(e.salary) from Employee e
+                                 where e.dept = d.id)
+    )
+)
+</sprogram>
+</slide>
+
+<slide>
+<continued>
+Events that might affect the validity of the database
+<itemize>
+<item> a new employee starts work in some department
+<item> an employee gets a rise in salary 
+<item> an employee changes from one department to another
+<item> an employee leaves the company
+</itemize>
+A single assertion could check for this after each change.
+<p>
+With triggers, we have to program each case separately.
+<p>
+Each program implements updates to <i>ensure</i> assertion holds.
+</slide>
+
+<slide>
+<continued>
+Case 1: new employees arrive
+<sprogram>
+create trigger TotalSalary1
+after insert on Employee
+for each row when (NEW.dept is not null)
+   update Department
+   set totSal = totSal + NEW.salary
+   where  Department.id = NEW.dept;
+</sprogram>
+Case 2: employees get a pay rise
+<sprogram>
+create trigger TotalSalary2
+after update of salary on Employee
+for each row when (NEW.dept is not null)
+   update Department
+   set totSal = totSal + NEW.salary - OLD.salary
+   where  Department.id = NEW.dept;
+</sprogram>
+</slide>
+
+<slide>
+<continued>
+Case 3: employees change departments
+<sprogram>
+create trigger TotalSalary3
+after update of dept on Employee
+for each row
+begin
+   update Department
+   set totSal = totSal + NEW.salary
+   where  Department.id = NEW.dept;
+   update Department
+   set totSal = totSal - OLD.salary
+   where  Department.id = OLD.dept;
+</sprogram>
+Case 4: employees leave
+<sprogram>
+create trigger TotalSalary4
+after delete on Employee
+for each row when (OLD.dept is not null)
+   update Department
+   set totSal = totSal - OLD.salary
+   where  Department.id = OLD.dept;
+</sprogram>
+</slide>
+
+<slide>
+<heading>Triggers in PostgreSQL
+PostgreSQL triggers provide a mechanism for
+<itemize>
+<item> <@>INSERT</@>, <@>DELETE</@> or <@>UPDATE</@> events
+<item> to automatically activate PLpgSQL functions
+</itemize>
+Syntax for PostgreSQL trigger definition:
+<syntax>
+CREATE TRIGGER <$>TriggerName</$>
+{AFTER|BEFORE}  <$>Event1</$> [OR <$>Event2</$> ...]
+ON <$>TableName</$>
+FOR EACH {ROW|STATEMENT}
+EXECUTE PROCEDURE <$>FunctionName</$>(<$>args...</$>);
+</syntax>
+</slide>
+
+<slide>
+<continued>
+Examples of PostgreSQL trigger definitions:
+<program>
+<comment>-- check for each new Employee</comment>
+create trigger checkEmpInsert
+before insert on Employees
+for each row
+execute procedure checkInputValues();
+
+create function checkInputValues() ...
+
+<comment>-- check after all Employees changed</comment>
+create trigger afterEmpChange
+after update on Employees
+for each statement
+execute procedure fixOtherTables();
+
+create function fixOtherTables() ...
+</program>
+</slide>
+
+<slide>
+<continued>
+PostgreSQL does not have conditional activation of triggers <br>
+(i.e. no <@>WHEN</@> clause in the trigger definition statement).
+<p>
+However, tests in the function can effectively provide this, e.g.
+<program>
+create trigger <$>X</$> before insert on <$>T</$>
+<blue>when (<$>C</$>)</blue> begin <$>ProcCode</$> end;
+<comment>-- is implemented in PostgreSQL as</comment>
+create trigger <$>X</$> before insert on <$>T</$>
+for each statement execute procedure <$>F</$>;
+create function <$>F</$> ... as $$
+begin
+   <blue>if (<$>C</$>)</blue> then <$>ProcCode</$> end if;
+end;
+$$ language plpgsql;
+</program>
+</slide>
+
+<slide>
+<continued>
+Triggers can be activated <@>BEFORE</@> or <@>AFTER</@> the event.
+<p>
+If activated <@>AFTER</@>, the effects of the event are visible:
+<itemize>
+<sitem> <@>NEW</@> contains the current value of the altered tuple
+<sitem> <@>OLD</@> contains the previous value of the altered tuple
+</itemize>
+Sequence of actions during a change:
+<enumerate>
+<sitem> execute any <@>BEFORE</@> triggers for this change
+<sitem> temporarily make the change and check constraints
+<sitem> execute any <@>AFTER</@> triggers for this change
+<sitem> commit the changes <small>(i.e. make them permanent)</small>
+</enumerate>
+Failure in any of the first three steps rolls back the change.
+</slide>
+
+<slide>
+<continued>
+PLpgSQL functions for triggers are defined as
+<sprogram>
+<comment>-- PostgreSQL 7.3 and later</comment>
+CREATE OR REPLACE FUNCTION <i>name</i>() RETURNS TRIGGER ...
+<comment>-- PostgreSQL 7.2</comment>
+CREATE OR REPLACE FUNCTION <i>name</i>() RETURNS OPAQUE ...
+</sprogram>
+There is no restriction on what code can go in the function.
+<p>
+However it must contain one of:
+<program>
+RETURN old;    <comment>or</comment>    RETURN new;
+</program>
+depending on which version of the tuple is to be used.
+<p>
+If an exception is raised in the function, no change occurs.
+</slide>
+
+<slide>
+<heading>Example PostgreSQL Trigger
+<b>Example:</b> ensure that U.S. state names are entered correctly
+<sprogram>
+create function checkState() returns trigger as $$
+begin
+   <comment>-- normalise the user-supplied value</comment>
+   new.state = upper(trim(new.state));
+   if (new.state !~ ''^[A-Z][A-Z]$'') then
+      raise exception ''State code must be two alpha chars'';
+   end if;
+   <comment>-- implement referential integrity check</comment>
+   select * from States where code=new.state;
+   if (not found) then
+      raise exception ''Invalid state code %'',new.state;
+   end if;
+   return new;
+end;
+' language plpgsql;
+
+create trigger checkState before insert or update
+on Person for each row execute procedure checkState();
+</sprogram>
+</slide>
+
+<slide>
+<continued>
+Examples of how this trigger would behave:
+<program>
+insert into Person
+   values('John',...,'Calif.',...);
+<comment>-- fails with 'Statecode must be two alpha chars'</comment>
+
+insert into Person
+   values('Jane',...,'NY',...);
+<comment>-- insert succeeds; Jane lives in New York</comment>
+
+update Person
+   set town='Sunnyvale',state='CA'
+	 where name='Dave';
+<comment>-- update succeeds; Dave moves to California</comment>
+
+update Person
+   set state='OZ' where name='Pete';
+<comment>-- fails with 'Invalid state code OZ'</comment>
+</program>
+</slide>
+
+<slide>
+<heading>Example PostgreSQL Trigger #2
+Implement the Employee update triggers from above in PostgreSQL:
+<p>
+There are three changes that need to be handled:
+<itemize>
+<item> case 1: new employee arrives (<@>INSERT</@>)
+<item> case 2a: employee changes salary (<@>UPDATE</@>)
+<item> case 2b: employee changes department (<@>UPDATE</@>)
+<item> case 3: existing employee leaves (<@>DELETE</@>)
+</itemize>
+We need a function and trigger for each case.
+</slide>
+
+<slide>
+<continued>
+Case 1: new employee arrives
+<program>
+create function totalSalary1() returns trigger
+as $$
+begin
+    if (new.dept is not null) then
+        update Department
+        set    totSal = totSal + new.salary
+        where  Department.id = new.dept;
+    end if;
+    return new;
+end;
+$$ language plpgsql;
+</program>
+<small>
+Note that the test on <@>new.dept</@> is not needed;
+if <@>new.dept</@> was <@>NULL</@>, the update would have no effect;
+having the test does give a marginal performance improvement, by
+occasionally avoiding an UPDATE.
+</small>
+</slide>
+
+<slide>
+<continued>
+Case 2: employee changes department/salary
+<program>
+create function totalSalary2() returns trigger
+as $$
+begin
+    update Department
+    set    totSal = totSal + new.salary
+    where  Department.id = new.dept;
+    update Department
+    set    totSal = totSal - old.salary
+    where  Department.id = old.dept;
+    return new;
+end;
+$$ language plpgsql;
+</program>
+</slide>
+
+<slide>
+<continued>
+Case 3: existing employee leaves
+<program>
+create function totalSalary3() returns trigger
+as $$
+begin
+    if (old.dept is not null) then
+        update Department
+        set    totSal = totSal - old.salary
+        where  Department.id = old.dept;
+    end if;
+    return old;
+end;
+$$ language plpgsql;
+</program>
+<small>
+Note that the test on <@>old.dept</@> is not needed;
+if <@>old.dept</@> was <@>NULL</@>, the update would have no effect;
+having the test does give a marginal performance improvement, by
+occasionally avoiding an UPDATE.
+</small>
+</slide>
+
+<slide>
+<continued>
+Finally, we need to define the triggers:
+<program>
+create trigger TotalSalary1
+after insert on Employees
+for each row execute procedure totalSalary1();
+
+create trigger TotalSalary2
+after update on Employee
+for each row execute procedure totalSalary2();
+
+create trigger TotalSalary3
+after delete on Employee
+for each row execute procedure totalSalary3();
+</program>
+<small>
+Note: all <@>after</@> triggers because we want to make
+sure that the changes to the <@>Employees</@> table are
+really going to occur.
+</small>
+</slide>
+
+<slide>
+<heading>Trigger Caveat
+Mutually recursive triggers can cause infinite loops.
+<program>
+create function fixS() returns trigger as $$
+    begin update S where a = new.x; return new end;
+$$ language plpgsql;
+
+create function fixR() returns trigger as $$
+    begin update R where x = new.a; return new end;
+$$ language plpgsql;
+
+create trigger updateR before update on R
+for each row execute procedure fixS();
+
+create trigger updateS before update on S
+for each row execute procedure fixR();
+</program>
+</slide>

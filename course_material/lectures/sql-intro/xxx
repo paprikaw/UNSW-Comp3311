@@ -1,0 +1,15 @@
+
+<slide>
+<heading>SQL Syntax
+SQL definitions, queries and statements are composed of:
+<itemize>
+<item> <em>comments</em> ... <@@>--</@@> comments to end of line
+<item> <em>identifiers</em> ... similar to regular programming languages
+<item> <em>keywords</em> ... a large set (e.g. <@>CREATE</@>, <@>DROP</@>, <@>TABLE</@>)
+<item> <em>data types</em> ... small set of basic types (e.g. <@>integer</@>, <@>date</@>)
+<item> <em>operators</em> ... similar to regular programming languages
+<item> <em>constants</em> ... similar to regular programming languages
+</itemize>
+<i>Similar</i> means <q>often the same, but not always</q> ...
+</slide>
+

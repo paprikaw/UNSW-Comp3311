@@ -1,0 +1,279 @@
+<title>Performance Tuning
+<footer>COMP3311 20T3 <diamond> Performance Tuning <diamond>
+
+<slide>
+<heading>DB Application Performance
+In order to make DB applications efficient, it is useful to know:
+<itemize>
+<item> what operations on the data does the application require
+<p>
+<small>
+(which queries, updates, inserts and how frequently is each one performed)
+</small>
+<item> how much each implementation will cost
+<p>
+<small>
+(in terms of the amount of data transferred between memory and disk <Rightarrow> time)
+</small>
+</itemize>
+and then, <q>encourage</q> the DBMS to use the most efficient methods
+<p>
+Achieve by using indexes and avoiding certain SQL query structures
+</slide>
+
+<slide>
+<continued>
+Application programmer choices that affect query cost:
+<itemize>
+<item> how queries are expressed
+<itemize>
+<item> generally join is faster than subquery
+<item> especially if subquery is correlated
+<item> filter first, then join <tiny>(avoids large intermediate tables)</tiny>
+<item> avoid applying functions in where/group-by clasues
+</itemize>
+<item> creating <em>indexes</em> on tables
+<itemize>
+<item> index will speed-up filtering based on indexed attributes
+<item> indexes generally only effective for equality, gt/lt
+<item> mainly useful if filtering much more frequent than update
+</itemize>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+<br>
+Whatever you do as a DB application programmer
+<itemize>
+<item> the DBMS <em>query optimiser</em> will transform your query
+<item> attempt to make it execute as efficiently as possible
+</itemize>
+You have no control over the optimisation process
+<itemize>
+<item> but choices you make can block certain options
+<item> limiting the query optimiser's chance to improve
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Example: query to find sales people earning more than <dollar>50K
+<program90>
+select name from Employee
+where  salary >> 50000 and
+       empid in (select empid from Worksin
+                 where  dept = 'Sales')
+</program>
+A query evaluator might use the strategy
+<program90>
+SalesEmps = (select empid from WorksIn where dept='Sales')
+foreach e in Employee {
+    if (e.empid in SalesEmps && e.salary >> 50000)
+        add e to result set
+}
+</program>
+Needs to examine <i>all</i><~> employees, even if not in Sales
+<p>
+This is not a good expression of the query.
+</slide>
+
+<slide>
+<continued>
+A different expression of the same query:
+<program90>
+select name
+from   Employee join WorksIn using (empid)
+where  Employee.salary >> 5000 and
+       WorksIn.dept = 'Sales'
+</program>
+Query evaluator might use the strategy
+<program90>
+SalesEmps = (select * from WorksIn where dept='Sales')
+foreach e in (Employee join SalesEmps) {
+    if (e.salary >> 50000)
+        add e to result set
+}
+</program>
+Only examines Sales employees, and uses a simpler test
+<p>
+This is a good expression of the query.
+</slide>
+
+<slide>
+<continued>
+A very poor expression of the query <small>(correlated subquery)</small>:
+<program80>
+select name from Employee e
+where  salary >> 50000 and
+       'Sales' in (select dept from Worksin where empid=e.id)
+</program>
+A query evaluator would be forced to use the strategy:
+<program80>
+foreach e in Employee {
+    Depts = (select dept from WorksIn where empid=e.empid)
+    if ('Sales' in Depts && e.salary >> 50000)
+        add e to result set
+}
+</program>
+Needs to run a query for <i>every</i><~> employee ...
+</slide>
+
+<slide>
+<heading>Indexes
+Indexes provide efficient content-based access to tuples.
+<p>
+Can build indexes on any (combination of) attributes.
+<p>
+Definining indexes:
+<syntax>
+CREATE INDEX <$>name</$> ON <$>table</$> ( <$>attr<sub>1</sub></$>, <$>attr<sub>2</sub></$>, ... )
+</syntax>
+<$>attr<sub>i</sub></$><~> can be an arbitrary expression (e.g. <@>upper(name)</@>).
+<p>
+<@>CREATE INDEX</@> also allows us to specify
+<itemize>
+<sitem> that the index is on <@>UNIQUE</@> values
+<sitem> an access method (<@>USING</@> btree, hash, ...)
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Indexes can significantly improve query costs.
+<p>
+Considerations in applying indexes:
+<itemize>
+<item> is an attribute used in frequent/expensive queries? <br>
+	<~> <small>(note that some kinds of queries can be answered from index alone)</small>
+<item> should we create an index on a collection of attributes? <br>
+	<~> <small>(yes, if the collection is used in a frequent/expensive query)</small>
+<item> is the table containing attribute frequently updated?
+<item> should we use B-tree or Hash index?
+<program90>
+<comment>-- use hashing for (unique) attributes in equality tests, e.g.</comment>
+select * from Employee where <red>id</red> = 12345
+<comment>-- use B-tree for attributes in range tests, e.g.</comment>
+select * from Employee where <red>age</red> >> 60
+</program>
+</itemize>
+</slide>
+
+<slide>
+<heading>Query Tuning
+Sometimes, a query can be re-phrased to affect performance:
+<itemize>
+<item> by helping the optimiser to make use of indexes
+<item> by avoiding unnecessary/expensive operations
+</itemize>
+Examples which <i>may</i><~> prevent optimiser from using indexes:
+<program>
+select name from Employee where <red>salary</red>/365 >> 100
+       <comment>-- fix by re-phrasing condition to (salary >> 36500)</comment>
+select name from Employee where <red>name</red> like '%ith%'
+select name from Employee where <red>birthday</red> is null
+       <comment>-- above two are difficult to "fix"</comment>
+select name from Employee
+where  dept in (select id from Dept where ...)
+       <comment>-- fix by using Employee join Dept on (e.dept=d.id)</comment>
+</program>
+</slide>
+
+<slide>
+<continued>
+Other tricks in query tuning <small>(effectiveness is DBMS-dependent)</small>
+<itemize>
+<item> <@>select distinct</@> typically requires a sort ...<br>
+	 <small>is the <@>distinct</@> really necessary? (at this stage in the query?)</small>
+<item> if multiple join conditions are available ... <br>
+	<small>choose join attributes that are indexed, avoid joins on strings</small>
+<program90>
+select ... Employee join Customer on (s.<blue>name</blue> = p.<blue>name</blue>)
+<comment>vs</comment>
+select ... Employee join Customer on (s.<red>ssn</red> = p.<red>ssn</red>)
+</program>
+<item> sometimes <@>or</@> prevents index from being used ... <br>
+	<small>replace the <@>or</@> condition by a union of non-<@>or</@> clauses</small>
+<program90>
+select name from Employee where Dept=1 or Dept=2
+<comment>vs</comment>
+(select name from Employee where <red>Dept</red>=1)
+union
+(select name from Employee where <red>Dept</red>=2)
+</program>
+</itemize>
+</slide>
+
+<slide>
+<heading>PostgreSQL Performance Analysis
+PostgreSQL provides the <@@>explain</@@> statement to
+<itemize>
+<item> give a representation of the query execution plan
+<item> with information that may help to tune query performance
+</itemize>
+Usage:
+<syntax>
+EXPLAIN [ANALYZE] <$>Query</$>
+</syntax>
+Without <@>ANALYZE</@>, <@>EXPLAIN</@> shows plan with estimated costs.
+<p>
+With <@>ANALYZE</@>, <@>EXPLAIN</@> executes query and prints real costs.
+<p>
+<small>
+Note that runtimes may show considerable variation due to buffering.
+<p>
+If simply knowing the runtime is ok, maybe <@>\timing</@> is good enough
+</small>
+</slide>
+
+<slide>
+<heading>EXPLAIN Examples
+Note that PostgreSQL builds a query evaluation tree, rather than a linear plan, e.g.
+<diagram>Pics/dbms/pg-plan
+<@>EXPLAIN</@> effectively shows a pre-order traversal of the plan tree
+</slide>
+
+<slide>
+<continued>
+Example: Select on indexed attribute
+<program80>
+db=# <green>explain analyze select * from Students where id=100250;</green>
+                            QUERY PLAN
+------------------------------------------------------------
+ Index Scan using student_pkey on student
+                  (cost=0.00..5.94 rows=1 width=17)
+                  (actual time=3.209..3.212 rows=1 loops=1)
+   Index Cond: (id = 100250)
+ Total runtime: 3.252 ms
+</program>
+Example: Select on non-indexed attribute
+<program80>
+db=# <green>explain analyze select * from Students where stype='local';</green>
+                         QUERY PLAN
+-------------------------------------------------------------
+ Seq Scan on student  (cost=0.00..70.33 rows=18 width=17)
+             (actual time=0.061..7.784 rows=2512 loops=1)
+   Filter: ((stype)::text = 'local'::text)
+ Total runtime: 7.554 ms
+</program>
+</slide>
+
+<slide>
+<continued>
+Example: Join on a primary key (indexed) attribute
+<program90>
+db=# <green>explain</green>
+db-# <green>select s.sid,p.name</green>
+db-# <green>from Students s join People p on s.id=p.id;</green>
+
+                        QUERY PLAN
+-------------------------------------------------------
+ Hash Join  (cost=70.33..305.86 rows=3626 width=52)
+   Hash Cond: ("outer".id = "inner".id)
+   -> Seq Scan on people p
+               (cost=0.00..153.01 rows=3701 width=52)
+   -> Hash  (cost=61.26..61.26 rows=3626 width=8)
+       -> Seq Scan on student s
+                   (cost=0.00..61.26 rows=3626 width=8)
+</program>
+</slide>

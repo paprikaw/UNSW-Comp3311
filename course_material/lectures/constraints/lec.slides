@@ -1,0 +1,122 @@
+<title>Constraints
+<footer>COMP3311 20T3 <diamond> Constraints <diamond>
+
+<slide>
+<heading>Constraints
+So far, we have considered several kinds of constraints:
+<itemize>
+<item> <blue>attribute</blue> (column) constraints
+<item> <red>relation</red> (table) constraints
+<item> <green>referential integrity</green> constraints
+</itemize>
+Examples:
+<program90>
+create table Employee (
+   id      <blue>integer</blue> <red>primary key</red>,
+   name    <blue>varchar(40)</blue>,
+   salary  <blue>real</blue>,
+   age     <blue>integer check (age > 15)</blue>,
+   worksIn <blue>integer</blue>
+              <green>references Department(id)</green>,
+   <red>constraint PayOk check (salary > age*1000)</red>
+);
+</program>
+</slide>
+
+<slide>
+<continued>
+Column and table constraints ensure validity of one table.
+<p>
+Ref. integrity constraints ensure connections between tables are valid.
+<p>
+However, specifying validity of entire database often
+requires constraints involving multiple tables.
+<p>
+Simple example (from banking domain):
+<program>
+for all Branches b
+   b.assets == (select sum(acct.balance)
+                from   Accounts acct
+                where  acct.branch = b.location)
+</program>
+<p>
+<small>
+i.e. assets of a branch is sum of balances of accounts held at that branch
+</small>
+</slide>
+
+<slide>
+<heading>Assertions
+<em>Assertions</em> are schema-level constraints
+<itemize>
+<item> typically involving multiple tables
+<item> expressing a condition that must hold at all times
+<item> need to be checked on each change to relevant tables
+<item> if change would cause check to fail, reject change
+</itemize>
+SQL syntax for assertions:
+<syntax>
+CREATE ASSERTION <$>name</$> CHECK (<$>condition</$>)
+</syntax>
+<small>
+The <$>condition</$> is expressed as <q>there are no violations in the database</q>
+<p>
+Implementation: ask a query to find all the violations; check for empty result
+</small>
+</slide>
+
+<slide>
+<continued>
+<br>
+<b>Example:</b> #students in any UNSW course must be << 10000
+<program>
+create assertion ClassSizeConstraint check (
+   not exists (
+      select c.id
+      from   Courses c
+             join Enrolments e on (c.id = e.course)
+      group  by c.id
+      having count(e.student) >> 9999
+   )
+);
+</program>
+Needs to be checked after <i>every</i><~> change to either
+<@>Courses</@> or <@>Enrolments</@>
+</slide>
+
+<slide>
+<continued>
+<br>
+<b>Example:</b> assets of branch = sum of its account balances
+<program>
+create assertion AssetsCheck check (
+   not exists (
+      select branchName from Branches b
+      where  b.assets <>
+             (select sum(a.balance) from Accounts a
+              where a.branch = b.location)
+   )
+);
+</program>
+Needs to be checked after <i>every</i><~> change to either
+<@>Branches</@> or <@>Accounts</@>
+</slide>
+
+<slide>
+<continued>
+On each update, it is expensive
+<itemize>
+<item> to determine which assertions need to be checked
+<item> to run the queries which check the assertions
+</itemize>
+A database with many assertions would be way too slow.
+<p>
+So, most RDBMSs do <i>not</i><~> implement general assertions.
+<p>
+Typically, <em>triggers</em> are provided as
+<itemize>
+<item> a lightweight mechanism for dealing with assertions
+<item> a general event-based programming tool for databases
+</itemize>
+Triggers typically enforce</i><~> assertions rather than <i>checking</i><~> them
+</slide>

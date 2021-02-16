@@ -1,0 +1,38 @@
+Determining keys ... ?
+
+R = schema, F = set of FDs
+
+for each combination X of attributes from R
+	determine X+
+	if (X+ == R) found a key
+
+
+
+1.
+
+FD = { AB->C,  C->B }
+
+AB+ = ABC => AB is a key
+AC+ = ABC => AC is a key
+
+
+2.
+
+FD = { MN->P, NP->Q, Q->R }
+
+MN+ = MN -> MNP -> MNPQ -> MNPQR => MN is a key
+
+
+3.
+
+FD = { ABH->C, A->DE, BGH->F, FD->ADH, BH->GE }
+
+ABH+ = ABCH -> ABCDEH -> ABCDEGH -> ABCDEFGH => ABH is a key
+
+
+4.
+
+FD = { ABH->C, A->D, C->E, F->A, E->F, BGH->E }
+
+BGH+ = BGH -> BEGH -> BEFGH -> ABEFGH -> ABCEFGH -> ABCDEFGH
+So BGH is a key

@@ -1,0 +1,1198 @@
+<html>
+<head>
+<title>Relational Data Model</title>
+<link href='lib/notes.css' rel='stylesheet' type='text/css'>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML" async></script>
+<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js'></script>
+<link href='lib/prism.css' rel='stylesheet'>
+<script src='lib/sg.js'></script>
+</head>
+<body>
+<div class='heading'>Relational Data Model</div><p><ul class='indexUl'  style='font-size: 0.7em;'><li class="i"> <a href="#s1">Relational Data Model</a>
+<li class="i"> <a href="#s3">Terminology</a>
+<li class="i"> <a href="#s4">Relations</a>
+<li class="i"> <a href="#s7">Example Database</a>
+<li class="i"> <a href="#s12">Changing Relations</a>
+<li class="i"> <a href="#s13">Constraints on Relational Data</a>
+<li class="i"> <a href="#s14">Constraints</a>
+<li class="i"> <a href="#s15">Integrity Constraints</a>
+<li class="i"> <a href="#s20">Foreign Keys</a>
+<li class="i"> <a href="#s23">Relational Databases</a>
+<li class="i"> <a href="#s24">Constraint Checking</a>
+<li class="i"> <a href="#s34">Mapping ER Designs to Relational Schemas</a>
+<li class="i"> <a href="#s35">ER to Relational Mapping</a>
+<li class="i"> <a href="#s37">Relational Model vs ER Model</a>
+<li class="i"> <a href="#s40">Mapping Strong Entities</a>
+<li class="i"> <a href="#s46">Mapping Weak Entities</a>
+<li class="i"> <a href="#s49">Mapping N:M Relationships</a>
+<li class="i"> <a href="#s54">Mapping 1:N Relationships</a>
+<li class="i"> <a href="#s58">Mapping 1:1 Relationships</a>
+<li class="i"> <a href="#s60">Mapping Multi-valued Attributes</a>
+<li class="i"> <a href="#s64">Mapping Subclasses</a>
+</ul><hr>
+<DIV id="s1">
+<div class='heading'>Relational Data Model</div>
+<p>
+The <font color='#0000BB'>relational data model</font> describes the world as:
+<ul>
+<li> a collection of inter-related <font color='#0000BB'>relations</font> (or <font color='#0000BB'>tables</font>)
+</ul>
+<p>
+Goal of relational model:
+<ul>
+<li> a simple, general data modelling formalism
+<li> which maps easily to file structures <small>(i.e. implementable)</small>
+</ul>
+<small>
+Can be viewed as an attempt to formalise the file organisations
+that were in common use at the time the model was developed.
+</small>
+</DIV>
+<hr>
+<DIV id="s2">
+<div class='heading'>Relational Data Model <span style="font-size:67%">(cont)</span></div>
+<p>
+The relational data model has existed for over 30 years.
+<p>
+<small>
+(The original description is Codd, <i>Communications of the ACM</i>, 13(6), 1970)
+</small>
+<p>
+The relational model has provided the basis for:
+<ul>
+<li> research on the theory of data/relationships/constraints
+<li> numerous database design methodologies
+<li> the standard database access language SQL
+<li> almost all modern commercial database management systems
+</ul>
+<small>
+It is a very influential development in CS, for which Codd received a Turing award.
+</small>
+</DIV>
+<hr>
+<DIV id="s3">
+<div class='heading'>Terminology</div>
+<p>
+A note on the terminology used in the relational model ...
+<p>
+The relational model is a mathematical theory; it has no "standard".
+<p>
+However, it also has a close connection to file/data structures.
+<p>
+There are thus two kinds of terminology in use:
+<ul>
+<li> mathematical: &nbsp; relation, &nbsp; tuple, &nbsp; attribute, &nbsp; ...
+<li> data-oriented: &nbsp; table, &nbsp; record, &nbsp; field/column, &nbsp; ...
+</ul>
+<p>
+<small>
+Textbooks alternate between the two; treat them as synonyms.
+</small>
+</DIV>
+<hr>
+<DIV id="s4">
+<div class='heading'>Relations</div>
+<p>
+The relational model has one structuring mechanism ...
+<ul>
+<li> a <font color='#0000BB'>relation</font> corresponds to a mathematical "relation"
+<li> a <font color='#0000BB'>relation</font> can also be viewed as a "table"
+</ul>
+Each relation schema <small>(denoted <i>R,S,T,...</i>)</small> has:
+<ul>
+<li> a <font color='#0000BB'>name</font> &nbsp; <small>(unique within a given database)</small>
+<li> a set of <font color='#0000BB'>attributes</font> &nbsp; <small>(which can be viewed as column headings)</small>
+</ul>
+Each <font color='#0000BB'>attribute</font> <small>(denoted <i>A,B,...</i> or <i>a<sub>1</sub>,a<sub>2</sub>,...</i>)</small> has:
+<ul>
+<li> a <font color='#0000BB'>name</font> &nbsp; <small>(unique within a given relation)</small>
+<li> an associated <font color='#0000BB'>domain</font> &nbsp; <small>(set of allowed values)</small>
+</ul>
+</DIV>
+<hr>
+<DIV id="s5">
+<div class='heading'>Relations <span style="font-size:67%">(cont)</span></div>
+<p>
+Attribute values are <font color='#0000BB'>atomic</font> &nbsp; <small>(no composite or multi-valued attributes)</small>.
+<p>
+Attribute domains are typically: numbers, strings, booleans.
+<p>
+There is a distinguished value <large><code>NULL</code></large> that belongs to all domains.
+<p>
+A <font color='#0000BB'>database</font> is a collection of associated relations.
+</DIV>
+<hr>
+<DIV id="s6">
+<div class='heading'>Relations <span style="font-size:67%">(cont)</span></div>
+<p>
+Example relation (bank accounts):
+<p>
+<p><div align='center'>
+<img alt="[Diagram:Pic/er-rel/table.png]" src="Pic/er-rel/table.png">
+</div><p>
+</DIV>
+<hr>
+<DIV id="s7">
+<div class='heading'>Example Database</div>
+<p>
+<p><div align='center'>
+<img alt="[Diagram:Pic/er-rel/db.png]" src="Pic/er-rel/db.png">
+</div><p>
+</DIV>
+<hr>
+<DIV id="s8">
+<div class='heading'>Example Database <span style="font-size:67%">(cont)</span></div>
+<p>
+A <font color='#0000BB'>tuple</font> is a set of values; a relation is a set of tuples.
+<p>
+Since a relation is a set, there is no ordering on rows.
+<p>
+Normally, we define a standard ordering on components of a tuple.
+<p>
+The following are different presentations of the same relation:
+<p>
+<p><div align='center'>
+<img alt="[Diagram:Pic/er-rel/tables.png]" src="Pic/er-rel/tables.png">
+</div><p>
+</DIV>
+<hr>
+<DIV id="s9">
+<div class='heading'>Example Database <span style="font-size:67%">(cont)</span></div>
+<p>
+Consider a relation <i>R</i> :
+<ul>
+<li> which has <i>n</i> attributes &nbsp; <i>a<sub>1</sub>, a<sub>2</sub>, ... a<sub>n</sub></i>
+<li> with corresponding domains &nbsp; <i>D<sub>1</sub>, D<sub>2</sub>, ... D<sub>n</sub></i>
+</ul>
+<i>R(a<sub>1</sub>, a<sub>1</sub>, ... a<sub>n</sub>)</i>
+&nbsp; <small> (alternatively, <i>D<sub>1</sub> &times; D<sub>2</sub> &times; ... &times; D<sub>n</sub></i>) </small>
+<ul>
+<li> is a <font color='#0000BB'>schema</font> for the relation &nbsp; <small>(intensional)</small>
+</ul>
+A particular subset <i>r</i> of <i>D<sub>1</sub> &times; D<sub>2</sub> &times; ... &times; D<sub>n</sub></i>
+<ul>
+<li> is an <font color='#0000BB'>instance</font> of the schema &nbsp; <small>(extensional)</small>
+</ul>
+</DIV>
+<hr>
+<DIV id="s10">
+<div class='heading'>Example Database <span style="font-size:67%">(cont)</span></div>
+<p>
+Schema names are typically unique within a given database.
+<p>
+So, we often use <i>R</i>
+as a synonym for <i>R(a<sub>1</sub>, a<sub>1</sub>, ... a<sub>n</sub>)</i>.
+<p>
+<i>r(R)</i> is used to denote that <i>r</i> is an instance of the schema <i>R</i>.
+<p>
+The number of attributes (<i>n</i>) in a schema is its <font color='#0000BB'>degree</font>
+(arity).
+<p>
+Note: the phrase " the relation <i>R</i> " can refer to either
+<ul>
+<li> the schema for <i>R</i> &nbsp;&nbsp; <i>or</i>
+<li> the current instance of <i>R</i> stored in a DBMS
+</ul>
+The intended usage is generally clear from the context.
+<p>
+</DIV>
+<hr>
+<DIV id="s11">
+<div class='heading'>Example Database <span style="font-size:67%">(cont)</span></div>
+<p>
+E.g. the <large><code>Accounts</code></large> schema has type <i>String &times; String &times; Int</i> :
+<p><pre>
+   Account(branchName, accountNo, balance)
+</pre><p>
+<p>
+E.g. the <large><code>Account</code></large> instance (set of tuples) from the diagram:
+<p><pre><small>
+{
+  (Downtown, A-101, 500),   (Mianus, A-215, 700),
+  (Perryridge, A-102, 400), (Round Hill, A-305, 350),
+  (Brighton, A-201, 900),   (Redwood, A-222, 700),
+  (Brighton, A-217, 750)
+}
+</small></pre><p>
+<small>
+Notes:
+<ul>
+<li> values in tuples are comma-separated, so we don't normally quote strings
+<li> choose an order for attributes/values in tuples and use that consistently
+<li> relations are sets <i>&rArr;</i> no duplicates, order of tuples is not important
+</ul>
+</small>
+</DIV>
+<hr>
+<DIV id="s12">
+<div class='heading'>Changing Relations</div>
+<p>
+In making changes to relations, it is ...
+<ul>
+<li> easy to add new tuples (rows) &nbsp; (relation update)
+<li> difficult to add new attributes (columns) &nbsp; (schema update)
+</ul>
+The reasons:
+<ul>
+<li> relation update <i>&rArr;</i> insertion of one new tuple into a set <br>
+	<small>(in file terms: writing one record to the end of a data file)</small>
+<li> schema update <i>&rArr;</i> insertion of new data into every tuple <br>
+	<small>(in file terms: re-writing the entire file to modify each record)</small>
+</ul>
+Schema update is a well-known and not well-solved problem in RDBMSs.
+</DIV>
+<hr>
+<DIV id="s13">
+<div class='heading'>Constraints on Relational Data</div>
+<p>
+</DIV>
+<hr>
+<DIV id="s14">
+<div class='heading'>Constraints</div>
+<p>
+A very important feature of the relational model:
+<ul>
+<li> well-defined theory of constraints on attributes/tables
+</ul>
+This is useful because it allows
+<ul>
+<li> formal reasoning about databases and operations on them
+<li> designers to specify precisely the semantics of the data
+<li> DBMSs to check that new data satisfies the semantics
+</ul>
+</DIV>
+<hr>
+<DIV id="s15">
+<div class='heading'>Integrity Constraints</div>
+<p>
+Relations allow us to represent data and associations.
+<p>
+Domains limit the values that attributes can take.
+<p>
+However, to fully represent the semantics of real-world problems,
+we need more detailed ways of specifying
+<ul>
+<li> what values are/are not allowed
+<li> what combinations of values are/are not allowed
+</ul>
+<font color='#0000BB'>Integrity constraints</font> are logical statements about data
+that provide such information.
+<p>
+Some examples:
+<ul>
+<li> employees must be over 16 and under 65 years of age
+<li> account numbers must be unique
+<li> each account is held at one particular branch
+</ul>
+</DIV>
+<hr>
+<DIV id="s16">
+<div class='heading'>Integrity Constraints <span style="font-size:67%">(cont)</span></div>
+<p>
+Several kinds of constraints exist e.g.
+<p>
+<p><table border='0' cellpadding='6'>
+<tr valign=top>
+  <td><nobr> <font color='#0000BB'>key</font> </td>
+  <td></td><td> combination of attributes must be unique </td>
+</tr>
+<tr valign=top>
+  <td><nobr> <font color='#0000BB'>entity integrity</font> </td>
+  <td></td><td> no attribute in key may be <large><code>NULL</code></large> </td>
+</tr>
+<tr valign=top>
+  <td><nobr> <font color='#0000BB'>referential integrity</font> </td>
+  <td></td><td> references to tuples in other relations must be valid </td>
+</tr>
+<tr valign=top>
+  <td><nobr> <font color='#0000BB'>domain</font> </td>
+  <td></td><td> value of attribute must satisfy certain property </td>
+</tr>
+</table><p>
+<p>
+<font color='#0000BB'>Functional dependencies</font> are another important kind of constraint,
+related to database design; we cover them in considerable detail later.
+</DIV>
+<hr>
+<DIV id="s17">
+<div class='heading'>Integrity Constraints <span style="font-size:67%">(cont)</span></div>
+<p>
+Associating an attribute to a domain restricts its possible values to
+a well-defined set (e.g. integer).
+<p>
+<font color='#0000BB'>Domain constraints</font> allow more "fine-grained" definition
+of potential attribute values.
+<p>
+Example:
+<p>
+An <large><code>age</code></large> attribute is typically defined as <large><code>integer</code></large> ...
+<ul>
+<li> but integer values like <large><code>-5</code></large> and <large><code>199</code></large> are not valid ages
+<li> better modelled by adding a condition <large><code>(15 < age < 66)</code></large>
+</ul>
+Note: the <large><code>NULL</code></large> value satisfies any domain constraint.
+</DIV>
+<hr>
+<DIV id="s18">
+<div class='heading'>Integrity Constraints <span style="font-size:67%">(cont)</span></div>
+<p>
+Relational tuples have no notion of identity like OIDs.
+<p>
+Identity is value-based <small>(as in ER model)</small>
+<ul>
+<li> <font color='#0000BB'>keys</font> are a way of uniquely identifying tuples.
+</ul>
+Relational model supports same notions of key as ER model:
+<ul>
+<li> superkey - set of attributes that distinguishes tuples
+<li> candidate key - minimal super-key &nbsp; <small>(no unnecessary attributes)</small>
+<li> primary key - distinguished/chosen candidate key
+</ul>
+Keys are often implemented by introducing an artificial attribute specifically
+for the purpose of being a key (e.g. student ID, account number).
+</DIV>
+<hr>
+<DIV id="s19">
+<div class='heading'>Integrity Constraints <span style="font-size:67%">(cont)</span></div>
+<p>
+<font color='#0000BB'>Referential integrity constraints</font> are relevant for inter-relation references.
+<p>
+Example:
+<ul>
+<li> the <large><code>Account</code></large> relation needs to take note of the branch where
+	each account is held
+<li> implemented by storing information in each <large><code>Account</code></large>
+	tuple to identify the associated branch (e.g. primary key <large><code>branchName</code></large>)
+<li> it would not make sense to store a <large><code>branchName</code></large> that did not
+	refer to one of the existing branches
+</ul>
+The notion that the <large><code>branchName</code></large> must <font color='#0000BB'>refer</font> to a valid branch is a
+referential integrity constraint.
+</DIV>
+<hr>
+<DIV id="s20">
+<div class='heading'>Foreign Keys</div>
+<p>
+Referential integrity is related to the notion of a <font color='#0000BB'>foreign key</font>.
+<p>
+A set of attributes <i>FK</i> from a relation schema <i>R<sub>1</sub></i> is a foreign key if:
+<ul>
+<li> the attributes in <i>FK</i> correspond to the attributes in the primary
+	key of another relation schema <i>R<sub>2</sub></i> 
+<li> the value for <i>FK</i> in each tuple of <i>R<sub>1</sub></i>
+<ul>
+<li> either &nbsp; occurs as a primary key in <i>R<sub>2</sub></i>
+<li> or &nbsp; is entirely <large><code>NULL</code></large>
+</ul>
+</ul>
+</DIV>
+<hr>
+<DIV id="s21">
+<div class='heading'>Foreign Keys <span style="font-size:67%">(cont)</span></div>
+<p>
+Foreign keys are critical in relational databases
+<ul>
+<li> they provide the "glue" that links individual relations
+	into a cohesive database structure
+<li> they provide the basis for "reconnecting" individual
+	relations to assemble query answers
+</ul>
+Special notation for foreign/primary keys:
+<ul>
+<li> each relation is a sequence of "attribute boxes"
+<li> attributes that are part of primary key are underlined
+<li> arrows are drawn from foreign key attributes to their
+	corresponding primary key attributes
+</ul>
+</DIV>
+<hr>
+<DIV id="s22">
+<div class='heading'>Foreign Keys <span style="font-size:67%">(cont)</span></div>
+<p>
+Foreign key examples:
+<p>
+<p><div align='center'>
+<img alt="[Diagram:Pic/er-rel/fkeys.png]" src="Pic/er-rel/fkeys.png">
+</div><p>
+</DIV>
+<hr>
+<DIV id="s23">
+<div class='heading'>Relational Databases</div>
+<p>
+Relations, keys, foreign keys, and integrity constraints provide
+a complete toolkit for building relational databases.
+<p>
+A <font color='#0000BB'>relational database schema</font> is
+<ul>
+<li> a set of relation schemas
+	&nbsp; <i>{ R<sub>1</sub>, &nbsp; R<sub>2</sub>, &nbsp;...&nbsp; R<sub>n</sub> }</i> ,
+	&nbsp; and
+<li> a set of integrity constraints
+</ul>
+A <font color='#0000BB'>relational database instance</font> is
+<ul>
+<li> a set of relation instances
+	&nbsp; <i>{ r<sub>1</sub>(R<sub>1</sub>), &nbsp; r<sub>2</sub>(R<sub>2</sub>), &nbsp;...&nbsp; r<sub>n</sub>(R<sub>n</sub>) }</i>
+<li> where all of the integrity constraints are satisfied
+</ul>
+</DIV>
+<hr>
+<DIV id="s24">
+<div class='heading'>Constraint Checking</div>
+<p>
+If we have a database instance that satisfies all integrity constraints,
+what can go wrong?
+<p>
+The data might change &nbsp; <i>&rArr;</i> &nbsp; constraints need to be re-checked.
+<p>
+Possible changes:
+<ul>
+<li> <font color='#0000BB'>insert</font> (add) a new record
+<li> <font color='#0000BB'>delete</font> (remove) an existing record
+<li> <font color='#0000BB'>update</font> (modify) an existing record
+</ul>
+</DIV>
+<hr>
+<DIV id="s25">
+<div class='heading'>Constraint Checking <span style="font-size:67%">(cont)</span></div>
+<p>
+For <font color='#0000BB'>domain</font> constraints ...
+<p>
+Insert:
+<ul>
+<li> check each attribute value for type and additional domain constraints
+</ul>
+Delete:
+<ul>
+<li> no need to check any domain constraints
+</ul>
+Update:
+<ul>
+<li> check each modified attribute value for type and additional domain constraints
+</ul>
+</DIV>
+<hr>
+<DIV id="s26">
+<div class='heading'>Constraint Checking <span style="font-size:67%">(cont)</span></div>
+<p>
+These changes satisfy domain constraints:
+<p><pre>
+insert Account(Downtown, A-456, 600)
+insert Account(Perryridge, A-321, 200)
+insert Account(Perryridge, A-102, 750)
+   <span class='comment'># but note duplicate key value</span>
+insert Account(Perryrige, A-131, 450)
+   <span class='comment'># value looks ok, but isn't correct</span>
+</pre><p>
+These changes do <b>not</b> satisfy domain constraints:
+<p><pre>
+insert Account(Downtown, A-321, <font color="#CC0000">money</font>)
+   <span class='comment'># 3rd attribute (<i>a<sub>3</sub></i>) fails type check</span>
+insert Account(<font color="#996600">XYZZY</font>, <font color="#996600">Hello</font>, 300)
+   <span class='comment'># if we check for "lexically sensible" values on <i>a<sub>1</sub>,a<sub>2</sub></i></span>
+insert Account(Brighton, A-402, <font color="#CC0000">-500</font>)
+   <span class='comment'># if we check for positive opening balance</span>
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s27">
+<div class='heading'>Constraint Checking <span style="font-size:67%">(cont)</span></div>
+<p>
+For <font color='#0000BB'>key</font> constraints ...
+<p>
+Insert:
+<ul>
+<li> check that key does not occur in any tuple already in the relation
+</ul>
+Delete:
+<ul>
+<li> no need to check anything
+</ul>
+Update:
+<ul>
+<li> if key attributes modified, same check as for insertion
+</ul>
+</DIV>
+<hr>
+<DIV id="s28">
+<div class='heading'>Constraint Checking <span style="font-size:67%">(cont)</span></div>
+<p>
+These changes satisfy key constraints:
+<p><pre>
+insert Account(Downtown, A-456, 600)
+insert Depositor(A-101, 9876543)
+   <span class='comment'># ok, only part of key duplicated</span>
+update Account(Downtown, A-101, 500)
+    to Account(Downtown, A-101, 600)
+   <span class='comment'># ok, key attributes were not changed</span>
+insert Depositor(A-305, 8888888)
+   <span class='comment'># but no such customer</span>
+</pre><p>
+These changes do <b>not</b> satisfy key constraints:
+<p><pre>
+insert Account(Perryridge, <font color="#CC0000">A-102</font>, 750)
+   <span class='comment'># key A-102 already exists in relation</span>
+update Account(Downtown, A-101, 500)
+    to Account(Downtown, <font color="#CC0000">A-201</font>, 500)
+   <span class='comment'># key A-201 already exists in relation</span>
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s29">
+<div class='heading'>Constraint Checking <span style="font-size:67%">(cont)</span></div>
+<p>
+For <font color='#0000BB'>referential integrity</font> constraints ...
+<p>
+Insert:
+<ul>
+<li> check that any foreign keys occur as primary keys in their own relation
+</ul>
+Delete:
+<ul>
+<li> check all relations that have foreign keys referring to this relation <br>
+</ul>
+Update:
+<ul>
+<li> treat as delete-then-insert for constraint checking
+</ul>
+</DIV>
+<hr>
+<DIV id="s30">
+<div class='heading'>Constraint Checking <span style="font-size:67%">(cont)</span></div>
+<p>
+Example of deletion with foreign keys:
+<p>
+<p><div align='center'>
+<img alt="[Diagram:Pic/er-rel/deletion.png]" src="Pic/er-rel/deletion.png">
+</div><p>
+</DIV>
+<hr>
+<DIV id="s31">
+<div class='heading'>Constraint Checking <span style="font-size:67%">(cont)</span></div>
+<p>
+How to handle violation of referential constraints on deletion?
+<p>
+One approach:
+<ul>
+<li> simply disallow the deletion
+<li> user must then find referring tuples and
+<ul>
+<li> either &nbsp; remove each one manually
+<li> or &nbsp; change their foreign keys to an acceptable value
+</ul>
+</ul>
+Another approaches:
+<ul>
+<li> remove all referring tuples automatically (cascade)
+<li> set foreign key attributes to <large><code>NULL</code></large> in all referring tuples <br>
+	<small>(not possible if the foreign key also forms part of the primary key)</small>
+</ul>
+</DIV>
+<hr>
+<DIV id="s32">
+<div class='heading'>Constraint Checking <span style="font-size:67%">(cont)</span></div>
+<p>
+These changes satisfy referential integrity constraints:
+<p><pre>
+insert Account(<font color="#009900">Downtown</font>, A-456, 600)
+insert Depositor(<font color="#009900">A-215</font>, <font color="#009900">9876543</font>)
+update Account(Downtown, A-101, 500)
+    to Account(<font color="#009900">Perryridge</font>, A-101, 500)
+   <span class='comment'># ok, <i>a<sub>1</sub></i> changed to valid FK</span>
+</pre><p>
+These changes do <b>not</b> satisfy referential integrity constraints:
+<p><pre>
+insert Account(<font color="#CC0000">Wombatville</font>, A-987, 500)
+   <span class='comment'># no such branch</span>
+insert Depositor(A-305, <font color="#CC0000">8888888</font>)
+   <span class='comment'># valid account, but no such customer</span>
+update Account(Downtown, A-101, 500)
+    to Account(<font color="#CC0000">Nowhere</font>, A-101, 500)
+   <span class='comment'># no such branch</span>
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s33">
+<div class='heading'>Constraint Checking <span style="font-size:67%">(cont)</span></div>
+<p>
+These changes satisfy referential integrity constraints:
+<p><pre>
+delete Depositor(<font color="#009900">A-102</font>, <font color="#009900">1234567</font>)
+delete Depositor(<font color="#009900">A-101</font>, <font color="#009900">1313131</font>)
+   <span class='comment'># although A-101 now has no "owner"</span>
+delete Branch(<font color="#009900">North Town</font>, Rye, 3700000)
+   <span class='comment'># ok, since no accounts or customers (but assets?)</span>
+</pre><p>
+These changes do <b>not</b> satisfy referential integrity constraints:
+<p><pre>
+delete Branch(<font color="#CC0000">Perryridge</font>, Horseneck, 1700000)
+   <span class='comment'># some accounts are held at Perryridge</span>
+delete Customer(Smith, Rye, <font color="#CC0000">1234567</font>, Mianus)
+   <span class='comment'># Depositor records become invalid</span>
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s34">
+<div class='heading'>Mapping ER Designs to Relational Schemas</div>
+<p>
+</DIV>
+<hr>
+<DIV id="s35">
+<div class='heading'>ER to Relational Mapping</div>
+<p>
+As noted earlier, one useful strategy for database design:
+<ul>
+<li> perform initial data modelling using ER or OO <br>
+	<small>(conceptual-level modelling)</small>
+<li> transform conceptual design into relational model <br>
+	<small>(implementation-level modelling)</small>
+</ul>
+By examining semantic correspondences, a formal mapping between the ER and
+relational models has been developed.
+<p>
+Because it is formal, it can be automated, and commercial tools now exist
+to perform it.
+</DIV>
+<hr>
+<DIV id="s36">
+<div class='heading'>ER to Relational Mapping <span style="font-size:67%">(cont)</span></div>
+<p>
+If we have tools, why worry about the mapping process itself?
+<p>
+It is still useful to understand how mapping occurs because:
+<ul>
+<li> tools produce <font color='#0000BB'>correct</font> but (sometimes) <font color='#0000BB'>incomprehensible</font>
+	relational descriptions
+<li> to do performance tuning, you need to understand these descriptions
+<li> you may need to use a different mapping to improve DB performance
+</ul>
+<p>
+<small>Also, you're CSE students and you like to know how things work.</small>
+</DIV>
+<hr>
+<DIV id="s37">
+<div class='heading'>Relational Model vs ER Model</div>
+<p>
+The relational and ER data models have some obvious correspondences:
+<p>
+<div class='center'>
+<table border='0' cellpadding='4'>
+<tr valign=top>
+ <td><nobr><b>Entity/Relationship</b></td>
+ <td></td><td><b>Relational</b></td>
+</tr>
+<tr valign=top>
+ <td><nobr> Attributes </td>
+ <td></td><td> Attributes <small>(atomic)</small> </td>
+</tr>
+<tr valign=top>
+ <td><nobr> Entity <br> Relationship </td>
+ <td></td><td> Relation schema </td>
+</tr>
+<tr valign=top>
+ <td><nobr> Entity instance <br> Relationship instance </td>
+ <td></td><td> Tuple <small>(row, record)</small> </td>
+</tr>
+<tr valign=top>
+ <td><nobr> Entity set <br> Relationship set </td>
+ <td></td><td> Relation instance </td>
+</tr>
+</table>
+</div>
+</DIV>
+<hr>
+<DIV id="s38">
+<div class='heading'>Relational Model vs ER Model <span style="font-size:67%">(cont)</span></div>
+<p>
+There are also differences between relational and ER models.
+<p>
+Compared to ER, the relational model:
+<ul>
+<li> uses relations to model both entities <i>and</i> relationships
+<li> has no composite or multi-valued attributes <small>(only atomic-valued)</small>
+<li> has no object-oriented notions <small>(e.g. subclasses, inheritance)</small>
+</ul>
+</DIV>
+<hr>
+<DIV id="s39">
+<div class='heading'>Relational Model vs ER Model <span style="font-size:67%">(cont)</span></div>
+<p>
+At first glance, Relational looks less powerful than ER:
+<ul>
+<li> less "mechanisms" and "weaker" data structuring tools
+</ul>
+However, the relational model:
+<ul>
+<li> can be used to represent any ER design <br>
+	<small>(although relational design may not be as "natural" as ER one)</small>
+<li> is simple, elegant and formal <br>
+	<i>&rArr;</i> &nbsp; provides a theory for evaluating relational designs
+<li> has a model for query processing <br>
+	<i>&rArr;</i> &nbsp; provides a basis for efficient implementations
+</ul>
+</DIV>
+<hr>
+<DIV id="s40">
+<div class='heading'>Mapping Strong Entities</div>
+<p>
+An <font color='#0000BB'>entity</font> consists of:
+<ul>
+<li> a collection of attributes; <br>
+	attributes can be simple, composite, multi-valued
+</ul>
+A <font color='#0000BB'>relation schema</font> consists of:
+<ul>
+<li> a collection of attributes; <br>
+	all attributes have atomic data values
+</ul>
+So, even the mapping from entity to relation schema is not simple.
+</DIV>
+<hr>
+<DIV id="s41">
+<div class='heading'>Mapping Strong Entities <span style="font-size:67%">(cont)</span></div>
+<p>
+In one special case, there is an obvious mapping:
+<ul>
+<li> an entity set <i>E</i> with atomic attributes
+	 <i>a<sub>1</sub>, a<sub>2</sub>, ... a<sub>n</sub></i>
+</ul>
+maps to
+<ul>
+<li> a relation <i>R</i> with attributes (columns) <i>a<sub>1</sub>, a<sub>2</sub>, ... a<sub>n</sub></i>
+</ul>
+Each row in the relation <i>R</i> corresponds to an entity in <i>E</i>.
+<p>
+The <font color='#0000BB'>key</font> for the relation is the same (set of attributes) as for the entity set.
+</DIV>
+<hr>
+<DIV id="s42">
+<div class='heading'>Mapping Strong Entities <span style="font-size:67%">(cont)</span></div>
+<p>
+ER supports composite (hierarchical) attributes.
+<p>
+The relational model supports only atomic attributes.
+<p>
+Composite attributes consist of
+<ul>
+<li> structuring attributes (non-leaf attributes)
+<li> data attributes (containing atomic values)
+</ul>
+<p><div align='center'>
+<img alt="[Diagram:Pic/er-rel/composite.png]" src="Pic/er-rel/composite.png">
+</div><p>
+</DIV>
+<hr>
+<DIV id="s43">
+<div class='heading'>Mapping Strong Entities <span style="font-size:67%">(cont)</span></div>
+<p>
+One approach to mapping composite attributes:
+<ul>
+<li> remove structuring attributes
+<li> map atomic components to a set of atomic attributes
+	&nbsp; <small>(possibly with renaming)</small>
+</ul>
+<small>E.g. &nbsp; <large><code>Struct A {W, Struct B {X,Y}, Z}</code></large> <i>&rarr;</i> <large><code>(W,X,Y,Z)</code></large></small>
+<p>
+It is common to retain structuring attribute as part of name
+to resolve name conflicts.
+<p>
+<small>
+E.g.  <large><code>Struct Addr {number,street,suburb,pcode}</code></large> <br>
+maps to <large><code>(AddrNumber,AddrStreet,AddrSuburb,AddrPcode)</code></large>
+</small>
+</DIV>
+<hr>
+<DIV id="s44">
+<div class='heading'>Mapping Strong Entities <span style="font-size:67%">(cont)</span></div>
+<p>
+Alternative approach to mapping composite attributes:
+<ul>
+<li> concatenate atomic attribute values into a string
+</ul>
+<small>
+E.g. &nbsp; <large><code>Struct name {"John","Smith"}</code></large> <i>&rarr;</i> <large><code>"John Smith"</code></large>
+</small>
+<p>
+However, this approach "hides" information from data manipulation languages:
+<ul>
+<li> requires extra extraction effort if components <i>are</i> required
+<li> cannot exploit efficient query capabilities on components
+</ul>
+</DIV>
+<hr>
+<DIV id="s45">
+<div class='heading'>Mapping Strong Entities <span style="font-size:67%">(cont)</span></div>
+<p>
+Example:
+<p><div align='center'>
+<img alt="[Diagram:Pic/er-rel/mapstrent.png]" src="Pic/er-rel/mapstrent.png">
+</div><p>
+</DIV>
+<hr>
+<DIV id="s46">
+<div class='heading'>Mapping Weak Entities</div>
+<p>
+A weak entity set <i>W</i>
+<ul>
+<li> has some attributes that form a <font color='#0000BB'>discriminator</font>, BUT
+<li> is dependent on some other entity set <i>E</i> to form a key
+</ul>
+If we simply form a relation for <i>W</i> by mapping its attributes,
+it would not be a valid relation because it would not have a key.
+<p>
+The solution:
+<ul>
+<li> map the weak entity set to a relation, BUT also
+<li> augment the relation by including <i>E</i>'s key
+</ul>
+This always yields a relation with a valid key.
+</DIV>
+<hr>
+<DIV id="s47">
+<div class='heading'>Mapping Weak Entities <span style="font-size:67%">(cont)</span></div>
+<p>
+More formally:
+<ul>
+<li> let <i>W</i> be a weak entity set with attributes
+	<i>w<sub>1</sub>, w<sub>2</sub>, ... w<sub>n</sub></i>
+<li> let <i>E</i> be its strong entity set with key
+	<i>e<sub>1</sub>, e<sub>2</sub>, ... e<sub>m</sub></i>
+<li> represent <i>W</i> by a table with columns  <br>
+	&nbsp;&nbsp;&nbsp; { <i>w<sub>1</sub>, w<sub>2</sub>, ... w<sub>n</sub></i> }
+	<i> &cup; </i>
+	{ <i>e<sub>1</sub>, e<sub>2</sub>, ... e<sub>m</sub></i> }
+</ul>
+The key is <i>E</i>'s key <small>(foreign key in <i>W</i>)</small> plus the discriminator of <i>W</i>.
+<p>
+The weak relationship set between <i>W</i> and <i>E</i> is not explicitly represented.
+</DIV>
+<hr>
+<DIV id="s48">
+<div class='heading'>Mapping Weak Entities <span style="font-size:67%">(cont)</span></div>
+<p>
+Example:
+<p><div align='center'>
+<img alt="[Diagram:Pic/er-rel/mapwkent.png]" src="Pic/er-rel/mapwkent.png">
+</div><p>
+</DIV>
+<hr>
+<DIV id="s49">
+<div class='heading'>Mapping N:M Relationships</div>
+<p>
+A <font color="#009900">binary relationship set</font> <i>B</i>
+between entity sets <i>E</i> and <i>F</i>
+gives associations between pairs of entities in <i>E</i> and <i>F</i>
+<p><div align='center'>
+<img alt="[Diagram:Pic/er-rel/nmrelationship.png]" src="Pic/er-rel/nmrelationship.png">
+</div><p>
+<p>
+We can represent
+<ul>
+<li> entity set <i>E</i> by relation <i>S</i>
+	&nbsp; <small>(using attribute mappings as above)</small>
+<li> entity set <i>F</i> by relation <i>T</i>
+	&nbsp; <small>(using attribute mappings as above)</small>
+</ul>
+<p>
+But how to represent <i>B</i>?
+</DIV>
+<hr>
+<DIV id="s50">
+<div class='heading'>Mapping N:M Relationships <span style="font-size:67%">(cont)</span></div>
+<p>
+One possibility: represent the <font color="#009900">relationship set</font> <i>B</i>
+explicitly by a <font color="#009900">relation</font> <i>R</i>.
+<p>
+Each tuple (row) in <i>R</i> represents the <font color="#009900">relationship</font>
+between a specific pair of entities from <i>E</i> and <i>F</i>.
+<p>
+For this to work, the tuple would need to contain information to identify
+the entities involved
+<p>
+This is achieved by storing the keys of the related entities.
+<p>
+It is somewhat like breaking the ER diagram up as follows:
+<p><div align='center'>
+<img alt="[Diagram:Pic/er-rel/nmrelationship2.png]" src="Pic/er-rel/nmrelationship2.png">
+</div><p>
+</DIV>
+<hr>
+<DIV id="s51">
+<div class='heading'>Mapping N:M Relationships <span style="font-size:67%">(cont)</span></div>
+<p>
+A relationship set <i>B(E,F)</i> is represented by a relation <i>R</i> containing:
+<ul>
+<li> all attributes from the primary keys of <i>S</i> and <i>T</i>
+<li> all attributes associated with the relationship set <i>B</i>
+</ul>
+where <i>S</i> and <i>T</i> are relations representing entity sets <i>E</i> and <i>F</i>.
+<p>
+The <font color='#0000BB'>key</font> for <i>R</i> is the union of the key attributes for <i>S</i> and <i>T</i>.
+</DIV>
+<hr>
+<DIV id="s52">
+<div class='heading'>Mapping N:M Relationships <span style="font-size:67%">(cont)</span></div>
+<p>
+This approach for representing relationships works generally:
+<ul>
+<li> relationship degree <i>&ge; 2</i>
+<li> relationship multiplicity 1:1, 1:N, N:M
+<li> associated attributes are simply included in <i>R</i>
+</ul>
+but requires a new relation to be created for each relationship set.
+<p>
+This can slow down query processing <font color='#0000BB'>considerably</font>.
+<p>
+In certain special cases, we do not need to create a new relation
+	<small> (see later). </small>
+</DIV>
+<hr>
+<DIV id="s53">
+<div class='heading'>Mapping N:M Relationships <span style="font-size:67%">(cont)</span></div>
+<p>
+Example:
+<p><div align='center'>
+<img alt="[Diagram:Pic/er-rel/mapnnrel.png]" src="Pic/er-rel/mapnnrel.png">
+</div><p>
+</DIV>
+<hr>
+<DIV id="s54">
+<div class='heading'>Mapping 1:N Relationships</div>
+<p>
+Consider a 1:N relationship <i>R</i> between entity sets <i>E</i> and <i>F</i>
+<ul>
+<li> an entity in <i>F</i> is associated with at most one entity in <i>E</i>
+<li> an entity in <i>E</i> may be associated with many entities in <i>F</i>
+</ul>
+As above, we represent <i>E</i> and <i>F</i> by relations <i>S</i> and <i>T</i>.
+<p>
+How to capture the association between an entity in <i>F</i> and the
+corresponding entity in <i>E</i>?
+<p>
+<small>
+We have already seen one solution: introduce a new relation for <i>R</i>.
+</small>
+</DIV>
+<hr>
+<DIV id="s55">
+<div class='heading'>Mapping 1:N Relationships <span style="font-size:67%">(cont)</span></div>
+<p>
+Since there is (at most) one corresponding entity, add attributes in <i>F</i>:
+<ul>
+<li> to identify the corresponding entity (i.e. <i>E</i>'s key)
+<li> to represent any attributes associated with <i>R</i>
+</ul>
+In other words, we insert a foreign key for <i>E</i> into <i>F</i>, <br>
+along with any attributes for the relationship <i>R</i>.
+<p>
+If an entity in <i>F</i> has no relationship with <i>E</i> give 
+<large><code>NULL</code></large> values to the "extra" attributes in <i>F</i>.
+</DIV>
+<hr>
+<DIV id="s56">
+<div class='heading'>Mapping 1:N Relationships <span style="font-size:67%">(cont)</span></div>
+<p>
+Example (generic mapping):
+<p><div align='center'>
+<img alt="[Diagram:Pic/er-rel/map1nrel1.png]" src="Pic/er-rel/map1nrel1.png">
+</div><p>
+</DIV>
+<hr>
+<DIV id="s57">
+<div class='heading'>Mapping 1:N Relationships <span style="font-size:67%">(cont)</span></div>
+<p>
+Example (optimised mapping):
+<p><div align='center'>
+<img alt="[Diagram:Pic/er-rel/map1nrel2.png]" src="Pic/er-rel/map1nrel2.png">
+</div><p>
+</DIV>
+<hr>
+<DIV id="s58">
+<div class='heading'>Mapping 1:1 Relationships</div>
+<p>
+1:1 relationships are handled in a similar manner to 1:N relationships.
+<p>
+The difference is that we could choose either relation to hold the key
+of the other relation, to represent the correspondence.
+<p>
+Choose the entity set that participates totally, if only one of them does.
+<p>
+For a 1:1 relationship between entity sets <i>E</i> and <i>F</i> (<i>S</i> and <i>T</i>):
+<ul>
+<li> choose one of <i>S</i> and <i>T</i> &nbsp; (e.g. <i>S</i>)
+<li> add the attributes of <i>T</i>'s primary key to <i>S</i> as foreign key
+<li> add the relationship attributes as attributes of <i>S</i>
+</ul>
+</DIV>
+<hr>
+<DIV id="s59">
+<div class='heading'>Mapping 1:1 Relationships <span style="font-size:67%">(cont)</span></div>
+<p>
+Example:
+<p><div align='center'>
+<img alt="[Diagram:Pic/er-rel/map11rel.png]" src="Pic/er-rel/map11rel.png">
+</div><p>
+</DIV>
+<hr>
+<DIV id="s60">
+<div class='heading'>Mapping Multi-valued Attributes</div>
+<p>
+An attribute in a relation may hold a single atomic value.
+<p>
+An attribute in an entity may hold multiple (structured) values.
+<p>
+A multi-valued attribute may be viewed as:
+<ul>
+<li> a collection of values associated with an entity
+</ul>
+so treat it like an N:M relationship between entities and values.
+<p>
+Create a new relation where each tuple contains:
+<ul>
+<li> the primary key attributes from the entity
+<li> one value for the multi-valued attribute from the corresponding entity
+</ul>
+</DIV>
+<hr>
+<DIV id="s61">
+<div class='heading'>Mapping Multi-valued Attributes <span style="font-size:67%">(cont)</span></div>
+<p>
+Example:
+<p><div align='center'>
+<img alt="[Diagram:Pic/er-rel/mapmva.png]" src="Pic/er-rel/mapmva.png">
+</div><p>
+</DIV>
+<hr>
+<DIV id="s62">
+<div class='heading'>Mapping Multi-valued Attributes <span style="font-size:67%">(cont)</span></div>
+<p>
+This approach is like altering the ER diagram as follows:
+<p><div align='center'>
+<img alt="[Diagram:Pic/er-rel/mapmva1.png]" src="Pic/er-rel/mapmva1.png">
+</div><p>
+</DIV>
+<hr>
+<DIV id="s63">
+<div class='heading'>Mapping Multi-valued Attributes <span style="font-size:67%">(cont)</span></div>
+<p>
+Example: the two entities
+<p><pre><small>
+Person(12345, John, 12-feb-1990, <font color="#996600">[red,green,blue]</font>)
+Person(54321, Jane, 25-dec-1990, <font color="#996600">[green,purple]</font>)
+</small></pre><p>
+would be represented as
+<p><pre>
+Person(12345, John, 12-feb-1990)
+Person(54321, Jane, 25-dec-1990)
+FavColour(12345, red)
+FavColour(12345, green)
+FavColour(12345, blue)
+FavColour(54321, green)
+FavColour(54321, purple)
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s64">
+<div class='heading'>Mapping Subclasses</div>
+<p>
+Each subclass is represented as a separate relation.
+<p>
+Each entity in the subclass:
+<ul>
+<li> contains its own subclass-specific information (attributes)
+<li> needs to be associated with information in the superclass
+</ul>
+<p>
+Use the superclass entity's primary key to capture the association.
+<p>
+Each tuple in the subclass relation contains:
+<ul>
+<li> all of the attributes from the parent's key
+<li> all of the subclass-specific attributes
+</ul>
+</DIV>
+<hr>
+<DIV id="s65">
+<div class='heading'>Mapping Subclasses <span style="font-size:67%">(cont)</span></div>
+<p>
+Example:
+<p><div align='center'>
+<img alt="[Diagram:Pic/er-rel/mapsubclass.png]" src="Pic/er-rel/mapsubclass.png">
+</div><p>
+</DIV>
+<hr>
+<DIV id="s66">
+<div class='heading'>Mapping Subclasses <span style="font-size:67%">(cont)</span></div>
+<p>
+This approach is like transforming the ER as follows:
+<p><div align='center'>
+<img alt="[Diagram:Pic/er-rel/mapsubclass1.png]" src="Pic/er-rel/mapsubclass1.png">
+</div><p>
+</DIV>
+<hr>
+<DIV id="s67">
+<div class='heading'>Mapping Subclasses <span style="font-size:67%">(cont)</span></div>
+<p>
+This approach to subclass mapping is called "ER style"
+<p>
+There are two other approaches to subclass mapping:
+<ul>
+<li> object-oriented
+<small>
+<ul>
+<li> each entity becomes a table, inheriting superclass attributes
+</ul>
+</small>
+<li> single table with nulls
+<small>
+<ul>
+<li> one table, with all attributes of all subclasses
+</ul>
+</small>
+</ul>
+</DIV>
+<hr>
+<DIV id="s68">
+<div class='heading'>Mapping Subclasses <span style="font-size:67%">(cont)</span></div>
+<p>
+Example of object-oriented mapping:
+<p><div align='center'>
+<img alt="[Diagram:Pic/er-rel/mapsubclass2.png]" src="Pic/er-rel/mapsubclass2.png">
+</div><p>
+</DIV>
+<hr>
+<DIV id="s69">
+<div class='heading'>Mapping Subclasses <span style="font-size:67%">(cont)</span></div>
+<p>
+Example of single-table-with-nulls mapping:
+<p><div align='center'>
+<img alt="[Diagram:Pic/er-rel/mapsubclass3.png]" src="Pic/er-rel/mapsubclass3.png">
+</div><p>
+</DIV>
+<hr>
+<DIV id="s70">
+<div class='heading'>Mapping Subclasses <span style="font-size:67%">(cont)</span></div>
+<p>
+Which mapping is best depends on other requirements ...
+<ul>
+<li> ER-style good for queries like "find average salary"
+<small>
+<ul>
+<li> need to look only in (relatively small) <large><code>Employee</code></large> table
+</ul>
+</small>
+<li> OO-style good for queries like "find manager names and bonuses"
+<small>
+<ul>
+<li> need to look only in <large><code>Manager</code></large> table
+</ul>
+</small>
+<li> Single-table saves space, unless many NULL values
+</ul>
+</DIV>
+<p><hr><p>
+<span style='font-size:11px;color: grey;'>Produced: 13 Sep 2020</span>
+ <script src='lib/prism.js'></script>   
+ <script src='lib/sg.js'></script>   
+</body>
+</html>

@@ -1,0 +1,218 @@
+<title>SQL: Queries on One Table
+<footer>COMP3311 20T3 <diamond> SQL: Queries on One Table <diamond>
+
+
+<slide>
+<heading>Queries
+A <em>query</em> is a <em>declarative program</em> that retrieves
+data from a database.
+<p>
+declarative = say what we want, not method to get it
+<p>
+Queries are used in two ways in RDBMSs:
+<itemize>
+<item> interactively <~> <small>(e.g. in <@>psql</@>)</small>
+<small>
+<itemize>
+<item> the entire result is displayed in tabular format on the output
+</itemize>
+</small>
+<item> by a program <~> <small>(e.g. in a PLpgSQL function)</small>
+<small>
+<itemize>
+<item> the result tuples are consumed one-at-a-time by the program
+</itemize>
+</small>
+</itemize>
+<p><br>
+SQL is based on the <em>relational algebra</em>, which we discuss elsewhere
+</slide>
+
+<slide>
+<heading>SQL Query Language
+An SQL <em>query</em> consists of a sequence of clauses:
+<program>
+SELECT   <i>projectionList</i>
+FROM     <i>relations/joins</i>
+WHERE    <i>condition</i>
+GROUP BY <i>groupingAttributes</i>
+HAVING   <i>groupCondition</i>
+</program>
+<@>FROM</@>, <~> <@>WHERE</@>, <~> <@>GROUP BY</@>, <~> <@>HAVING</@> <~> clauses are optional.
+<p>
+Result of query: a relation, typically displayed as a table.
+<p>
+<small>
+Result could be just one tuple with one attribute (i.e. one value) or even empty
+</small>
+</slide>
+
+<slide>
+<continued>
+Functionality provided by SQL ...
+<p>
+<em>Filtering</em>: extract attributes from tuples, extract tuples frm tables
+<program>
+SELECT b,c FROM R(a,b,c,d) WHERE a > 5
+</program>
+<em>Combining</em>: merging related tuples from different tables
+<program>
+... FROM R(x,y,z) JOIN S(a,b,c) ON R.y = S.a
+</program>
+<em>Summarising</em>: aggregating values in a single column
+<program>
+SELECT avg(mark) FROM ...
+</program>
+<em>Set operations</em>: union, intersection, difference
+</slide>
+
+<slide>
+<continued>
+More functionality provided by SQL ...
+<p>
+<em>Grouping</em>: forming subsets of tuples sharing some property
+<program>
+... GROUP BY R.a
+</program>
+<small>
+(forms groups of tuples from <@>R</@> sharing the same value of <@>a</@>)
+</small>
+<p>
+<em>Group Filtering</em>: selecting only groups satisfying a condition
+<program>
+... GROUP BY R.a HAVING max(R.a) << 75
+</program>
+<em>Renaming</em>: assign a name to a component of a query
+<program>
+SELECT a as <blue>name</blue>
+FROM Employee(a,b,c) <blue>e</blue> WHERE e.b >> 50000
+</program>
+</slide>
+
+<slide>
+<continued>
+Schema:
+<itemize>
+<sitem> <$>Students(id, name, ...)</$>
+<sitem> <$>Enrolments(student, course, mark, grade)</$>
+</itemize>
+<p>
+Example SQL query on this schema:
+<program>
+SELECT   s.id, s.name, avg(e.mark) as avgMark
+FROM     Students s
+         JOIN Enrolments e on (s.id = e.student)
+GROUP BY s.id, s.name
+<comment>-- or --</comment>
+SELECT   s.id, s.name, avg(e.mark) as avgMark
+FROM     Students s, Enrolments e
+WHERE    s.id = e.student
+GROUP BY s.id, s.name
+</program>
+</slide>
+
+<slide>
+<continued>
+<br>
+How the example query is computed:
+<itemize>
+<item> produce all pairs of <$>Students</$>,<$>Enrolments</$> <~>tuples <br>
+	which satisfy condition <$>(Students.id = Enrolments.student)</$>
+<item> each tuple has <$>(<red>id</red>,name,...,<red>student</red>,course,mark,grade)</$>
+<item> form groups of tuples with same <$>(id,name)</$> values
+<item> for each group, compute average mark
+<item> form result tuples <$>(id,name,avgMark)</$>
+</itemize>
+</slide>
+
+<slide>
+<heading>Problem-solving in SQL
+Starts with an information request:
+<itemize>
+<item> (informal) description of the information required from the database
+</itemize>
+Ends with:
+<itemize>
+<item> a list of tuples that meet the requirements in the request
+</itemize>
+<p>
+Pre-req: <~> <em>know your schema</em>
+<p>
+Look for keywords in request to identify required data :
+<itemize>
+<item> tell me the <blue>names</blue> of all <green>students</green>...
+<item> <blue>how many</blue> <green>students</green> failed ...
+<item> what is the <blue>highest mark</blue> in ...
+<item> which <green>courses</green> are ... <~> <small>(course codes?)</small>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+<br>
+Developing SQL queries ...
+<itemize>
+<item> relate required data to <em>attributes</em> in schema
+<item> identify which <em>tables</em> contain these attributes
+<item> combine data from relevant tables (<em><@>FROM</@></em>, <em><@>JOIN</@></em>)
+<item> specify conditions to select relevant data (<em><@>WHERE</@></em>)
+<item> [optional] define grouping attributes (<em><@>GROUP BY</@></em>)
+<item> develop expressions to compute output values (<em><@>SELECT</@></em>)
+</itemize>
+</slide>
+
+<slide>
+<continued>
+<br>
+<b>Example:</b> just the beers that John likes
+<itemize>
+<item> which table contains info about beers that are liked?
+<item> <@>Likes(drinker,beers)</@>
+<item> only want tuples where drinker is John <~>(<@>WHERE</@>)
+<item> only want beer names <~>(<@>SELECT beer</@>)
+</itemize>
+... giving ...
+<program>
+select beer from Likes where drinker='John';
+</program>
+</slide>
+
+<slide>
+<heading>Views
+A <em>view</em> associates a name with a query:
+<itemize>
+<item> <@@>CREATE VIEW</@@> <~><$>viewName</$><~> [ <@@>(</@@> <$>attributes</$> <@@>)</@@> ] <~><@@>AS</@@> <~><$>Query</$>
+</itemize>
+Each time the view is invoked (in a <@>FROM</@> clause):
+<itemize>
+<item> the <$>Query</$> is evaluated, yielding a set of tuples
+<item> the set of tuples is used as the value of the view
+</itemize>
+A view can be treated as a <q>virtual table</q>.
+<p>
+Views are useful for <q>packaging</q> a complex query to use in other queries.
+<p>
+cf. writing functions to package computations in programs
+</slide>
+
+<slide>
+<exercise>Queries on Beer Database
+ER design for Beer database:
+<diagram>Pics/sql/beer-er.png
+</slide>
+
+<slide>
+<continued>
+Answer these queries on the Beer database:
+<p><ol start="1">
+<item> What beers are made by Toohey's?
+<item> Show beers with headings <q>Beer</q>, <q>Brewer</q>.
+<item> How many different beers are there?
+<item> How many different brewers are there?
+<item> Which beers does John like? <br>
+<item> Find pairs of beers by the same manufacturer.
+<item> How many beers does each brewer make? <br>
+<item> Which brewers make only one beer? <br>
+<item> Which brewer makes the most beers?
+</ol>
+</slide>

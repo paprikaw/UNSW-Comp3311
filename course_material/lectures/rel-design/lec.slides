@@ -1,0 +1,421 @@
+<title>Relational Design
+<footer>COMP3311 20T3 <diamond> Relational Design <diamond>
+
+<slide>
+<heading>Relational Design Theory
+The aim of studying relational design theory:
+<itemize>
+<sitem> improve understanding of relationships among data
+<sitem> gain enough formalism to assist practical database design
+</itemize>
+What we study here:
+<itemize>
+<sitem> basic theory and definition of <em>functional dependencies</em>
+<sitem> methodology for improving schema designs (<em>normalisation</em>)
+</itemize>
+Functional dependencies
+<itemize>
+<sitem> describe relationships between attributes within a relation
+<sitem> have implications for <q>good</q> relational schema design
+</itemize>
+</slide>
+
+<slide>
+<heading>Relational Design and Redundancy
+A <em>good</em> relational database design:
+<itemize>
+<item> must capture <i>all</i><~> necessary attributes/associations
+<item> do this with <i>minimal</i><~> amount of stored information
+</itemize>
+Minimal stored information <$><Rightarrow></$> no redundant data.
+<p>
+In database design, <em>redundancy</em> is generally a <q>bad thing</q>:
+<itemize>
+<item> causes problems maintaining consistency after updates
+</itemize>
+But ... redundancy may give performance improvements
+<itemize>
+<item> e.g. avoid a join to collect pieces of data together
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Consider the following relation defining bank accounts/branches:
+<p>
+<reltable 6>
+<row>
+  <col1><b>accountNo</b></col1>
+  <col2><b>balance</b></col2>
+  <col3><b>customer</b></col3>
+  <col4><b>branch</b></col4>
+  <col5><b>address</b></col5>
+  <col6><b>assets</b></col6>
+</row>
+<row>
+  <col1>A-101</col1>
+  <col2>500</col2>
+  <col3>1313131</col3>
+  <col4>Downtown</col4>
+  <col5>Brooklyn</col5>
+  <col6>9000000</col6>
+</row>
+<row>
+  <col1>A-102</col1>
+  <col2>400</col2>
+  <col3>1313131</col3>
+  <col4>Perryridge</col4>
+  <col5>Horseneck</col5>
+  <col6>1700000</col6>
+</row>
+<row>
+  <col1>A-113</col1>
+  <col2>600</col2>
+  <col3>9876543</col3>
+  <col4><brown>Round Hill</brown></col4>
+  <col5><brown>Horseneck</brown></col5>
+  <col6><brown>8000000</brown></col6>
+</row>
+<row>
+  <col1>A-201</col1>
+  <col2>900</col2>
+  <col3>9876543</col3>
+  <col4>Brighton</col4>
+  <col5>Brooklyn</col5>
+  <col6>7100000</col6>
+</row>
+<row>
+  <col1>A-215</col1>
+  <col2>700</col2>
+  <col3>1111111</col3>
+  <col4>Mianus</col4>
+  <col5>Horseneck</col5>
+  <col6>400000</col6>
+</row>
+<row>
+  <col1>A-222</col1>
+  <col2>700</col2>
+  <col3>1111111</col3>
+  <col4>Redwood</col4>
+  <col5>Palo Alto</col5>
+  <col6>2100000</col6>
+</row>
+<row>
+  <col1>A-305</col1>
+  <col2>350</col2>
+  <col3>1234567</col3>
+  <col4><brown>Round Hill</brown></col4>
+  <col5><brown>Horseneck</brown></col5>
+  <col6><brown>8000000</brown></col6>
+</row>
+<row>
+  <col1>...</col1>
+  <col2>...</col2>
+  <col3>...</col3>
+  <col4>...</col4>
+  <col5>...</col5>
+  <col6>...</col6>
+</row>
+</reltable>
+<p>
+Careless updating of this data may introduce inconsistencies.
+</slide>
+
+<slide>
+<continued>
+If we add $300 to account A-113 ...
+<p>
+<reltable 6>
+<row>
+  <col1><b>accountNo</b></col1>
+  <col2><b>balance</b></col2>
+  <col3><b>customer</b></col3>
+  <col4><b>branch</b></col4>
+  <col5><b>address</b></col5>
+  <col6><b>assets</b></col6>
+</row>
+<row>
+  <col1>A-101</col1>
+  <col2>500</col2>
+  <col3>1313131</col3>
+  <col4>Downtown</col4>
+  <col5>Brooklyn</col5>
+  <col6>9000000</col6>
+</row>
+<row>
+  <col1>A-102</col1>
+  <col2>400</col2>
+  <col3>1313131</col3>
+  <col4>Perryridge</col4>
+  <col5>Horseneck</col5>
+  <col6>1700000</col6>
+</row>
+<row>
+  <col1>A-113</col1>
+  <col2><red>900</red></col2>
+  <col3>9876543</col3>
+  <col4><brown>Round Hill</brown></col4>
+  <col5><brown>Horseneck</brown></col5>
+  <col6><red>8000300</red></col6>
+</row>
+<row>
+  <col1>A-201</col1>
+  <col2>900</col2>
+  <col3>9876543</col3>
+  <col4>Brighton</col4>
+  <col5>Brooklyn</col5>
+  <col6>7100000</col6>
+</row>
+<row>
+  <col1>A-215</col1>
+  <col2>700</col2>
+  <col3>1111111</col3>
+  <col4>Mianus</col4>
+  <col5>Horseneck</col5>
+  <col6>400000</col6>
+</row>
+<row>
+  <col1>A-222</col1>
+  <col2>700</col2>
+  <col3>1111111</col3>
+  <col4>Redwood</col4>
+  <col5>Palo Alto</col5>
+  <col6>2100000</col6>
+</row>
+<row>
+  <col1>A-305</col1>
+  <col2>350</col2>
+  <col3>1234567</col3>
+  <col4><brown>Round Hill</brown></col4>
+  <col5><brown>Horseneck</brown></col5>
+  <col6><red>8000000</red></col6>
+</row>
+<row>
+  <col1>...</col1>
+  <col2>...</col2>
+  <col3>...</col3>
+  <col4>...</col4>
+  <col5>...</col5>
+  <col6>...</col6>
+</row>
+</reltable>
+</slide>
+
+<slide>
+<continued>
+If we add a new account A-306 at the Round Hill branch ...
+<p>
+<reltable 6>
+<row>
+  <col1><b>accountNo</b></col1>
+  <col2><b>balance</b></col2>
+  <col3><b>customer</b></col3>
+  <col4><b>branch</b></col4>
+  <col5><b>address</b></col5>
+  <col6><b>assets</b></col6>
+</row>
+<row>
+  <col1>A-101</col1>
+  <col2>500</col2>
+  <col3>1313131</col3>
+  <col4>Downtown</col4>
+  <col5>Brooklyn</col5>
+  <col6>9000000</col6>
+</row>
+<row>
+  <col1>A-102</col1>
+  <col2>400</col2>
+  <col3>1313131</col3>
+  <col4>Perryridge</col4>
+  <col5>Horseneck</col5>
+  <col6>1700000</col6>
+</row>
+<row>
+  <col1>A-113</col1>
+  <col2>900</col2>
+  <col3>9876543</col3>
+  <col4><brown>Round Hill</brown></col4>
+  <col5><brown>Horseneck</brown></col5>
+  <col6><red>8000300</red></col6>
+</row>
+<row>
+  <col1>A-201</col1>
+  <col2>900</col2>
+  <col3>9876543</col3>
+  <col4>Brighton</col4>
+  <col5>Brooklyn</col5>
+  <col6>7100000</col6>
+</row>
+<row>
+  <col1>A-215</col1>
+  <col2>700</col2>
+  <col3>1111111</col3>
+  <col4>Mianus</col4>
+  <col5>Horseneck</col5>
+  <col6>400000</col6>
+</row>
+<row>
+  <col1>A-222</col1>
+  <col2>700</col2>
+  <col3>1111111</col3>
+  <col4>Redwood</col4>
+  <col5>Palo Alto</col5>
+  <col6>2100000</col6>
+</row>
+<row>
+  <col1>A-305</col1>
+  <col2>350</col2>
+  <col3>1234567</col3>
+  <col4><brown>Round Hill</brown></col4>
+  <col5><brown>Horseneck</brown></col5>
+  <col6><red>8000000</red></col6>
+</row>
+<row>
+  <col1><red>A-306</red></col1>
+  <col2>500</col2>
+  <col3>7654321</col3>
+  <col4><brown>Round Hill</brown></col4>
+  <col5><brown>Horseneck</brown></col5>
+  <col6><red>8000500</red>?</col6>
+</row>
+<row>
+  <col1>...</col1>
+  <col2>...</col2>
+  <col3>...</col3>
+  <col4>...</col4>
+  <col5>...</col5>
+  <col6>...</col6>
+</row>
+</reltable>
+</slide>
+
+<slide>
+<continued>
+If we close account A-101 ...
+<p>
+<reltable 6>
+<row>
+  <col1><b>accountNo</b></col1>
+  <col2><b>balance</b></col2>
+  <col3><b>customer</b></col3>
+  <col4><b>branch</b></col4>
+  <col5><b>address</b></col5>
+  <col6><b>assets</b></col6>
+</row>
+<row>
+  <col1><s>A-101</s></col1>
+  <col2><s>500</s></col2>
+  <col3><s>1313131</s></col3>
+  <col4><s>Downtown</s></col4>
+  <col5><s>Brooklyn</s></col5>
+  <col6><s>9000000</s></col6>
+</row>
+<row>
+  <col1>A-102</col1>
+  <col2>400</col2>
+  <col3>1313131</col3>
+  <col4>Perryridge</col4>
+  <col5>Horseneck</col5>
+  <col6>1700000</col6>
+</row>
+<row>
+  <col1>A-113</col1>
+  <col2>900</col2>
+  <col3>9876543</col3>
+  <col4><brown>Round Hill</brown></col4>
+  <col5><brown>Horseneck</brown></col5>
+  <col6><red>8000300</red></col6>
+</row>
+<row>
+  <col1>A-201</col1>
+  <col2>900</col2>
+  <col3>9876543</col3>
+  <col4>Brighton</col4>
+  <col5>Brooklyn</col5>
+  <col6>7100000</col6>
+</row>
+<row>
+  <col1>A-215</col1>
+  <col2>700</col2>
+  <col3>1111111</col3>
+  <col4>Mianus</col4>
+  <col5>Horseneck</col5>
+  <col6>400000</col6>
+</row>
+<row>
+  <col1>A-222</col1>
+  <col2>700</col2>
+  <col3>1111111</col3>
+  <col4>Redwood</col4>
+  <col5>Palo Alto</col5>
+  <col6>2100000</col6>
+</row>
+<row>
+  <col1>A-305</col1>
+  <col2>350</col2>
+  <col3>1234567</col3>
+  <col4><brown>Round Hill</brown></col4>
+  <col5><brown>Horseneck</brown></col5>
+  <col6><red>8000000</red></col6>
+</row>
+<row>
+  <col1><red>A-306</red></col1>
+  <col2>500</col2>
+  <col3>7654321</col3>
+  <col4><brown>Round Hill</brown></col4>
+  <col5><brown>Horseneck</brown></col5>
+  <col6><red>8000500</red>?</col6>
+</row>
+<row>
+  <col1>...</col1>
+  <col2>...</col2>
+  <col3>...</col3>
+  <col4>...</col4>
+  <col5>...</col5>
+  <col6>...</col6>
+</row>
+</reltable>
+<p>
+What is the address of the Downtown branch?
+</slide>
+
+<slide>
+<continued>
+Insertion anomaly:
+<itemize>
+<item> when we insert a new record, we need to check that branch data is consistent with existing tuples
+</itemize>
+Update anomaly:
+<itemize>
+<item> if a branch changes address, we need to update all tuples referring to that branch
+</itemize>
+Deletion anomaly:
+<itemize>
+<item> if we remove information about the last account at a branch, all of the branch information disappears
+</itemize>
+<br>
+Insertion/update anomalies can be handled, e.g. by triggers
+<itemize>
+<item>  but this requires extra DBMS work on every change to the database
+</itemize>
+</slide>
+
+<slide>
+<heading>Database Design (revisited)
+To avoid these kinds of update problems:
+<itemize>
+<item> need a schema with "minimal overlap" between tables
+<item> each table contains a "coherent" collection of data values
+</itemize>
+Such schemas have little/no redundancy
+<p>
+<br>
+ER <rightarrow> SQL mapping tends to give non-redundant schemas
+<itemize>
+<item> but does not guarantee no redundancy
+</itemize>
+The methods we describe in this section
+<itemize>
+<item> can reduce redundancy in schemas <Rightarrow> eliminate update anomalies
+</itemize>
+</slide>

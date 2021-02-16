@@ -1,0 +1,682 @@
+<html>
+<head>
+<title>COMP3311 Course Overview</title>
+<link href='lib/slides.css' rel='stylesheet' type='text/css'>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML" async></script>
+<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js'></script>
+<link href='https://fonts.googleapis.com/css?family=Lato' rel='stylesheet'>
+<link href='lib/prism.css' rel='stylesheet'>
+<script src='lib/sg.js'></script>
+</head>
+<body>
+ <DIV class='slideCl1' id="s0"  >
+<div class='navCl1'><a href="#s1"><span class='nextArrowCl'>>></span></a> </div> <div class='heading'>COMP3311 Course Overview</div><p><ul class='indexUl'  style='font-size: 0.7em;'><li class="i"> <a href="#s2">Why Study Databases?</a>
+<li class="i"> <a href="#s3">Databases: Important Themes</a>
+<li class="i"> <a href="#s4">What is Data? What is a Database?</a>
+<li class="i"> <a href="#s5">Studying Databases in CSE</a>
+<li class="i"> <a href="#s6">Syllabus Overview</a>
+<li class="i"> <a href="#s8">Your Background</a>
+<li class="i"> <a href="#s9">Teaching/Learning</a>
+<li class="i"> <a href="#s11">Lectures</a>
+<li class="i"> <a href="#s12"> Labs and Tutes</a>
+<li class="i"> <a href="#s13"> Prac Work and Tute Exercises</a>
+<li class="i"> <a href="#s14">Questions/Feedback/Issues</a>
+<li class="i"> <a href="#s15">Assignments</a>
+<li class="i"> <a href="#s16">Quizzes</a>
+<li class="i"> <a href="#s17">Exam</a>
+<li class="i"> <a href="#s18">Supplementary Assessment Policy</a>
+<li class="i"> <a href="#s19">Assessment Summary</a>
+<li class="i"> <a href="#s20">Textbook (options)</a>
+<li class="i"> <a href="#s21">Database Management Systems</a>
+<li class="i"> <a href="#s22">Further Reading Material</a>
+<li class="i"> <a href="#s23">Home Computing</a>
+<li class="i"> <a href="#s24">Course Schedule</a>
+<li class="i"> <a href="#s25">Overview of the Databases Field</a>
+<li class="i"> <a href="#s26">Database Application Development</a>
+<li class="i"> <a href="#s27">Database System Architecture</a>
+<li class="i"> <a href="#s29">Data Modelling</a>
+<li class="i"> <a href="#s32">SQL vs Relational Model</a>
+<li class="i"> <a href="#s33"> ER-to-SQL Mapping</a>
+</ul></DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; Overview &#9826; [0/33]</div> <DIV class='slideCl1    ' id="s1"  >
+<div class='navCl1'> <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s2"><span class='nextArrowCl'> >> </span></a> </div> <center style="font-size:32pt;color:#336699">COMP3311 Database Systems</center>
+<p>
+<p><div align='center'>
+<img alt="[Diagram:Pics/intro/pgsql.jpg]" src="Pics/intro/pgsql.jpg">
+</div><p>
+<p>
+<table cellpadding="10px">
+<tr><td>Lecturer:</td>
+<td><i>Raymond Wong</i> &nbsp; <small>(cs3311@cse.unsw.edu.au)</small>
+</td></tr>
+<tr><td>Admin:</td>
+<td><i>Nicole Lam</i> &nbsp; <small>(cs3311@cse.unsw.edu.au)</small>
+</td></tr>
+<tr><td></td>
+<td><i>Dominic Wong</i> &nbsp; <small>(cs3311@cse.unsw.edu.au)</small>
+</td></tr>
+<tr valign="top">
+<td><nobr>Web Site:</nobr></td>
+<td><small>
+<font color="#000099"><a href="http://webcms3.cse.unsw.edu.au/COMP3311/21T1/">http://webcms3.cse.unsw.edu.au/COMP3311/21T1/</a></font> <br>
+or &nbsp; <font color="#000099"><a href="http://www.cse.unsw.edu.au/~cs3311/">http://www.cse.unsw.edu.au/~cs3311/</a></font>
+</small></td></tr>
+</table>
+<p>
+
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; Overview &#9826; [1/33]</div> <DIV class='slideCl1    ' id="s2"  >
+<div class='navCl1'><a href="#s1"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s3"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Why Study Databases?</div></td><td align='right'></td></tr></table>
+<p>
+Every significant computer application involves <big>Large Data</big>.
+<p>
+This needs to be:
+<ul>
+<li> <font color="#008800">stored</font> &nbsp; <small>(typically on a disk device)</small>
+<li> <font color="#008800">manipulated</font> &nbsp; <small>(efficiently, usefully)</small>
+<li> <font color="#008800">shared</font> &nbsp; <small>(by many users, concurrently)</small>
+<li> <font color="#0000EE">transmitted</font> &nbsp; <small>(all around the Internet)</small>
+</ul>
+<font color="#008800">Green</font> stuff handled by databases; &nbsp; <font color="#0000EE">blue</font> by networks.
+<p>
+<small>
+Challenges in building effective databases:
+efficiency, security, scalability, maintainability,
+availability, integration, new media types <small>(e.g., music)</small>, ...
+</small>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; Overview &#9826; [2/33]</div> <DIV class='slideCl1    ' id="s3"  >
+<div class='navCl1'><a href="#s2"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s4"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Databases: Important Themes</div></td><td align='right'></td></tr></table>
+<p>
+The field of <font color='#0000BB'>databases</font> deals with:
+<ul>
+<li> <font color='#0000BB'>data</font> ... representing application scenarios
+<li> <font color='#0000BB'>relationships</font> ... amongst data items
+<li> <font color='#0000BB'>constraints</font> ... on data and relationships
+<li> <font color='#0000BB'>redundancy</font> ... one source for each data item
+<li> <font color='#0000BB'>data manipulation</font> ... declarative, procedural
+<li> <font color='#0000BB'>transactions</font> ... multiple actions, atomic effect
+<li> <font color='#0000BB'>concurrency</font> ... multiple users sharing data
+<li> <font color='#0000BB'>scale</font> ... massive amounts of data
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; Overview &#9826; [3/33]</div> <DIV class='slideCl1    ' id="s4"  >
+<div class='navCl1'><a href="#s3"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s5"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; What is Data? What is a Database?</div></td><td align='right'></td></tr></table>
+<p>
+According to the Elmasri/Navathe textbook ...
+<p>
+<ul>
+<li><font color='#0000BB'>Data</font> = known recorded facts, with implicit meaning
+<small>
+<ul>
+<li>e.g. a student's name, a product id, a person's address or birthday
+</ul>
+</small>
+<br>
+<li><font color='#0000BB'>Database</font> = collection of related data, satisfying constraints
+<small>
+<ul>
+<li>e.g. a student <i>is enrolled in</i> a course, a product <i>is sold at</i> a store
+</ul>
+</small>
+<br>
+<li><font color='#0000BB'>DBMS</font> = database management system
+<small>
+<ul>
+<li>software to manage data, control access, enforce constraints
+</ul>
+</small>
+<br>
+<li><font color='#0000BB'>RDBMS</font> = <font color='#0000BB'>relational</font> database management system
+<small>
+<ul>
+<li>e.g. PostgreSQL, SQLite, Oracle, SQL Server, MySQL, ...
+</ul>
+</small>
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; Overview &#9826; [4/33]</div> <DIV class='slideCl1    ' id="s5"  >
+<div class='navCl1'><a href="#s4"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s6"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Studying Databases in CSE</div></td><td align='right'></td></tr></table>
+<p>
+COMP3311 introduces foundations &amp; technology of databases
+<ul>
+<li> skills: how to build database-backed applications
+<li> theory: how do you know that what you built was good
+</ul>
+<br>
+After COMP3311 you can go on to study ...
+<p>
+<small>
+<ul>
+<li>
+COMP9313: managing Big Data 
+ &nbsp; <span class="smaller">(deal with a huge amount of data)</span>
+<li>
+COMP9315: how to build relational DBMSs 
+ &nbsp; <span class="smaller">(write your own PostgreSQL)</span>
+<li>
+COMP9318: techniques for data mining 
+ &nbsp; <span class="smaller">(discovering patterns in DB)</span>
+<li>
+COMP9319: Web data compression and search 
+ &nbsp; <span class="smaller">(dealing large amount of  Web data)</span>
+<li>
+COMP6714: information retrieval, web search 
+ &nbsp; <span class="smaller">(dealing with text data)</span>
+<li>
+COMP9321: data services 
+ &nbsp; <span class="smaller">(making data available via a network)</span>
+</ul>
+</small>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; Overview &#9826; [5/33]</div> <DIV class='slideCl1    ' id="s6"  >
+<div class='navCl1'><a href="#s5"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s7"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Syllabus Overview</div></td><td align='right'></td></tr></table>
+<p>
+Core syllabus ...
+<ul>
+<li> Data modelling and database design
+<small>
+<ul>
+<li> ER model, <font color="#996600">ODL</font>, ER-to-relational
+<li> Relational model &nbsp; <small>(design theory, algebra)</small>
+</ul>
+</small>
+<li> Database application development
+<small>
+<ul>
+<li> SQL, views, stored procedures, triggers, aggregates
+<li> SQLite:
+		&nbsp; <tt>sqlite3</tt> <small>(an SQL shell)</small>
+<li> PostgreSQL:
+        &nbsp; <tt>psql</tt> <small>(an SQL shell)</small>,
+        &nbsp; <tt>PLpgSQL</tt> <small>(procedural)</small>,
+<li> Programming language access to databases
+	&nbsp; <small>(Python, <font color="#996600">ORMs</font>)</small>
+</ul>
+</small>
+</ul>
+</ul>
+<br>
+The <font color="#996600">brown stuff</font> is not covered in lectures and is not examinable
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; Overview &#9826; [6/33]</div> <DIV class='slideCl1    ' id="s7"  >
+<div class='navCl1'><a href="#s6"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s8"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Syllabus Overview <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+More syllabus ...
+<ul>
+<li> Database management systems (DBMSs)
+<small>
+<ul>
+<li> <font color="#0000EE">DBMS architecture: query processing, index structures</font>
+<li> Transaction processing: transactions, <font color="#0000EE">concurrency control, recovery</font>
+</ul>
+</small>
+<li> Future of Databases
+<small>
+<ul>
+<li> <font color="#008800">Limitations of RDBMS's, potential future technologies</font>
+</ul>
+</small>
+</ul>
+<br>
+<font color="#0000EE">Blue</font> and <font color="#008800">green stuff</font> is covered only briefly, and is not examinable
+<p>
+To learn more about the <font color="#008800">green stuff</font>, take COMP9313, COMP9319...
+<p>
+To learn more about the <font color="#0000EE">blue stuff</font>, take COMP9315, ...
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; Overview &#9826; [7/33]</div> <DIV class='slideCl1    ' id="s8"  >
+<div class='navCl1'><a href="#s7"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s9"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Your Background</div></td><td align='right'></td></tr></table>
+<p>
+We assume that you ...
+<ul>
+<li> have experience with procedural programming
+<li> have some background in data structures
+<li> hopefully, have some knowledge of Python
+</ul>
+<br>
+You might have acquired this background in
+<ul>
+<li> COMP1511, COMP1531, <font color="#008800">COMP2521</font>
+</ul>
+<br>
+If you don't know Python, look at some online tutorials soon.
+<p>
+e.g. https://www.python.org/about/gettingstarted/
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; Overview &#9826; [8/33]</div> <DIV class='slideCl1    ' id="s9"  >
+<div class='navCl1'><a href="#s8"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s10"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Teaching/Learning</div></td><td align='right'></td></tr></table>
+<p>
+Stuff that is available for you:
+<ul>
+<li> <font color='#0000BB'>Slides</font>: summarize <font color='#0000BB'>all</font> syllabus topics
+<li> <font color='#0000BB'>Course Notes</font>: contain extended versions of the slides (some are not examinable)
+<li> <font color='#0000BB'>Textbooks</font>: describe <font color='#0000BB'>most</font> syllabus topics in detail
+<li> <font color='#0000BB'>Pre-recorded videos</font>: elaborate <font color='#0000BB'>all</font> syllabus topics
+<li> <font color='#0000BB'>Live lectures (overview/problem-solving sessions)</font>: provide topic overview / work through examples
+<li> <font color='#0000BB'>Tutorials (written ex)</font>: design/concept/theory/written questions
+<li> <font color='#0000BB'>Labs (prac ex)</font>: hands-on prac work
+<li> <font color='#0000BB'>Assignments</font>: more detailed practical exercises
+<li> <font color='#0000BB'>Quizzes</font>: periodic progress check
+</ul>
+<br>
+All online. &nbsp; If you want on-campus, wait for COMP3311 21T3.
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; Overview &#9826; [9/33]</div> <DIV class='slideCl1    ' id="s10"  >
+<div class='navCl1'><a href="#s9"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s11"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Teaching/Learning <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+On the course website, you can:
+<ul>
+<li> find out the latest course news <br>
+    <span class="smaller">(important annoucements will also be emailed)</span>
+<li> view the topic-based slides (videos on echo360)
+<li> get details of tute/prac exercises
+<li> get assignment specs/material
+<li> do the quizzes
+<li> get your quick questions answered (via the Forums)
+</ul>
+URL:
+<a target=demo href="http://webcms3.cse.unsw.edu.au/COMP3311/20T3">https://webcms3.cse.unsw.edu.au/COMP3311/21T1/</a>
+<p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; Overview &#9826; [10/33]</div> <DIV class='slideCl1    ' id="s11"  >
+<div class='navCl1'><a href="#s10"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s12"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Lectures</div></td><td align='right'></td></tr></table>
+<p>
+Similar to COMP3311 20T3:
+<ul>
+<li> Pre-recorded videos
+<ul>
+<li> One topic per video
+<li> Available over the weekend in Echo360
+</ul>
+<li> Live lecture sessions (on Blackboard Collaborate)
+<ul>
+<li> One 2-hr session per week (instead of two 1-hr sessions in 20T3)
+<li> Week 1: Mon 9-11am. Week 2-5,7-10: Wed 4-6pm
+<li> Overiew of the topics and/or problem-solving exercises
+<li> Recorded and available in Echo360
+</ul>
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; Overview &#9826; [11/33]</div> <DIV class='slideCl1    ' id="s12"  >
+<div class='navCl1'><a href="#s11"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s13"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070;  Labs and Tutes</div></td><td align='right'></td></tr></table>
+<p>
+<ul>
+<li> Labs (2hrs; week 2,3,4,5)
+<ul>
+<li> Work on the prac exercises (ideally get them started before the lab)
+<li> Get help from your tutor on prac exercises (or tute ex / other COMP3311 related questions)
+</ul>
+<li> Tutes (1hr; week 7,8,9,10)
+<ul>
+<li> Walk through solutions for difficult tute questions
+<li> Provide assignment feedback
+<li> Further explain selected database theories, if needed
+</ul>
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; Overview &#9826; [12/33]</div> <DIV class='slideCl1    ' id="s13"  >
+<div class='navCl1'><a href="#s12"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s14"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070;  Prac Work and Tute Exercises</div></td><td align='right'></td></tr></table>
+<p>
+<ul>
+<li> Prac Work (week 1-5)
+<ul>
+<li> All prac exercises (week 1-5) are available now
+<li> You are expected to complete them every week accordingly
+<li> Get help from your lab tutor if you are stuck / have questions
+<li> Prac exercises equip you with the skills for the assignments
+</ul>
+<li> Tute Exercises (week 2-5,7-10)
+<ul>
+<li> Tute ans to be released 1-2 weeks later
+<li> Difficult tute questions will be discussed in details in tutes (week 7-10)
+<li> You may ask your lab tutor if you are stuck with some tute questions (week 2-5)
+</ul>
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; Overview &#9826; [13/33]</div> <DIV class='slideCl1    ' id="s14"  >
+<div class='navCl1'><a href="#s13"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s15"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Questions/Feedback/Issues</div></td><td align='right'></td></tr></table>
+<p>
+You can communicate with us via:
+<ul>
+<li> WebCMS forum (Quick questions / clarifications)
+<li> Labs/tuts (Longer questions / interactions required)
+<li> Live lectures (Lecture related questions)
+<li> Email cs3311@cse.unsw.edu.au (Contact me / course admins: e.g., personal issues)
+<li> Consultations (Anything else)
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; Overview &#9826; [14/33]</div> <DIV class='slideCl1    ' id="s15"  >
+<div class='navCl1'><a href="#s14"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s16"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Assignments</div></td><td align='right'></td></tr></table>
+<p>
+Two assignments, which are <font color="#CC0000">critical</font> for <font color='#0000BB'>learning</font>
+<ol>
+<li> SQL/PLpgSQL, 20%, due end week 5
+<li> Python/SQL, 20%, due end week 9 
+</ol>
+All assignments are done <font color='#0000BB'>individually</font>, and ...
+<ul>
+<li> submitted via <large><code>give</code></large> or Webcms3
+<li> automarked &nbsp; <small>(so you must follow specifcation exactly)</small>
+<li> plagiarism-checked &nbsp; <small>(copying solutions <i>&rArr;</i> <font color="#996600"><b>0</b></font> mark for course)</small>
+<li> rent-a-coder monitored &nbsp; <small>(buying solutions <i>&rArr;</i> <font color="#996600"><b>exclusion</b></font>)</small>
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; Overview &#9826; [15/33]</div> <DIV class='slideCl1    ' id="s16"  >
+<div class='navCl1'><a href="#s15"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s17"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Quizzes</div></td><td align='right'></td></tr></table>
+<p>
+Eight quizzes, each worth 4 marks 
+<ul>
+<li> cover material in previous few weeks lectures
+<li> aim to check your understanding of recent material
+<li> done via Webcms3 in your own time
+<li> primarily multiple-choice
+<li> held in weeks 2, 3, 4, 5, 7, 8, 9, 10
+<li> released Monday, &nbsp; due Friday 11:59pm
+<li> can be submitted multiple times
+</ul>
+8&times;4 = 32, which is mapped into a mark out of 10
+<p>
+Heavy penalties for late submission 
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; Overview &#9826; [16/33]</div> <DIV class='slideCl1    ' id="s17"  >
+<div class='navCl1'><a href="#s16"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s18"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Exam</div></td><td align='right'></td></tr></table>
+<p>
+The Final Exam includes questions on ...
+<ul>
+<li> SQL, PLpgSQL, (Python), design exercises, analyses
+<li> 50% prac questions, 50% "written" questions (tentatively, to be confirmed later in the course)
+</ul>
+<p>
+Online, open-web exam during exam period
+<ul>
+<li> content is what I'd put in a 3-hour in-lab exam
+<li> exam is open for slightly longer than 3 hours
+<li> can work on home machine (test on a cse machine before submission), or via <large><code>ssh</code></large>, or via <large><code>vlab</code></large>
+<li> all questions typed in and submitted online (<large><code>give</code></large>)
+</ul>
+<p>
+A sample exam will be available on the course website in Week 10
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; Overview &#9826; [17/33]</div> <DIV class='slideCl1    ' id="s18"  >
+<div class='navCl1'><a href="#s17"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s19"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Supplementary Assessment Policy</div></td><td align='right'></td></tr></table>
+<p>
+Everyone gets <b>exactly one chance</b> to pass the Exam
+<p>
+If you attempt the Exam 
+<ul>
+<li> I assume that you are fit/healthy enough to take it
+<li> no 2nd chance exams, even with a medical certificate
+</ul>
+All Special Consideration requests:
+<ul>
+<li> must <font color='#0000BB'>document</font> how <font color='#0000BB'>you</font> were affected
+<li> must be submitted to UNSW <small>(useful to email lecturer as well)</small>
+</ul>
+
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; Overview &#9826; [18/33]</div> <DIV class='slideCl1    ' id="s19"  >
+<div class='navCl1'><a href="#s18"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s20"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Assessment Summary</div></td><td align='right'></td></tr></table>
+<p>
+Your final mark/grade will be determined as follows:
+<p><pre>
+quizzes = mark for on-line quizzes   (out of 10)
+ass1    = mark for assignment 1      (out of 20)
+ass2    = mark for assignment 2      (out of 20)
+exam    = mark for final exam        (out of 50)
+okExam  = exam >= 22.5               (after scaling)
+
+mark    = ass1 + ass2 + quizzes + exam
+
+grade   = HD|DN|CR|PS  if mark >= 50 && okExam
+        = FL           if mark <  50 && okExam
+        = UF           if !okExam
+</pre><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; Overview &#9826; [19/33]</div> <DIV class='slideCl1    ' id="s20"  >
+<div class='navCl1'><a href="#s19"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s21"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Textbook (options)</div></td><td align='right'></td></tr></table>
+<p>
+<ul>
+<li> Elmasri, Navathe <br>
+	<a href="https://www.pearson.com/us/higher-education/program/Elmasri-Fundamentals-of-Database-Systems-7th-Edition/PGM189052.html">Fundamentals of Database Systems</a> <small>(7th ed, 2016)</small>
+<li> Garcia-Molina, Ullman, Widom <br>
+	<a href="http://www-db.stanford.edu/~ullman/dscb.html">Database Systems: The Complete Book</a> <small>(2nd ed, 2008)</small>
+<li> Ramakrishan, Gehrke <br>
+	<a href="http://www.cs.wisc.edu/~dbbook/">Database Management Systems</a> <small>(3rd ed, 2003)</small>
+<li> Silberschatz, Korth, Sudarshan <br>
+	<a href="http://db-book.com/">Database System Concepts</a> <small>(7th ed, 2019)</small>
+<li> Kifer, Bernstein, Lewis <br>
+	<a href="https://www.pearson.com/us/higher-education/program/Kifer-Database-Systems-An-Application-Oriented-Approach-Compete-Version-2nd-Edition/PGM268925.html">Database Systems: Application-Oriented Approach</a> <small>(2nd ed, 2006)</small>
+</ul>
+Earlier editions of texts are ok
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; Overview &#9826; [20/33]</div> <DIV class='slideCl1    ' id="s21"  >
+<div class='navCl1'><a href="#s20"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s22"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Database Management Systems</div></td><td align='right'></td></tr></table>
+<p>
+Two DBMSs for this course:
+<ul>
+<li> SQLite <small>(open-source, free, no server needed)</small>
+<li> PostgreSQL <small>(open-source, free, full-featured)</small>
+</ul>
+Comments on using a specific DBMS:
+<ul>
+<li> the primary goal is to learn SQL (a standard)
+<li> the specific DBMS is not especially important **
+<li> but, each DBMS implements non-standard features
+<li> we will use standard SQL as much as possible
+<li> PG docs describe all deviations from standard
+</ul>
+<br>
+<small>
+** Unless it seriously violates SQL standards ... I mean you, MySQL
+</small>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; Overview &#9826; [21/33]</div> <DIV class='slideCl1    ' id="s22"  >
+<div class='navCl1'><a href="#s21"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s23"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Further Reading Material</div></td><td align='right'></td></tr></table>
+<p>
+The on-line documentation and manuals provided with:
+<ul>
+<li> <a href="http://www.sqlite.org/docs.html">SQLite</a> are reasonably good
+<li> <a href="http://www.postgresql.org/docs/">PostgreSQL</a> are very good
+<li> <a href="http://www.python.org/">Python</a> are similarly comprehensive
+</ul>
+Some comments on technology books:
+<ul>
+<li> tend to be expensive and short-lived
+<li> many provide just the manual, plus some examples
+<li> generally, anything published by O'Reilly is useful
+</ul>
+<small>Aside: once you understand the concepts, the manual is sufficient</small>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; Overview &#9826; [22/33]</div> <DIV class='slideCl1    ' id="s23"  >
+<div class='navCl1'><a href="#s22"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s24"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Home Computing</div></td><td align='right'></td></tr></table>
+<p>
+Software versions that we'll be running this semester (TBC):
+<ul>
+<li> PostgreSQL <small>12</small>, &nbsp; SQLite <small>3.27</small>, &nbsp; Python <small>3.7</small>, &nbsp; psycopg2 <small>2.8</small>
+</ul>
+If you install them at home:
+<ul>
+<li> get versions "close to" these
+<li> <font color="#CC0000">test all work at CSE machines before submitting</font>
+</ul>
+Alternative to installing at home:
+<ul>
+<li> run them on the CSE servers (grieg) as you would in labs
+<li> use <large><code>vlab</code></large> or  <large><code>ssh</code></large> to log in to a CSE server from home
+</ul>
+<span class="smaller">
+Details on starting sqlite3 and setting up a PostgreSQL server on grieg are in the first and second Prac Exercises. If you have any difficulties, get help from your lab tutors.
+</span>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; Overview &#9826; [23/33]</div> <DIV class='slideCl1    ' id="s24"  >
+<div class='navCl1'><a href="#s23"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s25"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Course Schedule</div></td><td align='right'></td></tr></table>
+<p>
+A tentative course schedule:
+<ol>
+<li> Requirements -> Data Model
+<li> Data Model -> Relational Schema (-> DBMS)
+<li> Database operations (i.e., SQL)
+<li> SQL
+<li> SQL
+<li> --
+<li> Python and SQL
+<li> Check for redundancy
+<li> Relational algebra and query execution
+<li> Transactions and concurrency control
+</ol>
+Today, we will discuss what you are going to learn from the topic videos for week 1 and 2, i.e., database design
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; Overview &#9826; [24/33]</div> <DIV class='slideCl1    ' id="s25"  >
+<div class='navCl1'><a href="#s24"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s26"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Overview of the Databases Field</div></td><td align='right'></td></tr></table>
+<p>
+<br>
+<p><div align='center'>
+<img alt="[Diagram:Pics/intro/overview.png]" src="Pics/intro/overview.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; Overview &#9826; [25/33]</div> <DIV class='slideCl1    ' id="s26"  >
+<div class='navCl1'><a href="#s25"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s27"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Database Application Development</div></td><td align='right'></td></tr></table>
+<p>
+A variation on standard software engineering process:
+<ol>
+<li> <font color="#777777">analyse application requirements</font>
+<li> develop a data model to meet these requirements
+<li> check data model for redundancy <span class="smaller">(using relational theory)</span>
+<li> implement the data model as relational schema
+<li> <font color="#777777">define operations (transactions) on this model</font>
+<li> implement operations via SQL and procedural PLs
+<li> construct a program interface to these operations
+<li> <font color="#777777">monitor performance and "tune" the schema/operations</font>
+</ol>
+At some point, populate the database <small>(may be via interface)</small>
+<p>
+During the course, we consider these in the order 2, 4, 6, 7, 3
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; Overview &#9826; [26/33]</div> <DIV class='slideCl1    ' id="s27"  >
+<div class='navCl1'><a href="#s26"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s28"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Database System Architecture</div></td><td align='right'></td></tr></table>
+<p>
+The typical environment for a modern DBMS is:
+<p><div align='center'>
+<img alt="[Diagram:Pics/intro/dbms-arch.png]" src="Pics/intro/dbms-arch.png">
+</div><p>
+<p>
+<small>SQL queries and results travel along the client<i>&harr;</i>server links</small>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; Overview &#9826; [27/33]</div> <DIV class='slideCl1    ' id="s28"  >
+<div class='navCl1'><a href="#s27"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s29"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Database System Architecture <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<br>
+SQLite is not a client-server system:
+<p><br>
+<p><div align='center'>
+<img alt="[Diagram:Pics/intro/dbms-arch2.png]" src="Pics/intro/dbms-arch2.png">
+</div><p>
+<p><br>
+<small>
+Although it does have an API for use from programming languages.
+</small>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; Overview &#9826; [28/33]</div> <DIV class='slideCl1    ' id="s29"  >
+<div class='navCl1'><a href="#s28"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s30"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Data Modelling</div></td><td align='right'></td></tr></table>
+<p>
+Aims of data modelling:
+<ul>
+<li> describe what <font color='#0000BB'>information</font> is contained in the database <br>
+        <small>(e.g., entities: students, courses, accounts, branches, patients, ...)</small>
+<li> describe <font color='#0000BB'>relationships</font> between data items <br>
+                <small>(e.g., John is enrolled in COMP3311, Tom's account is held at Coogee)</small>
+<li> describe <font color='#0000BB'>constraints</font> on data <br>
+                        <small>(e.g., 7-digit IDs, students can enrol in no more than 3 courses per term)</small>
+</ul>
+                        <p>
+Data modelling is a <font color='#0000BB'>design</font> process
+<ul>
+<li> converts requirements into a data model
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; Overview &#9826; [29/33]</div> <DIV class='slideCl1    ' id="s30"  >
+<div class='navCl1'><a href="#s29"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s31"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Data Modelling <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Kinds of data models:
+<ul>
+<li> <font color='#0000BB'>logical</font>: abstract, for conceptual design, <small>e.g., ER</small>
+<li> <font color='#0000BB'>physical</font>: record-based, for implementation, <small>e.g., relational, SQL</small>
+</ul>
+<br>
+Strategy: design using abstract model; map to physical model
+<br>
+<p><div align='center'>
+<img alt="[Diagram:Pics/er-rel/data-modelling.png]" src="Pics/er-rel/data-modelling.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; Overview &#9826; [30/33]</div> <DIV class='slideCl1    ' id="s31"  >
+<div class='navCl1'><a href="#s30"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s32"><span class='nextArrowCl'> >> </span></a> </div> <head>Entity-Relationship (ER) Diagrams
+<b>Example</b> ER diagram:
+<p><br>
+<p><div align='center'>
+<img alt="[Diagram:Pics/er-rel/er1.png]" src="Pics/er-rel/er1.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; Overview &#9826; [31/33]</div> <DIV class='slideCl1    ' id="s32"  >
+<div class='navCl1'><a href="#s31"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s33"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; SQL vs Relational Model</div></td><td align='right'></td></tr></table>
+<p>
+The <font color='#0000BB'>relational model</font> is a formal system for
+<ul>
+<li> describing data &nbsp; <small>(relations, tuples, attributes, domains, constraints)</small>
+<li> manipulating data &nbsp; <small>(relational algebra ... covered elsewhere)</small>
+</ul>
+<font color='#0000BB'>SQL</font> is a "programming" language for
+<ul>
+<li> describing data &nbsp; <small>(tables, rows, fields, types, constraints)</small>
+<li> manipulating data &nbsp; <small>(query language)</small>
+</ul>
+SQL extends the relational model in some ways <small>(e.g bags vs sets of tuples)</small>
+<p>
+SQL omits some aspects of the relational model <small>(e.g. general constraints)</small>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; Overview &#9826; [32/33]</div> <DIV class='slideCl1    ' id="s33"  >
+<div class='navCl1'><a href="#s32"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>   </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070;  ER-to-SQL Mapping</div></td><td align='right'></td></tr></table>
+<p>
+Example (Mapping Weak Entities):
+<p><div align='center'>
+<img alt="[Diagram:Pics/er-sql/mapwkent.png]" src="Pics/er-sql/mapwkent.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; Overview &#9826; [33/33]</div><p><hr><p>
+<span style='font-size:11px;color: grey;'>Produced: 14 Feb 2021</span>
+ <script src='lib/prism.js'></script>   
+ <script src='lib/sg.js'></script>   
+</body>
+</html>

@@ -1,0 +1,585 @@
+<title>Query Processing
+
+<slide>
+<section>Query Processing
+</slide>
+
+<slide>
+<heading>Query Processing
+A <em>query</em> in SQL:
+<itemize>
+<item> states <i>what</i> answers are required 
+<item> says little about <i>how</i> they should be computed
+</itemize>
+A <em>query evaluator</em> :
+<itemize>
+<item> takes a declarative description of the <em>query</em> in SQL
+<item> parses the query into a <em>relational algebra</em> expression
+<item> determines a <em>plan</em> for answering the query
+<item> <em>executes</em> the plan via the database engine
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Phase 1: mapping SQL to relational algebra (RA)
+<diagram>Pic/qproc/qryeval1.png
+</slide>
+
+<slide>
+<heading>Mapping SQL to Relational Algebra
+A naive translation scheme from SQL to relational algebra:
+<itemize>
+<sitem> <@>SELECT</@> clause <$><rightarrow></$> projection
+<sitem> <@>FROM</@> clause <$><rightarrow></$> cross-product
+<sitem> <@>WHERE</@> clause <$><rightarrow></$> selection
+</itemize>
+Example:
+<program>
+select s.name, e.course
+from   Student s, Enrolment e
+where  s.id = e.student and e.mark > 50;
+</program>
+is translated to
+<p>
+<center>
+<small>
+<$> Project <small>[name,course]</small> ( Select <small>[id=student <and> mark>>50]</small> ( Student <times> Enrolment ) )</$>
+</small>
+</center>
+</slide>
+
+<slide>
+<continued>
+A better translation scheme would be something like:
+<itemize>
+<sitem> <@>SELECT</@> clause <$><rightarrow></$> projection
+<sitem> <@>WHERE</@> clause on single reln <$><rightarrow></$> selection
+<sitem> <@>WHERE</@> clause on two relns <$>R</$> <$><rightarrow></$> join
+</itemize>
+Example:
+<program>
+select s.name, e.course
+from   Student s, Enrolment e
+where  s.id = e.student and e.mark > 50;
+</program>
+is translated to
+<p>
+<center>
+<small>
+<$> Project <small>[name,course]</small> ( Select <small>[mark>>50]</small> ( Join <small>[id=student]</small> ( Student, Enrolment ) ) )</$>
+</small>
+</center>
+</slide>
+
+<slide>
+<continued>
+Mapping other RA operations ...
+<p>
+Aggregation operators (e.g. <@>MAX</@>, <@>SUM</@>, ...):
+<itemize>
+<item> add new operators to extend RA
+	<~> <small>(e.g. <$>max(Project<small>[age]</small>(..))</$> )</small>
+</itemize>
+Duplicate elimination (<@>DISTINCT</@>):
+<itemize>
+<item> incorporate into projection operator
+	<~> <small>(e.g. <$>Project'</$>)</small>
+</itemize>
+Grouping (<@>GROUP-BY</@>, <@>HAVING</@>):
+<itemize>
+<item> add new operators to extend RA
+	<~> <small>(e.g. <$>GroupBy, GroupSelect</$>)</small>
+</itemize>
+Sorting (<@>ORDER-BY</@>):
+<itemize>
+<item> add <$>sort</$> operator to extend RA
+</itemize>
+</slide>
+
+<slide>
+<heading>Mapping Example
+The query: <i>Courses with more than 100 students in them?</i>
+<p>
+Can be expressed in SQL as
+<program>
+select   distinct s.code
+from     Course c, Subject s, Enrolment e
+where    c.id = e.course and c.subject = s.id
+group by s.id
+having   count(*) > 100;
+</program>
+and might be compiled to
+<p>
+<small>
+<$>Result = 
+Project'<small>[s.code]</small>(
+	GroupSelect<small>[size>>100]</small>(
+		GroupBy<small>[id]</small> ( JoinRes )
+	)
+)</$>
+</small>
+<p>
+where
+<p>
+<small>
+<$>JoinRes =
+Join<small>[s.id=c.subject]</small> (
+	Subject,
+	Join<small>[id=course]</small>(
+		Course, Enrolment
+	)
+)</$>
+</small>
+</slide>
+
+<slide>
+<continued>
+The <$>Join</$> operations could be done (at least) two different ways:
+<diagram>Pic/qproc/join-trees.png
+<vspace 2>
+Which is better? ... The query optimiser works this out.
+<p>
+Note: for a join involving <$>N</$> tables, there are <$>O(N!)</$> possible trees.
+</slide>
+
+<slide>
+<heading>Query Evaluation
+The order of operations is important.
+<p>
+Equally important is the choice of concrete operations:
+<itemize>
+<item> each RA operator has several implementation methods
+<item> DBMSs typically provide a range of choices
+<item> each implementation is effective under certain conditions
+</itemize>
+The DBMS query optimiser needs to:
+<itemize>
+<item> choose concrete operations for each RA operation in query
+<item> by analysing the cost of potential concrete operations
+</itemize>
+</slide>
+
+<slide>
+<heading>Database Engine Operations
+One view of DB engine - <q>relational algebra virtual machine</q>:
+<p>
+<center>
+<table 3>
+<row>
+<col1> selection (<$><sel></$>) </col1>
+<col2> projection (<$><proj></$>) </col2>
+<col3> join (<$><join>, <times></$>) </col3>
+</row>
+<row>
+<col1> union (<$><union></$>) </col1>
+<col2> intersection (<$><intersect></$>) </col2>
+<col3> difference (<$>-</$>) </col3>
+</row>
+<row>
+<col1> sort </col1>
+<col2> insert </col2>
+<col3> delete </col3>
+</row>
+</table>
+</center>
+<p>
+For each of these operations:
+<itemize>
+<item> various data structures and algorithms are available
+<item> DBMSs may provide only one, or may provide a choice
+<item> we need to be able to estimate the cost of each method
+</itemize>
+Cost analysis requires a model of DBMS internals ...
+</slide>
+
+<slide>
+<heading>Query Optimisation Problem
+Given:
+<itemize>
+<item> a query <$>Q</$>,
+	<~> a database <$>D</$>,
+	<~> a database <q>engine</q> <$>E</$>
+</itemize>
+Determine a sequence of relational algebra operations that:
+<itemize>
+<item> produces the answer to <$>Q</$> in <$>D</$>
+<item> executes <$>Q</$> efficiently on <$>E</$> <~> <small>(minimal I/O)</small>
+</itemize>
+The term <q>query optimisation</q> is a misnomer:
+<itemize>
+<item> not just for queries <~~> <small>(e.g. also updates)</small>
+<item> not necessarily optimal <~~> <small>(<q>reasonably efficient</q>)</small>
+</itemize>
+<small>
+(Finding the <i>optimal</i> query is NP-hard;
+ the cost of finding it may be higher than the query cost).
+</small>
+</slide>
+
+<slide>
+<continued>
+The query optimiser start with an RA expression, then
+<itemize>
+<sitem> generates a set of equivalent expressions
+<sitem> generates possible execution plans for each
+<sitem> estimates cost of each plan, chooses chepaest
+</itemize>
+The cost of evaluating a query is determined by:
+<itemize>
+<sitem> size of relations <~> <small>(database relations and temporary relations)</small>
+<sitem> access mechanisms <~> <small>(indexing, hashing, sorting, join algorithms)</small>
+<sitem> size/number of main memory buffers <~> <small>(and replacement strategy)</small>
+</itemize>
+Analysis of costs involves <i>estimating</i>:
+<itemize>
+<sitem> the size of intermediate results
+<sitem> then, based on this, cost of secondary storage accesses
+</itemize>
+</slide>
+
+<slide>
+<continued>
+An <em>execution plan</em> is a sequence of relational operations.
+<p>
+Consider execution plans for:
+	<~~> <$> <sel><sub>c</sub> (R <~><join><sub>d</sub><~> S <~><join><sub>e</sub><~> T) </$>
+<program>
+tmp1   :=  hash_join[d](R,S)
+tmp2   :=  sort_merge_join[e](tmp1,T)
+result :=  binary_search[c](tmp2)
+</program>
+or
+<program>
+tmp1   :=  sort_merge_join[e](S,T)
+tmp2   :=  hash_join[d](R,tmp1)
+result :=  linear_search[c](tmp2)
+</program>
+or
+<program>
+tmp1   :=  btree_search[c](R)
+tmp2   :=  hash_join[d](tmp1,S)
+result :=  sort_merge_join[e](tmp2)
+</program>
+All produce same result, but have different costs.
+</slide>
+
+<slide>
+<heading>Implementations of RA Ops
+Sorting <~> <gray><small>(quicksort, etc. are not applicable)</small></gray>
+<itemize>
+<item> external merge sort <~> <small>(cost <$>O(Nlog<sub>B</sub>N)</$> with <$>B</$> memory buffers)</small>
+</itemize>
+Selection <~> <gray><small>(different techniques developed for different query types)</small></gray>
+<itemize>
+<item> sequential scan <~> <small>(worst case, cost <$>O(N)</$>)</small>
+<item> index-based <~> <small>(e.g. B-trees, cost <$>O(logN)</$>, tree nodes are pages)</small>
+<item> hash-based <~> <small>(<$>O(1)</$> best case, only works for equality tests)</small>
+</itemize>
+Join <~> <gray><small>(fast joins are critical to success to erlational DBMSs)</small></gray>
+<itemize>
+<item> nested-loop join <~> <small>(cost <$>O(N.M)</$>, buffering can reduce to <$>O(N+M)</$>)</small>
+<item> sort-merge join <~> <small>(cost <$>O(NlogN+MlogM)</$>)</small>
+<item> hash-join <~> <small>(best case cost <$>O(N+M.N/B)</$>, with <$>B</$> memory buffers)</small>
+</itemize>
+</slide>
+
+
+%%%%%%%%%%
+
+<slide>
+<section>Performance Tuning
+</slide>
+
+<slide>
+<heading>Performance Tuning
+Schema design:
+<itemize>
+<item> devise data structures to <em>represent application information</em>
+</itemize>
+Performance tuning:
+<itemize>
+<item> devise data structures to <em>achieve good performance</em>
+</itemize>
+Good performance may involve any/all of:
+<itemize>
+<sitem> making applications run faster
+<sitem> lowering response time of queries/transactions
+<sitem> improving overall transaction throughput
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Tuning requires us to consider the following:
+<itemize>
+<item> which queries and transactions will be used? <br>
+	<~> <small>(e.g. check balance for payment, display recent transaction history)</small>
+<item> how frequently does each query/transaction occur? <br>
+	<~> <small>(e.g. 99% of transactions are EFTPOS payments; 1% are print balance)</small>
+<item> are there time constraints on queries/transactions? <br>
+	<~> <small>(e.g. payment at EFTPOS terminals must be approved within 7 seconds)</small>
+<item> are there uniqueness constraints on any attributes? <br>
+	<~> <small>(therefore, define index on attributes to speed up insertion uniqueness check)</small>
+<item> how frequently do updates occur? <br>
+	<~> <small>(indexes slow down updates, because must update table <i>and</i> index)</small>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Performance can be considered at two times:
+<itemize>
+<item> <i>during</i> schema design
+<itemize>
+<item> typically towards the end of schema design process
+<item> requires schema transformations such as denormalisation
+</itemize>
+<item> <i>after</i> schema design
+<itemize>
+<item> requires adding extra data structures such as indexes
+</itemize>
+</itemize>
+</slide>
+
+<slide>
+<heading>Denormalisation
+Normalisation structures data to minimise storage redundancy.
+<itemize>
+<sitem> achieves this by <q>breaking up</q> the data into logical chunks
+<sitem> requires minimal <q>maintenance</q> to ensure data consistency
+</itemize>
+Problem: queries that need to put data back together.
+<itemize>
+<sitem> need to use a (potentially expensive) join operation
+<sitem> if an expensive join is frequent, system performance suffers
+</itemize>
+Solution: store some data redundantly
+<itemize>
+<sitem> benefit: queries needing expensive join are now cheap
+<sitem> trade-off: extra maintenance effort to maintain consistency
+<sitem> worthwhile if joins are frequent and updates are rare
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Example: Courses = Course <$><join></$> Subject <$><join></$> Term
+<p>
+If we frequently need to refer to course <q>standard</q> name
+<itemize>
+<item> add extra <@>courseName</@> column into <@>Course</@> table
+<item> cost: trigger before insert on <@>Course</@> to construct name
+<item> trade-off likely to be worthwhile: <@>Course</@> insertions infrequent
+</itemize>
+<sprogram>
+<comment>-- can now replace a query like:</comment>
+select s.code||t.year||t.sess, e.grade, e.mark
+from   Course c, CourseEnrolment e, Subject s, Term t
+where  e.course = c.id and c.subject = s.id and c.term = t.id
+<comment>-- by a query like:</comment>
+select c.courseName, e.grade, e.mark
+from   Course c, CourseEnrolment e
+where  e.course = c.id 
+</sprogram>
+</slide>
+
+<slide>
+<heading>Indexes
+Indexes provide efficient content-based access to tuples.
+<p>
+Can build indexes on any (combination of) attributes.
+<p>
+Definining indexes:
+<syntax>
+CREATE INDEX <$>name</$> ON <$>table</$> ( <$>attr<sub>1</sub></$>, <$>attr<sub>2</sub></$>, ... )
+</syntax>
+<$>attr<sub>i</sub></$> can be an arbitrary expression (e.g. <@>upper(name)</@>).
+<p>
+<@>CREATE INDEX</@> also allows us to specify
+<itemize>
+<sitem> that the index is on <@>UNIQUE</@> values
+<sitem> an access method (<@>USING</@> btree, hash, rtree, or gist)
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Indexes can make a huge difference to query processing cost.
+<p>
+On the other hand, they introduce overheads (storage, updates).
+<p>
+Creating indexes to maximise performance benefits:
+<itemize>
+<item> apply to attributes used in equality/range conditions, e.g.
+<sprogram>
+select * from Employee where <red>id</red> = 12345
+select * from Employee where <red>age</red> >> 60
+select * from Employee where <red>salary</red> between 10000 and 20000
+</sprogram>
+<item> but only in queries that are frequently used
+<item> and on tables that are not updated frequently
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Considerations in applying indexes:
+<itemize>
+<item> is an attribute used in frequent/expensive queries? <br>
+	<~> <small>(note that some kinds of queries can be answered from index alone)</small>
+<item> should we create an index on a collection of attributes? <br>
+	<~> <small>(yes, if the collection is used in a frequent/expensive query)</small>
+<item> can we exploit a clustered index? <small>(only one per table)</small>
+<item> should we use B-tree or Hash index?
+<sprogram>
+<comment>-- use hashing for (unique) attributes in equality tests, e.g.</comment>
+select * from Employee where <red>id</red> = 12345
+<comment>-- use B-tree for attributes in range tests, e.g.</comment>
+select * from Employee where <red>age</red> >> 60
+</sprogram>
+</itemize>
+</slide>
+
+<slide>
+<heading>Query Tuning
+Sometimes, a query can be re-phrased to affect performance:
+<itemize>
+<item> by helping the optimiser to make use of indexes
+<item> by avoiding (unnecessary) operations that are expensive
+</itemize>
+Examples which <i>may</i> prevent optimiser from using indexes:
+<program>
+select name from Employee where <red>salary</red>/365 >> 10.0
+       <comment>-- fix by re-phrasing condition to (salary >> 3650)</comment>
+select name from Employee where <red>name</red> like '%ith%'
+select name from Employee where <red>birthday</red> is null
+       <comment>-- above two are difficult to "fix"</comment>
+select name from Employee
+where  dept in (select id from Dept where ...)
+       <comment>-- fix by using Employee join Dept on (e.dept=d.id)</comment>
+</program>
+</slide>
+
+<slide>
+<continued>
+Other factors to consider in query tuning:
+<itemize>
+<item> <@>select distinct</@> requires a sort; is <@>distinct</@> necessary?
+<item> if multiple join conditions are available ... <br>
+	choose join attributes that are indexed, avoid joins on strings
+<sprogram>
+select ... Employee join Customer on (s.<blue>name</blue> = p.<blue>name</blue>)
+<comment>vs</comment>
+select ... Employee join Customer on (s.<red>ssn</red> = p.<red>ssn</red>)
+</sprogram>
+<item> sometimes <@>or</@> in condition prevents index from being used ... <br>
+	replace the <@>or</@> condition by a union of non-<@>or</@> clauses
+<sprogram>
+select name from Employee where dept=1 or dept=2
+<comment>vs</comment>
+(select name from Employee where <red>dept</red>=1)
+union
+(select name from Employee where <red>dept</red>=2)
+</sprogram>
+</itemize>
+</slide>
+
+<slide>
+<heading>PostgreSQL Query Tuning
+PostgreSQL provides the <@@>explain</@@> statement to
+<itemize>
+<item> give a representation of the query execution plan
+<item> with information that may help to tune query performance
+</itemize>
+Usage:
+<syntax>
+EXPLAIN [ANALYZE] <$>Query</$>
+</syntax>
+Without <@>ANALYZE</@>, <@>EXPLAIN</@> shows plan with estimated costs.
+<p>
+With <@>ANALYZE</@>, <@>EXPLAIN</@> executes query and prints real costs.
+<p>
+<small>
+Note that runtimes may show considerable variation due to buffering.
+</small>
+</slide>
+
+<slide>
+<heading>EXPLAIN Examples
+Example: Select on indexed attribute
+<sprogram>
+ass2=# explain select * from student where id=100250;
+                                 QUERY PLAN                                  
+-----------------------------------------------------------------------------
+ Index Scan using student_pkey on student  (cost=0.00..5.94 rows=1 width=17)
+   Index Cond: (id = 100250)
+
+ass2=# explain analyze select * from student where id=100250;
+                                 QUERY PLAN 
+-----------------------------------------------------------------------------
+ Index Scan using student_pkey on student  (cost=0.00..5.94 rows=1 width=17)
+                                 (actual time=31.209..31.212 rows=1 loops=1)
+   Index Cond: (id = 100250)
+ Total runtime: 31.252 ms
+
+</sprogram>
+</slide>
+
+<slide>
+<continued>
+Example: Select on non-indexed attribute
+<sprogram>
+ass2=# explain select * from student where stype='local';
+                        QUERY PLAN                        
+----------------------------------------------------------
+ Seq Scan on student  (cost=0.00..70.33 rows=18 width=17)
+   Filter: ((stype)::text = 'local'::text)
+
+ass2=# explain analyze select * from student where stype='local';
+                              QUERY PLAN 
+--------------------------------------------------------------------
+ Seq Scan on student  (cost=0.00..70.33 rows=18 width=17)
+             (actual time=0.061..4.784 rows=2512 loops=1)
+   Filter: ((stype)::text = 'local'::text)
+ Total runtime: 7.554 ms
+</sprogram>
+</slide>
+
+<slide>
+<continued>
+Example: Join on a primary key (indexed) attribute
+<sprogram>
+ass2=# explain
+ass2-# select s.sid,p.name from Student s, Person p where s.id=p.id;
+                               QUERY PLAN                                
+-------------------------------------------------------------------------
+ Hash Join  (cost=70.33..305.86 rows=3626 width=52)
+   Hash Cond: ("outer".id = "inner".id)
+   ->  Seq Scan on person p  (cost=0.00..153.01 rows=3701 width=52)
+   ->  Hash  (cost=61.26..61.26 rows=3626 width=8)
+         ->  Seq Scan on student s  (cost=0.00..61.26 rows=3626 width=8)
+</sprogram>
+</slide>
+
+<slide>
+<continued>
+Join on a primary key (indexed) attribute:
+<sprogram>
+ass2=# explain anaylze
+ass2-# select s.sid,p.name from Student s, Person p where s.id=p.id;
+                                QUERY PLAN
+-------------------------------------------------------------------------
+ Hash Join  (cost=70.33..305.86 rows=3626 width=52)
+            (actual time=11.680..28.242 rows=3626 loops=1)
+   Hash Cond: ("outer".id = "inner".id)
+   ->  Seq Scan on person p  (cost=0.00..153.01 rows=3701 width=52)
+                       (actual time=0.039..5.976 rows=3701 loops=1)
+   ->  Hash  (cost=61.26..61.26 rows=3626 width=8)
+             (actual time=11.615..11.615 rows=3626 loops=1)
+         ->  Seq Scan on student s  (cost=0.00..61.26 rows=3626 width=8)
+                            (actual time=0.005..5.731 rows=3626 loops=1)
+ Total runtime: 32.374 ms
+</sprogram>
+</slide>
+

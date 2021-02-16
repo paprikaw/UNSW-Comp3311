@@ -1,0 +1,11 @@
+one-off ... particular day
+- some are all day 0:00 - 23:59
+- some have a time range (date+time)
+
+time-range
+- range of dates
+
+recurrent events
+- start date, end date
+- frequency of recurrence (daily, weekly, monthly, annually)
+- # of recurrences

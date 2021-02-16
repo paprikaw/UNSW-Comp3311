@@ -1,0 +1,210 @@
+<title>Relational Model
+<footer>COMP3311 20T3 <diamond> Rel Model <diamond>
+
+<slide>
+<heading>Relational Data Model
+The <em>relational data model</em> describes the world as
+<itemize>
+<item> a collection of inter-connected <em>relations</em> (or <em>tables</em>)
+</itemize>
+The relational model has one structuring mechanism: <em>relations</em>
+<itemize>
+<item> relations are used to model both entities and relationships
+</itemize>
+Each <em>relation</em> <small>(denoted <$>R,S,T,...</$>)</small> has:
+<itemize>
+<sitem> a <em>name</em> <~> <small>(unique within a given database)</small>
+<sitem> a set of <em>attributes</em> <~> <small>(which can be viewed as column headings)</small>
+</itemize>
+Each <em>attribute</em> <small>(denoted <$>A,B,...</$> or <$>a<sub>1</sub>,a<sub>2</sub>,...</$>)</small> has:
+<itemize>
+<sitem> a <em>name</em> <~> <small>(unique within a given relation)</small>
+<sitem> an associated <em>domain</em> <~> <small>(set of allowed values)</small>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Consider relation <$>R</$> with attributes
+<$>a<sub>1</sub>, a<sub>2</sub>, ... a<sub>n</sub></$>
+<p>
+<em>Relation schema</em> of <$>R</$> : <~>
+<$><b>R</b>(a<sub>1</sub>:D<sub>1</sub>, a<sub>2</sub>:D<sub>2</sub>, ... a<sub>n</sub>:D<sub>n</sub>)</$>
+<p>
+<em>Tuple</em> of <$>R</$> : an element of <$>D<sub>1</sub> <times> D<sub>2</sub> <times> ... <times> D<sub>n</sub></$> <~> <small>(i.e. list of values)</small>
+<p>
+<em>Instance</em> of <$>R</$> :
+subset of <$>D<sub>1</sub> <times> D<sub>2</sub> <times> ... <times> D<sub>n</sub></$> <~> <small>(i.e. set of tuples)</small>
+<p>
+Note: <~>
+tuples:  (2,3) <~><neq><~> (3,2) <~~~>
+relation:  { (a,b), (c,d) } <~>=<~> { (c,d), (a,b) }
+<p>
+Domains are comprised of atomic values <~> <small>(e.g. integer, string, date)</small>
+<p>
+A distinguished value <@>NULL</@> belongs to all domains
+<p>
+Each relation has a <em>key</em> <~> <small>(subset of attributes unique for each tuple)</small>
+</slide>
+
+<slide>
+<continued>
+A relation: <~> <@>Account(branchName, accountNo, balance)</@>
+<p>
+And an <i>instance</i><~> of this relation:
+<program>
+{
+  (Sydney, A-101, 500),
+  (Coogee, A-215, 700),
+  (Parramatta, A-102, 400),
+  (Rouse Hill, A-305, 350),
+  (Brighton, A-201, 900),
+  (Kingsford, A-222, 700)
+  (Brighton, A-217, 750)
+}
+</program>
+</slide>
+
+<slide>
+<continued>
+<@>Account</@> relation as a table:
+<p>
+<diagram>Pics/er-rel/rel-table.png
+</slide>
+
+<slide>
+<heading>Example Database Schema
+Consider the following ER data model:
+<p><br>
+<diagram>Pics/er-rel/schemaER.png
+</slide>
+
+<slide>
+<continued>
+Relational schema derived from this ER model:
+<p><br>
+<diagram>Pics/er-rel/schema.png
+<p><br>
+<small>
+Note: distinguish attributes via e.g. <@>Branch.address</@> vs <@>Customer.address</@>
+</small>
+</slide>
+
+<slide>
+<heading>Example Database (Instance)
+<diagram>Pics/er-rel/rel-tables.png
+</slide>
+
+<slide>
+<heading>Integrity Constraints
+To represent real-world problems, need to describe
+<itemize>
+<item> what values are/are not allowed
+<item> what combinations of values are/are not allowed
+</itemize> 
+<em>Constraints</em> are logical statements that do this:
+<itemize>
+<item> <em>domain constraints</em>: <br> limit the set of values that attributes can take
+<item> <em>key constraints</em>: <br> identify attributes that uniquely identify tuples
+<item> <em>entity integrity constraints</em>: require keys to be fully-defined
+<item> <em>referential integrity constraints</em>: <br> require references to other tables to be valid
+</itemize>
+</slide>
+
+<slide>
+<continued>
+<em>Domain constraints</em> example:
+<itemize>
+<item> <@>Employee.age</@> attribute is typically defined as <@>integer</@>
+<item> better modelled by adding extra constraint <@>(15<<age<<66)</@>
+</itemize>
+Note: <@>NULL</@> satisfies all domain constraints
+	<~> <small>(except (NOT NULL))</small>
+<p>
+<em>Key constraints</em> example:
+<itemize>
+<item> <@>Student(id, ...)</@> is guaranteed unique
+<item> <@>Class(...,day,time,location,...)</@> is unique
+</itemize>
+<p>
+<em>Entity integrity</em> example:
+<itemize>
+<item> <@>Class(...,Mon,2pm,Lyre,...)</@> is well-defined
+<item> <@>Class(...,</@><b>NULL</b><@>,2pm,Lyre,...)</@> is not well-defined
+</itemize>
+</slide>
+
+<slide>
+<heading>Referential Integrity
+<em>Referential integrity constraints</em>
+<itemize>
+<item> describe references between relations (tables)
+<item> are related to notion of a <em>foreign key</em> (FK)
+</itemize>
+Example:
+<diagram>Pics/er-rel/fkeys.png
+</slide>
+
+<slide>
+<continued>
+A set of attributes <$>F</$><~> in relation <$>R<sub>1</sub></$><~>
+	is a <em>foreign key</em> for <$>R<sub>2</sub></$><~> if:
+<itemize>
+<item> the attributes in <$>F</$><~> correspond to the primary key of <$>R<sub>2</sub></$>
+<item> the value for <$>F</$><~> in each tuple of <$>R<sub>1</sub></$>
+<itemize>
+<item> either <~> occurs as a primary key in <$>R<sub>2</sub></$>
+<item> or <~> is entirely <@>NULL</@>
+</itemize>
+</itemize>
+Foreign keys are critical in relational DBs; they provide ...
+<itemize>
+<item> the <q>glue</q> that links individual relations (tables)
+<item> the way to assemble query answers from multiple tables
+<item> the relational representation of ER relationships
+</itemize>
+</slide>
+
+<slide>
+<heading>Relational Databases
+A <em>relational database schema</em> is
+<itemize>
+<item> a set of relation schemas
+	<~> <$>{ R<sub>1</sub>, <~> R<sub>2</sub>, <~>...<~> R<sub>n</sub> }</$> ,
+	<~> and
+<item> a set of integrity constraints
+</itemize>
+A <em>relational database instance</em> is
+<itemize>
+<item> a set of relation instances
+	<~> <$>{ r<sub>1</sub>(R<sub>1</sub>), <~> r<sub>2</sub>(R<sub>2</sub>), <~>...<~> r<sub>n</sub>(R<sub>n</sub>) }</$>
+<item> where all of the integrity constraints are satisfied
+</itemize>
+One of the important functions of a relational DBMS:
+<itemize>
+<item> ensure that all data in the database satisfies constraints
+</itemize>
+Changes to the data fail if they would cause constraint violation
+</slide>
+
+<slide>
+<heading>Describing Relational Schemas
+We need a language to express relational schemas <br>
+<small>(which is more detailed than boxes-and-arrows diagrams used above)</small>
+<p>
+SQL provides a <em>D</em>ata <em>D</em>efinition <em>L</em>anguage (DDL) for this.
+<p>
+<pre>
+<b>CREATE TABLE</b> <$>TableName</$> <b>(</b>
+   <$>attrName<sub>1</sub></$> <$>domain<sub>1</sub></$> <$>constraints<sub>1</sub></$> <b>,</b>
+   <$>attrName<sub>2</sub></$> <$>domain<sub>2</sub></$> <$>constraints<sub>2</sub></$> <b>,</b>
+   ...
+   <b>PRIMARY KEY</b> (<$>attr<sub>i</sub></$>,<$>attr<sub>j</sub></$>,...),
+   <b>FOREIGN KEY</b> (<$>attr<sub>x</sub></$>,<$>attr<sub>y</sub></$>,...)
+               <b>REFERENCES</b>
+               <$>OtherTable</$> (<$>attr<sub>m</sub></$>,<$>attr<sub>n</sub></$>,...), ...
+<b>);</b>
+</pre>
+<br>
+<small>To be continued ...</small>
+</slide>

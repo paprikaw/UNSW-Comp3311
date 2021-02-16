@@ -1,0 +1,68 @@
+
+<slide>
+<exercise>Mapping 1:N Relationships
+Would this be a suitable mapping for a 1:N relationship?
+<diagram>Pics/er-rel/map1nrel1.png
+</slide>
+
+<slide>
+<exercise> ER-to-Relational (1)
+Convert this ER design to relational form:
+<p><br>
+<diagram>Pics/er-rel/simpleER.png
+</slide>
+
+
+<slide>
+<exercise>Mapping 1:1 Relationships
+What are advantages/disadvantages of this mapping:
+<p>
+<diagram>Pics/er-rel/map11rel2.png
+</slide>
+
+
+<slide>
+<exercise> ER-to-Relational (2)
+Convert this ER design to relational form:
+<p><br>
+<diagram>Pics/er-rel/emp-dept-proj.png
+</slide>
+
+
+<slide>
+<exercise>3-way relationship
+Translate the following ER design to a relational schema:
+<diagram>Pics/er-rel/medical1.png
+</slide>
+
+<slide>
+<exercise>Alternative prescription model
+Translate the following ER design to a relational schema:
+<diagram>Pics/er-rel/medical2.png
+</slide>
+
+<slide>
+<exercise> Attribute Mappings
+Convert this ER design to relational form:
+<p><br>
+<diagram>Pics/exercises/person.png
+</slide>
+
+<slide>
+<exercise> Disjoint subclasses
+Translate the following ER design to a relational schema:
+<diagram>Pics/exercises/studentD.png
+<p>
+Use (a) ER-mapping, (b) OO-mapping, (c) 1-table-mapping
+<p>
+Are there aspects of the ER design that can't be mapped?
+</slide>
+
+<slide>
+<exercise> Overlapping subclasses
+Translate the following ER design to a relational schema:
+<diagram>Pics/exercises/studentO.png
+Use (a) ER-mapping, (b) OO-mapping, (c) 1-table-mapping
+<p>
+Are there aspects of the ER design that can't be mapped?
+</slide>

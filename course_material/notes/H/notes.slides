@@ -1,0 +1,1478 @@
+<title>Database Administration
+
+<slide>
+<heading>Database Administration
+Database installations are typically ...
+<itemize>
+<sitem> used by <em>many</em> casual users <~> <small>(typically via a web interface)</small>
+<sitem> used by <em>few</em> developers <~> <small>(who build schemas and applications)</small>
+<sitem> managed by <em>one</em> DB administrator <~> <small>(or a small team of DBAs)</small>
+</itemize>
+<diagram>Pic/dbms/usage.png
+</slide>
+
+<slide>
+<continued>
+Tasks of the database administrator:
+<itemize>
+<item> manage the database installation <br>
+	<small>(including configuring system parameters, running the server, back-ups, ...)</small>
+<item> create users and specify what they can/cannot do <br>
+	<small>(according to the security poilicies of the organisation running the DBMS)</small>
+<item> tune performance of applications and overall system
+<item> act as the owner of the system meta-data <small>(e.g. catalog)</small>
+<item> back-up the contents of the database <small>(in case of disasters)</small>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+The DBMS itself assists DB administration by:
+<itemize>
+<item> maintaining a database of schemas in the system <~> <small>(catalog)</small>
+<item> maintaining a database of users/groups and their privileges <br>
+	<small>(which determines who can perform which operations on which objects)</small>
+<item> maintaining statistical information about database instances <br>
+	<small>(used by the query optimiser in determining best query execution strategy)</small>
+</itemize>
+</slide>
+
+<slide>
+<heading>Your PostgreSQL DBMSs
+In the PostgreSQL installations on <b>grieg</b> you are the DBA <br>
+<small>(aka PostgreSQL super-user, owner of postmaster process)</small>
+<p>
+Data/files associated with server live under <@>/srvr/</@>YOU<@>/pgsql903/</@>
+<p>
+Some things that you could potentially do:
+<itemize>
+<item> change configuration parameters of your sever <br>
+	<small>(e.g. more run-time buffers, more connections, <@>postgresql.conf</@>)</small>
+<item> add new users of the database and set their privileges <br>
+	<small>(SQL commands: <@>CREATE USER</@>, <@>CREATE ROLE</@>, <@>GRANT</@>, <@>REVOKE</@>)</small>
+<item> modify accessibility of the databases <br>
+	<small>(<@>pg_hba.conf</@>, who can access what from where and authentication)</small>
+</itemize>
+</slide>
+
+<slide>
+<section>Catalogs
+</slide>
+
+<slide>
+<heading>Catalogs
+An RDBMS maintains a collection of relation instances.
+<p>
+To do this, it also needs information <em>about</em> relations:
+<itemize>
+<item> name, owner, primary key of each relation
+<item> name, data type, constraints for each attribute
+<item> authorisation for operations on each relation
+</itemize>
+Similarly for other DBMS objects <small>(e.g. views, functions, triggers, ...)</small>
+<p>
+This information is stored in the <em>system catalog</em>.
+<p>
+<small>
+(The <q>system catalog</q> is also called <q>data dictionary</q> or <q>system view</q>)
+</small>
+</slide>
+
+<slide>
+<continued>
+DBMSs typically use a hierarchy of namespaces to manage names:
+<p>
+<b>Database</b> <small>(or <b>Catalog</b>)</small>
+<small>
+<itemize>
+<sitem> top-level namespace, contains a collection of schemas
+<sitem> users typically connect to and work with a current database
+</itemize>
+</small>
+<b>Schema</b>
+<small>
+<itemize>
+<sitem> second-level namespace, contains a collection of tables, views, etc.
+<sitem> users typically work with current schema, but can qualify names
+</itemize>
+</small>
+<b>Table</b>
+<small>
+<itemize>
+<sitem> lowest-level namespace, contains a collection of attributes
+<sitem> SELECT queries set a context for names; qualification often required
+</itemize>
+</small>
+</slide>
+
+<slide>
+<continued>
+DBMSs store the catalog data in a collection of special tables:
+<p>
+<diagram>Pic/dbms/catalog-er.png
+<p>
+<small>(A small fragment of the meta-data tables in a typical RDBMS)</small>
+</slide>
+
+<slide>
+<continued>
+SQL:2003 standard view of metadata: <@>INFORMATION_SCHEMA</@>.
+<p>
+The <@>INFORMATION_SCHEMA</@> is available globally and includes:
+<p>
+<b>Schemata</b>(catalog_name, schema_name, schema_owner, ...)
+<p>
+<b>Tables</b>(table_catalog, table_schema, table_name, table_type, ...)
+<p>
+<b>Columns</b>(table_catalog, table_schema, table_name, column_name, <br>
+<~~~> <~~~> <~~~> <~~~> ordinal_position, column_default, data_type, ...)
+<p>
+<b>Views</b>(table_catalog, table_schema, table_name, view_definition, ...)
+<p>
+<b>Table_Constraints</b>(..., constraint_name, ..., constraint_type, ...)
+<p>
+<small>etc. etc. etc.</small>
+</slide>
+
+<slide>
+<continued>
+DBMS internal meta-data is often different to standard, e.g.
+<sprogram>
+Users(id:int, name:string, ...)
+Databases(id:int, name:string, owner:ref(User), ...)
+Schemas(id:int, name:string, owner:ref(User), ...)
+Types(id:int, name:string, defn:string, size:int, ...)
+Tables(id:int, name:string, owner:ref(User),
+                                inSchema:ref(Schema), ...)
+Attributes(id:int, name:string, table:ref(Table),
+                           type:ref(Type), pkey:bool, ...)
+TableConstraints(id:int, name:string, table:ref(Table),
+                                         defn:string, ...)
+AttrConstraints(id:int, name:string, attr:ref(Attribute),
+                                         defn:string, ...)
+<comment>-- etc. etc. etc.</comment>
+</sprogram>
+</slide>
+
+<slide>
+<continued>
+SQL DDL operations such as
+<sprogram>
+create table Abc (
+    x integer primary key,
+    y integer);
+</sprogram>
+are implemented internally as operations on meta-data, e.g.
+<sprogram>
+userID := current_user();
+schemaID := current_schema();
+tabID := nextval('tab_id_seq');
+select into intID id
+from Types where name='integer';
+insert into Tables(id,name,owner,inSchema,...)
+       values (tabID, 'abc', userID, schema, ...)
+attrID := nextval('attr_id_seq');
+insert into Attributes(id,name,table,type,pkey,...)
+       values (attrID, 'x', tabID, intID, true, ...)
+attrID := nextval('attr_id_seq');
+insert into Attributes(id,name,table,type,pkey,...)
+       values (attrID, 'y', tabID, intID, false, ...)
+</sprogram>
+</slide>
+
+<slide>
+<heading>Access to System Catalog
+Users typically have access to the system catalog via
+<itemize>
+<item> special commands <~>
+	(e.g. PostgreSQL's <@>\d</@>, <@>\df</@>, etc.)
+<item> query-able views <~>
+	(e.g. Oracle's <@>select * from tab</@>)
+</itemize>
+How much is visible to each user depends on their role
+<itemize>
+<item> DBA can see/change anything in system catalog via SQL
+<item> ordinary user can see only some of the system catalog <br>
+	and can change it only via SQL DDL statements
+</itemize>
+</slide>
+
+<slide>
+<heading>PostgreSQL Catalog
+PostgreSQL stores catalog information as regular tables.
+<p>
+The <@>\d?</@> special commands in <@>psql</@> are just
+wrappers around queries on those tables, e.g.
+<p>
+<deftable>
+<row>
+<col1>
+<@>\dt</@>
+</col1>
+<col2>
+list information about tables
+</col2>
+</row>
+<row>
+<col1>
+<@>\dv</@>
+</col1>
+<col2>
+list information about views
+</col2>
+</row>
+<row>
+<col1>
+<@>\df</@>
+</col1>
+<col2>
+list information about functions
+</col2>
+</row>
+<row>
+<col1>
+<@>\dp</@>
+</col1>
+<col2>
+list table access privileges
+</col2>
+</row>
+<row>
+<col1>
+<@>\dT</@>
+</col1>
+<col2>
+list information about data types
+</col2>
+</row>
+<row>
+<col1>
+<@>\dd</@>
+</col1>
+<col2>
+shows comments attached to DB objects
+</col2>
+</row>
+</deftable>
+</slide>
+
+<slide>
+<continued>
+A PostgreSQL installation typically has several databases.
+<p>
+Some catalog information is global, e.g.
+<itemize>
+<item> databases, users, ...
+<small>
+<item> there is one copy of each <q>global</q> table for the whole PostgreSQL installation
+<sitem> this copy is shared by all databases in the installation
+</small>
+</itemize>
+Other catalog information is local to each database, e.g
+<itemize>
+<item> schemas, tables, attributes, functions, types, ...
+<small>
+<item> there is a separate copy of each <q>local</q> table in each database
+<sitem> a copy of each <q>local</q> table is made when a new database is created
+</small>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+<@@>pg_authid</@@> contains information about database users:
+<p>
+<deftable>
+<row>
+<col1><@>oid</@></col1>
+<col2>
+integer key to reference user
+</col2>
+</row>
+<row>
+<col1><@>rolname</@></col1>
+<col2>
+symbolic user name (e.g. <@>jas</@>)
+</col2>
+</row>
+<row>
+<col1><@>rolpasswd</@></col1>
+<col2>
+md5-encrypted password
+</col2>
+</row>
+<row>
+<col1><@>rolcreatedb</@></col1>
+<col2>
+can create new databases
+</col2>
+</row>
+<row>
+<col1><@>rolsuper</@></col1>
+<col2>
+is a superuser (owns server process)
+</col2>
+</row>
+<row>
+<col1><@>rolcatupdate</@></col1>
+<col2>
+can update system catalogs
+</col2>
+</row>
+</deftable>
+</slide>
+
+<slide>
+<continued>
+<@@>pg_database</@@> contains information about databases:
+<p>
+<deftable>
+<row>
+<col1><@>datname</@></col1>
+<col2>
+database name (e.g. <@>nssis</@>)
+</col2>
+</row>
+<row>
+<col1><@>datdba</@></col1>
+<col2>
+database owner <small>(refs <@>pg_auth.oid</@>)</small>
+</col2>
+</row>
+<row>
+<col1><@>datpath</@></col1>
+<col2>
+where files for database are stored <br> <small>(if not in the PG_DATA directory)</small>
+</col2>
+</row>
+<row>
+<col1><@>datacl</@></col1>
+<col2>
+access permissions
+</col2>
+</row>
+</deftable>
+</slide>
+
+<slide>
+<continued>
+<@@>pg_class</@@> contains information about tables:
+<p>
+<deftable>
+<row>
+<col1><@>relname</@></col1>
+<col2>
+name of table (e.g. <@>employee</@>)
+</col2>
+</row>
+<row>
+<col1><@>relnamespace</@></col1>
+<col2>
+schema in which table defined <br>
+<small>(refs <@>pg_namespace.oid</@>)</small>
+</col2>
+</row>
+<row>
+<col1><@>reltype</@></col1>
+<col2>
+data type corresponding to table <br>
+<small>(refs <@>pg_type.oid</@>)</small>
+</col2>
+</row>
+<row>
+<col1><@>relowner</@></col1>
+<col2>
+owner <small>(refs <@>pg_authid.oid</@>)</small>
+</col2>
+</row>
+<row>
+<col1><@>reltuples</@></col1>
+<col2>
+# tuples in table
+</col2>
+</row>
+<row>
+<col1><@>relacl</@></col1>
+<col2>
+access permissions
+</col2>
+</row>
+</deftable>
+<small>
+Also holds info about objects other than tables, e.g. views, sequences, indexes.
+</small>
+</slide>
+
+<slide>
+<continued>
+<@@>pg_class</@@> also holds various flags/counters for each
+table:
+<p>
+<deftable>
+<row>
+<col1><@>relkind</@></col1>
+<col2>
+what kind of object <br>
+<small>
+'r' = ordinary table, 'i' = index, 'v' = view <br>
+'c' = composite type, 'S' = sequence, 's' = special
+</small>
+</col2>
+</row>
+<row>
+<col1><@>relnatts</@></col1>
+<col2>
+# attributes in table <br>
+<small>(how many entries in <@>pg_attribute</@> table)</small>
+</col2>
+</row>
+<row>
+<col1><@>relchecks</@></col1>
+<col2>
+# of constraints on table <br>
+<small>(how many entries in <@>pg_constraint</@> table)</small>
+</col2>
+</row>
+<row>
+<col1><@>relhasindex</@></col1>
+<col2>
+table has/had an index?
+</col2>
+</row>
+<row>
+<col1><@>relhaspkey</@></col1>
+<col2>
+table has/had a primary key?
+</col2>
+</row>
+</deftable>
+etc.
+</slide>
+
+<slide>
+<continued>
+<@@>pg_type</@@> contains information about data types:
+<p>
+<deftable>
+<row>
+<col1><@>typname</@></col1>
+<col2>
+name of type (e.g. <@>integer</@>)
+</col2>
+</row>
+<row>
+<col1><@>typnamespace</@></col1>
+<col2>
+schema in which type defined <br>
+<small>(refs <@>pg_namespace.oid</@>)</small>
+</col2>
+</row>
+<row>
+<col1><@>typowner</@></col1>
+<col2>
+owner <small>(refs <@>pg_authid.oid</@>)</small>
+</col2>
+</row>
+<row>
+<col1><@>typtype</@></col1>
+<col2>
+what kind of data type <br>
+<small> 'b' = base type, 'c' = complex (row) type, ... </small>
+</col2>
+</row>
+<row>
+<col1><@>typlen</@></col1>
+<col2>
+how much storage used for type values <br>
+<small>(-1 for variable-length types, e.g. <@>text</@>)</small>
+</col2>
+</row>
+<row>
+<col1><@>typrelid</@></col1>
+<col2>
+table associated to complex type <br>
+<small>(refs <@>pg_class.oid</@>)</small>
+</col2>
+</row>
+</deftable>
+etc.
+</slide>
+
+<slide>
+<continued>
+<@@>pg_attribute</@@> contains information about attributes:
+<p>
+<deftable>
+<row>
+<col1><@>attname</@></col1>
+<col2>
+name of attribute (e.g. <@>id</@>)
+</col2>
+</row>
+<row>
+<col1><@>attrelid</@></col1>
+<col2>
+table this attribute belongs to <br>
+<small>(refs <@>pg_class.oid</@>)</small>
+</col2>
+</row>
+<row>
+<col1><@>atttypid</@></col1>
+<col2>
+data type of this attribute <br>
+<small>(refs <@>pg_type.oid</@>)</small>
+</col2>
+</row>
+<row>
+<col1><@>attlen</@></col1>
+<col2>
+storage space required by attribute <br>
+<small>(a copy of <@>pg_type.typlen</@> for data type)</small>
+</col2>
+</row>
+<row>
+<col1><@>attnum</@></col1>
+<col2>
+attribute position <small>(1..n, sys attrs are -ve)</small>
+</col2>
+</row>
+</deftable>
+</slide>
+
+<slide>
+<continued>
+<@@>pg_attribute</@@> also holds constraint/status information:
+<p>
+<deftable>
+<row>
+<col1><@>attnotnull</@></col1>
+<col2>
+attribute may not be null?
+</col2>
+</row>
+<row>
+<col1><@>atthasdef</@></col1>
+<col2>
+attribute has a default values <br>
+<small>(value is held in <@>pg_attrdef</@> table)</small>
+</col2>
+</row>
+<row>
+<col1><@>attisdropped</@></col1>
+<col2>
+attribute has been dropped from table
+</col2>
+</row>
+</deftable>
+plus others related to strage properties of attribute.
+</slide>
+
+<slide>
+<continued>
+<@@>pg_proc</@@> contains information about functions:
+<p>
+<deftable>
+<row>
+<col1><@>proname</@></col1>
+<col2>
+name of function (e.g. <@>substr</@>)
+</col2>
+</row>
+<row>
+<col1><@>pronamespace</@></col1>
+<col2>
+schema in which function defined <br>
+<small>(refs <@>pg_namespace.oid</@>)</small>
+</col2>
+</row>
+<row>
+<col1><@>proowner</@></col1>
+<col2>
+owner <small>(refs <@>pg_authid.oid</@>)</small>
+</col2>
+</row>
+<row>
+<col1><@>prolang</@></col1>
+<col2>
+what language function written in
+</col2>
+</row>
+<row>
+<col1><@>proacl</@></col1>
+<col2>
+access control
+</col2>
+</row>
+</deftable>
+etc.
+</slide>
+
+<slide>
+<continued>
+<@@>pg_proc</@@> contains information about arguments:
+<p>
+<deftable>
+<row>
+<col1><@>pronargs</@></col1>
+<col2>
+how many arguments
+</col2>
+</row>
+<row>
+<col1><@>prorettype</@></col1>
+<col2>
+return type <small>(refs <@>pg_type.oid</@>)</small>
+</col2>
+</row>
+<row>
+<col1><@>proargtypes</@></col1>
+<col2>
+argument types <small>(vector of refs <@>pg_type.oid</@>)</small>
+</col2>
+</row>
+<row>
+<col1><@>proisstrict</@></col1>
+<col2>
+returns null if any arg is null
+</col2>
+</row>
+<row>
+<col1><@>prosrc</@></col1>
+<col2>
+source code if interpreted <small>(e.g. PLpgSQL)</small>
+</col2>
+</row>
+</deftable>
+</slide>
+
+<slide>
+<continued>
+<@@>pg_constraints</@@> contains information about constraints:
+<p>
+<deftable>
+<row>
+<col1><@>conname</@></col1>
+<col2>
+name of constraint <small>(not unique)</small>
+</col2>
+</row>
+<row>
+<col1><@>connamespace</@></col1>
+<col2>
+schema containing this constraint
+</col2>
+</row>
+<row>
+<col1><@>contype</@></col1>
+<col2>
+kind of constraint <br>
+<small>
+'c' = check, 'u' = unique, <br>
+'p' = primary key, 'f' = foreign key
+</small>
+</col2>
+</row>
+<row>
+<col1><@>conrelid</@></col1>
+<col2>
+which table <small>(refs <@>pg_class.oid</@>)</small>
+</col2>
+</row>
+<row>
+<col1><@>conkey</@></col1>
+<col2>
+which attributes <br>
+<small>(vector of values from <@>pg_attribute.attnum</@>)</small>
+</col2>
+</row>
+<row>
+<col1><@>consrc</@></col1>
+<col2>
+check constraint expression
+</col2>
+</row>
+</deftable>
+</slide>
+
+<slide>
+<continued>
+For full details on PostgreSQL catalogs:
+<p>
+<navy>PostgreSQL 9.0.3 Developer's Guide</navy>
+<p>
+Part VII, Chapter 45, System Catalogs
+<p>
+Part IV, Chapter 34, The Information Schema
+</slide>
+
+<slide>
+<section>Security, Privilege, Authorisation
+</slide>
+
+<slide>
+<heading>Database Security
+Database security has to meet the following objectives:
+<itemize>
+<item>
+<em>Secrecy</em>:
+	information not disclosed to unauthorised users <br>
+	<small>e.g. a student should <b>not</b> be able to examine other students' marks</small>
+<item>
+<em>Integrity</em>:
+ 	only authorised users are allowed to modify data <br>
+	<small>e.g. a student should not be able to modify anybody's marks</small>
+<item>
+<em>Availability</em>:
+	authorised users should not be denied access <br>
+	<small>e.g. the LIC should be able to read/changes marks for their course</small>
+</itemize>
+<small>
+Goal: prevent unauthorised use/alteration/destruction of mission-critical data.
+</small>
+</slide>
+
+<slide>
+<continued>
+Security mechanisms operate at a number of levels
+<itemize>
+<item> within the database system <~> (SQL-level privileges) <br>
+	<small>e.g. specific users can query/modify/update only specified database objects</small>
+<item> accessing the database system <~> (users/passwords) <br>
+	<small>e.g. users are required to authenticate themselves at connection-time</small>
+<item> operating system <~> (access to DB clients) <br>
+	<small>e.g. users should not obtain access to the DBMS superuser account</small>
+<item> network <~> (most DB access nowadays is via network) <br>
+	<small>e.g. results should not be transmitted unencrypted to Web browsers</small>
+<item> human/physical <~> (conventional security mechanisms) <br>
+	<small>e.g. no unauthorised physical access to server hosting the DBMS</small>
+</itemize>
+</slide>
+
+<slide>
+<heading>Database Access Control
+Access to DBMSs involves two aspects:
+<itemize>
+<item> having execute permission for a DBMS client <small>(e.g. <@>psql</@>)</small>
+<item> having a username/password registered in the DBMS
+</itemize>
+Establishing a <em>connection</em> to the database:
+<itemize>
+<item> user supplies <red>database</red>/<green>username</green>/<navy>password</navy> to client
+<item> client passes these to server, which validates them
+<item> if valid, user is <q>logged in</q> to the specified database
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Note: we don't need to supply username/password to <@>psql</@>
+<itemize>
+<item> <@>psql</@> works out which user by who ran the client process
+<item> we're all PostgreSQL super-users on our own servers
+<item> servers are configured to allow super-user direct access
+</itemize>
+<p>
+Note: access to databases via the Web involves:
+<itemize>
+<item> running a script on a Web server
+<item> using the Web server's access rights on the DBMS
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Database <em>users</em> are set up by the DBA via the command:
+<syntax>
+CREATE USER <$>Name</$> IDENTIFIED BY '<$>Password</$>'
+</syntax>
+Various privileges can be assigned at user-creation time, e.g.
+<itemize>
+<item> ability to create new users or databases or tables
+</itemize>
+User properties may be subsequently changed via:
+<syntax>
+ALTER USER <$>Name</$> IDENTIFIED BY '<$>NewPassword</$>'
+</syntax>
+This command is also used to change privileges, quotas, etc.
+</slide>
+
+<slide>
+<continued>
+A user may be associated with a <em>role</em> or <em>group</em>
+<itemize>
+<item> which typically gives them additional specific privileges
+</itemize>
+Roles are also set up by the DBA via the command:
+<syntax>
+CREATE ROLE <$>RoleName</$>
+</syntax>
+Examples of roles:
+<itemize>
+<item> AcademicStaff ... has privileges to read/modify marks
+<item> OfficeStaff ... has privilege to read all marks
+<item> Student ... has privilege to read own marks only
+</itemize>
+</slide>
+
+<slide>
+<heading>Database Access Control in PostgreSQL
+In older versions of PostgreSQL ...
+<itemize>
+<item> <@>USER</@>s and <@>GROUP</@>s were distinct kinds of objects
+<item> <@>USER</@>s were added via <~><@>CREATE USER</@> <$>UserName</$>
+<item> <@>GROUP</@>s were added via <~><@>CREATE GROUP</@> <$>GroupName</$>
+<item> <@>GROUP</@>s were built via <~><@>ALTER GROUP ... ADD USER ...</@>
+</itemize>
+In recent versions, <@>USER</@>s and <@>GROUP</@>s are unified by <@>ROLE</@>s
+<p>
+Older syntax is retained for backward compatibility.
+</slide>
+
+<slide>
+<continued>
+PostgreSQL has two ways to create users ...
+<p>
+From the Unix command line, via the command
+<syntax>
+createuser [ -a | -d ] <$>Name</$> 
+</syntax>
+<small>
+(<@>-a</@> allows user to create other users, <~> <@>-d</@> allows user to create databases)
+</small>
+<p>
+From SQL, via the statement:
+<syntax>
+CREATE ROLE <$>UserName</$> <$>Options</$>
+<comment>-- where <$>Options</$> include ...</comment>
+PASSWORD '<$>Password</$>'
+CREATEDB | NOCREATEDB
+CREATEUSER | NOCREATEUSER
+IN GROUP <$>GroupName</$>
+VALID UNTIL '<$>TimeStamp</$>'
+</syntax>
+</slide>
+
+<slide>
+<continued>
+Groups are created as <@>ROLE</@>s via
+<syntax>
+CREATE ROLE <$>GroupName</$>
+<comment>--or--</comment>
+CREATE ROLE <$>GroupName</$>
+WITH USER <$>UserName1</$>, <$>UserName2</$>, ...
+</syntax>
+and may be subsequently modified by
+<syntax>
+GRANT <$>GroupName</$> TO <$>UserName1</$>, <$>UserName2</$>, ...
+<comment>--and</comment>
+REVOKE <$>GroupName</$> FROM <$>UserName1</$>, <$>UserName2</$>, ...
+</syntax>
+</slide>
+
+<slide>
+<continued>
+PostgreSQL stores user information in a table <@>pg_authid</@>.
+<p>
+Each user is associated with a unique identifying number.
+<p>
+Every PostgreSQL is created with a default user (id=1, superuser).
+<p>
+Some fields in the <@>pg_authid</@> table:
+<itemize>
+<sitem> <@>oid</@>: unqiue user id (e.g. 1, 100, ...)
+<sitem> <@>rolname</@>: string for user name (e.g. <@>jas</@>)
+<sitem> <@>rolpassword</@>: encrypted version of user's password
+</itemize>
+</slide>
+
+<slide>
+<continued>
+PostgreSQL uses a file called <@>pg_hba.conf</@> to determine
+how to authenticate users
+<small>(<@>hba</@> stands for host-based authentication)</small>.
+<p>
+This file contains a sequence of entries where each entry has:
+<itemize>
+<item> connection method <small>(Unix-domain socket, TCP/IP, encrypted)</small>
+<item> list of databases (or <@>all</@>)
+<item> user/group name (or <@>all</@>)
+<item> IP address and IP mask
+<item> authentication method (plus options)
+</itemize>
+PostgreSQL uses first four items to determine authentication method.
+</slide>
+
+<slide>
+<continued>
+Possible authentication methods:
+<itemize>
+<item> <@>md5</@>: get password from user, check against <@>pg_shadow</@>
+<item> <@>krb5</@>: use Kerberos-based authentication
+<item> <@>reject</@>: do not allow the user to access DBMS this way
+<item> <@>trust</@>: allow them to log in as any user without password
+<item> <@>ident</@>: allow them access based on Unix user name info
+<itemize>
+<item> <@>ident</@>+map: see if UnixName is member of map list
+<item> <@>ident</@>+<@>sameuser</@>: log in as user with name UnixName
+</itemize>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Examples from <@>pg_hba.conf</@> file:
+<sprogram>
+# Allow any user on the local system to connect to any database
+# as any user if accessing from local machine via Unix socket.
+#
+#<gray>TYPE  DATABASE USER IP-ADDRESS    IP-MASK          METHOD</gray>
+<b><red>local  all      all                                 trust</red></b>
+
+# Reject all connection from 192.168.54.1
+# 
+#<gray>TYPE  DATABASE  USER IP-ADDRESS    IP-MASK          METHOD</gray>
+<b><red>host   all       all  192.168.54.1  255.255.255.255  reject</red></b>
+
+# Allow any user from any host with IP address 192.168.93.x
+# to connect to database "mydb" as the same user name that
+# ident reports for the connection (typically Unix user name).
+# 
+#<gray>TYPE  DATABASE USER IP-ADDRESS    IP-MASK        METHOD</gray>
+<b><red>host   mydb     all  192.168.93.0  255.255.255.0  ident sameuser</red></b>
+
+# Allow a user from host 192.168.12.10 to connect to database
+# "mydb" only if the user's password is correctly supplied.
+# 
+#<gray>TYPE  DATABASE USER IP-ADDRESS    IP-MASK          METHOD</gray>
+<b><red>host   mydb     all  192.168.12.10 255.255.255.255  md5</red></b>
+</sprogram>
+</slide>
+
+<slide>
+<heading>SQL Access Control
+SQL access control deals with
+<itemize>
+<item> privileges on database objects
+	<small>(e.g. tables, view, functions, ...)</small>
+<item> allocating such privileges to users and/or roles
+</itemize>
+The user who creates an object is automatically assigned:
+<itemize>
+<item> ownership of that object
+<item> a privilege to modify (<@>ALTER</@>) the object
+<item> a privilege to remove (<@>DROP</@>) the object
+<item> along with all other privileges specified below
+</itemize>
+</slide>
+
+<slide>
+<continued>
+The owner of an object can assign privileges on that object
+to other users.
+<p>
+Accomplished via the command:
+<syntax>
+GRANT <$>Privileges</$> ON <$>Object</$>
+TO <$>list of</$> (<$>Users</$>|<$>Roles</$>) | PUBLIC
+[ WITH GRANT OPTION ]
+</syntax>
+<p>
+<$>Privileges</$> can be <@>ALL</@>
+	<small>(giving everything but <@>ALTER</@> and <@>DROP</@>)</small>
+<p>
+<@>WITH GRANT OPTION</@> allows a user who has been granted a privilege
+to pass the privilege on to any other user.
+</slide>
+
+<slide>
+<continued>
+Effects of privilege granting
+<itemize>
+<item> are sometimes subtle (possible conflicts?)
+<item> can be represented by an <em>authorisation graph</em>
+</itemize>
+<diagram>Pic/dbms/auth-graph.png
+</slide>
+
+<slide>
+<continued>
+Privileges can be withdrawn via the command:
+<syntax>
+REVOKE <$>Privileges</$> ON <$>Object</$>
+FROM <$>ListOf</$> (<$>Users</$>|<$>Roles</$>) | PUBLIC
+CASCADE | RESTRICT
+</syntax>
+Normally withdraws Privileges from just specified users/roles.
+<p>
+<@>CASCADE</@> ... also withdraws from users they had granted to.
+<p>
+E.g. revoking from U1 also revokes U5 and U6
+<p>
+<@>RESTRICT</@> ... fails if users had granted privileges to others.
+<p>
+E.g. revoking from U1 fails, revoking U5 or U2 succeeds
+</slide>
+
+<slide>
+<continued>
+Privileges available for users on database objects:
+<p>
+<@>SELECT</@>:
+<itemize>
+<item> user can read all rows and columns of table/view
+<item> this includes columns added later via <@>ALTER TABLE</@>
+</itemize>
+<@>INSERT</@> <~> or <~> <@>INSERT(</@><$>ColName</$><@>)</@>:
+<itemize>
+<item> user can insert rows into table
+<item> if <$>ColName</$> specified, can only set value of that column
+</itemize>
+</slide>
+
+<slide>
+<continued>
+More privileges available for users on database objects:
+<p>
+<@>UPDATE</@> <~> or <~> <@>UPDATE(</@><$>ColName</$><@>)</@>:
+<itemize>
+<item> user can modify values stored in the table
+<item> if <$>ColName</$> specified, can only set value of that column
+</itemize>
+<@>DELETE</@>:
+<itemize>
+<item> user can delete rows from the table
+<item> this does <i>not</i> imply permission to remove table itself <br>
+	<small>(this is the <@>DROP</@> privilege automatically assigned to the object creator)</small>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+More privileges available for users on database objects:
+<p>
+<@>REFERENCES(</@><$>ColName</$><@>)</@>:
+<itemize>
+<item> user can use <$>ColName</$> as foreign key in their tables
+</itemize>
+<@>EXECUTE</@>:
+<itemize>
+<item> user can execute the specified function
+</itemize>
+<@>TRIGGER</@>:
+<itemize>
+<item> user is allowed to create triggers on a table
+<item> note that tiggers always execute with creator's privileges
+</itemize>
+</slide>
+
+<slide>
+<heading>SQL Access Control in PostgreSQL
+PostgreSQL follows the above with some minor variations:
+<itemize>
+<item> group names must be preceded by <@>GROUP</@>
+<item> there is an additional privilege for <@>RULE</@>s
+</itemize>
+See the PostgreSQL manual for full details.
+</slide>
+
+<slide>
+<heading>Problems with SQL Access Control
+Allowing users to assign privileges to others can be exploited.
+<p>
+Example: student S wants access to table of marks M 
+<itemize>
+<item> M is owned by lecturer L, S has no SELECT privilege on M
+<item> S creates a new table SS and grants INSERT privilege to L
+<item> S modifies code of some PLpgSQL function F used by L
+<item> the modifications to F copy the data from M into SS
+<item> S restores F to its original state
+	<small>(in case L gets suspicious)</small>
+<item> S now has access to the data from M in table SS
+</itemize>
+</slide>
+
+<slide>
+<heading>Mandatory Access Control
+Above approach is called <em>discretionary access control</em>
+<itemize>
+<item> relies on individual users to assign privileges
+<item> very fine-grained <$><Rightarrow></$> tedious to specify privileges
+</itemize>
+An alternative approach: <em>manadatory access control</em> <small>(MAC)</small>
+<itemize>
+<item> global approach to access control; simple to specify
+<item> currently under development <~> <small>(not yet available in DBMSs)</small>
+<item> a popular MAC model is Bell-LaPadula
+	<~> <small>(see next page)</small>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Access control is described in terms of ...
+<itemize>
+<item> <em>objects</em>
+	<small>(e.g. tables, rows, views, columns, ...)</small>
+<item> <em>subjects</em>
+	<small>(e.g. users, programs, ...)</small>
+<item> <em>security classes</em>
+	<small>(an ordered collection, least to most secure)</small>
+</itemize>
+Example: <$>Unclassified << Confidential << Secret << Top Secret</$>
+<p>
+Subjects and objects are assigned to security classes.
+<p>
+Impose these restrictions on every data access:
+<itemize>
+<item> subject S can read object O only if class(S) <$><geq></$> class(O)
+<item> subject S can write object O only if class(S) <$><leq></$> class(O)
+</itemize>
+</slide>
+
+<slide>
+<heading>Security in Statistical Databases
+<em>Statistical databases</em>
+<itemize>
+<item> contain data about a group of individuals
+<item> but allow access only to summary data
+<item> also provide controls to select subsets of data
+</itemize>
+Example of such a database: population census
+<itemize>
+<sitem> information is stored about individuals
+<sitem> users are only allowed to examine trends/summaries
+<sitem> e.g. can find out average age of people living in Sydney <br>
+but cannot ask the question <q>How old is John?</q>
+</itemize>
+Privacy is protected, but useful information is still available.
+</slide>
+
+<slide>
+<continued>
+Consider: anonymous surveys in an on-line survey system
+<itemize>
+<item> can see overall results <~> <small>(e.g. tutorials rated at 7/10)</small>
+<item> but do not have access to individual student responses
+<item> can also summarize results for subgroups <br>
+	<small>(e.g. CE students rated tutorials at 6/10, CS students rated tutorials at 8/10)</small>
+</itemize>
+Problem: subset controls may allow selection of individuals, e.g.
+<itemize>
+<item> we know that there's only one Law student in the class
+<item> ask for a <q>summary</q> of responses given by Law students
+</itemize>
+</slide>
+
+<slide>
+<continued>
+How to solve this problem?
+<itemize>
+<item> restrict subsets to being larger than a minimum size <$>N</$>
+</itemize>
+But still doesn't quite work, e.g.
+<itemize>
+<item> system gives summaries for several groups (e.g. SE+CE)
+<item> get summary for Law+CE <~> <small>(presumably with <$>>>N</$> responses)</small>
+<item> get summary just for CE <~> <small>(assume count of reponses given)</small>
+<item> determine Law response from the <q>difference</q>
+</itemize>
+<small>
+Security is difficult to enforce in statistical databases, but activity can be logged.
+</small>
+</slide>
+
+<slide>
+<section>Performance Tuning
+</slide>
+
+<slide>
+<heading>Performance Tuning
+Schema design:
+<itemize>
+<item> devise data structures to <em>represent application information</em>
+</itemize>
+Performance tuning:
+<itemize>
+<item> devise data structures to <em>achieve good performance</em>
+</itemize>
+Good performance may involve any/all of:
+<itemize>
+<sitem> making applications run faster
+<sitem> lowering response time of queries/transactions
+<sitem> improving overall transaction throughput
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Tuning requires us to consider the following:
+<itemize>
+<item> which queries and transactions will be used? <br>
+	<~> <small>(e.g. check balance for payment, display recent transaction history)</small>
+<item> how frequently does each query/transaction occur? <br>
+	<~> <small>(e.g. 99% of transactions are EFTPOS payments; 1% are print balance)</small>
+<item> are there time constraints on queries/transactions? <br>
+	<~> <small>(e.g. payment at EFTPOS terminals must be approved within 7 seconds)</small>
+<item> are there uniqueness constraints on any attributes? <br>
+	<~> <small>(therefore, define index on attributes to speed up insertion uniqueness check)</small>
+<item> how frequently do updates occur? <br>
+	<~> <small>(indexes slow down updates, because must update table <i>and</i> index)</small>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Performance can be considered at two times:
+<itemize>
+<item> <i>during</i> schema design
+<itemize>
+<item> typically towards the end of schema design process
+<item> requires schema transformations such as denormalisation
+</itemize>
+<item> <i>after</i> schema design
+<itemize>
+<item> requires adding extra data structures such as indexes
+</itemize>
+</itemize>
+</slide>
+
+<slide>
+<heading>Denormalisation
+Normalisation structures data to minimise storage redundancy.
+<itemize>
+<sitem> achieves this by <q>breaking up</q> the data into logical chunks
+<sitem> requires minimal <q>maintenance</q> to ensure data consistency
+</itemize>
+Problem: queries that need to put data back together.
+<itemize>
+<sitem> need to use a (potentially expensive) join operation
+<sitem> if an expensive join is frequent, system performance suffers
+</itemize>
+Solution: store some data redundantly
+<itemize>
+<sitem> benefit: queries needing expensive join are now cheap
+<sitem> trade-off: extra maintenance effort to maintain consistency
+<sitem> worthwhile if joins are frequent and updates are rare
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Example: Courses = Course <$><join></$> Subject <$><join></$> Term
+<p>
+If we frequently need to refer to course <q>standard</q> name
+<itemize>
+<item> add extra <@>courseName</@> column into <@>Course</@> table
+<item> cost: trigger before insert on <@>Course</@> to construct name
+<item> trade-off likely to be worthwhile: <@>Course</@> insertions infrequent
+</itemize>
+<sprogram>
+<comment>-- can now replace a query like:</comment>
+select s.code||t.year||t.sess, e.grade, e.mark
+from   Course c, CourseEnrolment e, Subject s, Term t
+where  e.course = c.id and c.subject = s.id and c.term = t.id
+<comment>-- by a query like:</comment>
+select c.courseName, e.grade, e.mark
+from   Course c, CourseEnrolment e
+where  e.course = c.id 
+</sprogram>
+</slide>
+
+<slide>
+<heading>Indexes
+Indexes provide efficient content-based access to tuples.
+<p>
+Can build indexes on any (combination of) attributes.
+<p>
+Definining indexes:
+<syntax>
+CREATE INDEX <$>name</$> ON <$>table</$> ( <$>attr<sub>1</sub></$>, <$>attr<sub>2</sub></$>, ... )
+</syntax>
+<$>attr<sub>i</sub></$> can be an arbitrary expression (e.g. <@>upper(name)</@>).
+<p>
+<@>CREATE INDEX</@> also allows us to specify
+<itemize>
+<sitem> that the index is on <@>UNIQUE</@> values
+<sitem> an access method (<@>USING</@> btree, hash, rtree, or gist)
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Indexes can make a huge difference to query processing cost.
+<p>
+On the other hand, they introduce overheads (storage, updates).
+<p>
+Creating indexes to maximise performance benefits:
+<itemize>
+<item> apply to attributes used in equality/range conditions, e.g.
+<sprogram>
+select * from Employee where <red>id</red> = 12345
+select * from Employee where <red>age</red> >> 60
+select * from Employee where <red>salary</red> between 10000 and 20000
+</sprogram>
+<item> but only in queries that are frequently used
+<item> and on tables that are not updated frequently
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Considerations in applying indexes:
+<itemize>
+<item> is an attribute used in frequent/expensive queries? <br>
+	<~> <small>(note that some kinds of queries can be answered from index alone)</small>
+<item> should we create an index on a collection of attributes? <br>
+	<~> <small>(yes, if the collection is used in a frequent/expensive query)</small>
+<item> can we exploit a clustered index? <small>(only one per table)</small>
+<item> should we use B-tree or Hash index?
+<sprogram>
+<comment>-- use hashing for (unique) attributes in equality tests, e.g.</comment>
+select * from Employee where <red>id</red> = 12345
+<comment>-- use B-tree for attributes in range tests, e.g.</comment>
+select * from Employee where <red>age</red> >> 60
+</sprogram>
+</itemize>
+</slide>
+
+<slide>
+<heading>Query Tuning
+Sometimes, a query can be re-phrased to affect performance:
+<itemize>
+<item> by helping the optimiser to make use of indexes
+<item> by avoiding (unnecessary) operations that are expensive
+</itemize>
+Examples which <i>may</i> prevent optimiser from using indexes:
+<program>
+select name from Employee where <red>salary</red>/365 >> 10.0
+       <comment>-- fix by re-phrasing condition to (salary >> 3650)</comment>
+select name from Employee where <red>name</red> like '%ith%'
+select name from Employee where <red>birthday</red> is null
+       <comment>-- above two are difficult to "fix"</comment>
+select name from Employee
+where  dept in (select id from Dept where ...)
+       <comment>-- fix by using Employee join Dept on (e.dept=d.id)</comment>
+</program>
+</slide>
+
+<slide>
+<continued>
+Other factors to consider in query tuning:
+<itemize>
+<item> <@>select distinct</@> requires a sort; is <@>distinct</@> necessary?
+<item> if multiple join conditions are available ... <br>
+	choose join attributes that are indexed, avoid joins on strings
+<sprogram>
+select ... Employee join Customer on (s.<blue>name</blue> = p.<blue>name</blue>)
+<comment>vs</comment>
+select ... Employee join Customer on (s.<red>ssn</red> = p.<red>ssn</red>)
+</sprogram>
+<item> sometimes <@>or</@> in condition prevents index from being used ... <br>
+	replace the <@>or</@> condition by a union of non-<@>or</@> clauses
+<sprogram>
+select name from Employee where dept=1 or dept=2
+<comment>vs</comment>
+(select name from Employee where <red>dept</red>=1)
+union
+(select name from Employee where <red>dept</red>=2)
+</sprogram>
+</itemize>
+</slide>
+
+<slide>
+<heading>PostgreSQL Query Tuning
+PostgreSQL provides the <@@>explain</@@> statement to
+<itemize>
+<item> give a representation of the query execution plan
+<item> with information that may help to tune query performance
+</itemize>
+Usage:
+<syntax>
+EXPLAIN [ANALYZE] <$>Query</$>
+</syntax>
+Without <@>ANALYZE</@>, <@>EXPLAIN</@> shows plan with estimated costs.
+<p>
+With <@>ANALYZE</@>, <@>EXPLAIN</@> executes query and prints real costs.
+<p>
+<small>
+Note that runtimes may show considerable variation due to buffering.
+</small>
+</slide>
+
+<slide>
+<heading>EXPLAIN Examples
+Example: Select on indexed attribute
+<sprogram>
+ass2=# explain select * from student where id=100250;
+                                 QUERY PLAN                                  
+-----------------------------------------------------------------------------
+ Index Scan using student_pkey on student  (cost=0.00..5.94 rows=1 width=17)
+   Index Cond: (id = 100250)
+
+ass2=# explain analyze select * from student where id=100250;
+                                 QUERY PLAN 
+-----------------------------------------------------------------------------
+ Index Scan using student_pkey on student  (cost=0.00..5.94 rows=1 width=17)
+                                 (actual time=31.209..31.212 rows=1 loops=1)
+   Index Cond: (id = 100250)
+ Total runtime: 31.252 ms
+
+</sprogram>
+</slide>
+
+<slide>
+<continued>
+Example: Select on non-indexed attribute
+<sprogram>
+ass2=# explain select * from student where stype='local';
+                        QUERY PLAN                        
+----------------------------------------------------------
+ Seq Scan on student  (cost=0.00..70.33 rows=18 width=17)
+   Filter: ((stype)::text = 'local'::text)
+
+ass2=# explain analyze select * from student where stype='local';
+                              QUERY PLAN 
+--------------------------------------------------------------------
+ Seq Scan on student  (cost=0.00..70.33 rows=18 width=17)
+             (actual time=0.061..4.784 rows=2512 loops=1)
+   Filter: ((stype)::text = 'local'::text)
+ Total runtime: 7.554 ms
+</sprogram>
+</slide>
+
+<slide>
+<continued>
+Example: Join on a primary key (indexed) attribute
+<sprogram>
+ass2=# explain
+ass2-# select s.sid,p.name from Student s, Person p where s.id=p.id;
+                               QUERY PLAN                                
+-------------------------------------------------------------------------
+ Hash Join  (cost=70.33..305.86 rows=3626 width=52)
+   Hash Cond: ("outer".id = "inner".id)
+   ->  Seq Scan on person p  (cost=0.00..153.01 rows=3701 width=52)
+   ->  Hash  (cost=61.26..61.26 rows=3626 width=8)
+         ->  Seq Scan on student s  (cost=0.00..61.26 rows=3626 width=8)
+</sprogram>
+</slide>
+
+<slide>
+<continued>
+Join on a primary key (indexed) attribute:
+<sprogram>
+ass2=# explain anaylze
+ass2-# select s.sid,p.name from Student s, Person p where s.id=p.id;
+                                QUERY PLAN
+-------------------------------------------------------------------------
+ Hash Join  (cost=70.33..305.86 rows=3626 width=52)
+            (actual time=11.680..28.242 rows=3626 loops=1)
+   Hash Cond: ("outer".id = "inner".id)
+   ->  Seq Scan on person p  (cost=0.00..153.01 rows=3701 width=52)
+                       (actual time=0.039..5.976 rows=3701 loops=1)
+   ->  Hash  (cost=61.26..61.26 rows=3626 width=8)
+             (actual time=11.615..11.615 rows=3626 loops=1)
+         ->  Seq Scan on student s  (cost=0.00..61.26 rows=3626 width=8)
+                            (actual time=0.005..5.731 rows=3626 loops=1)
+ Total runtime: 32.374 ms
+</sprogram>
+</slide>

@@ -1,0 +1,196 @@
+<title>Aggregates
+<footer>COMP3311 20T3 <diamond> Aggregates <diamond>
+
+<slide>
+<heading>Aggregates
+Aggregates reduce a collection of values into a single result.
+<p>
+Examples:
+	<small>
+	<~> <@>count(</@><$>Tuples</$><@>)</@>,
+	<~> <@>sum(</@><$>Numbers</$><@>)</@>,
+	<~> <@>max(</@><$>AnyOrderedType</$><@>)</@>
+	</small>
+<p>
+The action of an aggregate function can be viewed as:
+<p>
+<program>
+<big>State = initial state
+for each item T {
+    <comment># update State to include T</comment>
+    State = updateState(State, T)
+}
+return makeFinal(State)</big>
+</program>
+</slide>
+
+<slide>
+<continued>
+Aggregates are commonly used with <@>GROUP BY</@>.
+<p>
+In that context, they <q>summarise</q> each group.
+<p>
+Example:
+<program>
+R               select a,sum(b),count(*)
+ a | b | c      from R group by a
+---+---+---
+<blue> 1 | 2 | x</blue>       a | sum | count
+<blue> 1 | 3 | y</blue>      ---+-----+-------
+<red> 2 | 2 | z</red>       <blue>1 |   5 |     2</blue>
+<red> 2 | 1 | a</red>       <red>2 |   6 |     3</red>
+<red> 2 | 3 | b</red>
+</program>
+</slide>
+
+<slide>
+<heading>User-defined Aggregates
+SQL standard does not specify user-defined aggregates.
+<p>
+But PostgreSQL provides a mechanism for defining them.
+<p>
+To define a new aggregate, first need to supply:
+<itemize>
+<item> <$>BaseType</$> ... type of input values
+<item> <$>StateType</$> ... type of intermediate states
+<item> state mapping function: <$>sfunc(state,value) <rightarrow> newState</$>
+<item> [optionally] an initial state value (defaults to null)
+<item> [optionally] final function: <$>ffunc(state) <rightarrow> result</$>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+New aggregates defined using <@>CREATE AGGREGATE</@> statement:
+<syntax>
+<@@>CREATE AGGREGATE</@@> <$>AggName</$>(<$>BaseType</$>) (
+    <@@>sfunc</@@>     = <$>UpdateStateFunction</$>,
+    <@@>stype</@@>     = <$>StateType</$>,
+    <@@>initcond</@@>  = <$>InitialValue</$>,
+    <@@>finalfunc</@@> = <$>MakeFinalFunction</$>,
+    <@@>sortop</@@>    = <$>OrderingOperator</$>
+);
+</syntax>
+<itemize>
+<item> <@>initcond</@> (type <$>StateType</$>) is optional;
+	defaults to <@>NULL</@>
+<item> <@>finalfunc</@> is optional; defaults to identity function
+<item> <@>sortop</@> is optional; needed for min/max-type aggregates
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Example: defining the <@>count</@> aggregate <small>(roughly)</small>
+<program>
+create aggregate myCount(anyelement) (
+    stype    = int,    <comment>-- the accumulator type</comment>
+    initcond = 0,      <comment>-- initial accumulator value</comment>
+    sfunc    = oneMore <comment>-- increment function</comment>
+);
+
+create function
+    oneMore(sum int, x anyelement) returns int
+as $$
+begin return sum + 1; end;
+$$ language plpgsql;
+</program>
+</slide>
+
+<slide>
+<continued>
+Example: <@>sum2</@> sums two columns of integers
+<program>
+create type IntPair as (x int, y int);
+
+create function
+   addPair(sum int, p IntPair) returns int
+as $$
+begin return sum + p.x + p.y; end;
+$$ language plpgsql;
+
+create aggregate sum2(IntPair) (
+   stype     = int,
+   initcond  = 0,
+   sfunc     = addPair
+);
+</program>
+</slide>
+
+<slide>
+<continued>
+PostgreSQL has many aggregates (e.g. <@>sum</@>, <@>count</@>, ...)
+<p>
+But it doesn't have a product aggregate.
+<p>
+Implement a <@>prod</@> aggregate that
+<itemize>
+<item> computes the product of values in a column of numeric data
+</itemize>
+Usage:
+<program>
+select prod(*) from iota(5);
+ prod 
+------
+  120
+</program>
+</slide>
+
+<slide>
+<continued>
+<b>Example:</b> product aggregate
+<program90>
+<navy>create function</navy>
+   mult(soFar numeric, next numeric) returns numeric
+as $$
+begin return soFar * next; end;
+$$ language plpgsql;
+
+<navy>create aggregate</navy> <green>prod</green>(numeric) (
+   stype    = numeric,
+   initcond = 1,
+   sfunc    = mult
+);
+</program>
+</slide>
+
+<slide>
+<continued>
+Define a <@>concat</@> aggregate that
+<itemize>
+<item> takes a column of string values
+<item> returns a comma-separated string of values
+</itemize>
+Example:
+<program>
+select count(*), concat(name) from Employee;
+<comment>-- returns e.g.</comment>
+  count |         concat
+ -------+----------------------
+      4 | John,Jane,David,Phil
+</program>
+</slide>
+
+<slide>
+<continued>
+<b>Example:</b> string concatenation aggregate
+<program90>
+<navy>create function</navy>
+    join(s1 text, s2 text) returns text
+as $$
+begin
+   if (s1 = '') then
+      return s2;
+   else
+      return s1||','||s2;
+   end if;
+end;
+$$ language plpgsql;
+
+<navy>create aggregate</navy> <green>concat</green>(text) (
+   stype    = text,
+   initcond = '',
+   sfunc    = join
+);
+</program>
+</slide>

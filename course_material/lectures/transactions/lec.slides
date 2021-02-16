@@ -1,0 +1,143 @@
+<title>Transactions
+<footer>COMP3311 20T3 <diamond> Transactions <diamond>
+
+<slide>
+<heading>Transactions, Concurrency, Recovery
+<br>
+DBMSs maintain valuable information in an environment that is:
+<itemize>
+<item> <em>shared</em> - concurrent access by multiple users
+<item> <em>unstable</em> - potential for hardware/software failure
+</itemize>
+Each user should see the system as:
+<itemize>
+<item> unshared - their work is not inadvertantly affected by others
+<item> stable - the data survives in the face of system failures
+</itemize>
+Ultimate goal: data integrity is maintained at all times.
+</slide>
+
+<slide>
+<continued>
+Transaction processing
+<itemize>
+<item> techniques for managing <q>logical units of work</q>
+	which may require multiple DB operations
+</itemize>
+Concurrency control
+<itemize>
+<item> techniques for ensuring that multiple concurrent
+	transactions do not interfere with each other
+</itemize>
+Recovery mechanisms
+<itemize>
+<item> techniques to restore information to a consistent
+	state, even after major hardware shutdowns/failures
+</itemize>
+<br>
+COMP3311 only looks at the first of these
+</slide>
+
+<slide>
+<heading>Transactions
+A <em>transaction</em> is
+<itemize>
+<item> an atomic "unit of work" in an application
+<item> which may require multiple database changes
+</itemize>
+Transactions happen in a multi-user, unreliable environment.
+<p>
+To maintain integrity of data, transactions must be:
+<itemize>
+<item> <green>A</green>tomic - either fully completed or completely rolled-back
+<item> <green>C</green>onsistent - map DB between consistent states
+<item> <green>I</green>solated - transactions do not interfere with each other
+<item> <green>D</green>urable - persistent, restorable after system failures
+</itemize>
+</slide>
+
+<slide>
+<heading>Example Transaction
+Bank funds transfer
+<itemize>
+<item> move <$>N</$> dollars from account <$>X</$> to account <$>Y</$>
+<item> <@>Accounts(id,name,<blue>balance</blue>,heldAt, ...)</@>
+<item> <@>Branches(id,name,address,<blue>assets</blue>, ...)</@>
+<item> maintain <@>Branches.assets</@> as sum of balances via triggers
+<item> transfer operation is implemented by a function which
+<itemize>
+<sitem> has three parameters: amount, source acct, dest acct
+<sitem> checks validity of supplied accounts
+<sitem> checks sufficient available funds
+<sitem> returns a unique transaction ID on success
+</itemize>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Example function to implement bank transfer ...
+<sprogram>
+create or replace function
+   transfer(N integer, Src text, Dest text)
+   returns integer
+declare
+   sID integer; dID integer; avail integer;
+begin
+   <red>select</red> id,balance into sID,avail
+   from   Accounts where name=Src;
+   if (sID is null) then
+      raise exception 'Invalid source account %',Src;
+   end if;
+   <red>select</red> id into dID
+   from Accounts where name=Dest;
+   if (dID is null) then
+      raise exception 'Invalid dest account %',Dest;
+   end if;
+...
+</sprogram>
+</slide>
+
+<slide>
+<continued>
+Example function to implement bank transfer <tiny>(cont)</tiny>...
+<sprogram>
+...
+   if (avail < N) then
+      raise exception 'Insufficient funds in %',Src;
+   end if;
+   <comment>-- total funds in system = NNNN</comment>
+   <red>update</red> Accounts set balance = balance-N
+   where  id = sID;
+   <comment>-- funds temporarily "lost" from system</comment>
+   <red>update</red> Accounts set balance = balance+N
+   where  id = dID;
+   <comment>-- funds restored to system; total funds = NNNN</comment>
+   return nextval('tx_id_seq');
+end;
+</sprogram>   
+</slide>
+
+<slide>
+<heading>Transaction Concepts
+A transaction must always terminate, either:
+<itemize>
+<item> successfully (<@>COMMIT</@>), with all changes preserved
+<item> unsuccessfully (<@>ABORT</@>), with database unchanged
+</itemize>
+<p>
+<diagram>Pics/xact/tx-states1.png
+</slide>
+
+<slide>
+<heading>Transaction Consistency
+Transactions typically have intermediate states
+that are invalid.
+<p>However, states <em>before</em> and <em>after</em> transaction
+must be valid.
+<p><br>
+<diagram>Pics/xact/tx-exec1.png
+<br><br>
+Valid = consistent = satisfying all stated constraints on the data
+</slide>
+

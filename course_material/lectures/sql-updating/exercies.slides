@@ -1,0 +1,52 @@
+
+<slide>
+<exercise>Creating/Populating Databases
+Do the following:
+<itemize>
+<item> create a database called <@>ex1</@>
+<item> create a table <@>T</@> with two integer fields <@>x</@> and <@>y</@>
+<item> examine the catalog definition of table <@>T</@>
+<item> use <@>insert</@> statements to load some tuples (from a file)
+<item> use <@>pg_dump</@> to make a copy of the database contents
+<item> remove the <@>ex1</@> database, then restore it from the dump
+</itemize>
+</slide>
+
+<slide>
+<exercise>Inserting tuples
+Create a database and define the following table:
+<program>
+create table p1 (
+	x integer,
+	y integer
+);
+create table p2 (
+	x integer primary key,
+	y integer
+);
+</program>
+<itemize>
+<item> insert the tuples (1,2),(2,3),(1,3) into each table
+<item> how are the tables different in the catalog?
+</itemize>
+</slide>
+
+<slide>
+<exercise> Generating IDs
+Consider the following schema:
+<program>
+create table Students (
+    id      serial,
+    name    text,
+    address text,
+    primary key (id)
+);
+</program>
+<itemize>
+<item> what does <@>serial</@> actually produce <small>(look in the catalog)</small>?
+<item> write <@>insert</@> statements to add some tuples
+<item> how could an application program get the generated <@>id</@>? <br>
+	<small>(<@>select max(id) from T</@> <~>may not give the correct result; why not?)</small>
+</itemize>
+</slide>
+

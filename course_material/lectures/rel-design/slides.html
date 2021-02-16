@@ -1,0 +1,449 @@
+<html>
+<head>
+<title>Relational Design</title>
+<link href='lib/slides.css' rel='stylesheet' type='text/css'>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML" async></script>
+<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js'></script>
+<link href='https://fonts.googleapis.com/css?family=Lato' rel='stylesheet'>
+<link href='lib/prism.css' rel='stylesheet'>
+<script src='lib/sg.js'></script>
+</head>
+<body>
+ <DIV class='slideCl1' id="s0"  >
+<div class='navCl1'><a href="#s1"><span class='nextArrowCl'>>></span></a> </div> <div class='heading'>Relational Design</div><p><ul class='indexUl'  style='font-size: 0.7em;'><li class="i"> <a href="#s1">Relational Design Theory</a>
+<li class="i"> <a href="#s2">Relational Design and Redundancy</a>
+<li class="i"> <a href="#s8">Database Design (revisited)</a>
+</ul></DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Relational Design &#9826; [0/8]</div> <DIV class='slideCl1    ' id="s1"  >
+<div class='navCl1'> <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s2"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Relational Design Theory</div></td><td align='right'></td></tr></table>
+<p>
+The aim of studying relational design theory:
+<ul>
+<li> improve understanding of relationships among data
+<li> gain enough formalism to assist practical database design
+</ul>
+What we study here:
+<ul>
+<li> basic theory and definition of <font color='#0000BB'>functional dependencies</font>
+<li> methodology for improving schema designs (<font color='#0000BB'>normalisation</font>)
+</ul>
+Functional dependencies
+<ul>
+<li> describe relationships between attributes within a relation
+<li> have implications for "good" relational schema design
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Relational Design &#9826; [1/8]</div> <DIV class='slideCl1    ' id="s2"  >
+<div class='navCl1'><a href="#s1"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s3"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Relational Design and Redundancy</div></td><td align='right'></td></tr></table>
+<p>
+A <font color='#0000BB'>good</font> relational database design:
+<ul>
+<li> must capture <i>all</i>&nbsp; necessary attributes/associations
+<li> do this with <i>minimal</i>&nbsp; amount of stored information
+</ul>
+Minimal stored information <i>&rArr;</i> no redundant data.
+<p>
+In database design, <font color='#0000BB'>redundancy</font> is generally a "bad thing":
+<ul>
+<li> causes problems maintaining consistency after updates
+</ul>
+But ... redundancy may give performance improvements
+<ul>
+<li> e.g. avoid a join to collect pieces of data together
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Relational Design &#9826; [2/8]</div> <DIV class='slideCl1    ' id="s3"  >
+<div class='navCl1'><a href="#s2"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s4"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Relational Design and Redundancy <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Consider the following relation defining bank accounts/branches:
+<p>
+<p><table border='1' cellpadding='2'>
+<tr align=center>
+  <td><b>accountNo</b></td>
+  <td><b>balance</b></td>
+  <td><b>customer</b></td>
+  <td><b>branch</b></td>
+  <td><b>address</b></td>
+  <td><b>assets</b></td>
+</tr>
+<tr align=center>
+  <td>A-101</td>
+  <td>500</td>
+  <td>1313131</td>
+  <td>Downtown</td>
+  <td>Brooklyn</td>
+  <td>9000000</td>
+</tr>
+<tr align=center>
+  <td>A-102</td>
+  <td>400</td>
+  <td>1313131</td>
+  <td>Perryridge</td>
+  <td>Horseneck</td>
+  <td>1700000</td>
+</tr>
+<tr align=center>
+  <td>A-113</td>
+  <td>600</td>
+  <td>9876543</td>
+  <td><font color="#996600">Round Hill</font></td>
+  <td><font color="#996600">Horseneck</font></td>
+  <td><font color="#996600">8000000</font></td>
+</tr>
+<tr align=center>
+  <td>A-201</td>
+  <td>900</td>
+  <td>9876543</td>
+  <td>Brighton</td>
+  <td>Brooklyn</td>
+  <td>7100000</td>
+</tr>
+<tr align=center>
+  <td>A-215</td>
+  <td>700</td>
+  <td>1111111</td>
+  <td>Mianus</td>
+  <td>Horseneck</td>
+  <td>400000</td>
+</tr>
+<tr align=center>
+  <td>A-222</td>
+  <td>700</td>
+  <td>1111111</td>
+  <td>Redwood</td>
+  <td>Palo Alto</td>
+  <td>2100000</td>
+</tr>
+<tr align=center>
+  <td>A-305</td>
+  <td>350</td>
+  <td>1234567</td>
+  <td><font color="#996600">Round Hill</font></td>
+  <td><font color="#996600">Horseneck</font></td>
+  <td><font color="#996600">8000000</font></td>
+</tr>
+<tr align=center>
+  <td>...</td>
+  <td>...</td>
+  <td>...</td>
+  <td>...</td>
+  <td>...</td>
+  <td>...</td>
+</tr>
+</table><p>
+<p>
+Careless updating of this data may introduce inconsistencies.
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Relational Design &#9826; [3/8]</div> <DIV class='slideCl1    ' id="s4"  >
+<div class='navCl1'><a href="#s3"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s5"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Relational Design and Redundancy <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+If we add $300 to account A-113 ...
+<p>
+<p><table border='1' cellpadding='2'>
+<tr align=center>
+  <td><b>accountNo</b></td>
+  <td><b>balance</b></td>
+  <td><b>customer</b></td>
+  <td><b>branch</b></td>
+  <td><b>address</b></td>
+  <td><b>assets</b></td>
+</tr>
+<tr align=center>
+  <td>A-101</td>
+  <td>500</td>
+  <td>1313131</td>
+  <td>Downtown</td>
+  <td>Brooklyn</td>
+  <td>9000000</td>
+</tr>
+<tr align=center>
+  <td>A-102</td>
+  <td>400</td>
+  <td>1313131</td>
+  <td>Perryridge</td>
+  <td>Horseneck</td>
+  <td>1700000</td>
+</tr>
+<tr align=center>
+  <td>A-113</td>
+  <td><font color="#CC0000">900</font></td>
+  <td>9876543</td>
+  <td><font color="#996600">Round Hill</font></td>
+  <td><font color="#996600">Horseneck</font></td>
+  <td><font color="#CC0000">8000300</font></td>
+</tr>
+<tr align=center>
+  <td>A-201</td>
+  <td>900</td>
+  <td>9876543</td>
+  <td>Brighton</td>
+  <td>Brooklyn</td>
+  <td>7100000</td>
+</tr>
+<tr align=center>
+  <td>A-215</td>
+  <td>700</td>
+  <td>1111111</td>
+  <td>Mianus</td>
+  <td>Horseneck</td>
+  <td>400000</td>
+</tr>
+<tr align=center>
+  <td>A-222</td>
+  <td>700</td>
+  <td>1111111</td>
+  <td>Redwood</td>
+  <td>Palo Alto</td>
+  <td>2100000</td>
+</tr>
+<tr align=center>
+  <td>A-305</td>
+  <td>350</td>
+  <td>1234567</td>
+  <td><font color="#996600">Round Hill</font></td>
+  <td><font color="#996600">Horseneck</font></td>
+  <td><font color="#CC0000">8000000</font></td>
+</tr>
+<tr align=center>
+  <td>...</td>
+  <td>...</td>
+  <td>...</td>
+  <td>...</td>
+  <td>...</td>
+  <td>...</td>
+</tr>
+</table><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Relational Design &#9826; [4/8]</div> <DIV class='slideCl1    ' id="s5"  >
+<div class='navCl1'><a href="#s4"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s6"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Relational Design and Redundancy <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+If we add a new account A-306 at the Round Hill branch ...
+<p>
+<p><table border='1' cellpadding='2'>
+<tr align=center>
+  <td><b>accountNo</b></td>
+  <td><b>balance</b></td>
+  <td><b>customer</b></td>
+  <td><b>branch</b></td>
+  <td><b>address</b></td>
+  <td><b>assets</b></td>
+</tr>
+<tr align=center>
+  <td>A-101</td>
+  <td>500</td>
+  <td>1313131</td>
+  <td>Downtown</td>
+  <td>Brooklyn</td>
+  <td>9000000</td>
+</tr>
+<tr align=center>
+  <td>A-102</td>
+  <td>400</td>
+  <td>1313131</td>
+  <td>Perryridge</td>
+  <td>Horseneck</td>
+  <td>1700000</td>
+</tr>
+<tr align=center>
+  <td>A-113</td>
+  <td>900</td>
+  <td>9876543</td>
+  <td><font color="#996600">Round Hill</font></td>
+  <td><font color="#996600">Horseneck</font></td>
+  <td><font color="#CC0000">8000300</font></td>
+</tr>
+<tr align=center>
+  <td>A-201</td>
+  <td>900</td>
+  <td>9876543</td>
+  <td>Brighton</td>
+  <td>Brooklyn</td>
+  <td>7100000</td>
+</tr>
+<tr align=center>
+  <td>A-215</td>
+  <td>700</td>
+  <td>1111111</td>
+  <td>Mianus</td>
+  <td>Horseneck</td>
+  <td>400000</td>
+</tr>
+<tr align=center>
+  <td>A-222</td>
+  <td>700</td>
+  <td>1111111</td>
+  <td>Redwood</td>
+  <td>Palo Alto</td>
+  <td>2100000</td>
+</tr>
+<tr align=center>
+  <td>A-305</td>
+  <td>350</td>
+  <td>1234567</td>
+  <td><font color="#996600">Round Hill</font></td>
+  <td><font color="#996600">Horseneck</font></td>
+  <td><font color="#CC0000">8000000</font></td>
+</tr>
+<tr align=center>
+  <td><font color="#CC0000">A-306</font></td>
+  <td>500</td>
+  <td>7654321</td>
+  <td><font color="#996600">Round Hill</font></td>
+  <td><font color="#996600">Horseneck</font></td>
+  <td><font color="#CC0000">8000500</font>?</td>
+</tr>
+<tr align=center>
+  <td>...</td>
+  <td>...</td>
+  <td>...</td>
+  <td>...</td>
+  <td>...</td>
+  <td>...</td>
+</tr>
+</table><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Relational Design &#9826; [5/8]</div> <DIV class='slideCl1    ' id="s6"  >
+<div class='navCl1'><a href="#s5"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s7"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Relational Design and Redundancy <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+If we close account A-101 ...
+<p>
+<p><table border='1' cellpadding='2'>
+<tr align=center>
+  <td><b>accountNo</b></td>
+  <td><b>balance</b></td>
+  <td><b>customer</b></td>
+  <td><b>branch</b></td>
+  <td><b>address</b></td>
+  <td><b>assets</b></td>
+</tr>
+<tr align=center>
+  <td><s>A-101</s></td>
+  <td><s>500</s></td>
+  <td><s>1313131</s></td>
+  <td><s>Downtown</s></td>
+  <td><s>Brooklyn</s></td>
+  <td><s>9000000</s></td>
+</tr>
+<tr align=center>
+  <td>A-102</td>
+  <td>400</td>
+  <td>1313131</td>
+  <td>Perryridge</td>
+  <td>Horseneck</td>
+  <td>1700000</td>
+</tr>
+<tr align=center>
+  <td>A-113</td>
+  <td>900</td>
+  <td>9876543</td>
+  <td><font color="#996600">Round Hill</font></td>
+  <td><font color="#996600">Horseneck</font></td>
+  <td><font color="#CC0000">8000300</font></td>
+</tr>
+<tr align=center>
+  <td>A-201</td>
+  <td>900</td>
+  <td>9876543</td>
+  <td>Brighton</td>
+  <td>Brooklyn</td>
+  <td>7100000</td>
+</tr>
+<tr align=center>
+  <td>A-215</td>
+  <td>700</td>
+  <td>1111111</td>
+  <td>Mianus</td>
+  <td>Horseneck</td>
+  <td>400000</td>
+</tr>
+<tr align=center>
+  <td>A-222</td>
+  <td>700</td>
+  <td>1111111</td>
+  <td>Redwood</td>
+  <td>Palo Alto</td>
+  <td>2100000</td>
+</tr>
+<tr align=center>
+  <td>A-305</td>
+  <td>350</td>
+  <td>1234567</td>
+  <td><font color="#996600">Round Hill</font></td>
+  <td><font color="#996600">Horseneck</font></td>
+  <td><font color="#CC0000">8000000</font></td>
+</tr>
+<tr align=center>
+  <td><font color="#CC0000">A-306</font></td>
+  <td>500</td>
+  <td>7654321</td>
+  <td><font color="#996600">Round Hill</font></td>
+  <td><font color="#996600">Horseneck</font></td>
+  <td><font color="#CC0000">8000500</font>?</td>
+</tr>
+<tr align=center>
+  <td>...</td>
+  <td>...</td>
+  <td>...</td>
+  <td>...</td>
+  <td>...</td>
+  <td>...</td>
+</tr>
+</table><p>
+<p>
+What is the address of the Downtown branch?
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Relational Design &#9826; [6/8]</div> <DIV class='slideCl1    ' id="s7"  >
+<div class='navCl1'><a href="#s6"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s8"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Relational Design and Redundancy <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Insertion anomaly:
+<ul>
+<li> when we insert a new record, we need to check that branch data is consistent with existing tuples
+</ul>
+Update anomaly:
+<ul>
+<li> if a branch changes address, we need to update all tuples referring to that branch
+</ul>
+Deletion anomaly:
+<ul>
+<li> if we remove information about the last account at a branch, all of the branch information disappears
+</ul>
+<br>
+Insertion/update anomalies can be handled, e.g. by triggers
+<ul>
+<li>  but this requires extra DBMS work on every change to the database
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Relational Design &#9826; [7/8]</div> <DIV class='slideCl1    ' id="s8"  >
+<div class='navCl1'><a href="#s7"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>   </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Database Design (revisited)</div></td><td align='right'></td></tr></table>
+<p>
+To avoid these kinds of update problems:
+<ul>
+<li> need a schema with "minimal overlap" between tables
+<li> each table contains a "coherent" collection of data values
+</ul>
+Such schemas have little/no redundancy
+<p>
+<br>
+ER &rarr; SQL mapping tends to give non-redundant schemas
+<ul>
+<li> but does not guarantee no redundancy
+</ul>
+The methods we describe in this section
+<ul>
+<li> can reduce redundancy in schemas &rArr; eliminate update anomalies
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Relational Design &#9826; [8/8]</div><p><hr><p>
+<span style='font-size:11px;color: grey;'>Produced: 1 Nov 2020</span>
+ <script src='lib/prism.js'></script>   
+ <script src='lib/sg.js'></script>   
+</body>
+</html>

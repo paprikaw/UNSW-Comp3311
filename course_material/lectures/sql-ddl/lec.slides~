@@ -1,0 +1,316 @@
+<title>SQL Data Definition Language
+<footer>COMP3311 20T3 <diamond> SQL-DDL <diamond>
+
+
+<slide>
+<heading>Relational Data Definition
+In order to give a relational data model, we need to:
+<itemize>
+<item> describe tables
+<item> describe attributes that comprise tables
+<item> describe any constraints on the data
+</itemize>
+A <em>relation schema</em> defines an individual table
+<itemize>
+<item> table name, attribute names, attribute domains, keys, etc.
+</itemize>
+A <em>database schema</em> is a collection of relation schemas that
+<itemize>
+<item> defines the structure the whole database
+<item> additional constraints on the whole database
+<itemize>
+</slide>
+
+<slide>
+<heading>Example Relational Schema
+So far, we have given relational schemas informally, e.g.
+<diagram>Pics/sql/uni-rschema
+</slide>
+
+<slide>
+<heading>SQL Data Definition Language
+In the example schema above, we provided only
+<itemize>
+<item> relation names, attribute names, primary keys, foreign keys
+</itemize>
+A usable database needs to provide much more detail
+<p>
+SQL has a rich data definition language (DDL) that can describe
+<itemize>
+<item> names of tables
+<item> names and domains for attributes
+<item> various types of constraints <small>(e.g. primary/foreign keys)</small>
+</itemize>
+It also provides mechanisms for performance tuning <small>(see later)</small>.
+</slide>
+
+<slide>
+<heading>Defining a Database Schema
+Tables (relations) are described using:
+<program>
+CREATE TABLE <i>TableName</i> (
+    <$>attribute<sub>1</sub> <~> domain<sub>1</sub> <~> constraints<sub>1</sub></$>,
+    <$>attribute<sub>2</sub> <~> domain<sub>2</sub> <~> constraints<sub>2</sub></$>,
+    ...
+    <$>table</$>-<$>level constraints</$>, ...
+)
+</program>
+<p>
+This SQL statement ..
+<itemize>
+<item> defines the table schema <~> <small>(adds it to database meta-data)</small>
+<item> creates an empty instance of the table <~> <small>(zero tuples)</small>
+</itemize>
+Tables are removed via <~~> <@>DROP TABLE <i>TableName</i>;</@>
+</slide>
+
+<slide>
+<continued>
+Example: defining the <@>Students</@> table ...
+<program>
+CREATE TABLE Students (
+    zid     serial,
+    family  varchar(40),
+    given   varchar(40) NOT NULL,
+    d_o_b   date NOT NULL,
+    gender  char(1) CHECK (gender in ('M','F')),
+    degree  integer,
+    PRIMARY KEY (zid),
+    FOREIGN KEY (degree) REFERENCES Degrees(did)
+);
+</program>
+<small>
+Note that there is much more info here than in the relational schema diagram.
+<p>
+A primary key attribute is implicitly defined to be <@>UNIQUE</@> and <@>NOT NULL</@>
+</small>
+</slide>
+
+<slide>
+<continued>
+Example: alternative definition of the <@>Students</@> table ...
+<program>
+CREATE DOMAIN GenderType AS
+       char(1) CHECK (value in ('M','F'));
+    
+CREATE TABLE Students (
+    zid     serial PRIMARY KEY,
+            <comment>-- only works if primary key is one attr</comment>
+    family  text,  <comment>-- no need to worry about max length</comment>
+    given   text NOT NULL,
+    d_o_b   date NOT NULL,
+    gender  GenderType,
+    degree  integer REFERENCES Degrees(did)
+);
+</program>
+<small>
+At this stage, prefer to use the long-form declaration of primary and foreign keys
+</small>
+</slide>
+
+<slide>
+<continued>
+Example: defining the <@>Courses</@> table ...
+<program>
+CREATE TABLE Courses (
+    cid    serial,
+    code   char(8) NOT NULL uhs
+                   CHECK (code ~ '[A-Z]{4}[0-9]{4}'),
+    term   char(4) NOT NULL
+                   CHECK (term ~ '[0-9]{2}T[0-3]'),
+    title  text UNIQUE NOT NULL,
+    PRIMARY KEY (cid)
+);
+</program>
+<small>
+Uses non-standard regular expression checking on <@>code</@> and <@>term</@>
+<p>
+No two <@>Courses</@> can have the same title; but not used as primary key
+</small>
+</slide>
+
+<slide>
+<continued>
+Example: defining the <@>Enrolments</@> relationship ...
+<program>
+CREATE TABLE Enrolments (
+    student integer,
+    course  integer,
+    mark    integer CHECK (mark BETWEEN 0 AND 100),
+    grade   GradeType,
+    PRIMARY KEY (student,course),
+    FOREIGN KEY (student)
+                  REFERENCES Students(zid)
+    FOREIGN KEY (course)
+                  REFERENCES Courses(cid)
+);
+</program>
+<small>
+Could not enforce total partcipation constraint if e.g. all courses must have &gt; 0 students
+<p>
+Possible alternative names for foreign keys <@>student_id</@> and <@>course_id</@>
+</small>
+</slide>
+
+<slide>
+<heading>Data Integrity
+<br>
+Defining tables as above affects behaviour of DBMS when changing data
+<p>
+Constraints and types ensure that integrity of data is preserved
+<itemize>
+<item> no duplicate keys
+<item> no "dangling references"
+<item> all attributes have valid values
+<item> etc. etc. etc.
+</itemize>
+Preserving data integrity is a <i>critical</i><~> function of a DBMS.
+</slide>
+
+<slide>
+<heading>Another Example Schema
+<br>
+Variation on banking schema used elsewhere
+<p><br>
+<diagram>Pics/sql/bank-rschema
+</slide>
+
+<slide>
+<heading>Default Values
+Can specify a <@>DEFAULT</@> value for an attribute
+<itemize>
+<item> will be assigned to attribute if no value is supplied during insert
+</itemize>
+<b>Example:</b>
+<program90>
+CREATE TABLE Accounts (
+    acctNo  char(5) PRIMARY KEY,
+    branch  varchar(30) REFERENCES Branches(name)
+                        DEFAULT 'Central',
+    owner   integer REFERENCES Customers(custID),
+    balance float DEFAULT 0.0
+);
+
+INSERT INTO Accounts(acctNo,owner) VALUES ('A-456',645342)
+<comment>-- produces the tuple</comment>
+Accounts('A-456', 'Central', 645342, 0.0)
+</program>
+</slide>
+
+<slide>
+<heading>Defining Keys
+Primary keys:
+<itemize>
+<item> if PK is one attribute, can define as attribute constraint
+<item> if PK is multiple attributes, must define in table constraints
+<item> PK implies <@>NOT NULL</@> <@>UNIQUE</@> for all attributes in key
+</itemize>
+Foreign keys:
+<itemize>
+<item> if FK is one attribute, can define as attribute constraint
+<item> can omit <@>FOREIGN KEY</@> keywords in attribute constraint
+<item> if FK has multiple attributes, must define as a single table constraint
+<item> should always specify corresponding PK attribute in FK constraint, e.g
+<program90>
+<green>customer</green> integer
+         FOREIGN KEY REFERENCES Customers(<green>customerNo</green>)
+</program>
+</slide>
+
+<slide>
+<continued>
+Defining primary keys assures <em>entity integrity</em>
+<itemize>
+<item> must give values for all attributes in the primary key
+</itemize>
+For example this insertion would fail ...
+<program90>
+INSERT INTO Enrolments(student,course,mark,grade)
+       VALUES (5123456, NULL, NULL, NULL);
+</program>
+because no <@>course</@> was specified; but <@>mark</@> and <@>grade</@> can be <@>NULL</@>
+<p>
+Defining primary keys assures <em>uniqueness</em>
+<itemize>
+<item> cannot insert a tuple which contains an existing PK value
+</itemize>
+</slide>
+
+<slide>
+<continued>
+<br>
+Defining foreign keys assures <em>referential integrity</em>.
+<p>
+On insertion, cannot add a tuple where FK value does not exist as a PK
+<p>
+For example, this insert would fail ...
+<program90>
+INSERT INTO Accounts(acctNo, owner, branch, balance)
+            VALUES ('A-123', 765432, 'Nowhere', 5000);
+</program>
+if there is no customer with id <@>765432</@> or no branch <@>Nowhere</@>
+</slide>
+
+<slide>
+<continued>
+<br>
+On deletion, interesting issues arise, e.g.
+<p>
+<@>Accounts.branch</@> refers to primary key <@>Branches.name</@>
+<p>
+If we want to delete a tuple from <@>Branches</@>, and there are tuples
+in <@>Accounts</@> that refer to it, we could ...
+<itemize>
+<item> <b>reject</b> the deletion <small>(PostgreSQL/Oracle default behaviour)</small>
+<item> <b>set-NULL</b> the foreign key attributes in <@>Account</@> records
+<item> <b>cascade</b> the deletion and remove <@>Account</@> records
+</itemize>
+SQL allows us to choose a strategy appropriate for the application
+</slide>
+
+<slide>
+<heading>Attribute Value Constraints
+<@>NOT NULL</@> and <@>UNIQUE</@> are special constraints on attributes.
+<p>
+SQL has a general mechanism for specifying attribute constraints
+<program>
+<i>attrName</i>  <i>type</i>  CHECK ( <i>Condition</i> )
+</program>
+<i>Condition</i> is a boolean expression and can
+involve other attributes, relations and <@>SELECT</@> queries.
+<program90>
+CREATE TABLE Example
+(
+   gender char(1)  CHECK (gender IN ('M','F')),
+   Xvalue integer  NOT NULL,
+   Yvalue integer  CHECK (Yvalue > Xvalue),
+   Zvalue float    CHECK (Zvalue >
+                          (SELECT MAX(price)
+                           FROM   Sells)
+                  )
+);
+</program>
+<small>
+(but many RDBMSs (e.g. Oracle and PostgreSQL) don't allow <@>SELECT</@> in <@>CHECK</@>)
+</small>
+</slide>
+
+<slide>
+<heading>Named Constraints
+A constraint in an SQL table definition can (optionally) be named via
+<program>
+CONSTRAINT  <i>constraintName</i>  <$>constraint</$>
+</program>
+Example:
+<program>
+CREATE TABLE Example
+(
+   gender char(1) CONSTRAINT GenderCheck
+                  CHECK (gender IN ('M','F')),
+   Xvalue integer NOT NULL,
+   Yvalue integer CONSTRAINT XYOrder
+                  CHECK (Yvalue > Xvalue)
+);
+</program>
+</slide>
+

@@ -1,0 +1,938 @@
+
+<slide>
+<heading>Week 02 Wednesday
+<subheading>Things to Note ...</subheading>
+<itemize>
+<sitem> Quiz 1 ... due Friday 27 September 11:59pm
+<sitem> Assignment 1 ... ends Sunday 6 October 11:59pm
+</itemize>
+<subheading>In This Lecture ...</subheading>
+<itemize>
+<sitem> Relational Data Model
+	<span class='refs'>(EN7, GUW3, RG3, KSS3, KBL3.2)</span>
+<sitem> Data definition in SQL
+	<span class='refs'>(EN8.1-2, GUW6.6, RG3.1-3, KSS4.11, KBL3.3)</span>
+<sitem> ER-to-relational Mapping
+ 	<span class='refs'>(EN9.1, GUW3.2, RG3.5, KSS2.9, KBL4.5)</span>
+</itemize>
+<subheading>Coming Up ... </subheading>
+<itemize>
+<sitem> Managing data in SQL
+        <span class='refs'>(EN8.6,9, GUW6.5, RG3.1, KSS3.10, KBL5.3)</span>
+<sitem> Queries in SQL
+     <span class='refs'>(EN7.2-5, GUW6.1-5, RG5.1-6, KSS4.1-10, KBL5.2)</span>
+</itemize>
+</slide>
+
+<slide>
+<heading>Famous DB Nerds #3
+<center>
+<small>The next in a series on famous database people ...</small>
+<p><center><img src="Pics/ted-codd1.jpg"><p>
+</center>
+</slide>
+
+<slide>
+<continued>
+<table>
+<tr valign=top>
+<td>
+<span class="nerd">Ted Codd</span>
+<p>
+<img src="Pics/ted-codd2.jpg">
+<td><~~~></td>
+<td>
+<itemize>
+<item> Researcher at IBM San Jose Lab
+<item> Invented relational model
+<small>
+<itemize>
+<sitem> Original paper in 1970
+<sitem> Proposed <em>Alpha</em> query language
+<sitem> Very influential on DB research/practice
+</itemize>
+</small>
+<item> ACM Turing Award 1981
+<item> Died April 2003
+</itemize>
+</td>
+</tr>
+</table>
+<small>
+<b>Turing Award Citation:</b> <br>
+For his fundamental and continuing contributions to the theory and
+practice of database management systems. He originated the relational
+approach to database management in a series of research papers published
+commencing in 1970. His paper "A Relational Model of Data for Large
+Shared Data Banks" was a seminal paper, in a continuing and carefully
+developed series of papers. Dr. Codd built upon this space and in doing
+so has provided the impetus for widespread research into numerous related
+areas, including database languages, query subsystems, database semantics,
+locking and recovery ...
+</small>
+</slide>
+
+<slide>
+<heading>Assignment 1
+Goals:
+<itemize>
+<item> devise a data model for a Calendar app
+<item> do it collaboratively, online <small>(up to 11:59pm Sun 6 Oct)</small>
+<item> produce a design document as a Wiki on Webcms3
+</itemize>
+Suggestion for final Wiki structure:
+<itemize>
+<item> front page, description, authorship
+<item> design overview page
+<itemize>
+<item> ER diagram with all entities and relationships <small>(no attributes)</small>
+</itemize>
+<item> for each major "data type" <small>(e.g. Users, Events, ...)</small>, a page with
+<itemize>
+<item> ER diagram of class/subclass hierarchy (if any)
+<item> ER diagrams of entities and their attributes
+<item> description of attribute constraints
+</itemize>
+</itemize>
+</slide>
+
+<slide>
+<heading>Week 02 Thursday
+<subheading>Things to Note ...</subheading>
+<itemize>
+<sitem> Sort out enrolment ASAP ... and ask me to add you to a group
+<sitem> Quiz 1 ... due Friday 27 September (TOMORROW) 11:59pm
+<sitem> Assignment 1 ... ends Sunday 6 October 11:59pm <tiny>(daylight saving)</tiny>
+</itemize>
+<subheading>In This Lecture ...</subheading>
+<itemize>
+<sitem> ER-to-relational Mapping
+ 	<span class='refs'>(EN9.1, GUW3.2, RG3.5, KSS2.9, KBL4.5)</span>
+<sitem> Database Management Systems
+	<span class='refs'>(EN2, GUW1.2, RG1, KSS18, KBL1.2)</span>
+</itemize>
+<subheading>Coming Up ... </subheading>
+<itemize>
+<sitem> Managing data in SQL
+        <span class='refs'>(EN8.6,9, GUW6.5, RG3.1, KSS3.10, KBL5.3)</span>
+<sitem> Queries in SQL
+     <span class='refs'>(EN7.2-5, GUW6.1-5, RG5.1-6, KSS4.1-10, KBL5.2)</span>
+</itemize>
+</slide>
+
+<slide>
+<heading>PostgreSQL
+The story from 2005 - 2019 T2 ...
+<itemize>
+<sitem> run PostgreSQL on Grieg with a hacked kernel
+<sitem> each student gets a directory <@>/srvr/<i>YOU</i></@>
+<sitem> your PostgreSQL server files lives under <@>/srvr/<i>YOU</i></@>
+<sitem> run PostgreSQL server on Grieg <small>(can support 300+ PG servers)</small>
+<sitem> also gets a private port space so everyone uses 5432 and 80
+</itemize>
+From 2019 T3 onwards ...
+<itemize>
+<sitem> Grieg now runs a standard kernel, same PG as all CSE servers
+<sitem> each student gets a directory <@>/srvr/<i>YOU</i></@>
+<sitem> PostgreSQL server files in either <@>/srvr/<i>YOU</i></@> or <@>/tmp</@>
+<sitem> can run PostgreSQL server on most CSE machines (incl. Grieg)
+</itemize>
+Prac02 needs to be re-written.
+</slide>
+
+<slide>
+<heading>Famous DB Nerds #4
+<center>
+<small>The next in a series on famous database people ...</small>
+<p><center><img src="Pics/chamberlin.gif"></center><p>
+</center>
+</slide>
+
+<slide>
+<continued>
+<table>
+<tr valign=top>
+<td>
+<span class="nerd">Don Chamberlin</span>
+<p>
+<img src="Pics/don.chamberlin.jpg"></td>
+<td><~~~></td>
+<td>
+<itemize>
+<item> IBM Almaden Research Lab
+<item> Member of System R team
+<item> Designed SQL <small>(with Ray Boyce) (1975)</small>
+<item> Worked on DB2 <small>(1980's..1990's)</small>
+<item> Query language for XML DBMSs <small>(QUILT, XQuery) (2005)</small>
+<item> Couchbase technical advisor <small>(2015..)</small>
+<item> ACM Fellow, ACM Software Systems Award
+</itemize>
+</td>
+</tr>
+</table>
+<p>
+<center>
+System R <small>(1975)</small> = the original prototype relational DBMS
+</center>
+</slide>
+
+% <slide>
+% <center>
+% <span style="font-size:32pt;">Go Giants!</span>
+% </center>
+% <diagram> ../../Pic/misc/gws.png
+% <p>
+% <center>
+% AFL Grand Final, Saturday, 2pm, 7HD
+% </center>
+% </slide>
+
+<slide>
+<heading>Week 03 Wednesday
+<subheading>Things to Note ...</subheading>
+<itemize>
+<sitem> Assignment 1 ... ends Sunday 6 October 11:59pm <tiny>(daylight saving)</tiny>
+<sitem> Next week ... Assignment 2 (SQL) released ... Quiz 4
+</itemize>
+<subheading>In This Lecture ...</subheading>
+<itemize>
+<sitem> Database Management Systems
+	<span class='refs'>(EN2, GUW1.2, RG1, KSS18, KBL1.2)</span>
+<sitem> Managing data in SQL
+        <span class='refs'>(EN8.6,9, GUW6.5, RG3.1, KSS3.10, KBL5.3)</span>
+<sitem> Queries in SQL
+     <span class='refs'>(EN7.2-5, GUW6.1-5, RG5.1-6, KSS4.1-10, KBL5.2)</span>
+</itemize>
+<subheading>Coming Up ... </subheading>
+<itemize>
+<sitem> Stored Procedures
+        <span class='refs'>(EN10.5, GUW8.2, RG6.5, KSS9.6)</span>
+<sitem> PLpgSQL
+        <span class="refs">(PostgreSQL Manual, Chapter 43)</span>
+<itemize>
+</itemize>
+</slide>
+
+<slide>
+<heading>Famous DB Nerds #5
+<center>
+<small>The next in a series on famous database people ...</small>
+<p><center><img valign=top src="Pics/mehl.jpg"> <~> <img valign=top src="Pics/lorie.jpg"></center><p>
+</center>
+</slide>
+
+<slide>
+<continued>
+<table>
+<tr valign=top cellspacing=10>
+<td>
+<span class="nerd">Jim Mehl</span>
+<p>
+<img src="Pics/mehl1.jpg">
+</td>
+<td> <~~> </td>
+<td>
+<span class="nerd">Ray Lorie</span>
+<p>
+<img src="Pics/lorie1.jpg">
+</td>
+<td> <~~~> </td>
+<td>
+<itemize>
+<item> IBM San Jose Research Centre
+<item> Part of System R Team
+<item> Lorie: Design of SQL <br>
+        <small>(along with Don Chamberlin)</small>
+<item> Mehl: First SQL Parser
+<item> Lorie also involved with GML
+</itemize>
+</td>
+</tr>
+</table>
+<p>
+SQL parser <small>(for the really keen)</small>:
+<itemize>
+<item> <i>.../PostgreSQL/Source/Code</i>/src/backend/parser/
+</itemize>
+</slide>
+
+<slide>
+<heading>Week 03 Thursday
+<subheading>Things to Note ...</subheading>
+<itemize>
+<sitem> Assignment 1 ... ends Sunday 6 October 11:59pm <tiny>(daylight saving)</tiny>
+<sitem> Next week ... Assignment 2 (SQL) released ... Quiz 2
+</itemize>
+<subheading>In This Lecture ...</subheading>
+<itemize>
+<sitem> Queries in SQL
+     <span class='refs'>(EN7.2-5, GUW6.1-5, RG5.1-6, KSS4.1-10, KBL5.2)</span>
+<sitem> Stored Procedures
+        <span class='refs'>(EN10.5, GUW8.2, RG6.5, KSS9.6)</span>
+</itemize>
+<subheading>Coming Up ... </subheading>
+<itemize>
+<sitem> PLpgSQL
+        <span class="refs">(PostgreSQL Manual, Chapter 43)</span>
+<itemize>
+</itemize>
+</slide>
+
+<slide>
+<heading>Famous DB Nerds #6
+<center>
+<small>The next in a series on famous database people ...</small>
+<p>
+<center><img src="Pics/lindsay3.jpg"></center>
+</center>
+</slide>
+
+<slide>
+<continued>
+<table>
+<tr valign=top>
+<td>
+<span class="nerd">Bruce Lindsay</span>
+<p>
+<img src="Pics/lindsay4.jpg"></td>
+<td>
+<~~~>
+</td>
+<td>
+<itemize>
+<item> IBM Almaden Research Centre
+<item> Part of System R Team
+<itemize>
+<sitem> buffer pool manager, ...
+</itemize>
+<item> Since System R:
+<itemize>
+<sitem> distributed databases (R*)
+<sitem> transactions/concurrency control
+<sitem> query optimisation
+<sitem> composite objects in RDBMS
+<sitem> web caching
+</itemize>
+<item> IBM Research Fellow
+</itemize>
+</td>
+</tr>
+</table>
+</slide>
+
+<slide>
+<heading>Week 04 Wednesday
+<subheading>Things to Note ...</subheading>
+<itemize>
+<sitem> Quiz2 due Friday
+<sitem> Assignment 1 ... will review tomorrow
+<sitem> Assignment 2 (SQL) out Real Soon Now
+</itemize>
+<subheading>In This Lecture ...</subheading>
+<itemize>
+<sitem> Queries in SQL
+     <span class='refs'>(EN7.2-5, GUW6.1-5, RG5.1-6, KSS4.1-10, KBL5.2)</span>
+<sitem> Stored Procedures
+        <span class='refs'>(EN10.5, GUW8.2, RG6.5, KSS9.6)</span>
+<sitem> PLpgSQL
+        <span class="refs">(PostgreSQL Manual, Chapter 43)</span>
+</itemize>
+<subheading>Coming Up ... </subheading>
+<itemize>
+<sitem> Aggregates
+        <span class="refs">(PostgreSQL Manual, CREATE AGGREGATE)</span>
+<sitem> Assertions and Triggers
+        <span class="refs">(EN8.6, GUW7.4, RG5.7-8, KSS6.3-4)</span>
+</itemize>
+</slide>
+
+<slide>
+<heading>Famous DB Nerds #7
+<center>
+<small>The next in a series on famous database people ...</small>
+<p><center>
+<img src="Pics/mohan0.jpg">
+</center><p>
+</center>
+</slide>
+
+<slide>
+<continued>
+<table>
+<tr valign=top>
+<td>
+<span class="nerd">C. Mohan</span>
+<p>
+<img src="Pics/mohan.jpg">
+</td>
+<td> <~~~> </td>
+<td>
+<itemize>
+<item> IBM Research Labs (Alamden, Bangalore)
+<item> Invented ARIES recovery system
+<itemize>
+<item> winner SIGMOD Innovations Award <small>(1996)</small>
+<item> winner VLDB 10 Year Best Paper Award <small>(1999)</small>
+</itemize>
+<item> Other contributions in:
+<itemize>
+<sitem> concurrency control, storage systems
+<sitem> distributed DBMSs, OODBMSs  <small>(R*, Starburst)</small>
+<sitem> workflow <small>(Domino, FlowMark)</small>
+</itemize>
+<item> IBM Fellow, IBM India Chief Scientist
+</itemize>
+</td>
+</tr>
+</table>
+<center><red>
+THIS Friday, 3-4pm, Ainsworth-G03, "Big Data: Hype and Reality"
+</red></center>
+</slide>
+
+<slide>
+<heading>Week 04 Thursday
+<subheading>Things to Note ...</subheading>
+<itemize>
+<sitem> Quiz2 due Friday
+<sitem> Assignment 2 (SQL) out Real Soon Now
+</itemize>
+<subheading>In This Lecture ...</subheading>
+<itemize>
+<sitem> Stored Procedures
+        <span class='refs'>(EN10.5, GUW8.2, RG6.5, KSS9.6)</span>
+<sitem> PLpgSQL
+        <span class="refs">(PostgreSQL Manual, Chapter 43)</span>
+</itemize>
+<subheading>Coming Up ... </subheading>
+<itemize>
+<sitem> Aggregates
+        <span class="refs">(PostgreSQL Manual, CREATE AGGREGATE)</span>
+<sitem> Assertions and Triggers
+        <span class="refs">(EN8.6, GUW7.4, RG5.7-8, KSS6.3-4)</span>
+</itemize>
+</slide>
+
+<slide>
+<heading>Famous DB Nerds #8
+<center>
+<small>The next in a series on famous database people ...</small>
+<p>
+<center>
+<img src="Pics/selinger1.jpg">
+</center>
+</center>
+</slide>
+
+<slide>
+<continued>
+<table>
+<tr valign=top>
+<td>
+<b><navy>Patricia Selinger</navy></b>
+<p>
+<img src="Pics/selinger2.jpg"></td>
+<td><~></td>
+<td>
+<itemize>
+<item> IBM San Jose Research Centre
+<item> Part of System R Team
+<item> Cost-based query optimisation
+<item> Awards:
+<itemize>
+<item> IBM Research Fellowship
+<item> ACM Innovations Award
+</itemize>
+<item> Director of DB Technology Institute <br>
+	at IBM Almaden Research Centre
+</itemize>
+</td>
+</tr>
+</table>
+</slide>
+
+<slide>
+<heading>Week 05 Wednesday
+<subheading>Things to Note ...</subheading>
+<itemize>
+<sitem> no lectures next week
+<sitem> will use timeslots for extra Help Sessions (K17-410)
+<sitem> Assignment 2 (SQL and PLpgSQL) due Mon 28 Oct at midday
+</itemize>
+<subheading>In This Lecture ...</subheading>
+<itemize>
+<sitem> PLpgSQL
+        <span class="refs">(PostgreSQL Manual, Chapter 43)</span>
+</itemize>
+<subheading>Coming Up ... </subheading>
+<itemize>
+<sitem> Aggregates
+        <span class="refs">(PostgreSQL Manual, CREATE AGGREGATE)</span>
+<sitem> Assertions and Triggers
+        <span class="refs">(EN8.6, GUW7.4, RG5.7-8, KSS6.3-4)</span>
+</itemize>
+</slide>
+
+<slide>
+<heading>Assignment 2 Tips
+How to make doing Assignment 2 easier
+<itemize>
+<item> install the IMDB database ASAP, and explore it
+<item> define a <@>Movies</@> view for all the Q's that want movies
+<item> edit <@>ass2.sql</@>in one window, and ...
+<item> copy/paste into a <@>psql a2</@> window for testing
+<item> cross-check your answers against data in base tables
+</itemize>
+<br>
+<small>
+Note: deadline extended because Andrew Taylor doesn't want late-night deadlines
+</small>
+</slide>
+
+<slide>
+<heading>Famous DB Nerds #9
+<center>
+<small>The next in a series on famous database people ...</small>
+<p>
+<center>
+<img src="Pics/stonebraker.gif">
+</center>
+<p>
+</center>
+</slide>
+
+<slide>
+<continued>
+<table>
+<tr valign=top>
+<td>
+<span class="nerd">Michael<br>Stonebraker</span>
+<p>
+<img src="Pics/stonebraker.jpg">
+</td>
+<td>
+<itemize>
+<item> Professor, UC Berkeley <small>(1971-2000)</small>
+<item> Developed/commercialised several DBMSs:
+<itemize>
+<sitem> Ingres: very early relational DBMS
+<sitem> Distributed Ingres: very early dDBMS
+<sitem> Postgres: object-relational DBMS <small>(Illustra)</small>
+<sitem> XPRS: Parallel Postgres
+<sitem> Mariposa: federated data system <small>(Cohera)</small>
+<sitem> Aurora: stream processing <small>(StreamBase)</small>
+<sitem> C-store: column-oriented DBMS <small>(Vertica)</small>
+<sitem> Morpheus: data integration system <small>(Goby)</small>
+<sitem> H-store: distributed XP system <small>(VoltDB)</small>
+<sitem> SciDB: DBMS for scientific applications
+</itemize>
+<item> ACM Turing Award 2014
+<item> IEEE John von Neumann Medal 2005
+<item> Currently Adjunct Professor at MIT
+</itemize>
+</td>
+</tr>
+</table>
+</slide>
+
+<slide>
+<heading>More Assignment 2 Tips
+How to make doing Assignment 2 easier
+<itemize>
+<item> you can put auxiliary views and functions
+<itemize>
+<item> at the top of <@>ass2.sql</@> if they're widely useful
+<item> just before the <@>Q<i>n</i></@> view if specific to that view
+</itemize>
+<item> define a <@>Movies</@> view for use throughtout <@>ass2.sql</@> 
+<item> use <@>\d</@> to get more info about tables
+<item> use <@>\x</@> if rows are "too wide"
+<item> if not <@>\x</@>, use <@>substr()</@> on individual attributes
+<item> the database has not changed since it was released
+<item> the <@>dbpop()</@> function tells you how many tuples/table
+<item> <@>ass2.sql</@> MUST load in a SINGLE PASS into just-created imdb
+</itemize>
+</slide>
+
+<slide>
+<heading>Week 07 Wednesday
+<subheading>Things to Note ...</subheading>
+<itemize>
+<sitem> Quiz 4 ... next week .. out Monday ... due Friday
+<sitem> Assignment 3 (Python & psycopg2) due Mon 18 Nov at midday
+</itemize>
+<subheading>In This Lecture ...</subheading>
+<itemize>
+<sitem> Assignment 3 Database
+<sitem> Triggers 
+	<span class="refs">(EN8.6, GUW7.4, RG5.7-8, KSS6.3-4, KBL7)</span>
+<sitem> Catalogs
+	<span class="refs">(ENp243, GUW8.3, RG12.1, KSS11.8, KBLp47)</span>
+<sitem> DBMS/ProgLang Interfaces
+</itemize>
+<subheading>Coming Up ... </subheading>
+<itemize>
+<sitem> Python and psycopg2
+<sitem> Relational Design Theory
+        <~> <span class="refs">(EN10, GUW3.4-6, RG19, KSS3)</span>
+</itemize>
+</slide>
+
+<slide>
+<heading>Famous DB Nerds #10
+<center>
+<small>The next in a series on famous database people ...</small>
+<p><center>
+<img src="Pics/snodgrass1.jpg">
+</center><p>
+</center>
+</slide>
+
+<slide>
+<continued>
+<table>
+<tr valign=top>
+<td>
+<span class="nerd">Richard T.<br>Snodgrass</span>
+<p>
+<img src="Pics/snodgrass2.jpg">
+</td>
+<td><~~~></td>
+<td>
+<itemize>
+<item> CS Professor at U.Arizona
+<item> <em>Temporal Database</em> expert, including
+<small>
+<itemize>
+<sitem> TSQL2: temporal extension to SQL2
+<sitem> Temporal component of SQL3
+</itemize>
+</small>
+<item> Editor of top DB research journals
+<small>
+<itemize>
+<sitem> ACM Transactions on DB Systems (TODS)
+<sitem> Int. Journal on Very Large DBs (VLDB)
+<sitem> IEEE Transactions on Knowledge <br>
+        and Data Engineering (TKDE)
+</itemize>
+</small>
+<item> ACM Fellow <small>(temporal db, editorial work)</small>
+<item> 2005 Lifetime Achievement Award
+</itemize>
+</td>
+</tr>
+</table>
+</slide>
+
+<slide>
+<heading>Week 07 Thursday
+<subheading>Things to Note ...</subheading>
+<itemize>
+<sitem> Quiz 4 ... next week .. out Monday ... due Friday
+<sitem> Assignment 3 (Python & psycopg2) due Mon 18 Nov at midday
+<sitem> Ass1 marked by Monday ... Ass2 marked by next Friday
+</itemize>
+<subheading>In This Lecture ...</subheading>
+<itemize>
+<sitem> DBMS/ProgLang Interfaces
+<sitem> Python and psycopg2
+</itemize>
+<subheading>Coming Up ... </subheading>
+<itemize>
+<sitem> Relational Design Theory
+        <~> <span class="refs">(EN10, GUW3.4-6, RG19, KSS3)</span>
+<sitem> Relational Algebra
+        <~> <span class="refs">(EN7.4, GUW5, RG4.2, KSS3.2, KBL5.1)</span>
+</itemize>
+</slide>
+
+<slide>
+<heading>Famous (DB) Nerds #11
+<center>
+<small>The next in a series on famous computing people ...</small>
+<p><center>
+<img src="Pics/Guido1.jpg">
+</center><p>
+</center>
+</slide>
+
+<slide>
+<continued>
+<table>
+<tr valign=top>
+<td>
+<span class="nerd"><nobr>Guido van Rossum</nobr></span>
+<p>
+<img src="Pics/Guido2.jpg">
+</td>
+<td><~~~></td>
+<td>
+<itemize>
+<item> Inventor of Python
+<item> Masters in Maths and CompSci 1982 <br>
+	<small>(University of Amsterdam)</small>
+<item> Python BDFL 1990-2018 <br>
+	<small>(Benevolent Dictator for Life)</small>
+<item> Zope 2000-2003
+<item> Google 2005-2012
+<item> Dropbox 2013-2019
+<item> Now retired
+</itemize>
+</td>
+</tr>
+</table>
+</slide>
+
+<slide>
+<heading>Week 08 Wednesday
+<subheading>Things to Note ...</subheading>
+<itemize>
+<sitem> Quiz 4 ... due Friday 23:59 ... 68/500 so far
+<sitem> Assignment 3 due Mon 18 Nov at midday
+<sitem> Ass1 and Ass2 marking are ongoing
+</itemize>
+<subheading>In This Lecture ...</subheading>
+<itemize>
+<sitem> Relational Design Theory
+	<~> <span class="refs">(EN10, GUW3.4-6, RG19, KSS3)</span>
+</itemize>
+<subheading>Coming Up ... </subheading>
+<itemize>
+<sitem> Relational Algebra
+	<~> <span class="refs">(EN7.4, GUW5, RG4.2, KSS3.2, KBL5.1)</span>
+<sitem> DBMS Architecture
+	<~> <span class="refs">(EN13, GUW11, RG8, KSS11, KBL9)</span>
+<sitem> Transactions
+	<~> <span class="refs">(EN19, GUW8.6,18.1-3, RG16, KSS15, KBL18,20)</span>
+</itemize>
+</slide>
+
+<slide>
+<heading>Famous DB Nerds #12
+<center>
+<small>The next in a series on famous database people ...</small>
+<p><center>
+<img src="Pics/ullman7.jpg">
+</center><p>
+</center>
+</slide>
+
+<slide>
+<continued>
+<table>
+<tr valign=top>
+<td>
+<span class="nerd">Jeff Ullman</span>
+<p>
+<img src="Pics/ullman8.jpg"> 
+</td>
+<td><~></td>
+<td>
+<itemize>
+<item> DB Professor at Stanford U <small>(1980...)</small>
+<item> Very well-known database researcher
+<item> Published over 200 articles + 10 textbooks <br>
+	<small>(DB, theory, data-structs, compilers, ...)</small>
+<item> Research areas include:
+<itemize>
+<sitem> deductive databases (NAIL)
+<sitem> information itegration (TSIMMIS)
+<sitem> information extraction (MIDAS)
+</itemize>
+<item> PhD supervisor of Sergey Brin, Larry Page
+</itemize>
+</td>
+</tr>
+</table>
+</slide>
+
+<slide>
+<heading>Week 08 Thursday
+<subheading>Things to Note ...</subheading>
+<itemize>
+<sitem> Quiz 4 ... due Friday 23:59 ... 125/500 so far
+<sitem> Assignment 3 due Mon 18 Nov at midday
+<sitem> Ass1 and Ass2 marking are ongoing
+</itemize>
+<subheading>In This Lecture ...</subheading>
+<itemize>
+<sitem> Relational Design Theory
+	<~> <span class="refs">(EN10, GUW3.4-6, RG19, KSS3)</span>
+<sitem> Relational Algebra
+	<~> <span class="refs">(EN7.4, GUW5, RG4.2, KSS3.2, KBL5.1)</span>
+</itemize>
+<subheading>Coming Up ... </subheading>
+<itemize>
+<sitem> DBMS Architecture
+	<~> <span class="refs">(EN13, GUW11, RG8, KSS11, KBL9)</span>
+<sitem> Transactions
+	<~> <span class="refs">(EN19, GUW8.6,18.1-3, RG16, KSS15, KBL18,20)</span>
+</itemize>
+</slide>
+
+<slide>
+<heading>Week 09 Wednesday
+<subheading>Things to Note ...</subheading>
+<itemize>
+<sitem> Assignment 3 due Mon 18 Nov at midday
+<sitem> Help Sessions ... see Webcms3 > Timetable > Consultations
+<sitem> Special Help Session ... Fri 15 Nov 10.30-12 in K17-410
+<sitem> Ass1 marking is ongoing ... Ass2 remark contact cs3311@cse
+<sitem> MyExperience seems to be open ... <tiny>save it until after you've recovered from Ass3</tiny>
+</itemize>
+<subheading>In This Lecture ...</subheading>
+<itemize>
+<sitem> Relational Algebra
+	<~> <span class="refs">(EN7.4, GUW5, RG4.2, KSS3.2, KBL5.1)</span>
+<sitem> DBMS Architecture
+	<~> <span class="refs">(EN13, GUW11, RG8, KSS11, KBL9)</span>
+</itemize>
+<subheading>Coming Up ... </subheading>
+<itemize>
+<sitem> Transactions
+	<~> <span class="refs">(EN19, GUW8.6,18.1-3, RG16, KSS15, KBL18,20)</span>
+<sitem> Course Review ... Exam Preview ... Exams(!)
+</itemize>
+</slide>
+
+<slide>
+<heading>Exam
+Tue 03 Dec, 3-hour exam in the CSE Labs, <small>morning and afternoon sessions</small>
+<p>
+Under the <i>standard</i> CSE lab exam environment <~> (fluxbox, etc.)
+<itemize>
+<item> including access to Course <b>Notes</b>, PostgreSQL doc, SQLite doc
+<item> but <i>no access</i> to Webcms3, Moodle, Google, Internet in general
+</itemize>
+<p>
+Some SQL queries (~50%) and some written/drawn answers (~50%)
+<p>
+Using SQLite for the SQL queries (most likely)
+<itemize>
+<item> when I get time, will make a quick video on using SQLite
+<item> you can practice now on (most of) the existing prac exercises
+<item> you mainly write SQL and run it in SQLite via a <@>check</@> script
+</itemize>
+<p>
+Using <@@>dia</@@> for drawing ER diagrams
+<itemize>
+<item> when I get time, will make a quick video on using <@@>dia</@@> for ER
+</itemize>
+</slide>
+
+<slide>
+<heading>Famous DB Nerds #13
+<center>
+<small>The next in a series on famous database people ...</small>
+<p>
+<img src="Pics/bayer1.jpg">
+<~~~>
+<img src="Pics/mccreight1.jpg">
+</center>
+</slide>
+
+<slide>
+<continued>
+<table>
+<tr valign=top>
+<td>
+<span class="nerd">Rudolf Bayer</span>
+<p>
+<img src="Pics/bayer2.jpg">
+<p>
+<span class="nerd">Ed McCreight</span>
+<p>
+<img src="Pics/mccreight2.jpg">
+</td>
+<td><~~></td>
+<td>
+<itemize>
+<item> Together, they invented the <em>B-tree</em> (1972)
+<item> <b>Bayer</b>
+<itemize>
+<item> Extensive database research career
+<itemize>
+<sitem> access methods (B-tree, UB-tree, ...)
+<sitem> deductive and XML databases
+<sitem> query processing in digital libraries
+</itemize>
+<item> Now, CEO of Transaction Software
+</itemize>
+<item> <b>McCreight</b>
+<itemize>
+<item> Unis: Washington, Stanford, TUM, ETH
+<item> Worked for Boeing, Xerox PARC, Adobe
+<item> Now, retired to Switzerland
+</itemize>
+</itemize>
+</td>
+</tr>
+</table>
+</slide>
+
+<slide>
+<heading>Week 09 Thursday
+<subheading>Things to Note ...</subheading>
+<itemize>
+<sitem> Assignment 3 due Mon 18 Nov at midday ... new Q7 ExpOut
+<sitem> Help Sessions ... see Webcms3 > Timetable > Consultations
+<sitem> Special Help Session ... Fri 15 Nov 10.30-12 in K17-410
+<sitem> Ass1 marking is ongoing ... Ass2 remark contact cs3311@cse
+<sitem> MyExperience seems to be open ... <tiny>save it until after you've recovered from Ass3</tiny>
+</itemize>
+<subheading>In This Lecture ...</subheading>
+<itemize>
+<sitem> DBMS Architecture
+	<~> <span class="refs">(EN13, GUW11, RG8, KSS11, KBL9)</span>
+<sitem> Transactions
+	<~> <span class="refs">(EN19, GUW8.6,18.1-3, RG16, KSS15, KBL18,20)</span>
+</itemize>
+<subheading>Coming Up ... </subheading>
+<itemize>
+<sitem> Transactions
+	<~> <span class="refs">(EN19, GUW8.6,18.1-3, RG16, KSS15, KBL18,20)</span>
+<sitem> Course Review ... Exam Preview ... Exams(!)
+</itemize>
+</slide>
+
+<slide>
+<heading>Famous DB Nerds #14
+<center>
+<small>The next in a series on famous database people ...</small>
+<p><center>
+<img src="Pics/jimgray.jpg">
+</center><p>
+</center>
+</slide>
+
+<slide>
+<continued>
+<table>
+<tr valign=top>
+<td>
+<span class="nerd">Jim Gray</span>
+<p>
+<img src="Pics/jimgray.gif">
+</td>
+<td><~></td>
+<td>
+<itemize>
+<item> Pioneered <em>transaction processing</em>
+<item> 1969 PhD from UC Berkeley
+<item> 1970-1995 IBM, Tandem, DEC
+<item> 1995- Microsoft Research Lab
+<item> 1999 Turing Award <~> <small>(for <em>tp</em> research)</small>
+<item> Most recent work:
+<itemize>
+<sitem> scientific databases
+<sitem> sensor networks + databases
+</itemize>
+<sitem> Disappeared at sea, 27 Jan 2007
+</itemize>
+</td>
+</tr>
+</table>
+</center>
+</slide>
+

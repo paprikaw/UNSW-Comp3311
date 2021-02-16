@@ -1,0 +1,191 @@
+<html>
+<head>
+<title>Transaction Schedules</title>
+<link href='lib/slides.css' rel='stylesheet' type='text/css'>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML" async></script>
+<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js'></script>
+<link href='https://fonts.googleapis.com/css?family=Lato' rel='stylesheet'>
+<link href='lib/prism.css' rel='stylesheet'>
+<script src='lib/sg.js'></script>
+</head>
+<body>
+ <DIV class='slideCl1' id="s0"  >
+<div class='navCl1'><a href="#s1"><span class='nextArrowCl'>>></span></a> </div> <div class='heading'>Transaction Schedules</div><p><ul class='indexUl'  style='font-size: 0.7em;'><li class="i"> <a href="#s1">Transaction Schedules</a>
+<li class="i"> <a href="#s6">Serial Schedules</a>
+<li class="i"> <a href="#s7">Concurrent Schedules</a>
+<li class="i"> <a href="#s8">Example Update Anomaly</a>
+</ul></DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Transaction Schedules &#9826; [0/8]</div> <DIV class='slideCl1    ' id="s1"  >
+<div class='navCl1'> <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s2"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Transaction Schedules</div></td><td align='right'></td></tr></table>
+<p>
+When reasoning about transactions, we consider only
+<ul>
+<li> <large><code>READ</code></large> - transfer data item from database to memory
+<li> <large><code>WRITE</code></large> - transfer data item from memory to database
+<li> <large><code>BEGIN</code></large> - start a transaction
+<li> <large><code>COMMIT</code></large> - successfully complete a transaction
+<li> <large><code>ABORT</code></large> - fail a transaction and unwind effects
+</ul>
+All other operations are ignored (e.g. addition, testing, ...)
+<ul>
+<li> take place in the memory space of one transaction
+<li> have no affect on other transactions
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Transaction Schedules &#9826; [1/8]</div> <DIV class='slideCl1    ' id="s2"  >
+<div class='navCl1'><a href="#s1"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s3"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Transaction Schedules <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Relating SQL to database reads/writes ...
+<ul>
+<li> <large><code>SELECT</code></large> produces <large><code>READ</code></large> operations on the database
+<li> <large><code>INSERT</code></large> produces <large><code>WRITE</code></large> operations
+<li> <large><code>UPDATE</code></large>, <large><code>DELETE</code></large> produce both <large><code>READ</code></large> + <large><code>WRITE</code></large> operations
+</ul>
+Assume: each operation involves one database item &nbsp; <small>(e.g. one tuple)</small>
+<p>
+Notation: &nbsp; items denoted <large><code>X</code></large>, <large><code>Y</code></large>, etc; &nbsp;  operations denoted <large><code>R</code></large>, <large><code>W</code></large>, <large><code>C</code></large>, <large><code>A</code></large>
+<p>
+Thus, we see notation like: &nbsp; <large><code>R(X)</code></large>, <large><code>R(Y)</code></large>, <large><code>W(X)</code></large>, <large><code>W(Y)</code></large>, etc.
+<p>
+<small>
+Notes:
+<ul>
+<li> items with same name in different transactions refer to a shared item
+<li> typically don't use explicit <large><code>BEGIN</code></large> or <large><code>COMMIT</code></large> or <large><code>ABORT</code></large>
+</ul>
+</small>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Transaction Schedules &#9826; [2/8]</div> <DIV class='slideCl1    ' id="s3"  >
+<div class='navCl1'><a href="#s2"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s4"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Transaction Schedules <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Showing SQL&rarr;Schedule, using bank transfer example
+<p><pre style="font-size:90%">
+get balance in source account
+get balance in destination account
+if (source balance sufficient):
+   update source by subtracting amount transferred
+   update destination by adding amount transferred
+</pre><p>
+If X = source account, Y = destination account, can be summarized as
+<p><pre>
+R(X)  R(Y)  W(X)  W(Y)
+</pre><p>
+<p>
+Note: we treat the <large><code>update</code></large>s simply as writes ...
+<ul>
+<li> assume <large><code>UPDATE</code></large> = <large><code>R;W</code></large>, and <large><code>R;W</code></large> is atomic, so overall effect is just <large><code>W</code></large>
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Transaction Schedules &#9826; [3/8]</div> <DIV class='slideCl1    ' id="s4"  >
+<div class='navCl1'><a href="#s3"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s5"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Transaction Schedules <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+When multiple transactions run in parallel
+<ul>
+<li> each transaction runs its own operations in a well-defined order
+<li> but operations from different transactions interleave differently
+</ul>
+Possible execution orders for operations of two transactions
+<p><pre>
+<span class='comment'>-- no concurrency</span>
+T1: R(X) W(X) R(Y) W(Y)
+T2:                     R(X) W(X) R(Y) W(Y)
+
+<span class='comment'>-- with concurrent execution</span>
+T1: R(X)      W(X)      R(Y)      W(Y)
+T2:      R(X)      W(X)      R(Y)      W(Y)
+
+</pre><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Transaction Schedules &#9826; [4/8]</div> <DIV class='slideCl1    ' id="s5"  >
+<div class='navCl1'><a href="#s4"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s6"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Transaction Schedules <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<p>
+Executing a single correct transaction ...
+<ul>
+<li> maps the DB from a <font color="#008800">consistent</font> state to another <font color="#008800">consistent</font> state
+</ul>
+Similarly, executing transactions sequentially ...
+<p><div align='center'>
+<img alt="[Diagram:Pics/xact/valid-states.png]" src="Pics/xact/valid-states.png">
+</div><p>
+Abribtrary interleaving of operations can cause <font color='#0000BB'>anomalies</font>, so that ...
+<li> two consistency-preserving transactions, running concurrently
+<li> produce a final state which is not consistent
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Transaction Schedules &#9826; [5/8]</div> <DIV class='slideCl1    ' id="s6"  >
+<div class='navCl1'><a href="#s5"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s7"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Serial Schedules</div></td><td align='right'></td></tr></table>
+<p>
+<font color='#0000BB'>Serial</font> execution:
+	&nbsp; <large><code>T1</code></large> then <large><code>T2</code></large> &nbsp; or &nbsp; <large><code>T2</code></large> then <large><code>T1</code></large>
+<p><pre>
+T1: R(X) W(X) R(Y) W(Y)
+T2:                     R(X) W(X)
+</pre><p>
+or
+<p><pre>
+T1:           R(X) W(X) R(Y) W(Y)
+T2: R(X) W(X)
+</pre><p>
+Serial execution guarantees a consistent final state if
+<ul>
+<li> the initial state of the database is consistent
+<li> <large><code>T1</code></large> and <large><code>T2</code></large> are consistency-preserving
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Transaction Schedules &#9826; [6/8]</div> <DIV class='slideCl1    ' id="s7"  >
+<div class='navCl1'><a href="#s6"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s8"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Concurrent Schedules</div></td><td align='right'></td></tr></table>
+<p>
+<font color='#0000BB'>Concurrent</font> schedules interleave <large><code>T1</code></large>,<large><code>T2</code></large>,... operations
+<p>
+Some concurrent schedules are ok, e.g.
+<p><pre>
+T1: R(X) W(X)      R(Y)      W(Y)
+T2:           R(X)      W(X)
+</pre><p>
+Other concurrent schedules cause anomalies, e.g.
+<p><pre>
+T1: R(X)      W(X)      R(Y) W(Y)
+T2:      R(X)      W(X)
+</pre><p>
+Want the system to ensure that only valid schedules occur.
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Transaction Schedules &#9826; [7/8]</div> <DIV class='slideCl1    ' id="s8"  >
+<div class='navCl1'><a href="#s7"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>   </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Example Update Anomaly</div></td><td align='right'></td></tr></table>
+<p>
+Two concurrent transfers from same source account:
+<ul>
+<li> T1 transfers $200 X&rarr;Y, &nbsp; T2 transfers $100 X&rarr;Y
+<li> inital values: X=500, Y=100; &nbsp; final values: X=200, Y=400
+</ul>
+<p><pre style="font-size:90%">
+T1      T2     X<sub>T1</sub>    X<sub>T2</sub>    X<sub>db</sub>   Y<sub>T1</sub>   Y<sub>T2</sub>    Y<sub>db</sub>
+R(X)           500          500               100
+X-200          300
+        R(X)          500
+W(X)           300          300
+        X-100         400
+        W(X)          400   <font color="#CC0000">400</font>
+        R(Y)                           100
+R(Y)                              100
+Y+200                             300
+W(Y)                              300         300
+        Y+100                          200
+        W(Y)                           200    <font color="#CC0000">200</font>
+
+</pre><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Transaction Schedules &#9826; [8/8]</div><p><hr><p>
+<span style='font-size:11px;color: grey;'>Produced: 16 Nov 2020</span>
+ <script src='lib/prism.js'></script>   
+ <script src='lib/sg.js'></script>   
+</body>
+</html>

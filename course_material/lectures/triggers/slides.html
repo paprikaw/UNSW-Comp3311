@@ -1,0 +1,415 @@
+<html>
+<head>
+<title>Triggers</title>
+<link href='lib/slides.css' rel='stylesheet' type='text/css'>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML" async></script>
+<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js'></script>
+<link href='https://fonts.googleapis.com/css?family=Lato' rel='stylesheet'>
+<link href='lib/prism.css' rel='stylesheet'>
+<script src='lib/sg.js'></script>
+</head>
+<body>
+ <DIV class='slideCl1' id="s0"  >
+<div class='navCl1'><a href="#s1"><span class='nextArrowCl'>>></span></a> </div> <div class='heading'>Triggers</div><p><ul class='indexUl'  style='font-size: 0.7em;'><li class="i"> <a href="#s1">Triggers</a>
+<li class="i"> <a href="#s4">Trigger Semantics</a>
+<li class="i"> <a href="#s9">Triggers in PostgreSQL</a>
+<li class="i"> <a href="#s11">Trigger Example #1</a>
+<li class="i"> <a href="#s14">Trigger Example #2</a>
+</ul></DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Triggers &#9826; [0/18]</div> <DIV class='slideCl1    ' id="s1"  >
+<div class='navCl1'> <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s2"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Triggers</div></td><td align='right'></td></tr></table>
+<p>
+<font color='#0000BB'>Triggers</font> are
+<ul>
+<li> procedures stored in the database
+<li> activated in response to database events
+	&nbsp; <small>(e.g. updates)</small>
+</ul>
+Examples of uses for triggers:
+<ul>
+<li> maintaining summary data 
+<li> checking schema-level constraints (assertions) on update
+<li> performing multi-table updates <small>(to maintain assertions)</small>
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Triggers &#9826; [1/18]</div> <DIV class='slideCl1    ' id="s2"  >
+<div class='navCl1'><a href="#s1"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s3"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Triggers <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Triggers provide event-condition-action (ECA) programming:
+<ul>
+<li> an <font color='#0000BB'>event</font> activates the trigger
+<li> on activation, the trigger checks a <font color='#0000BB'>condition</font>
+<li> if the condition holds, a procedure is executed
+	<small>(the <font color='#0000BB'>action</font>)</small>
+</ul>
+Some typical variations within this:
+<ul>
+<li> execute the action <b>before</b>, <b>after</b> or <b>instead of</b> the triggering event
+<li> can refer to both <b>old</b> and <b>new</b> values of updated tuples
+<li> can limit updates to a particular set of attributes
+<li> perform action: <b>for each</b> modified tuple, <b>once for all</b> modified tuples
+</ul>
+</small>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Triggers &#9826; [2/18]</div> <DIV class='slideCl1    ' id="s3"  >
+<div class='navCl1'><a href="#s2"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s4"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Triggers <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+SQL "standard" syntax for defining triggers:
+<p><pre>
+CREATE TRIGGER <i>TriggerName</i>
+{AFTER|BEFORE}  <i>Event1</i> [ OR <i>Event2</i> ... ]
+[ FOR EACH ROW ]
+ON <i>TableName</i>
+[ WHEN ( <i>Condition</i> ) ]
+<i>Block of Procedural/SQL Code</i> ;
+</pre><p>
+Possible <i>Events</i> are <large><code>INSERT</code></large>, <large><code>DELETE</code></large>, <large><code>UPDATE</code></large>.
+<p>
+<large><code>FOR EACH ROW</code></large> clause ...
+<ul>
+<li> if present, code is executed on each modified tuple
+<li> if not present, code is executed once after all tuples are modified,
+	just before changes are finally <large><code>COMMIT</code></large>ed
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Triggers &#9826; [3/18]</div> <DIV class='slideCl1    ' id="s4"  >
+<div class='navCl1'><a href="#s3"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s5"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Trigger Semantics</div></td><td align='right'></td></tr></table>
+<p>
+Triggers can be activated <large><code>BEFORE</code></large> or <large><code>AFTER</code></large> the event.
+<p>
+If activated <large><code>BEFORE</code></large>, can affect the change that occurs:
+<ul>
+<li> <large><code>NEW</code></large> contains "proposed" value of changed tuple <br>
+<li> modifying <large><code>NEW</code></large> causes a different value to be placed in DB
+</ul>
+If activated <large><code>AFTER</code></large>, the effects of the event are visible:
+<ul>
+<li> <large><code>NEW</code></large> contains the current value of the changed tuple
+<li> <large><code>OLD</code></large> contains the previous value of the changed tuple
+<li> constraint-checking has been done for <large><code>NEW</code></large>
+</ul>
+Note: <large><code>OLD</code></large> does not exist for insertion; <large><code>NEW</code></large> does not exist for deletion.
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Triggers &#9826; [4/18]</div> <DIV class='slideCl1    ' id="s5"  >
+<div class='navCl1'><a href="#s4"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s6"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Trigger Semantics <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Sequence of activities during database update:
+<p>
+<p><div align='center'>
+<img alt="[Diagram:Pics/dbms/trigger-seq.png]" src="Pics/dbms/trigger-seq.png">
+</div><p>
+<p><br>
+Reminder: <large><code>BEFORE</code></large> trigger can modify value of new tuple
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Triggers &#9826; [5/18]</div> <DIV class='slideCl1    ' id="s6"  >
+<div class='navCl1'><a href="#s5"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s7"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Trigger Semantics <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Consider two triggers and an INSERT statement
+<p><pre>
+create trigger X before insert on T Code1;
+create trigger Y after insert on T Code2;
+insert into T values (a,b,c,...);
+</pre><p>
+Sequence of events:
+<ul>
+<li> execute <large><code>Code1</code></large> for trigger <large><code>X</code></large>
+<li> code has access to <large><code>(a,b,c,...)</code></large> via <large><code>NEW</code></large>
+<li> code typically checks the values of <large><code>a,b,c,..</code></large>
+<li> code can modify values of <large><code>a,b,c,..</code></large> in <large><code>NEW</code></large>
+<li> DBMS does constraint checking as if <large><code>NEW</code></large> is inserted
+<li> if fails any checking, abort insertion and rollback
+<li> execute <large><code>Code2</code></large> for trigger <large><code>Y</code></large>
+<li> code has access to final version of tuple via <large><code>NEW</code></large>
+<li> code typically does final checking, or modifies other
+	tables in database to ensure assertions are satisfied
+</ul>
+<small>
+Reminder: there is no <large><code>OLD</code></large> tuple for an <large><code>INSERT</code></large> trigger.
+</small>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Triggers &#9826; [6/18]</div> <DIV class='slideCl1    ' id="s7"  >
+<div class='navCl1'><a href="#s6"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s8"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Trigger Semantics <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Consider two triggers and an UPDATE statement
+<p><pre>
+create trigger X before update on T Code1;
+create trigger Y after update on T Code2;
+update T set b=j,c=k where a=m;
+</pre><p>
+Sequence of events:
+<ul>
+<li> execute <large><code>Code1</code></large> for trigger <large><code>X</code></large>
+<li> code has access to current version of tuple via <large><code>OLD</code></large>
+<li> code has access to updated version of tuple via <large><code>NEW</code></large>
+<li> code typically checks new values of <large><code>b,c,..</code></large>
+<li> code can modify values of <large><code>a,b,c,..</code></large> in <large><code>NEW</code></large>
+<li> do constraint checking as if <large><code>NEW</code></large> has replaced <large><code>OLD</code></large>
+<li> if fails any checking, abort update and rollback
+<li> execute <large><code>Code2</code></large> for trigger <large><code>Y</code></large>
+<li> code has access to final version of tuple via <large><code>NEW</code></large>
+<li> code typically does final checking, or modifies other
+	tables in database to ensure constraints are satisfied
+</ul>
+<small>
+Reminder: both <large><code>OLD</code></large> and <large><code>NEW</code></large> exist in UPDATE triggers.
+</small>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Triggers &#9826; [7/18]</div> <DIV class='slideCl1    ' id="s8"  >
+<div class='navCl1'><a href="#s7"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s9"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Trigger Semantics <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Consider two triggers and an DELETE statement
+<p><pre>
+create trigger X before delete on T Code1;
+create trigger Y after delete on T Code2;
+delete from T where a=m;
+</pre><p>
+Sequence of events:
+<ul>
+<li> execute <large><code>Code1</code></large> for trigger <large><code>X</code></large>
+<li> code has access to <large><code>(a,b,c,...)</code></large> via <large><code>OLD</code></large>
+<li> code typically checks the values of <large><code>a,b,c,..</code></large>
+<li> DBMS does constraint checking as if <large><code>OLD</code></large> is removed
+<li> if fails any checking, abort deletion (restore <large><code>OLD</code></large>)
+<li> execute <large><code>Code2</code></large> for trigger <large><code>Y</code></large>
+<li> code has access to about-to-be-deleted tuple via <large><code>OLD</code></large>
+<li> code typically does final checking, or modifies other
+	tables in database to ensure constraints are satisfied
+</ul>
+<small>
+Reminder: tuple <large><code>NEW</code></large> does not exist in DELETE triggers.
+</small>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Triggers &#9826; [8/18]</div> <DIV class='slideCl1    ' id="s9"  >
+<div class='navCl1'><a href="#s8"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s10"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Triggers in PostgreSQL</div></td><td align='right'></td></tr></table>
+<p>
+PostgreSQL triggers provide a mechanism for
+<ul>
+<li> <large><code>INSERT</code></large>, <large><code>DELETE</code></large> or <large><code>UPDATE</code></large> events
+<li> to automatically activate PLpgSQL functions
+</ul>
+Syntax for PostgreSQL trigger definition:
+<p><pre>
+<large><font color="#008800"><b><code>CREATE TRIGGER</code></b></font></large> <i>TriggerName</i>
+{<large><font color="#008800"><b><code>AFTER</code></b></font></large>|<large><font color="#008800"><b><code>BEFORE</code></b></font></large>}  <i>Event1</i> [<large><font color="#008800"><b><code>OR</code></b></font></large> <i>Event2</i> ...]
+<large><font color="#008800"><b><code>ON</code></b></font></large> <i>TableName</i>
+[ <large><font color="#008800"><b><code>WHEN</code></b></font></large> ( <i>Condition</i> ) ]
+<large><font color="#008800"><b><code>FOR EACH</code></b></font></large> {ROW|STATEMENT}
+<large><font color="#008800"><b><code>EXECUTE PROCEDURE</code></b></font></large> <i>FunctionName</i>(<i>args...</i>);
+</pre><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Triggers &#9826; [9/18]</div> <DIV class='slideCl1    ' id="s10"  >
+<div class='navCl1'><a href="#s9"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s11"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Triggers in PostgreSQL <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+There is no restriction on what code can go in the function.
+<p>
+However a <large><code>BEFORE</code></large> function must contain one of:
+<p><pre>
+RETURN old;    <span class='comment'>or</span>    RETURN new;
+</pre><p>
+depending on which version of the tuple is to be used.
+<p>
+If <large><code>BEFORE</code></large> trigger returns <large><code>OLD</code></large>, no change occurs.
+<p>
+If exception is raised in trigger function, no change occurs.
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Triggers &#9826; [10/18]</div> <DIV class='slideCl1    ' id="s11"  >
+<div class='navCl1'><a href="#s10"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s12"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Trigger Example #1</div></td><td align='right'></td></tr></table>
+<p>
+Consider a database of people in the USA:
+<p><pre>
+create table Person (
+   id      integer primary key,
+   ssn     varchar(11) unique,
+   <span class='comment'>... e.g. family, given, street, town ...</span>
+   state   char(2), ...
+);
+create table States (
+   id      integer primary key,
+   code    char(2) unique,
+   <span class='comment'>... e.g. name, area, population, flag ... </span>
+);
+</pre><p>
+<small>
+Constraint: &nbsp;<large><code>Person.state</code></large> &isin; <large><code>(select code from States)</code></large>, &nbsp;or<br>
+<large><code>exists (select id from States where code=Person.state)</code></large>
+</small>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Triggers &#9826; [11/18]</div> <DIV class='slideCl1    ' id="s12"  >
+<div class='navCl1'><a href="#s11"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s13"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Trigger Example #1 <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<b>Example:</b> ensure that only valid state codes are used:
+<p><pre style="font-size:80%">
+create trigger checkState before insert or update
+on Person for each row execute procedure checkState();
+
+create function checkState() returns trigger as $$
+begin
+   <span class='comment'>-- normalise the user-supplied value</span>
+   new.state = upper(trim(new.state));
+   if (new.state !~ '^[A-Z][A-Z]$') then
+      raise exception 'Code must be two alpha chars';
+   end if;
+   <span class='comment'>-- implement referential integrity check</span>
+   select * from States where code=new.state;
+   if (not found) then
+      raise exception 'Invalid code %',new.state;
+   end if;
+   return new;
+end;
+$$ language plpgsql;
+</pre><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Triggers &#9826; [12/18]</div> <DIV class='slideCl1    ' id="s13"  >
+<div class='navCl1'><a href="#s12"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s14"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Trigger Example #1 <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Examples of how this trigger would behave:
+<p><pre style="font-size:90%">
+insert into Person
+   values('John',...,'Calif.',...);
+<span class='comment'>-- fails with 'Statecode must be two alpha chars'</span>
+
+insert into Person
+   values('Jane',...,'NY',...);
+<span class='comment'>-- insert succeeds; Jane lives in New York</span>
+
+update Person
+   set town='Sunnyvale',state='CA'
+	 where name='Dave';
+<span class='comment'>-- update succeeds; Dave moves to California</span>
+
+update Person
+   set state='OZ' where name='Pete';
+<span class='comment'>-- fails with 'Invalid state code OZ'</span>
+</pre><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Triggers &#9826; [13/18]</div> <DIV class='slideCl1    ' id="s14"  >
+<div class='navCl1'><a href="#s13"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s15"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Trigger Example #2</div></td><td align='right'></td></tr></table>
+<p>
+<b>Example:</b> department salary totals
+<p>
+Scenario:
+<p><pre style="font-size:90%">
+Employee(id, name, address, dept, <font color="#0000EE">salary</font>, ...)
+Department(id, name, manager, <font color="#0000EE">totSal</font>, ...)
+</small></pre><p>
+An assertion that we wish to maintain:
+<p><pre style="font-size:90%">
+create assertion TotalSalary check (
+   not exists (
+       select * from Department d
+       where  d.totSal &lt;&gt; (select sum(e.salary)
+                             from Employee e
+                             where e.dept = d.id)
+    )
+)
+</pre><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Triggers &#9826; [14/18]</div> <DIV class='slideCl1    ' id="s15"  >
+<div class='navCl1'><a href="#s14"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s16"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Trigger Example #2 <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Events that might affect the validity of the database
+<ul>
+<li> a new employee starts work in some department
+<li> an employee gets a rise in salary 
+<li> an employee changes from one department to another
+<li> an employee leaves the company
+</ul>
+A single assertion could check for this after each change.
+<p>
+With triggers, we have to program each case separately.
+<p>
+Each program implements updates to <i>ensure</i> assertion holds.
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Triggers &#9826; [15/18]</div> <DIV class='slideCl1    ' id="s16"  >
+<div class='navCl1'><a href="#s15"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s17"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Trigger Example #2 <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Implement the Employee update triggers from above in PostgreSQL:
+<p>
+Case 1: new employees arrive
+<p><pre style="font-size:90%">
+create trigger TotalSalary1
+after insert on Employees
+for each row execute procedure totalSalary1();
+
+create function totalSalary1() returns trigger
+as $$
+begin
+    if (new.dept is not null) then
+        update Department
+        set    totSal = totSal + new.salary
+        where  Department.id = new.dept;
+    end if;
+    return new;
+end;
+$$ language plpgsql;
+</pre><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Triggers &#9826; [16/18]</div> <DIV class='slideCl1    ' id="s17"  >
+<div class='navCl1'><a href="#s16"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s18"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Trigger Example #2 <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Case 2: employees change departments/salaries
+<p><pre style="font-size:90%">
+create trigger TotalSalary2
+after update on Employee
+for each row execute procedure totalSalary2();
+
+create function totalSalary2() returns trigger
+as $$
+begin
+    update Department
+    set    totSal = totSal + new.salary
+    where  Department.id = new.dept;
+    update Department
+    set    totSal = totSal - old.salary
+    where  Department.id = old.dept;
+    return new;
+end;
+$$ language plpgsql;
+</pre><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Triggers &#9826; [17/18]</div> <DIV class='slideCl1    ' id="s18"  >
+<div class='navCl1'><a href="#s17"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>   </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Trigger Example #2 <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Case 3: employees leave
+<p><pre style="font-size:90%">
+create trigger TotalSalary3
+after delete on Employee
+for each row execute procedure totalSalary3();
+
+create function totalSalary3() returns trigger
+as $$
+begin
+    if (old.dept is not null) then
+        update Department
+        set    totSal = totSal - old.salary
+        where  Department.id = old.dept;
+    end if;
+    return old;
+end;
+$$ language plpgsql;
+</pre><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Triggers &#9826; [18/18]</div><p><hr><p>
+<span style='font-size:11px;color: grey;'>Produced: 13 Oct 2020</span>
+ <script src='lib/prism.js'></script>   
+ <script src='lib/sg.js'></script>   
+</body>
+</html>

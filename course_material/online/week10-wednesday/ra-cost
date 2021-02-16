@@ -1,0 +1,21 @@
+Assumptions:
+10000 = select count(*) from R
+20000 = select count(*) from S
+5000  = select count(*) from R join S on (b=c)
+2000  = select count(*) from S where d=100
+
+
+Tmp1(a,d)  = R Join[b=c] S
+             cost: 2*10000 + 2*20000 + 2*5000 = 70000
+Tmp2(a)    = Sel[d=100](Tmp1)
+             cost: 2*5000 + 2*500 = 11000
+Res(x)     = Rename[Res(x)](Tmp3)
+             overall cost: 81000
+
+
+Tmp1(c)    = Sel[d=100](S)
+             cost: 2*20000 + 1*2000 = 42000
+Tmp2(a)    = R Join[b=c] Tmp1
+             cost: 2*10000 + 1*2000 + 1*500 = 22500
+Res(x)     = Rename[Res(x)](Tmp2)
+             overall cost: 64500

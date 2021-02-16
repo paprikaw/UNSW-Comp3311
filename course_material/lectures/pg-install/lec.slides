@@ -1,0 +1,90 @@
+<title>Installing a PostgreSQL Server
+<footer>COMP3311 20T3 <diamond> Installing PostgreSQL <diamond>
+
+<slide>
+<heading>How to Install PostgreSQL
+These slides (and accompanying video) describe 
+<itemize>
+<item> how to install a PostgreSQL server from source code
+<item> on MacOS or Linux
+</itemize>
+<br>
+Pre-requisites: <~> <@>make</@> and <@>gcc</@>
+<itemize>
+<item> guaranteed to be available on Linux
+<item> will need to download Xcode on Mac
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Summary:
+<itemize>
+<item> download PostgreSQL tarball from postgresql.org
+<item> untar it and run <~><@>./configure --prefix=</@><i>YourPGDir</i>
+<item> <@>make</@> <~> (takes a few minutes)
+<item> <@>make install</@> <~> (relatively quick)
+<item> set up environment <~> (like Grieg <@>env</@> script)
+<item> <@>initdb</@> <~> (creates <i>YourPGDir</i>)
+<item> edit <i>YourPGDir</i><@>/data/postgresql.conf</@>
+<item> <@>pg_ctl start -l </@><i>YourPGDir</i><@>/Log</@>
+</itemize>
+And off you go ...
+</slide>
+
+<slide>
+<continued>
+My <@>env</@> script
+<program90>
+# Set up environment for running PostgreSQL
+# Must be "source"d from sh, bash, ksh, ...
+
+# PostgreSQL needs more memory
+# sudo sysctl -w kern.sysv.shmmax=1073741824
+# sudo sysctl -w kern.sysv.shmall=1073741824
+
+PGHOME=/Users/jas/pgsql
+export PGDATA=$PGHOME/data
+export PGHOST=$PGDATA
+export PGPORT=5432
+export LD_LIBRARY_PATH=$PGHOME/lib
+PATH=$PGHOME/bin:$PATH
+pg1() { pg_ctl start -l $PGHOME/log ; }
+pg0() { pg_ctl stop ; }
+</program>
+Obviously, adjust to suit your local conditions
+<p>
+</slide>
+
+<slide>
+<continued>
+<br>
+And now that I think of it ...
+<program90>
+# PostgreSQL needs more memory
+sudo sysctl -w kern.sysv.shmmax=1073741824
+sudo sysctl -w kern.sysv.shmall=1073741824
+</program>
+You may need to run these commands once
+<p>
+But only if you have "Out of memory" (or somesuch) errors
+</slide>
+
+<slide>
+<continued>
+<br>
+What I edited in <@>postgresql.conf</@>
+<program80>
+...
+#port = 5432             # (change requires restart)
+max_connections = <red>8</red>      # (change requires restart)
+#superuser_reserved_connections = 3 # (change requires restart)
+unix_socket_directories = '<red>/Users/jas/pgsql/data</red>'
+                         # comma-separated list of directories
+                         # (change requires restart)
+...
+</program>
+The socket directory has to match the vaue of <@>$PGDATA</@>
+</slide>
+
+

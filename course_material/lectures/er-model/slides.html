@@ -1,0 +1,313 @@
+<html>
+<head>
+<title>ER Model</title>
+<link href='lib/slides.css' rel='stylesheet' type='text/css'>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML" async></script>
+<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js'></script>
+<link href='https://fonts.googleapis.com/css?family=Lato' rel='stylesheet'>
+<link href='lib/prism.css' rel='stylesheet'>
+<script src='lib/sg.js'></script>
+</head>
+<body>
+ <DIV class='slideCl1' id="s0"  >
+<div class='navCl1'><a href="#s1"><span class='nextArrowCl'>>></span></a> </div> <div class='heading'>ER Model</div><p><ul class='indexUl'  style='font-size: 0.7em;'><li class="i"> <a href="#s1"> Entity-Relationship Data Modelling</a>
+<li class="i"> <a href="#s2"> Entity-Relationship (ER) Diagrams</a>
+<li class="i"> <a href="#s5">Entity Sets</a>
+<li class="i"> <a href="#s6">Keys</a>
+<li class="i"> <a href="#s7">Example: Identifying Keys</a>
+<li class="i"> <a href="#s8">Relationship Sets</a>
+<li class="i"> <a href="#s11">Example: Relationship Semantics</a>
+<li class="i"> <a href="#s13">Weak Entity Sets</a>
+<li class="i"> <a href="#s14">Subclasses and Inheritance</a>
+<li class="i"> <a href="#s16">Design Using the ER Model</a>
+<li class="i"> <a href="#s17">Large ER Diagrams</a>
+<li class="i"> <a href="#s19">Summary of ER</a>
+</ul></DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; ER Model &#9826; [0/19]</div> <DIV class='slideCl1    ' id="s1"  >
+<div class='navCl1'> <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s2"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070;  Entity-Relationship Data Modelling</div></td><td align='right'></td></tr></table>
+<p>
+<br>
+The world is viewed as a collection of <font color="#008800">inter-related</font> <font color="#000099">entities</font>.
+<p>
+ER has three major modelling constructs:
+<ul>
+<li> <font color='#0000BB'>attribute</font>:
+	<font color="#008800">data item</font> describing a property of interest
+<li> <font color='#0000BB'>entity</font>:
+	collection of attributes describing <font color="#008800">object</font> of interest
+<li> <font color='#0000BB'>relationship</font>:
+	<font color="#008800">association</font> between entities (objects)
+</ul>
+The ER model is not a standard, so notational variations exist
+<p>
+Lecture notes use notation from SKS and GUW books <small>(simple)</small>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; ER Model &#9826; [1/19]</div> <DIV class='slideCl1    ' id="s2"  >
+<div class='navCl1'><a href="#s1"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s3"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070;  Entity-Relationship (ER) Diagrams</div></td><td align='right'></td></tr></table>
+<p>
+<font color='#0000BB'>ER diagrams</font> are a graphical tool for data modelling.
+<p>
+An ER diagram consists of:
+<ul>
+<li> a collection of <font color='#0000BB'>entity set</font> definitions
+<li> a collection of <font color='#0000BB'>relationship set</font> definitions
+<li> <font color='#0000BB'>attributes</font> associated with entity and relationship sets
+<li> connections between entity and relationship sets 
+</ul>
+<br>
+<small>
+Terminology abuse:
+<ul>
+<li> we say "entity" when we mean "entity set"
+<li> we say "relationship" when we mean "relationship sets"
+<li> we say "entity instance" ro refer to a particular entity
+</ul>
+</small>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; ER Model &#9826; [2/19]</div> <DIV class='slideCl1    ' id="s3"  >
+<div class='navCl1'><a href="#s2"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s4"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070;  Entity-Relationship (ER) Diagrams <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<b>Example</b> ER diagram:
+<p><br>
+<p><div align='center'>
+<img alt="[Diagram:Pics/er-rel/er1.png]" src="Pics/er-rel/er1.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; ER Model &#9826; [3/19]</div> <DIV class='slideCl1    ' id="s4"  >
+<div class='navCl1'><a href="#s3"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s5"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070;  Entity-Relationship (ER) Diagrams <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<b>Example</b> of attribute notations:
+<p>
+<p><div align='center'>
+<img alt="[Diagram:Pics/er-rel/erattrs.png]" src="Pics/er-rel/erattrs.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; ER Model &#9826; [4/19]</div> <DIV class='slideCl1    ' id="s5"  >
+<div class='navCl1'><a href="#s4"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s6"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Entity Sets</div></td><td align='right'></td></tr></table>
+<p>
+An <font color='#0000BB'>entity set</font> can be viewed as either:
+<ul>
+<li> a set of entities with the same set of attributes
+	<small>(extensional)</small>
+<li> an abstract description of a class of entities
+	<small>(intensional)</small>
+</ul>
+<font color='#0000BB'>Key</font> (<font color='#0000BB'>superkey</font>): any set of attributes
+<ul>
+<li> whose set of values are distinct over entity set
+<li> natural <small>(e.g., name+address+birthday)</small>
+	 or artificial <small>(e.g., SSN)</small>
+</ul>
+<font color='#0000BB'>Candidate key</font> = minimal superkey <small>(no subset is a key)</small>
+<p>
+<font color='#0000BB'>Primary key</font> = candidate key chosen by DB designer
+<p>
+Keys are indicated in ER diagrams by underlining
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; ER Model &#9826; [5/19]</div> <DIV class='slideCl1    ' id="s6"  >
+<div class='navCl1'><a href="#s5"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s7"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Keys</div></td><td align='right'></td></tr></table>
+<p>
+Sometimes primary keys are obvious ...
+<p>
+<p><div align='center'>
+<img alt="[Diagram:Pics/er-rel/keys.png]" src="Pics/er-rel/keys.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; ER Model &#9826; [6/19]</div> <DIV class='slideCl1    ' id="s7"  >
+<div class='navCl1'><a href="#s6"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s8"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Example: Identifying Keys</div></td><td align='right'></td></tr></table>
+<p>
+Candidate keys in the following ER diagram ...
+<p>
+<p><div align='center'>
+<img alt="[Diagram:Pics/er-rel/keys2.png]" src="Pics/er-rel/keys2.png">
+</div><p>
+<br>
+Possibilities:
+&nbsp; {studentID},
+&nbsp; {phone},
+&nbsp; {email},
+&nbsp; {name,address,d-o-b}?
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; ER Model &#9826; [7/19]</div> <DIV class='slideCl1    ' id="s8"  >
+<div class='navCl1'><a href="#s7"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s9"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Relationship Sets</div></td><td align='right'></td></tr></table>
+<p>
+<font color='#0000BB'>Relationship</font>: an association among several entities
+<ul>
+<li> e.g., Customer(9876) &nbsp; <font color="#008800">is the owner of</font> &nbsp; Account(12345)
+</ul>
+<font color='#0000BB'>Relationship set</font>: collection of relationships of the same type
+<p>
+<font color='#0000BB'>Degree</font> = # entities involved in reln <small>(in ER model, <i>&ge; 2</i>)</small>
+<p>
+<font color='#0000BB'>Cardinality</font> = # associated entities on each side of reln
+<p>
+<font color='#0000BB'>Participation</font> = must every entity be in the relationship
+<p>
+<b>Example:</b> relationship participation
+<p>
+<p><div align='center'>
+<img alt="[Diagram:Pics/er-rel/participation.png]" src="Pics/er-rel/participation.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; ER Model &#9826; [8/19]</div> <DIV class='slideCl1    ' id="s9"  >
+<div class='navCl1'><a href="#s8"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s10"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Relationship Sets <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<b>Examples:</b> relationship degree
+<p><br>
+<p><div align='center'>
+<img alt="[Diagram:Pics/er-rel/reln-degree.png]" src="Pics/er-rel/reln-degree.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; ER Model &#9826; [9/19]</div> <DIV class='slideCl1    ' id="s10"  >
+<div class='navCl1'><a href="#s9"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s11"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Relationship Sets <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<b>Examples:</b> relationship cardinality
+<p><br>
+<p><div align='center'>
+<img alt="[Diagram:Pics/er-rel/cardinal.png]" src="Pics/er-rel/cardinal.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; ER Model &#9826; [10/19]</div> <DIV class='slideCl1    ' id="s11"  >
+<div class='navCl1'><a href="#s10"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s12"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Example: Relationship Semantics</div></td><td align='right'></td></tr></table>
+<p>
+Semantics of the following relationships ...
+<p><div align='center'>
+<img alt="[Diagram:Pics/er-rel/example-rel.png]" src="Pics/er-rel/example-rel.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; ER Model &#9826; [11/19]</div> <DIV class='slideCl1    ' id="s12"  >
+<div class='navCl1'><a href="#s11"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s13"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Example: Relationship Semantics <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+In some cases, a relationship needs associated attributes.
+<p><br>
+<p><div align='center'>
+<img alt="[Diagram:Pics/er-rel/relattr.png]" src="Pics/er-rel/relattr.png">
+</div><p>
+<p><br>
+<small>(Price and quantity are related to products in a particular shop)</small>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; ER Model &#9826; [12/19]</div> <DIV class='slideCl1    ' id="s13"  >
+<div class='navCl1'><a href="#s12"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s14"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Weak Entity Sets</div></td><td align='right'></td></tr></table>
+<p>
+Weak entities
+<ul>
+<li> exist only because of association with strong entities.
+<li> have no key of their own; have a <font color='#0000BB'>discriminator</font>
+</ul>
+Example:
+<p><div align='center'>
+<img alt="[Diagram:Pics/er-rel/weakent.png]" src="Pics/er-rel/weakent.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; ER Model &#9826; [13/19]</div> <DIV class='slideCl1    ' id="s14"  >
+<div class='navCl1'><a href="#s13"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s15"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Subclasses and Inheritance</div></td><td align='right'></td></tr></table>
+<p>
+A <font color='#0000BB'>subclass</font> of an entity set <i>A</i> is a set of entities:
+<ul>
+<li> with all attributes of <i>A</i>, plus (usually) it own attributes
+<li> that is involved in all of <i>A</i>'s relationships, plus its own
+</ul>
+Properties of subclasses:
+<ul>
+<li> <font color='#0000BB'>overlapping</font> or <font color='#0000BB'>disjoint</font> <small>(can an entity be in multiple subclasses?)</small>
+<li> <font color='#0000BB'>total</font> or <font color='#0000BB'>partial</font> <small>(does every entity have to also be in a subclass?)</small>
+</ul>
+Special case: entity has one subclass ("B <font color='#0000BB'>is-a</font> A" specialisation)
+<p><br>
+<p><div align='center'>
+<img alt="[Diagram:Pics/er-rel/is-a.png]" src="Pics/er-rel/is-a.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; ER Model &#9826; [14/19]</div> <DIV class='slideCl1    ' id="s15"  >
+<div class='navCl1'><a href="#s14"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s16"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Subclasses and Inheritance <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Example:
+<p><div align='center'>
+<img alt="[Diagram:Pics/er-rel/inherit.png]" src="Pics/er-rel/inherit.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; ER Model &#9826; [15/19]</div> <DIV class='slideCl1    ' id="s16"  >
+<div class='navCl1'><a href="#s15"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s17"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Design Using the ER Model</div></td><td align='right'></td></tr></table>
+<p>
+<br>
+ER model: simple, powerful set of data modelling tools
+<p>
+Some considerations in designing ER models:
+<ul>
+<li> should an "object" be represented by an attribute or entity?
+<li> is a "concept" best expressed as an entity or relationship?
+<li> should we use <i>n</i>-way relationship or several 2-way relationships?
+<li> is an "object" a strong or weak entity? (usually strong)
+<li> are there subclasses/superclasses within the entities?
+</ul>
+<small>
+Answers to above are worked out by <i>thinking</i> about the application domain.
+</small>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; ER Model &#9826; [16/19]</div> <DIV class='slideCl1    ' id="s17"  >
+<div class='navCl1'><a href="#s16"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s18"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Large ER Diagrams</div></td><td align='right'></td></tr></table>
+<p>
+<br>
+ER diagrams are typically too large to fit on a single screen <br>
+<small>(or a single sheet of paper, if printing)</small>
+<p>
+One commonly used strategy:
+<ul>
+<li> define entity sets separately, showing attributes
+<li> combine entitities and relationships on a single diagram <br>
+	<small>(but without showing entity attributes)</small>
+<li> if very large design, may use several linked diagrams
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; ER Model &#9826; [17/19]</div> <DIV class='slideCl1    ' id="s18"  >
+<div class='navCl1'><a href="#s17"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s19"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Large ER Diagrams <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Example of drawing large ER diagram:
+<br>
+<p><div align='center'>
+<img alt="[Diagram:Pics/er-rel/large-ER.png]" src="Pics/er-rel/large-ER.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; ER Model &#9826; [18/19]</div> <DIV class='slideCl1    ' id="s19"  >
+<div class='navCl1'><a href="#s18"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>   </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Summary of ER</div></td><td align='right'></td></tr></table>
+<p>
+<br>
+ER model is popular for doing conceptual design
+<ul>
+<li> high-level, models relatively easy to understand
+<li> good expressive power, can capture many details
+</ul>
+Basic constructs: &nbsp; <font color='#0000BB'>entities, &nbsp; relationships, &nbsp; attributes</font>
+<p>
+Relationship constraints: &nbsp; <font color='#0000BB'>total / partial, &nbsp; n:m / 1:n / 1:1</font>
+<p>
+Other constructs: &nbsp; <font color='#0000BB'>inheritance hierarchies, &nbsp; weak entities</font>
+<p>
+Many notational variants of ER exist <br>
+<small>(especially in the expression of constraints on relationships)</small>
+</DIV>
+<div class='slideNumCl2'>COMP3311 21T1 &#9826; ER Model &#9826; [19/19]</div><p><hr><p>
+<span style='font-size:11px;color: grey;'>Produced: 10 Feb 2021</span>
+ <script src='lib/prism.js'></script>   
+ <script src='lib/sg.js'></script>   
+</body>
+</html>

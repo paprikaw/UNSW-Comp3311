@@ -1,0 +1,82 @@
+#!/usr/local/bin/python3.7
+#!/usr/bin/python3
+
+import sys
+import psycopg2
+
+# set up some globals
+
+usage = "Usage: ts zID"
+db = None
+studentQ = """
+select name
+from   People p join Students s on (p.id = s.id)
+where  unswid = %s
+"""
+# here we use the query from the q8() function
+# Python does all of the calculations
+transcriptQ = """
+select su.code,
+		 termName(t.id),
+		 pr.code,
+		 substr(su.name,1,20),
+		 e.mark, e.grade, su.uoc
+from   People p
+		 join Students s on (p.id = s.id)
+		 join Course_enrolments e on (e.student = s.id)
+		 join Courses c on (c.id = e.course)
+		 join Subjects su on (c.subject = su.id)
+		 join Terms t on (c.term = t.id)
+		 left outer join Program_enrolments pe
+			  on (pe.student=p.id and pe.term=c.term)
+		 left outer join Programs pr on (pe.program=pr.id)
+where  p.unswid = %s
+order  by t.starting, su.code
+"""
+
+# process command-line args
+
+argc = len(sys.argv)
+if argc < 2:
+	print(usage)
+	exit(1)
+else:
+	zid = sys.argv[1]
+	if zid.isnumeric():
+		zid = int(zid)
+	else:
+		print("Usage: ts zID")
+		exit(1)
+
+# manipulate database
+
+try:
+	db = psycopg2.connect("dbname=mymy")
+	cur = db.cursor()
+	cur.execute(studentQ, [zid])
+	stu = cur.fetchone()
+	if not stu:
+		print("No such student")
+		exit(1)
+	cur.execute(transcriptQ, [zid])
+	records = cur.fetchall()
+	if len(records) == 1:
+		print("No transcript data")
+	else:
+		# initialise weighted_sum, total_uoc, etc
+		for rec in records:
+			code,term,prog,title,mark,grade,uoc = rec
+			# update accumulators and display one transcript line
+
+		# print the accumualted data
+		if total_uoc == 0:
+			print("No WAM available")
+		else:
+			wam = weight_sum / total_uoc
+			print(f"{WAM = {wam},  UOC = {uoc_awarded}")
+except psycopg2.Error as err:
+	print("DB error: ", err)
+finally:
+	if db:
+		db.close()
+

@@ -1,0 +1,330 @@
+<html>
+<head>
+<title>Python (ii)</title>
+<link href='lib/slides.css' rel='stylesheet' type='text/css'>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML" async></script>
+<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js'></script>
+<link href='https://fonts.googleapis.com/css?family=Lato' rel='stylesheet'>
+<link href='lib/prism.css' rel='stylesheet'>
+<script src='lib/sg.js'></script>
+</head>
+<body>
+ <DIV class='slideCl1' id="s0"  >
+<div class='navCl1'><a href="#s1"><span class='nextArrowCl'>>></span></a> </div> <div class='heading'>Python (ii)</div><p><ul class='indexUl'  style='font-size: 0.7em;'><li class="i"> <a href="#s1">Python + Psycopg2 (recap)</a>
+<li class="i"> <a href="#s4">Examples</a>
+<li class="i"> <a href="#s12">Poor Usage of Python+SQL</a>
+<li class="i"> <a href="#s13">Calling PostgreSQL functions</a>
+<li class="i"> <a href="#s14">Other Psycopg2 Tricks</a>
+</ul></DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Python (ii) &#9826; [0/14]</div> <DIV class='slideCl1    ' id="s1"  >
+<div class='navCl1'> <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s2"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Python + Psycopg2 (recap)</div></td><td align='right'></td></tr></table>
+<p>
+<large><code>psycopg2</code></large> is a Python module providing access to PostgreSQL DBs
+<p>
+Standard usage:
+<p><pre style="font-size:90%">
+<font color="#008800">import</font> psycopg2   <span class='comment'># include the module definitions</span>
+<font color="#008800">try</font>:
+   <font color="#996600">connnection</font> = <font color="#000099">psycopg2.connect</font>("dbname=<i>Datatase</i>")
+   <font color="#996600">cursor</font> = <font color="#000099">connnection.cursor</font>()
+   <font color="#000099">cursor.excute</font>("<i>SQL Query</i>")
+   <font color="#008800">for</font> <font color="#996600">tuple</font> <font color="#008800">in</font> <font color="#000099">cursor.fetchall</font>():
+      <span class='comment'># do something with next tuple</span>
+   <font color="#000099">cursor.close</font>()
+   <font color="#000099">connection.close</font>()
+<font color="#008800">except</font>:
+   print("Database error")
+</pre><p>
+These slides aim to give more details on how Pyscopg2 used in practice
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Python (ii) &#9826; [1/14]</div> <DIV class='slideCl1    ' id="s2"  >
+<div class='navCl1'><a href="#s1"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s3"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Python + Psycopg2 (recap) <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<br>
+<font color="#000099"><large><code>connection</code></large></font>
+<ul>
+<li> handle giving authenticated access for a given user on a given DB
+<li> provides creation of <large><code>cursor</code></large>s to interact with database
+</ul>
+<br>
+<font color="#000099"><large><code>cursor</code></large></font>
+<ul>
+<li> pipeline between a Python program and a PostgreSQL DB
+<li> send SQL statements down pipeline as strings
+<li> read results up pipeline as Python (list of) tuples
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Python (ii) &#9826; [2/14]</div> <DIV class='slideCl1    ' id="s3"  >
+<div class='navCl1'><a href="#s2"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s4"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Python + Psycopg2 (recap) <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Python vs PostgreSQL data types ...
+<p>
+Strings:
+<ul>
+<li> in Python: written with <large><code>"..."</code></large> or <large><code>'...'</code></large>, including <large><code>\<i>x</i></code></large>
+<li> converted to SQL strings &nbsp;e.g. <large><code>"O'Reilly"</code></large> &rarr; <large><code>'O''Reilly'</code></large>
+<li> Python supports&nbsp; <large><code>"""</code></large> ...... <large><code>"""</code></large> &nbsp;multi-line strings &nbsp;<small>(useful for SQL queries)</small>
+</ul>
+Tuples:
+<ul>
+<li> n Python: contain multiple hetergenous values &nbsp; <small>(cf. C <large><code>struct</code></large>)</small>
+<li> similar to PostgreSQL composite (tuple) types
+<li> written as: <large><code>(</code></large> <i>val<sub>1</sub></i>, <i>val<sub>2</sub></i>, ..., <i>val<sub>n</sub></i> <large><code>)</code></large>  &nbsp;&nbsp;&nbsp; <span class="smaller">(note that <large><code>( <i>val<sub>1</sub></i> )</code></large> is not a tuple)</span>
+<li> examples: &nbsp;<large><code>(1,2,3)</code></large>, &nbsp;<large><code>(1,"John",3.14)</code></large>, &nbsp;<large><code>(1,)</code></large>,
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Python (ii) &#9826; [3/14]</div> <DIV class='slideCl1    ' id="s4"  >
+<div class='navCl1'><a href="#s3"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s5"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Examples</div></td><td align='right'></td></tr></table>
+<p>
+Example database: <large><code>beers2</code></large>
+<p><pre>
+Beers( <b>id</b>:int, name:text, <i>brewer</i>:int )
+
+Brewers( <b>id</b>:int, name:text, country:text )
+
+Bars( <b>id</b>:int, name:text, addr:text, license:int )
+
+Drinkers( <b>id</b>:int, name:text, addr:text, phone:text )
+
+Likes( <i>drinker</i>:int, <i>beer</i>:int )
+
+Sells( <i>bar</i>:int, <i>beer</i>:int, price:float )
+
+Frequents( <i>drinker</i>:int, <i>bar</i>:int )
+</pre><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Python (ii) &#9826; [4/14]</div> <DIV class='slideCl1    ' id="s5"  >
+<div class='navCl1'><a href="#s4"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s6"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Examples <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<br>
+Assume that the following code samples are wrapped in
+<p><pre>
+import sys
+import psycopg2
+conn = None
+try:
+   <font color="#996600">conn</font> = psycopg2.connect("dbname=beers2")
+   <font color="#0000EE"><i>... example code ...</i></font>
+except psycopg2.Error as err:
+   print("database error:",err)
+finally:
+   if (conn):
+      conn.close()
+   print("finished with database")
+</pre><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Python (ii) &#9826; [5/14]</div> <DIV class='slideCl1    ' id="s6"  >
+<div class='navCl1'><a href="#s5"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s7"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Examples <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Example: a list of brewers and their countries as <large><code>brewers.py</code></large>
+<p><pre>
+cur = conn.cursor()
+cur.execute("""
+select name, country from Brewers order by name
+""")
+for tuple in cur.fetchall():
+   name, country = tuple
+   print(name + ", " + country)
+</pre><p>
+<p><pre>
+$ <b>python3 brewers.py</b>
+Brew Dog, Scotland
+Bridge Road Brewers, Australia
+Caledonian, Scotland
+Carlton, Australia
+Cascade, Australia
+...
+</pre><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Python (ii) &#9826; [6/14]</div> <DIV class='slideCl1    ' id="s7"  >
+<div class='navCl1'><a href="#s6"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s8"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Examples <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Example: a list of brewers and their countries as <large><code>bfrom.py</code></large>
+<p><pre>
+cur = conn.cursor()
+qry = "select name from Brewers where country = %s"
+country = sys.argv[1]
+cur.execute(qry, [country])
+for tuple in cur.fetchall():
+   print(tuple[0])
+</pre><p>
+<p><pre>
+$ <b>python3 bfrom.py Scotland</b>
+Caledonian
+Brew Dog
+</pre><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Python (ii) &#9826; [7/14]</div> <DIV class='slideCl1    ' id="s8"  >
+<div class='navCl1'><a href="#s7"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s9"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Examples <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Example: print beers preceded by the brewer as <large><code>beers.py</code></large>
+<p><pre>
+cur = conn.cursor()
+qry = """
+select b.name, r.name
+from   Brewers r join Beers b on (b.brewer=r.id)
+"""
+cur.execute(qry)
+for tuple in cur.fetchall():
+   print(tuple[1] + " " + tuple[0])
+</pre><p>
+<p><pre>
+$ <b>python3 beers.py</b>
+Caledonian 80/-
+James Squire Amber Ale
+Sierra Nevada Bigfoot Barley Wine
+...
+</pre><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Python (ii) &#9826; [8/14]</div> <DIV class='slideCl1    ' id="s9"  >
+<div class='navCl1'><a href="#s8"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s10"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Examples <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Example: most expensive beer as <large><code>expensive.py</code></large>
+<p><pre>
+cur = conn.cursor()
+qry = """
+select b.name, s.price
+from   Beers b join Sells s on (b.id = s.beer)
+where  s.price = (select max(price) from Sells)
+"""
+cur.execute(qry)
+for tuple in cur.fetchall():
+   print(tuple[0] + " @ " + str(tuple[1]))
+</pre><p>
+<p><pre>
+$ <b>python3 beers.py</b>
+Sink the Bismarck @ 25.0
+</pre><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Python (ii) &#9826; [9/14]</div> <DIV class='slideCl1    ' id="s10"  >
+<div class='navCl1'><a href="#s9"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s11"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Examples <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Example: list beers, bar+price where sold, average price as <large><code>beers1.py</code></large>
+<p><pre style="font-size:90%">
+$ <b>python3 beers1.py</b>
+...
+New
+	Australia Hotel @ 3.0
+	Coogee Bay Hotel @ 2.25
+	Lord Nelson @ 3.0
+	Marble Bar @ 2.8
+	Regent Hotel @ 2.2
+	Royal Hotel @ 2.3
+	Average @ 2.591666666666667
+Nirvana Pale Ale
+	Not sold anywhere
+Old
+	Coogee Bay Hotel @ 2.5
+	Marble Bar @ 2.9
+	Royal Hotel @ 2.65
+	Average @ 2.6833333333333336
+Old Admiral
+	Lord Nelson @ 3.75
+	Average @ 3.75
+...
+</program90>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Python (ii) &#9826; [10/14]</div> <DIV class='slideCl1    ' id="s11"  >
+<div class='navCl1'><a href="#s10"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s12"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Examples <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+<p><pre>
+cur = conn.cursor()
+qry = "select id, name from Beers"
+cur.execute(qry)
+for tuple in cur.fetchall():
+   q2 = """select b.name, s.price
+        from Bars b join Sells s on (b.id=s.bar)
+        where s.beer = %s"""
+   print(tuple[1])
+   cur.execute(q2, [tuple[0]])
+   n, tot = 0, 0.0
+   for t in cur.fetchall():
+      print("\t"+t[0],"@",t[1])
+      n = n + 1
+      tot = tot + t[1]
+   if n > 0:
+      print("\tAverage @", tot/n)
+   else:
+      print("\tNot sold anywhere")
+</pre><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Python (ii) &#9826; [11/14]</div> <DIV class='slideCl1    ' id="s12"  >
+<div class='navCl1'><a href="#s11"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s13"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Poor Usage of Python+SQL</div></td><td align='right'></td></tr></table>
+<p>
+Should generally avoid
+<p><pre>
+cur.execute("select x,y from R")
+for tup in cur.fetchall():
+   q = "select * from S where id=%s"
+   cur.execute(q, [tup[0]])
+   for t in cur.fetchall():
+      <i>... process t ...</i>
+</pre><p>
+More efficiently done as e.g.
+<p><pre>
+qry = """
+select *
+from   R join S on (R.x = S.id)
+"""
+for tup in cur.fetchall():
+   <i>... process tup ...</i>
+</pre><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Python (ii) &#9826; [12/14]</div> <DIV class='slideCl1    ' id="s13"  >
+<div class='navCl1'><a href="#s12"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s14"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Calling PostgreSQL functions</div></td><td align='right'></td></tr></table>
+<p>
+Two ways to call PostgreSQL functions
+<p><pre>
+<span class='comment'># using a standard function call from SQL</span>
+cur.<font color="#000099">execute</font>("select * from brewer(5)")
+t = cur.<font color="#000099">fetchone</font>()
+print(t[0])
+
+<span class='comment'># using special callproc() method</span>
+<span class='comment'># parameters supplied as a list of values/vars</span>
+cur.<font color="#000099">callproc</font>("brewer",[5])
+t = cur.<font color="#000099">fetchone</font>()
+print(t[0])
+</pre><p>
+<br>
+<large><code>brewer(int) returns text</code></large> &nbsp; returns a brewer's name, given their id
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Python (ii) &#9826; [13/14]</div> <DIV class='slideCl1    ' id="s14"  >
+<div class='navCl1'><a href="#s13"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>   </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Other Psycopg2 Tricks</div></td><td align='right'></td></tr></table>
+<p>
+<large><code>cur.execute(<i>SQL Statement</i>)</code></large>
+<ul>
+<li> clearly the SQL statement can be &nbsp;<large><code>SELECT</code></large>
+<li> can also be&nbsp; <large><code>UPDATE</code></large> &nbsp;or&nbsp; <large><code>DELETE</code></large>
+<li> can also be a meta-data statement, e.g.
+<ul>
+<li> <large><code>CREATE TABLE</code></large>, &nbsp;<large><code>DROP TABLE</code></large>, &nbsp; <large><code>CREATE VIEW</code></large>, ...
+</ul>
+</ul>
+<large><code>cur.fetchmany(<i>#tuples</i>)</code></large>
+<ul>
+<li> gets a list of the next <large><code><i>#tuples</i></code></large> &nbsp;tuples
+<li> could replace PLpgSQL <large><code>LIMIT</code></large> in some contexts
+</ul>
+For many more examples, see Psycopg2 documentation and tutorials
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; Python (ii) &#9826; [14/14]</div><p><hr><p>
+<span style='font-size:11px;color: grey;'>Produced: 3 Nov 2020</span>
+ <script src='lib/prism.js'></script>   
+ <script src='lib/sg.js'></script>   
+</body>
+</html>

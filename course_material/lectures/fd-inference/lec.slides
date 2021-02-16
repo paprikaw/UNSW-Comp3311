@@ -1,0 +1,234 @@
+<title>Inference on FDs
+<footer>COMP3311 20T3 <diamond> Inference on FDs <diamond>
+
+<slide>
+<heading>Closures
+Given a set <$>F</$> of <$>fd</$>s, how many new <$>fd</$>s can we derive?
+<p>
+For a finite set of attributes, there must be a finite set of derivable <$>fd</$>s.
+<p>
+The largest collection of dependencies that can be derived from <$>F</$>
+is called the <em>closure</em> of <$>F</$> and is denoted <$>F<sup>+</sup></$>.
+<p>
+Closures allow us to answer two interesting questions:
+<itemize>
+<item> is a particular dependency <$>X <rightarrow> Y</$> derivable from <$>F</$>?
+<item> are two sets of dependencies <$>F</$> and <$>G</$> equivalent?
+</itemize>
+</slide>
+
+<slide>
+<continued>
+For the question <q>is <$>X <rightarrow> Y</$> derivable from <$>F</$>?</q> ...
+<itemize>
+<item> compute the closure <$>F<sup>+</sup></$>;
+	check whether <$>X <rightarrow> Y <~> <in> <~> F<sup>+</sup></$>
+</itemize>
+<br>
+For the question <q>are <$>F</$> and <$>G</$> equivalent?</q> ...
+<itemize>
+<item> compute closures <$>F<sup>+</sup></$> and <$>G<sup>+</sup></$>;
+	check whether they're equal
+</itemize>
+<br>
+Unfortunately, closures can be very large, e.g.
+<p>
+<small>
+<$>R = ABC, <~~~> F = { AB <rightarrow> C, <~> C <rightarrow> B }</$> <br>
+<$>F<sup>+</sup> = { A <rightarrow> A, <~> AB <rightarrow> A, <~>
+	AC <rightarrow> A, <~> AB <rightarrow> B, <~>
+	BC <rightarrow> B, <~> ABC <rightarrow> B, <~>
+<br> <~~~> <~~~> <~~~>
+	C <rightarrow> C, <~> AC <rightarrow> C, <~>
+	BC <rightarrow> C, <~> ABC <rightarrow> C, <~>
+	AB <rightarrow> AB, <~> . . . . . . ,
+<br> <~~~> <~~~> <~~~>
+        AB <rightarrow> ABC, <~> AB <rightarrow> ABC, <~>
+	C <rightarrow> B, <~> C <rightarrow> BC, <~>
+	AC <rightarrow> B, <~> AC <rightarrow> AB }</$>
+</small>
+</slide>
+
+<slide>
+<continued>
+Algorithms based on <$>F<sup>+</sup></$> rapidly become infeasible.
+<p>
+To solve this problem ...
+<itemize>
+<item>  use closures based on sets of attributes rather than sets of <$>fd</$>s.
+</itemize>
+<p>
+Given a set <$>X</$> of attributes and a set <$>F</$> of <$>fd</$>s,
+the <em>closure</em> of <$>X</$> (denoted <$>X<sup>+</sup></$>) is
+<itemize>
+<item> the largest set of attributes that can be derived from <$>X</$> using
+<$>F</$>
+</itemize>
+<p>
+Determining X+ from {X<rightarrow>Y, Y<rightarrow>Z} <~>...<~> X <rightarrow> XY <rightarrow> XYZ = X+
+<p>
+For computation, |<$>X<sup>+</sup></$>| is bounded by the number of attributes.
+</slide>
+
+<slide>
+<continued>
+<br>
+Algorithm for computing attribute closure:
+<program>
+<navy>Input:</navy> F <small>(set of FDs)</small>, X <small>(starting attributes)</small>
+<navy>Output:</navy> X+ <small>(attribute closure)</small>
+
+Closure = X
+while (not done) {
+   OldClosure = Closure
+   for each A <rightarrow> B such that A <subset> Closure
+      add B to Closure
+   if (Closure == OldClosure) done = true
+}
+</program>
+</slide>
+
+<slide>
+<continued>
+For the question <q>is <$>X <rightarrow> Y</$> derivable from <$>F</$>?</q> ...
+<itemize>
+<item> compute the closure <$>X<sup>+</sup></$>,
+	check whether <$>Y <~> <subset> <~> X<sup>+</sup></$>
+</itemize>
+<br>
+For the question <q>are <$>F</$> and <$>G</$> equivalent?</q> ...
+<itemize>
+<item> for each dependency in <$>G</$>, check whether derivable from <$>F</$>
+<item> for each dependency in <$>F</$>, check whether derivable from <$>G</$>
+<item> if true for all, then 
+	<$>F <Rightarrow> G</$> and <$>G <Rightarrow> F</$>
+	which implies <$>F<sup>+</sup> = G<sup>+</sup></$>
+</itemize>
+<br>
+For the question <q>what are the keys of <$>R</$> implied by <$>F</$>?</q> ...
+<itemize>
+<item> find subsets <$>K <subset> R</$> such that <$>K<sup>+</sup> = R</$>
+</itemize>
+</slide>
+
+<slide>
+<heading>Determining Keys
+Example: determine  primary keys for each of the following:
+<enumerate>
+<item> <$> FD <~>=<~> { A <rightarrow> B, C <rightarrow> D, E <rightarrow> FG }</$>
+<itemize>
+<item> A? <~>A+ = AB, so no ... <~>AB? <~>AB+ = ABCD, so no 
+<item> ACE? <~>ACE+ = ABCDEFG, so yes!
+</itemize>
+<br>
+<item> <$> FD <~>=<~> { A <rightarrow> B, B <rightarrow> C, C <rightarrow> D }</$>
+<itemize>
+<item> B? <~>B+ = BCD, so no ... <~>A? <~>A+ = ABCD, so yes!
+</itemize>
+<br>
+<item> <$> FD <~>=<~> { A <rightarrow> B, B <rightarrow> C, C <rightarrow> A }</$>
+<itemize>
+<item> A? <~>A+ = ABC, so yes! ... <~>B? <~>B+ = ABC, so yes!
+</itemize>
+</enumerate>
+</slide>
+
+<slide>
+<heading>Minimal Covers
+For a given application, we can define many different sets of
+<$>fd</$>s with the same closure
+(e.g. <$>F</$> and <$>G</$> where <$>F<sup>+</sup> = G<sup>+</sup></$>)
+<p>
+Which one is best to <q>model</q> the application?
+<itemize>
+<item> any model has to be complete <small>(i.e. capture entire semantics)</small>
+<item> models should be as small as possible <br>
+	<small>(we use them to check DB validity after update; less checking is better)</small>
+</itemize>
+If we can ...
+<itemize>
+<sitem> determine a number of candidate <$>fd</$> sets, <$>F</$>, <$>G</$> and <$>H</$>
+<sitem> establish that <$>F<sup>+</sup> = G<sup>+</sup> = H<sup>+</sup></$>
+<sitem> we would then choose the smallest one for our <q>model</q>
+</itemize>
+Better still, can we <i>derive</i> the smallest complete set of <$>fd</$>s?
+</slide>
+
+<slide>
+<continued>
+<em>Minimal cover</em> <$>F<sub>c</sub></$> <~>for a set <$>F</$> of <$>fd</$> s:
+<itemize>
+<item> <$>F<sub>c</sub></$> is equivalent to <$>F</$>
+<item> all <$>fd</$>s have the form <$>X <rightarrow> A</$>
+	<small>(where <$>A</$> is a single attribute)</small>
+<item> it is not possible to make <$>F<sub>c</sub></$> smaller
+<itemize>
+<sitem> either by deleting an <$>fd</$>
+<sitem> or by deleting an attribute from an <$>fd</$>
+</itemize>
+</itemize>
+An <$>fd</$> <$>d</$> is redundant if <$>(F-{d})<sup>+</sup> = F<sup>+</sup></$>
+<p>
+An attribute <$>a</$> is redundant if <$>(F-{d}<union>{d'})<sup>+</sup> = F<sup>+</sup></$> <br>
+<small>(where <$>d'</$> is the same as <$>d</$> but with attribute <$>A</$> removed)</small>
+</slide>
+
+<slide>
+<continued>
+Algorithm for computing minimal cover:
+<program>
+<navy>Inputs</navy>: set <$>F</$> of <$>fd</$>s
+<navy>Output</navy>: minimal cover <$>F<sub>c</sub></$> of <$>F</$>
+<$>F<sub>c</sub></$> = <$>F</$>
+Step 1: put <$>f <in> F<sub>c</sub></$> into canonical form
+Step 2: eliminate redundant attributes from <$>f <in> F<sub>c</sub></$>
+Step 3: eliminate redundant <$>fd</$>s from <$>F<sub>c</sub></$>
+</program>
+Step 1: put <$>fd</$> s into canonical form
+<program>
+for each <$>f <in> F<sub>c</sub></$> like <$>X <rightarrow> {A<sub>1</sub>,...,A<sub>n</sub>}</$>
+    remove <$>X <rightarrow> {A<sub>1</sub>,...,A<sub>n</sub>}</$> from <$>F<sub>c</sub></$>
+    add <$>X <rightarrow> A<sub>1</sub></$>, ... <$>X <rightarrow> A<sub>n</sub></$> to <$>F<sub>c</sub></$>
+end
+</program>
+</slide>
+
+<slide>
+<continued>
+Step 2: eliminate redundant attributes
+<program>
+for each <$>f <in> F<sub>c</sub></$> like <$>X <rightarrow> A</$>
+    for each <$>b</$> in <$>X</$>
+        <$>f'</$> = <$>(X-{b}) <rightarrow> A</$>; <~> <$>G</$> = <$>F<sub>c</sub><~>-<~>{f}<~><union><~>{f'}</$>
+        if (<$>G<sup>+</sup></$> == <$>F<sub>c</sub><sup>+</sup></$>) <$>F<sub>c</sub></$> = <$>G</$>
+    end
+end
+</program>
+Step 3: eliminate redundant functional dependencies
+<program>
+for each <$>f <in> F<sub>c</sub></$>
+    <$>G</$> = <$>F<sub>c</sub><~>-<~>{f}</$>
+    if (<$>G<sup>+</sup></$> == <$>F<sub>c</sub><sup>+</sup></$>) <$>F<sub>c</sub></$> = <$>G</$>
+end
+</program>
+</slide>
+
+<slide>
+<continued>
+<br>
+Example: compute minimal cover
+<p>
+E.g. <$>R = ABC</$>, <$>F = { A <rightarrow> BC, <~>
+	B <rightarrow> C, <~> A <rightarrow> B, <~> AB <rightarrow> C }</$>
+<p>
+Working ...
+<itemize>
+<item> canonical <$>fd</$>s:
+	<$>A <rightarrow> B, <~> A <rightarrow> C, <~> B <rightarrow> C, <~> AB <rightarrow> C</$>
+<item> redundant attrs: 
+	<$>A <rightarrow> B, <~> A <rightarrow> C, <~> B <rightarrow> C, <~> A<green>B</green> <rightarrow> C</$>
+<item> redundant <$>fd</$>s:
+	<$>A <rightarrow> B, <~> <green>A <rightarrow> C</green>, <~> B <rightarrow> C</$>
+</itemize>
+This gives the minimal cover <~> <$>F<sub>c</sub> = { A <rightarrow> B, <~> B <rightarrow> C }</$>.
+</slide>

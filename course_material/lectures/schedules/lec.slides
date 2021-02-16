@@ -1,0 +1,160 @@
+<title>Transaction Schedules
+<footer>COMP3311 20T3 <diamond> Transaction Schedules <diamond>
+
+<slide>
+<heading>Transaction Schedules
+When reasoning about transactions, we consider only
+<itemize>
+<item> <@>READ</@> - transfer data item from database to memory
+<item> <@>WRITE</@> - transfer data item from memory to database
+<item> <@>BEGIN</@> - start a transaction
+<item> <@>COMMIT</@> - successfully complete a transaction
+<item> <@>ABORT</@> - fail a transaction and unwind effects
+</itemize>
+All other operations are ignored (e.g. addition, testing, ...)
+<itemize>
+<item> take place in the memory space of one transaction
+<item> have no affect on other transactions
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Relating SQL to database reads/writes ...
+<itemize>
+<item> <@>SELECT</@> produces <@>READ</@> operations on the database
+<item> <@>INSERT</@> produces <@>WRITE</@> operations
+<item> <@>UPDATE</@>, <@>DELETE</@> produce both <@>READ</@> + <@>WRITE</@> operations
+</itemize>
+Assume: each operation involves one database item <~> <small>(e.g. one tuple)</small>
+<p>
+Notation: <~> items denoted <@>X</@>, <@>Y</@>, etc; <~>  operations denoted <@>R</@>, <@>W</@>, <@>C</@>, <@>A</@>
+<p>
+Thus, we see notation like: <~> <@>R(X)</@>, <@>R(Y)</@>, <@>W(X)</@>, <@>W(Y)</@>, etc.
+<p>
+<small>
+Notes:
+<itemize>
+<item> items with same name in different transactions refer to a shared item
+<item> typically don't use explicit <@>BEGIN</@> or <@>COMMIT</@> or <@>ABORT</@>
+</itemize>
+</small>
+</slide>
+
+<slide>
+<continued>
+Showing SQL<rightarrow>Schedule, using bank transfer example
+<program90>
+get balance in source account
+get balance in destination account
+if (source balance sufficient):
+   update source by subtracting amount transferred
+   update destination by adding amount transferred
+</program>
+If X = source account, Y = destination account, can be summarized as
+<program>
+R(X)  R(Y)  W(X)  W(Y)
+</program>
+<p>
+Note: we treat the <@>update</@>s simply as writes ...
+<itemize>
+<item> assume <@>UPDATE</@> = <@>R;W</@>, and <@>R;W</@> is atomic, so overall effect is just <@>W</@>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+When multiple transactions run in parallel
+<itemize>
+<item> each transaction runs its own operations in a well-defined order
+<item> but operations from different transactions interleave differently
+</itemize>
+Possible execution orders for operations of two transactions
+<program>
+<comment>-- no concurrency</comment>
+T1: R(X) W(X) R(Y) W(Y)
+T2:                     R(X) W(X) R(Y) W(Y)
+
+<comment>-- with concurrent execution</comment>
+T1: R(X)      W(X)      R(Y)      W(Y)
+T2:      R(X)      W(X)      R(Y)      W(Y)
+
+</program>
+</slide>
+
+<slide>
+<continued>
+<p>
+Executing a single correct transaction ...
+<itemize>
+<item> maps the DB from a <green>consistent</green> state to another <green>consistent</green> state
+</itemize>
+Similarly, executing transactions sequentially ...
+<diagram>Pics/xact/valid-states
+Abribtrary interleaving of operations can cause <em>anomalies</em>, so that ...
+<item> two consistency-preserving transactions, running concurrently
+<item> produce a final state which is not consistent
+</itemize>
+</slide>
+
+<slide>
+<heading>Serial Schedules
+<em>Serial</em> execution:
+	<~> <@>T1</@> then <@>T2</@> <~> or <~> <@>T2</@> then <@>T1</@>
+<program>
+T1: R(X) W(X) R(Y) W(Y)
+T2:                     R(X) W(X)
+</program>
+or
+<program>
+T1:           R(X) W(X) R(Y) W(Y)
+T2: R(X) W(X)
+</program>
+Serial execution guarantees a consistent final state if
+<itemize>
+<item> the initial state of the database is consistent
+<item> <@>T1</@> and <@>T2</@> are consistency-preserving
+</itemize>
+</slide>
+
+<slide>
+<heading>Concurrent Schedules
+<em>Concurrent</em> schedules interleave <@>T1</@>,<@>T2</@>,... operations
+<p>
+Some concurrent schedules are ok, e.g.
+<program>
+T1: R(X) W(X)      R(Y)      W(Y)
+T2:           R(X)      W(X)
+</program>
+Other concurrent schedules cause anomalies, e.g.
+<program>
+T1: R(X)      W(X)      R(Y) W(Y)
+T2:      R(X)      W(X)
+</program>
+Want the system to ensure that only valid schedules occur.
+</slide>
+
+<slide>
+<heading>Example Update Anomaly
+Two concurrent transfers from same source account:
+<itemize>
+<item> T1 transfers $200 X<rightarrow>Y, <~> T2 transfers $100 X<rightarrow>Y
+<item> inital values: X=500, Y=100; <~> final values: X=200, Y=400
+</itemize>
+<program90>
+T1      T2     X<sub>T1</sub>    X<sub>T2</sub>    X<sub>db</sub>   Y<sub>T1</sub>   Y<sub>T2</sub>    Y<sub>db</sub>
+R(X)           500          500               100
+X-200          300
+        R(X)          500
+W(X)           300          300
+        X-100         400
+        W(X)          400   <red>400</red>
+        R(Y)                           100
+R(Y)                              100
+Y+200                             300
+W(Y)                              300         300
+        Y+100                          200
+        W(Y)                           200    <red>200</red>
+
+</program>
+</slide>

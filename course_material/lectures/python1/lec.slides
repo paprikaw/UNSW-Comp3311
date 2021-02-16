@@ -1,0 +1,221 @@
+<title>Python (i)
+<footer>COMP3311 20T3 <diamond> Python (i) <diamond>
+
+<slide>
+<heading>Python
+Python is a very popular programming language
+<itemize>
+<item> easy to learn/use <~><allegedly)</tiny>
+<item> with a wide range of useful libraries
+</itemize>
+We assume that you know enough Python to manipulate DBs
+<itemize>
+<item> the primary goal is Database, not Python programming
+</itemize>
+If you're not overly familiar with Python ...
+<itemize>
+<item> there will be many examples of Python code in this course
+<item> there are many excellent tutorials online
+<item> some of this content was "borrowed" from COMP1531 lectures
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Unlike C, Python is an interpreted language
+<p>
+<diagram>Pics/python/execution
+<br>
+Such languages are often called "scripting languages"
+</slide>
+
+<slide>
+<continued>
+Python has an interactive interface (like <@>psql</@>)
+<program>
+$ <green>python3</green>
+Python 3.7.3 (default, Jul 25 2020, 13:03:44) 
+[GCC 8.3.0] on linux
+Type "help", "copyright", "credits" ...
+>>> <blue>print("Hello, world")</blue>
+Hello, world
+>>> <blue>quit()</blue>
+$
+</program>
+Or you can run programs that are stored in files
+<program>
+$ <green>echo 'print("Hello, world")' > hello.py</green>
+$ <green>python3 hello.py</green>
+Hello, world
+$
+</program>
+</slide>
+
+<slide>
+<heading>Python Basics
+Like C, Python programs consist of
+<itemize>
+<item> <small>expressions, <~>statements, <~>control structures, <~>function definitions, imports, ...</small>
+</itemize>
+<p>
+Unlike C, Python uses indentation to indicate code nesting, e.g.
+<p>
+<program>
+<navy>Python</navy>                    <navy>C</navy>
+
+if <i>Condition</i>:             if (<i>Condition</i> ) {
+   <i>Statements<sub>1</sub></i>               <i>Statements<sub>1</sub></i>
+else:                     } else {
+   <i>Statements<sub>2</sub></i>               <i>Statements<sub>2</sub></i>
+<i>Next Statement</i>            }
+                          <i>Next Statement</i>
+</program>
+</slide>
+
+<slide>
+<continued>
+Comments are introduced by <@@>#</@@>, to end of line
+<p>
+Data types and constants:
+<itemize>
+<item> booleans, e.g. <~> <@>True, False</@>
+<item> numbers, e.g. <~> <@>1, 42, 3.14, -5</@>
+<item> strings, e.g. <~> <@>"a string", "string2", 'it\'s fun'</@>
+<item> lists, e.g. <~> <@>[1,4,9,16,25], ['a','b','c']</@>
+<item> tuples, e.g.<~> <@>(3,5), (1,'a',3.0)</@>
+<item> dictionaries, e.g. <~> <@>{'a': 5, 'b': 98, 'c': 99}</@>
+</itemize>
+Assignment is via <@@>=</@@>, <~> "the usual" operators are available
+</slide>
+
+<slide>
+<continued>
+Example operators and expressions
+<program>
+name = "Giraffe"
+age = 18
+height = 2048.11 # mm
+ 
+print(name + ", " + str(age) + ', ' + str(height))
+print(f"{name}, {age}, {height}")
+print(type(name))
+print(type(age))
+ 
+n = 16 // 3
+print(f"3 ** 3 == {3 ** 3}")
+print(f"16 / 3 == {16 / 3}")
+print(f"16 // 3 == {n}")
+</program>
+</slide>
+
+<slide>
+<continued>
+Defining functions
+<program>
+# recursive factorial
+
+<blue>def</blue> fac(n):
+   if n <= 1:
+      return 1
+   else:
+      return n * fac(n-1)
+
+print('5! =',fac(5))
+</program>
+</slide>
+
+<slide>
+<continued>
+Defining functions <small>(cont)</small>
+<program>
+# iterative factorial
+
+<blue>def</blue> faci(n):
+   f = 1
+   for i in range(1,n):
+      f = f * i
+   return f
+
+print('6! =',faci(6))
+</program>
+<br>
+A collection of related functions can be packaged into a <em>module</em>
+</slide>
+
+<slide>
+<continued>
+C programs can import library definitions, e.g.
+<program>
+<blue>#include</blue> <<stdlib.h>>
+<blue>#include</blue> <<stdio.h>>
+</program>
+Python programs can import external modules <~><small>(module = collection of definitions)</small>
+<program>
+<blue>import</blue> sys
+<blue>import</blue> psycopg2
+<blue>import</blue> sound.effects.echo
+<blue>from</blue> sound.effects <blue>import</blue> echo
+</program>
+Packages (e.g. <@>sound</@>) are collections of sub-packages and modules
+</slide>
+
+<slide>
+<continued>
+<br>
+Example: <@>echo</@> in Python
+<program>
+import sys
+                    <comment># extracts a slice from argv</comment>
+for arg in sys.argv[1:] :
+   print(arg, end=" ")   <comment># don't put '\n' after print</comment>
+print("")
+</program>
+which is is used as <small>(if placed in file <@>echo.py</@>)</small>
+<program>
+$ <navy>python3 echo.py arg1  "arg 2"  arg3</navy>
+arg1 arg 2 arg3 
+$ 
+</program>
+</slide>
+
+<slide>
+<continued>
+Example: sequence generator ... 1 2 3 4 5 ...
+<program>
+#!/usr/bin/python3
+import sys
+if len(sys.argv) < 3:
+   print("Usage: seqq lo hi")
+   exit(1)
+hi = int(sys.argv[2])
+i = lo = int(sys.argv[1])
+while i <= hi:
+   print(i)
+   i += 1   <comment># no ++ operator</comment>
+</program>
+which can be used as
+which is is used as <small>(if placed in executable file <@>seqq</@>)</small>
+<program>
+$ <navy>./seqq 2 4</navy>
+2
+3
+4
+$
+</program>
+</slide>
+
+<slide>
+<heading>More on Python
+<br>
+Lots of info available on <@@>python.org</@@>
+<itemize>
+<item> including <~> docs.python.org/3/tutorial/introduction.html
+</itemize>
+And many others, e.g.  www.learnpython.org
+<p>
+Or ask for "free python3 tutorials" on Google
+<p>
+Python has hundreds of modules/libraries on all kinds of topics
+<p>
+We focus on the <@>psycopg2</@> database connectivity module
+</slide>

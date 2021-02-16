@@ -1,0 +1,1843 @@
+<html>
+<head>
+<title>Relational Design Theory</title>
+<link href='lib/notes.css' rel='stylesheet' type='text/css'>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML" async></script>
+<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js'></script>
+<link href='lib/prism.css' rel='stylesheet'>
+<script src='lib/sg.js'></script>
+</head>
+<body>
+<div class='heading'>Relational Design Theory</div><p><ul class='indexUl'  style='font-size: 0.7em;'><li class="i"> <a href="#s1">Relational Design Theory</a>
+<li class="i"> <a href="#s3">Relational Design and Redundancy</a>
+<li class="i"> <a href="#s9">Database Design (revisited)</a>
+<li class="i"> <a href="#s12">Notation/Terminology</a>
+<li class="i"> <a href="#s13">Functional Dependency</a>
+<li class="i"> <a href="#s20">Inference Rules</a>
+<li class="i"> <a href="#s24">Closures</a>
+<li class="i"> <a href="#s28">Closure Algorithm</a>
+<li class="i"> <a href="#s33">Minimal Covers</a>
+<li class="i"> <a href="#s40">Normalization</a>
+<li class="i"> <a href="#s41">Normal Forms</a>
+<li class="i"> <a href="#s46">Relation Decomposition</a>
+<li class="i"> <a href="#s47">Schema Design</a>
+<li class="i"> <a href="#s55">Boyce-Codd Normal Form</a>
+<li class="i"> <a href="#s57">BCNF Decomposition</a>
+<li class="i"> <a href="#s61">Third Normal Form</a>
+<li class="i"> <a href="#s64">Database Design Methodology</a>
+</ul><hr>
+<DIV id="s1">
+<div class='heading'>Relational Design Theory</div>
+<p>
+As noted earlier, the relational model is:
+<ul>
+<li> simple, uniform, well-defined, formal, ...
+</ul>
+Such properties tend to lead to useful mathematical theories.
+<p>
+One important theory developed for the relational model involves the
+notion of <font color='#0000BB'>functional dependency</font> (<i>fd</i> ).
+<p>
+Like constraints, assertions, etc. functional dependencies
+are drawn from the semantics of the application domain.
+<p>
+Essentially, <i>fd</i> 's describe how individual attributes are related.
+</DIV>
+<hr>
+<DIV id="s2">
+<div class='heading'>Relational Design Theory <span style="font-size:67%">(cont)</span></div>
+<p>
+Functional dependencies
+<ul>
+<li> are a kind of constraint among attributes within a relation
+<li> that have implications for "good" relational schema design
+</ul>
+What we study here:
+<ul>
+<li> basic theory and definition of <font color='#0000BB'>functional dependencies</font>
+<li> methodology for improving schema designs (<font color='#0000BB'>normalisation</font>)
+</ul>
+The aim of studying this:
+<ul>
+<li> improve understanding of relationships among data
+<li> gain enough formalism to assist practical database design
+</ul>
+</DIV>
+<hr>
+<DIV id="s3">
+<div class='heading'>Relational Design and Redundancy</div>
+<p>
+A <font color='#0000BB'>good</font> relational database design:
+<ul>
+<li> must capture <i>all</i> of the necessary attributes/associations
+<li> should do this with a <i>minimal</i> amount of stored information
+</ul>
+Minimal stored information <i>&rArr;</i> no redundant data.
+<p>
+In database design, <font color='#0000BB'>redundancy</font> is generally a "bad thing":
+<ul>
+<li> causes problems maintaining consistency after updates
+</ul>
+However, it can sometimes lead to performance improvements
+<ul>
+<li> e.g. may be able to avoid a join to collect bits of data together
+</ul>
+</DIV>
+<hr>
+<DIV id="s4">
+<div class='heading'>Relational Design and Redundancy <span style="font-size:67%">(cont)</span></div>
+<p>
+Consider the following relation defining bank accounts/branches:
+<p>
+<p><table border='1' cellpadding='2'>
+<tr align=center>
+  <td><b>accountNo</b></td>
+  <td><b>balance</b></td>
+  <td><b>customer</b></td>
+  <td><b>branch</b></td>
+  <td><b>address</b></td>
+  <td><b>assets</b></td>
+</tr>
+<tr align=center>
+  <td>A-101</td>
+  <td>500</td>
+  <td>1313131</td>
+  <td>Downtown</td>
+  <td>Brooklyn</td>
+  <td>9000000</td>
+</tr>
+<tr align=center>
+  <td>A-102</td>
+  <td>400</td>
+  <td>1313131</td>
+  <td>Perryridge</td>
+  <td>Horseneck</td>
+  <td>1700000</td>
+</tr>
+<tr align=center>
+  <td>A-113</td>
+  <td>600</td>
+  <td>9876543</td>
+  <td><font color="#996600">Round Hill</font></td>
+  <td><font color="#996600">Horseneck</font></td>
+  <td><font color="#996600">8000000</font></td>
+</tr>
+<tr align=center>
+  <td>A-201</td>
+  <td>900</td>
+  <td>9876543</td>
+  <td>Brighton</td>
+  <td>Brooklyn</td>
+  <td>7100000</td>
+</tr>
+<tr align=center>
+  <td>A-215</td>
+  <td>700</td>
+  <td>1111111</td>
+  <td>Mianus</td>
+  <td>Horseneck</td>
+  <td>400000</td>
+</tr>
+<tr align=center>
+  <td>A-222</td>
+  <td>700</td>
+  <td>1111111</td>
+  <td>Redwood</td>
+  <td>Palo Alto</td>
+  <td>2100000</td>
+</tr>
+<tr align=center>
+  <td>A-305</td>
+  <td>350</td>
+  <td>1234567</td>
+  <td><font color="#996600">Round Hill</font></td>
+  <td><font color="#996600">Horseneck</font></td>
+  <td><font color="#996600">8000000</font></td>
+</tr>
+</table><p>
+<p>
+<small>
+We need to be careful updating this data, otherwise we may introduce inconsistencies.
+</small>
+</DIV>
+<hr>
+<DIV id="s5">
+<div class='heading'>Relational Design and Redundancy <span style="font-size:67%">(cont)</span></div>
+<p>
+Insertion anomaly:
+<ul>
+<li> when we insert a new record, we need to check that branch data is consistent with existing tuples
+</ul>
+Update anomaly:
+<ul>
+<li> if a branch changes address, we need to update all tuples referring to that branch
+</ul>
+Deletion anomaly:
+<ul>
+<li> if we remove information about the last account at a branch, all of the branch information disappears
+</ul>
+<small>
+(If we <font color='#0000BB'>do</font> manage to avoid inconsistencies, the cost is additional updates)
+</small>
+</DIV>
+<hr>
+<DIV id="s6">
+<div class='heading'>Relational Design and Redundancy <span style="font-size:67%">(cont)</span></div>
+<p>
+Insertion anomaly example (insert account A-306 at Round Hill):
+<p>
+<p><table border='1' cellpadding='2'>
+<tr align=center>
+  <td><b>accountNo</b></td>
+  <td><b>balance</b></td>
+  <td><b>customer</b></td>
+  <td><b>branch</b></td>
+  <td><b>address</b></td>
+  <td><b>assets</b></td>
+</tr>
+<tr align=center>
+  <td>A-101</td>
+  <td>500</td>
+  <td>1313131</td>
+  <td>Downtown</td>
+  <td>Brooklyn</td>
+  <td>9000000</td>
+</tr>
+<tr align=center>
+  <td>A-102</td>
+  <td>400</td>
+  <td>1313131</td>
+  <td>Perryridge</td>
+  <td>Horseneck</td>
+  <td>1700000</td>
+</tr>
+<tr align=center>
+  <td>A-113</td>
+  <td>600</td>
+  <td>9876543</td>
+  <td>Round Hill</td>
+  <td>Horseneck</td>
+  <td><font color='#0000BB'><font color="#009900">8000000</font></font></td>
+</tr>
+<tr align=center>
+  <td>A-201</td>
+  <td>900</td>
+  <td>9876543</td>
+  <td>Brighton</td>
+  <td>Brooklyn</td>
+  <td>7100000</td>
+</tr>
+<tr align=center>
+  <td>A-215</td>
+  <td>700</td>
+  <td>1111111</td>
+  <td>Mianus</td>
+  <td>Horseneck</td>
+  <td>400000</td>
+</tr>
+<tr align=center>
+  <td>A-222</td>
+  <td>700</td>
+  <td>1111111</td>
+  <td>Redwood</td>
+  <td>Palo Alto</td>
+  <td>2100000</td>
+</tr>
+<tr align=center>
+  <td>A-305</td>
+  <td>350</td>
+  <td>1234567</td>
+  <td>Round Hill</td>
+  <td>Horseneck</td>
+  <td><font color='#0000BB'><font color="#009900">8000000</font></font></td>
+</tr>
+<tr align=center>
+  <td>A-306</td>
+  <td>800</td>
+  <td>1111111</td>
+  <td>Round Hill</td>
+  <td>Horseneck</td>
+  <td><font color='#0000BB'>8000800</font></td>
+</tr>
+</table><p>
+</DIV>
+<hr>
+<DIV id="s7">
+<div class='heading'>Relational Design and Redundancy <span style="font-size:67%">(cont)</span></div>
+<p>
+Update anomaly example (update Round Hill branch address):
+<p>
+<p><table border='1' cellpadding='2'>
+<tr align=center>
+  <td><b>accountNo</b></td>
+  <td><b>balance</b></td>
+  <td><b>customer</b></td>
+  <td><b>branch</b></td>
+  <td><b>address</b></td>
+  <td><b>assets</b></td>
+</tr>
+<tr align=center>
+  <td>A-101</td>
+  <td>500</td>
+  <td>1313131</td>
+  <td>Downtown</td>
+  <td>Brooklyn</td>
+  <td>9000000</td>
+</tr>
+<tr align=center>
+  <td>A-102</td>
+  <td>400</td>
+  <td>1313131</td>
+  <td>Perryridge</td>
+  <td>Horseneck</td>
+  <td>1700000</td>
+</tr>
+<tr align=center>
+  <td>A-113</td>
+  <td>600</td>
+  <td>9876543</td>
+  <td>Round Hill</td>
+  <td><font color='#0000BB'>Palo Alto</font></td>
+  <td>8000000</td>
+</tr>
+<tr align=center>
+  <td>A-201</td>
+  <td>900</td>
+  <td>9876543</td>
+  <td>Brighton</td>
+  <td>Brooklyn</td>
+  <td>7100000</td>
+</tr>
+<tr align=center>
+  <td>A-215</td>
+  <td>700</td>
+  <td>1111111</td>
+  <td>Mianus</td>
+  <td>Horseneck</td>
+  <td>400000</td>
+</tr>
+<tr align=center>
+  <td>A-222</td>
+  <td>700</td>
+  <td>1111111</td>
+  <td>Redwood</td>
+  <td>Palo Alto</td>
+  <td>2100000</td>
+</tr>
+<tr align=center>
+  <td>A-305</td>
+  <td>350</td>
+  <td>1234567</td>
+  <td>Round Hill</td>
+  <td><font color='#0000BB'><font color="#009900">Horseneck</font></font></td>
+  <td>8000000</td>
+</tr>
+</table><p>
+</DIV>
+<hr>
+<DIV id="s8">
+<div class='heading'>Relational Design and Redundancy <span style="font-size:67%">(cont)</span></div>
+<p>
+Deletion anomaly example (remove account A-101):
+<p>
+<p><table border='1' cellpadding='2'>
+<tr align=center>
+  <td><b>accountNo</b></td>
+  <td><b>balance</b></td>
+  <td><b>customer</b></td>
+  <td><b>branch</b></td>
+  <td><b>address</b></td>
+  <td><b>assets</b></td>
+</tr>
+<tr align=center>
+  <td><font color='#0000BB'>A-101</font></td>
+  <td><font color='#0000BB'>500</font></td>
+  <td><font color='#0000BB'>1313131</font></td>
+  <td><font color='#0000BB'>Downtown</font></td>
+  <td><font color='#0000BB'>Brooklyn</font></td>
+  <td><font color='#0000BB'>9000000</font></td>
+</tr>
+<tr align=center>
+  <td>A-102</td>
+  <td>400</td>
+  <td>1313131</td>
+  <td>Perryridge</td>
+  <td>Horseneck</td>
+  <td>1700000</td>
+</tr>
+<tr align=center>
+  <td>A-113</td>
+  <td>600</td>
+  <td>9876543</td>
+  <td>Round Hill</td>
+  <td>Horseneck</td>
+  <td>8000000</td>
+</tr>
+<tr align=center>
+  <td>A-201</td>
+  <td>900</td>
+  <td>9876543</td>
+  <td>Brighton</td>
+  <td>Brooklyn</td>
+  <td>7100000</td>
+</tr>
+<tr align=center>
+  <td>A-215</td>
+  <td>700</td>
+  <td>1111111</td>
+  <td>Mianus</td>
+  <td>Horseneck</td>
+  <td>400000</td>
+</tr>
+<tr align=center>
+  <td>A-222</td>
+  <td>700</td>
+  <td>1111111</td>
+  <td>Redwood</td>
+  <td>Palo Alto</td>
+  <td>2100000</td>
+</tr>
+<tr align=center>
+  <td>A-305</td>
+  <td>350</td>
+  <td>1234567</td>
+  <td>Round Hill</td>
+  <td>Horseneck</td>
+  <td>8000000</td>
+</tr>
+</table><p>
+<p>
+Where is the Downtown branch located? What are its assets?
+</DIV>
+<hr>
+<DIV id="s9">
+<div class='heading'>Database Design (revisited)</div>
+<p>
+To avoid these kinds of update problems:
+<ul>
+<li> <font color='#0000BB'>decompose</font> the relation <i>U</i> into several smaller relations <i>R<sub>i</sub></i>
+<li> where each <i>R<sub>i</sub></i> has minimal overlap with other <i>R<sub>j</sub></i>
+</ul>
+<small>
+Typically, each <i>R<sub>i</sub></i> contains information about one entity (e.g. branch, customer, ...)</small>
+<p>
+This leads to a (bottom-up) database design procedure:
+<ul>
+<li> start from an unstructured collection of attributes
+<li> use normalisation (via <i>fd</i>s) to impose structure
+<li> final schema is a collection of tables
+<li> final schema has minimal redundancy (normalised)
+</ul>
+</DIV>
+<hr>
+<DIV id="s10">
+<div class='heading'>Database Design (revisited) <span style="font-size:67%">(cont)</span></div>
+<p>
+This contrasts with our earlier (top-down) design procedure:
+<ul>
+<li> structure data at conceptual level (ER design)
+<li> then map to "physical" level (relational design)
+<li> final schema is a collection of tables
+</ul>
+It appears that ER-design-then-relational-mapping
+<ul>
+<li> leads to a collection of well-structured tables
+<li> which is similar to a normalised schema
+</ul>
+So why do we need a dependency theory and normalisation procedure to deal with redundancy?
+</DIV>
+<hr>
+<DIV id="s11">
+<div class='heading'>Database Design (revisited) <span style="font-size:67%">(cont)</span></div>
+<p>
+Some reasons ...
+<ol>
+<li> ER design does not guarantee minimal redundancy
+<small>
+<ul>
+<li> dependency theory allows us to check designs for residual problems
+</ul>
+</small>
+<li> Normalisation can be viewed as (semi)automated design
+<small>
+<ul>
+<li> determine all of the attributes in the problem domain
+<li> collect them all together in a "super-relation" &nbsp; <small>(with update anomalies)</small>
+<li> provide information about how attributes are related
+<li> apply normalisation to decompose into non-redundant relations
+</ul>
+</small>
+</ol>
+</DIV>
+<hr>
+<DIV id="s12">
+<div class='heading'>Notation/Terminology</div>
+<p>
+Most texts adopt the following terminology:
+<p>
+<p><table border='0' cellpadding='6'>
+<tr valign=top>
+  <td><nobr>Relation<br>schemas</td>
+  <td></td><td>
+  upper-case letters, denoting set of all attributes
+  (e.g. <i>R</i>, <i>S</i>, <i>P</i>, <i>Q</i> )
+  </td>
+</tr>
+<tr valign=top>
+  <td><nobr>Relation<br>instances</td>
+  <td></td><td>
+  lower-case letter corresponding to schema
+  (e.g. <i>r(R)</i>, <i>s(S)</i>, <i>p(P)</i>, <i>q(Q)</i> )
+  </td>
+</tr>
+<tr valign=top>
+  <td><nobr>Tuples</td>
+  <td></td><td>
+  lower-case letters &nbsp; (e.g. <i>t</i>, <i>t'</i>, <i>t<sub>1</sub></i>, <i>u</i>, <i>v</i> )
+  </td>
+</tr>
+<tr valign=top>
+  <td><nobr>Attributes</td>
+  <td></td><td>
+  upper-case letters from start of alphabet
+  (e.g. <i>A</i>, <i>B</i>, <i>C</i>, <i>D</i> )
+  </td>
+</tr>
+<tr valign=top>
+  <td><nobr>Sets of<br>attributes</td>
+  <td></td><td>
+  simple concatenation of attribute names
+  (e.g. <i>X=ABCD</i>, <i>Y=EFG</i> )
+  </td>
+</tr>
+<tr valign=top>
+  <td><nobr>Attributes<br> in tuples</td>
+  <td></td><td>
+  tuple[attrSet] (e.g. <i>t[ABCD]</i>, <i>t[X]</i>)
+  </td>
+</tr>
+</table><p>
+</DIV>
+<hr>
+<DIV id="s13">
+<div class='heading'>Functional Dependency</div>
+<p>
+A relation instance <i>r(R)</i> satisfies a dependency <i>X &rarr; Y</i> if
+<ul>
+<li> for any <i>t, u &isin; r</i>, &nbsp; <i>t[X] = u[X] &nbsp; &rArr; &nbsp; t[Y] = u[Y]</i>
+</ul>
+In other words, if two tuples in <i>R</i> agree in their values for the
+set of attributes <i>X</i>, then they must also agree in their values for
+the set of attributes <i>Y</i>.
+<p>
+We say that "<i>Y</i> is <font color='#0000BB'>functionally dependent</font> on <i>X</i>".
+<p>
+Attribute sets <i>X</i> and <i>Y</i> may overlap;
+trivially true that <i>X &rarr; X</i>.
+<p>
+Notes:
+<ul>
+<li> the single arrow <i>&rarr;</i> denotes "functional dependency"
+<li> <i>X &rarr; Y</i> can also be read as "<i>X</i> determines <i>Y</i>"
+<li> the double arrow <i>&rArr;</i> denotes "logical implication"
+</ul>
+</DIV>
+<hr>
+<DIV id="s14">
+<div class='heading'>Functional Dependency <span style="font-size:67%">(cont)</span></div>
+<p>
+The above definition talks about dependency within a relation instance <i>r(R)</i>.
+<p>
+Much more important for design is the notion of dependency across all possible
+instances of the relation (i.e. a schema-based dependency).
+<p>
+This is a simple generalisation of the previous definition:
+<ul>
+<li> for any <i>t, u &isin; <b>any</b> r(R)</i>, &nbsp; <i>t[X] = u[X] &nbsp; &rArr; &nbsp; t[Y] = u[Y]</i>
+</ul>
+Useful because such dependencies reflect the semantics of the problem.
+</DIV>
+<hr>
+<DIV id="s15">
+<div class='heading'>Functional Dependency <span style="font-size:67%">(cont)</span></div>
+<p>
+Consider the following instance <i>r(R)</i> of the relation schema <i>R(ABCDE)</i>:
+<p>
+<p><table border='1' cellpadding='2'>
+<tr align=center>
+  <td><b><i>A</i></b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+  <td><b><i>B</i></b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+  <td><b><i>C</i></b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+  <td><b><i>D</i></b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+  <td><b><i>E</i></b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+</tr>
+<tr align=center>
+  <td><i>a<sub>1</sub></i></td>
+  <td><i>b<sub>1</sub></i></td>
+  <td><i>c<sub>1</sub></i></td>
+  <td><i>d<sub>1</sub></i></td>
+  <td><i>e<sub>1</sub></i></td>
+</tr>
+<tr align=center>
+  <td><i>a<sub>2</sub></i></td>
+  <td><i>b<sub>1</sub></i></td>
+  <td><i>c<sub>2</sub></i></td>
+  <td><i>d<sub>2</sub></i></td>
+  <td><i>e<sub>1</sub></i></td>
+</tr>
+<tr align=center>
+  <td><i>a<sub>3</sub></i></td>
+  <td><i>b<sub>2</sub></i></td>
+  <td><i>c<sub>1</sub></i></td>
+  <td><i>d<sub>1</sub></i></td>
+  <td><i>e<sub>1</sub></i></td>
+</tr>
+<tr align=center>
+  <td><i>a<sub>4</sub></i></td>
+  <td><i>b<sub>2</sub></i></td>
+  <td><i>c<sub>2</sub></i></td>
+  <td><i>d<sub>2</sub></i></td>
+  <td><i>e<sub>1</sub></i></td>
+</tr>
+<tr align=center>
+  <td><i>a<sub>5</sub></i></td>
+  <td><i>b<sub>3</sub></i></td>
+  <td><i>c<sub>3</sub></i></td>
+  <td><i>d<sub>1</sub></i></td>
+  <td><i>e<sub>1</sub></i></td>
+</tr>
+</table><p>
+<p>
+What kind of dependencies can we observe among the attributes in r(R)?
+</DIV>
+<hr>
+<DIV id="s16">
+<div class='heading'>Functional Dependency <span style="font-size:67%">(cont)</span></div>
+<p>
+Since the values of <i>A</i> are unique, it follows from the <i>fd</i> definition that:
+<p>
+<div class='center'>
+<i>A &rarr; B, &nbsp;&nbsp; A &rarr; C, &nbsp;&nbsp; A &rarr; D, &nbsp;&nbsp; A &rarr; E</i>
+</div>
+<p>
+It also follows that <i>A &rarr; BC</i> &nbsp; <small>(or any other subset of <i>ABCDE</i>).</small>
+<p>
+This can be summarised as &nbsp; <i>A &rarr; BCDE</i> 
+<p>
+From our understanding of primary keys, <i>A</i> is a PK.
+</DIV>
+<hr>
+<DIV id="s17">
+<div class='heading'>Functional Dependency <span style="font-size:67%">(cont)</span></div>
+<p>
+<p>
+Since the values of <i>E</i> are always the same, it follows that:
+<p>
+<div class='center'>
+<i>A &rarr; E, &nbsp;&nbsp; B &rarr; E, &nbsp;&nbsp; C &rarr; E, &nbsp;&nbsp; D &rarr; E</i>
+</div>
+<p>
+Note: <b>cannot</b> generally summarise above by &nbsp; <i>ABCD &rarr; E</i>
+<p>
+<small>(However, <i>ABCD &rarr; E</i> does happen to be true in this example)</small>
+<p>
+In general, &nbsp;&nbsp; <i>A &rarr; Y, &nbsp; B &rarr; Y &nbsp;&nbsp; <notRightarrow> &nbsp;&nbsp; AB &rarr; Y</i>
+</DIV>
+<hr>
+<DIV id="s18">
+<div class='heading'>Functional Dependency <span style="font-size:67%">(cont)</span></div>
+<p>
+Other observations:
+<ul>
+<li> combinations of <i>BC</i> are unique, therefore &nbsp; <i>BC &rarr; ADE</i>
+<li> combinations of <i>BD</i> are unique, therefore &nbsp; <i>BD &rarr; ACE</i>
+<li> if <i>C</i> values match, so do <i>D</i> values, therefore &nbsp; <i>C &rarr; D</i>
+<li> however, <i>D</i> values don't determine <i>C</i> values, so &nbsp; <i>D <notRightarrow> C</i>
+</ul>
+We could derive many other dependencies, e.g. &nbsp; <i>AE &rarr; BC</i>, ...
+<p>
+In practice, choose a minimal set of <i>fd</i>s (<font color='#0000BB'>basis</font>)
+<ul>
+<li> from which all other <i>fd</i>s can be derived
+<li> which typically captures useful problem-domain information
+</ul>
+</DIV>
+<hr>
+<DIV id="s19">
+<div class='heading'>Functional Dependency <span style="font-size:67%">(cont)</span></div>
+<p>
+Can we generalise some ideas about functional dependency? <br>
+<p>
+E.g. are there dependencies that hold for <i>any</i> relation?
+<p>
+Yes, but they're rather uninteresting ones such as:
+<p>
+<div class='center'>
+<i>t[ABC] = u[ABC] &nbsp;&rArr;&nbsp; t[AB] = u[AB]</i> &nbsp; giving &nbsp; <i>ABC &rarr; AB</i>
+</div>
+<p>
+which generalises to &nbsp; <i>Y &sub; X &nbsp; &rArr; &nbsp; X &rarr; Y</i>.
+<p>
+E.g. do some dependencies suggest the existence of others?
+<p>
+Yes, and this is much more interesting ... there are a number of
+<font color='#0000BB'>rules of inference</font> that allow us to <font color='#0000BB'>derive</font> dependencies. 
+</DIV>
+<hr>
+<DIV id="s20">
+<div class='heading'>Inference Rules</div>
+<p>
+<font color='#0000BB'>Armstrong's rules</font> are complete, general rules of inference on <i>fd</i>s.
+<p>
+F1. <font color='#0000BB'>Reflexivity</font> &nbsp; e.g. &nbsp; <i>X &rarr; X</i>
+<small>
+<ul>
+<li> a formal statement of <i>trivial dependencies</i>; useful for derivations
+</ul>
+</small>
+F2. <font color='#0000BB'>Augmentation</font> &nbsp; e.g. &nbsp; <i>X &rarr; Y &nbsp;&rArr;&nbsp; XZ &rarr; YZ</i>
+<small>
+<ul>
+<li> if a dependency holds, then we can freely expand its left hand side
+</ul>
+</small>
+F3. <font color='#0000BB'>Transitivity</font> &nbsp; e.g. &nbsp; <i>X &rarr; Y, Y &rarr; Z &nbsp;&rArr;&nbsp; X &rarr; Z</i>
+<small>
+<ul>
+<li> the "most powerful" inference rule; useful in multi-step derivations
+</ul>
+</small>
+</DIV>
+<hr>
+<DIV id="s21">
+<div class='heading'>Inference Rules <span style="font-size:67%">(cont)</span></div>
+<p>
+While Armstrong's rules are complete, other useful rules exist:
+<p>
+F4. <font color='#0000BB'>Additivity</font> &nbsp; e.g. &nbsp; <i>X &rarr; Y, X &rarr; Z &nbsp; &rArr; &nbsp; X &rarr; YZ</i>
+<small>
+<ul>
+<li> useful for constructing new right hand sides of <i>fd</i>s (also called <font color='#0000BB'>union</font>)
+</ul>
+</small>
+F5. <font color='#0000BB'>Projectivity</font> &nbsp; e.g. &nbsp; <i>X &rarr; YZ &nbsp; &rArr; &nbsp; X &rarr; Y, X &rarr; Z</i>
+<small>
+<ul>
+<li> useful for reducing right hand sides of <i>fd</i>s (also called <font color='#0000BB'>decomposition</font>)
+</ul>
+</small>
+F6. <font color='#0000BB'>Pseudotransitivity</font> &nbsp; e.g. &nbsp; <i>X &rarr; Y, YZ &rarr; W &nbsp; &rArr; &nbsp; XZ &rarr; W</i>
+<small>
+<ul>
+<li> shorthand for a common transitivity derivation
+</ul>
+</small>
+</DIV>
+<hr>
+<DIV id="s22">
+<div class='heading'>Inference Rules <span style="font-size:67%">(cont)</span></div>
+<p>
+Using rules and a set <i>F</i> of given <i>fd</i>s, we can determine what other
+<i>fd</i>s hold.
+<p>
+Example (derivation of <i>AB &rarr; GH</i>):
+<p>
+<div class='center'>
+<i>R = ABCDEFGHIJ</i>
+<p>
+<i>F = { AB &rarr; E, &nbsp; AG &rarr; J, &nbsp; BE &rarr; I, &nbsp; E &rarr; G, &nbsp; GI &rarr; H }</i>
+<p>
+<table border='0' cellpadding='4'>
+<tr valign=top>
+<td><nobr> 1. &nbsp; </td>
+<td></td><td> <i>AB &rarr; E</i> </td>
+<td></td><td> (given) </td>
+</tr>
+<tr valign=top>
+<td><nobr> 2. &nbsp; </td>
+<td></td><td> <i>AB &rarr; AB</i> </td>
+<td></td><td> (using F1) </td>
+</tr>
+<tr valign=top>
+<td><nobr> 3. &nbsp; </td>
+<td></td><td> <i>AB &rarr; B</i> </td>
+<td></td><td> (using F5 on 2) </td>
+</tr>
+<tr valign=top>
+<td><nobr> 4. &nbsp; </td>
+<td></td><td> <i>AB &rarr; BE</i> </td>
+<td></td><td> (using F4 on 1,3) </td>
+</tr>
+<tr valign=top>
+<td><nobr> 5. &nbsp; </td>
+<td></td><td> <i>BE &rarr; I</i> </td>
+<td></td><td> (given) </td>
+</tr>
+</table>
+</div>
+</DIV>
+<hr>
+<DIV id="s23">
+<div class='heading'>Inference Rules <span style="font-size:67%">(cont)</span></div>
+<p>
+Continuing the derivation ...
+<p>
+<div class='center'>
+<table border='0' cellpadding='4'>
+<tr valign=top>
+<td><nobr> 6. &nbsp; </td>
+<td></td><td> <i>AB &rarr; I</i> </td>
+<td></td><td> (using F3 on 4,5) </td></tr>
+<tr valign=top>
+<td><nobr> 7. &nbsp; </td>
+<td></td><td> <i>E &rarr; G</i> </td>
+<td></td><td> (given) </td></tr>
+<tr valign=top>
+<td><nobr> 8. &nbsp; </td>
+<td></td><td> <i>AB &rarr; G</i> </td>
+<td></td><td> (using F3 on 1,7) </td></tr>
+<tr valign=top>
+<td><nobr> 9. &nbsp; </td>
+<td></td><td> <i>AB &rarr; GI</i> </td>
+<td></td><td> (using F4 on 6,8) </td></tr>
+<tr valign=top>
+<td><nobr> 10. </td>
+<td></td><td> <i>GI &rarr; H</i> </td>
+<td></td><td> (given) </td></tr>
+<tr valign=top>
+<td><nobr> 11. </td>
+<td></td><td> <i>AB &rarr; H</i> </td>
+<td></td><td> (using F3 on 6,8) </td></tr>
+<tr valign=top>
+<td><nobr> 12. </td>
+<td></td><td> <i>GI &rarr; GI</i> </td>
+<td></td><td> (using F1) </td></tr>
+<tr valign=top>
+<td><nobr> 13. </td>
+<td></td><td> <i>GI &rarr; I</i> </td>
+<td></td><td> (using F5 on 12) </td></tr>
+<tr valign=top>
+<td><nobr> 14. </td>
+<td></td><td> <i>AB &rarr; GH</i> </td>
+<td></td><td> (using F4 on 8,11) </td></tr>
+</table>
+</div>
+</DIV>
+<hr>
+<DIV id="s24">
+<div class='heading'>Closures</div>
+<p>
+Given a set <i>F</i> of <i>fd</i>s, how many new <i>fd</i>s can we derive?
+<p>
+For a finite set of attributes, there must be a finite set of <i>fd</i>s.
+<p>
+The largest collection of dependencies that can be derived from <i>F</i>
+is called the <font color='#0000BB'>closure</font> of <i>F</i> and is denoted <i>F<sup>+</sup></i>.
+<p>
+Closures allow us to answer two interesting questions:
+<ul>
+<li> is a particular dependency <i>X &rarr; Y</i> derivable from <i>F</i>?
+<li> are two sets of dependencies <i>F</i> and <i>G</i> equivalent?
+</ul>
+</DIV>
+<hr>
+<DIV id="s25">
+<div class='heading'>Closures <span style="font-size:67%">(cont)</span></div>
+<p>
+For the question "is <i>X &rarr; Y</i> derivable from <i>F</i>?" ...
+<ul>
+<li> compute the closure <i>F<sup>+</sup></i>;
+	check whether <i>X &rarr; Y &nbsp; &isin; &nbsp; F<sup>+</sup></i>
+</ul>
+For the question "are <i>F</i> and <i>G</i> equivalent?" ...
+<ul>
+<li> compute closures <i>F<sup>+</sup></i> and <i>G<sup>+</sup></i>;
+	check whether they're equal
+</ul>
+Unfortunately, closures on even small sets of functional dependencies
+can be very large.
+<p>
+Algorithms based on <i>F<sup>+</sup></i> rapidly become infeasible.
+</DIV>
+<hr>
+<DIV id="s26">
+<div class='heading'>Closures <span style="font-size:67%">(cont)</span></div>
+<p>
+Example (of <i>fd</i> closure):
+<p>
+<small>
+<i>R = ABC, &nbsp;&nbsp;&nbsp; F = { AB &rarr; C, &nbsp; C &rarr; B }</i> <br>
+<i>F<sup>+</sup> = { A &rarr; A, &nbsp; AB &rarr; A, &nbsp;
+	AC &rarr; A, &nbsp; AB &rarr; B, &nbsp;
+	BC &rarr; B, &nbsp; ABC &rarr; B, &nbsp;
+<br> &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+	C &rarr; C, &nbsp; AC &rarr; C, &nbsp;
+	BC &rarr; C, &nbsp; ABC &rarr; C, &nbsp;
+	AB &rarr; AB, &nbsp; . . . . . . ,
+<br> &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+        AB &rarr; ABC, &nbsp; AB &rarr; ABC, &nbsp;
+	C &rarr; B, &nbsp; C &rarr; BC, &nbsp;
+	AC &rarr; B, &nbsp; AC &rarr; AB }</i>
+</small>
+<p>
+To solve this problem, use closures based on sets of attributes rather than sets of <i>fd</i>s.
+<p>
+Given a set <i>X</i> of attributes and a set <i>F</i> of <i>fd</i>s,
+the largest set of attributes that can be derived from <i>X</i> using
+<i>F</i>, is called the <font color='#0000BB'>closure</font> of <i>X</i>
+(denoted <i>X<sup>+</sup></i>).
+<p>
+We can prove <small>(using additivity)</small> that &nbsp;&nbsp; <i>(X &rarr; Y) &isin; F<sup>+</sup></i> &nbsp; iff &nbsp; <i>Y &sub; X<sup>+</sup></i>.
+<p>
+For computation, <i>| X<sup>+</sup> |</i> is bounded by the number of attributes.
+</DIV>
+<hr>
+<DIV id="s27">
+<div class='heading'>Closures <span style="font-size:67%">(cont)</span></div>
+<p>
+For the question "is <i>X &rarr; Y</i> derivable from <i>F</i>?" ...
+<ul>
+<li> compute the closure <i>X<sup>+</sup></i>,
+	check whether <i>Y &nbsp; &sub; &nbsp; X<sup>+</sup></i>
+</ul>
+For the question "are <i>F</i> and <i>G</i> equivalent?" ...
+<ul>
+<li> for each dependency in <i>G</i>, check whether derivable from <i>F</i>
+<li> for each dependency in <i>F</i>, check whether derivable from <i>G</i>
+<li> if true for all, then 
+	<i>F &rArr; G</i> and <i>G &rArr; F</i>
+	which implies <i>F<sup>+</sup> = G<sup>+</sup></i>
+</ul>
+</DIV>
+<hr>
+<DIV id="s28">
+<div class='heading'>Closure Algorithm</div>
+<p>
+<p><pre>
+Inputs: set <i>F</i> of <i>fd</i>s
+        set <i>X</i> of attributes
+Output: closure of <i>X</i> (i.e. <i>X<sup>+</sup></i>)
+
+<i>X<sup>+</sup></i> = <i>X</i>
+stillChanging = true;
+while (stillChanging) {
+    stillChanging = false;
+    for each <i>W &rarr; Z</i> in <i>F</i> {
+        if (<i>W &sube; X<sup>+</sup></i>) and not (<i>Z &sube; X<sup>+</sup></i>) {
+            <i>X<sup>+</sup></i> = <i>X<sup>+</sup> &cup; Z</i>
+            stillChanging = true;
+        }
+    }
+}
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s29">
+<div class='heading'>Closure Algorithm <span style="font-size:67%">(cont)</span></div>
+<p>
+E.g. <i>R = ABCDEF</i>, <i>F = { AB &rarr; C,&nbsp; BC &rarr; AD,&nbsp; D &rarr; E,&nbsp; CF &rarr; B }</i>
+<p>
+Does <i>AB &rarr; D</i> follow from <i>F</i>?
+&nbsp;&nbsp;&nbsp;
+Solve by checking <i>D &isin; AB<sup>+</sup></i>.
+<p>
+Computing <i>AB<sup>+</sup></i>:
+<p>
+<div class='center'>
+<table border='0' cellpadding='4'>
+<tr valign=top>
+<td><nobr> 1. &nbsp; </td>
+<td></td><td> <i>AB<sup>+</sup> = AB</i> </td>
+<td></td><td> (initially) </td></tr>
+<tr valign=top>
+<td><nobr> 2. &nbsp; </td>
+<td></td><td> <i>AB<sup>+</sup> = ABC</i> </td>
+<td></td><td> (using <i>AB &rarr; C</i>) </td></tr>
+<tr valign=top>
+<td><nobr> 3. &nbsp; </td>
+<td></td><td> <i>AB<sup>+</sup> = ABCD</i> </td>
+<td></td><td> (using <i>BC &rarr; AD</i>) </td></tr>
+<tr valign=top>
+<td><nobr> 4. &nbsp; </td>
+<td></td><td> <i>AB<sup>+</sup> = ABCDE</i> </td>
+<td></td><td> (using <i>D &rarr; E</i>) </td></tr>
+</table>
+</div>
+<p>
+Since <i>D</i> is in <i>AB<sup>+</sup></i>, then <i>AB &rarr; D</i> does follow from <i>F</i>.
+</DIV>
+<hr>
+<DIV id="s30">
+<div class='heading'>Closure Algorithm <span style="font-size:67%">(cont)</span></div>
+<p>
+E.g. <i>R = ABCDEF</i>, <i>F = { AB &rarr; C,&nbsp; BC &rarr; AD,&nbsp; D &rarr; E,&nbsp; CF &rarr; B }</i>
+<p>
+Does <i>D &rarr; A</i> follow from <i>F</i>?
+&nbsp;&nbsp;&nbsp;
+Solve by checking <i>A &isin; D<sup>+</sup></i>.
+<p>
+Computing <i>D<sup>+</sup></i>:
+<p>
+<div class='center'>
+<table border='0' cellpadding='4'>
+<tr valign=top>
+<td><nobr> 1. &nbsp; </td>
+<td></td><td> <i>D<sup>+</sup> = D</i> </td>
+<td></td><td> (initially) </td></tr>
+<tr valign=top>
+<td><nobr> 2. &nbsp; </td>
+<td></td><td> <i>D<sup>+</sup> = DE</i> </td>
+<td></td><td> (using <i>D &rarr; E</i>) </td></tr>
+</table>
+</div>
+<p>
+Since <i>A</i> is not in <i>D<sup>+</sup></i>, then <i>D &rarr; A</i> does not follow from <i>F</i>.
+</DIV>
+<hr>
+<DIV id="s31">
+<div class='heading'>Closure Algorithm <span style="font-size:67%">(cont)</span></div>
+<p>
+E.g. <i>R = ABCDEF</i>, <i>F = { AB &rarr; C,&nbsp; BC &rarr; AD,&nbsp; D &rarr; E,&nbsp; CF &rarr; B }</i>
+<p>
+What are the keys of <i>R</i>?
+<p>
+Solve by finding <i>X &sub; R</i> such that <i>X<sup>+</sup> = R</i>.
+<p>
+From previous examples, we know <i>AB</i> and <i>D</i> are not keys.
+<p>
+This also implies that <i>A</i> and <i>B</i> alone are not keys.
+<p>
+So how to find keys? Try all combinations of <i>ABCDEF</i> ...
+<p>
+E.g. maybe <i>ACF</i> is a key ...
+</DIV>
+<hr>
+<DIV id="s32">
+<div class='heading'>Closure Algorithm <span style="font-size:67%">(cont)</span></div>
+<p>
+Computing <i>ACF<sup>+</sup></i>:
+<p>
+<div class='center'>
+<table border='0' cellpadding='4'>
+<tr valign=top>
+<td><nobr> 1. &nbsp; </td>
+<td></td><td> <i>ACF<sup>+</sup> = ACF</i> </td>
+<td></td><td> (initially) </td></tr>
+<tr valign=top>
+<td><nobr> 2. &nbsp; </td>
+<td></td><td> <i>ACF<sup>+</sup> = ABCF</i> </td>
+<td></td><td> (using <i>CF &rarr; B</i>) </td></tr>
+<tr valign=top>
+<td><nobr> 3. &nbsp; </td>
+<td></td><td> <i>ACF<sup>+</sup> = ABCDF</i> </td>
+<td></td><td> (using <i>BC &rarr; AD</i>) </td></tr>
+<tr valign=top>
+<td><nobr> 4. &nbsp; </td>
+<td></td><td> <i>ACF<sup>+</sup> = ABCDEF</i> </td>
+<td></td><td> (using <i>D &rarr; E</i>) </td></tr>
+</table>
+</div>
+<p>
+Since <i>ACF<sup>+</sup> = R</i>, &nbsp; <i>ACF</i> is a key &nbsp;&nbsp; (as is <i>ABF</i>).
+</DIV>
+<hr>
+<DIV id="s33">
+<div class='heading'>Minimal Covers</div>
+<p>
+For a given application, we can define many different sets of
+<i>fd</i>s with the same closure
+(e.g. <i>F</i> and <i>G</i> where <i>F<sup>+</sup> = G<sup>+</sup></i>)
+<p>
+Which one is best to "model" the application?
+<ul>
+<li> any model has to be complete <small>(i.e. capture entire semantics)</small>
+<li> models should be as small as possible <br>
+	<small>(we use them to check DB validity after update; less checking is better)</small>
+</ul>
+If we can ...
+<ul>
+<li> determine a number of candidate <i>fd</i> sets, <i>F</i>, <i>G</i> and <i>H</i>
+<li> establish that <i>F<sup>+</sup> = G<sup>+</sup> = H<sup>+</sup></i>
+<li> we would then choose the smallest one for our "model"
+</ul>
+Better still, can we <i>derive</i> the smallest complete set of <i>fd</i>s?
+</DIV>
+<hr>
+<DIV id="s34">
+<div class='heading'>Minimal Covers <span style="font-size:67%">(cont)</span></div>
+<p>
+<font color='#0000BB'>Minimal cover</font> <i>F<sub>c</sub></i> for a set <i>F</i> of <i>fd</i>s:
+<ul>
+<li> <i>F<sub>c</sub></i> is equivalent to <i>F</i>
+<li> all <i>fd</i>s have the form <i>X &rarr; A</i>
+	<small>(where <i>A</i> is a single attribute)</small>
+<li> it is not possible to make <i>F<sub>c</sub></i> smaller
+<ul>
+<li> either by deleting an <i>fd</i>
+<li> or by deleting an attribute from an <i>fd</i>
+</ul>
+</ul>
+An <i>fd</i> <i>d</i> is redundant if <i>(F-{d})<sup>+</sup> = F<sup>+</sup></i>
+<p>
+An attribute <i>a</i> is redundant if <i>(F-{d}&cup;{d'})<sup>+</sup> = F<sup>+</sup></i> <br>
+<small>(where <i>d'</i> is the same as <i>d</i> but with attribute <i>A</i> removed)</small>
+</DIV>
+<hr>
+<DIV id="s35">
+<div class='heading'>Minimal Covers <span style="font-size:67%">(cont)</span></div>
+<p>
+Algorithm for computing minimal cover:
+<p><pre><small>
+Inputs: set <i>F</i> of <i>fd</i>s
+Output: minimal cover <i>F<sub>c</sub></i> of <i>F</i>
+
+<i>F<sub>c</sub></i> = <i>F</i>
+Step 1:
+    put <i>f &isin; F<sub>c</sub></i> into canonical form
+Step 2:
+    eliminate redundant attributes from <i>f &isin; F<sub>c</sub></i>
+Step 3:
+    eliminate redundant <i>fd</i>s from <i>F<sub>c</sub></i>
+</small></pre><p>
+</DIV>
+<hr>
+<DIV id="s36">
+<div class='heading'>Minimal Covers <span style="font-size:67%">(cont)</span></div>
+<p>
+Step 1: put <i>fd</i>s into canonical form
+<p><pre><small>
+for each <i>f &isin; F<sub>c</sub></i> like <i>X &rarr; {A<sub>1</sub>,..,A<sub>n</sub>}</i>
+    <i>F<sub>c</sub></i> = <i>F<sub>c</sub> - {f}</i>
+    for each <i>a</i> in <i>{A<sub>1</sub>,..,A<sub>n</sub>}</i>
+        <i>F<sub>c</sub></i> = <i>F<sub>c</sub>&nbsp;&cup;&nbsp;{X &rarr; a}</i>
+    end
+end
+</small></pre><p>
+</DIV>
+<hr>
+<DIV id="s37">
+<div class='heading'>Minimal Covers <span style="font-size:67%">(cont)</span></div>
+<p>
+Step 2: eliminate redundant attributes
+<p><pre><small>
+for each <i>f &isin; F<sub>c</sub></i> like <i>X &rarr; A</i>
+    for each <i>b</i> in <i>X</i>
+        <i>f'</i> = <i>(X-{b}) &rarr; A</i>;
+        <i>G</i> = <i>F<sub>c</sub>&nbsp;-&nbsp;{f}&nbsp;&cup;&nbsp;{f'}</i>
+        if (<i>G<sup>+</sup></i> == <i>F<sub>c</sub><sup>+</sup></i>) <i>F<sub>c</sub></i> = <i>G</i>
+    end
+end
+</small></pre><p>
+</DIV>
+<hr>
+<DIV id="s38">
+<div class='heading'>Minimal Covers <span style="font-size:67%">(cont)</span></div>
+<p>
+Step 3: eliminate redundant functional dependencies
+<p><pre><small>
+for each <i>f &isin; F<sub>c</sub></i>
+    <i>G</i> = <i>F<sub>c</sub>&nbsp;-&nbsp;{f}</i>
+    if (<i>G<sup>+</sup></i> == <i>F<sub>c</sub><sup>+</sup></i>) <i>F<sub>c</sub></i> = <i>G</i>
+end
+</small></pre><p>
+<p><br><p>
+Note: we often assume that any supplied <i>F</i> is minimal.
+</DIV>
+<hr>
+<DIV id="s39">
+<div class='heading'>Minimal Covers <span style="font-size:67%">(cont)</span></div>
+<p>
+E.g. <i>R = ABC</i>, <i>F = { A &rarr; BC, &nbsp;
+	B &rarr; C, &nbsp; A &rarr; B, &nbsp; AB &rarr; C }</i>
+<p>
+Compute the minimal cover:
+<ul>
+<li> canonical <i>fd</i>s:
+	<i>A &rarr; B, &nbsp; A &rarr; C, &nbsp; B &rarr; C, &nbsp; AB &rarr; C</i>
+<li> redundant attrs: 
+	<i>A &rarr; B, &nbsp; A &rarr; C, &nbsp; B &rarr; C, &nbsp; A<font color="#009900">B</font> &rarr; C</i>
+<li> redundant <i>fd</i>s:
+	<i>A &rarr; B, &nbsp; <font color="#009900">A &rarr; C</font>, &nbsp; B &rarr; C</i>
+</ul>
+This gives the minimal cover &nbsp; <i>F<sub>c</sub> = { A &rarr; B, &nbsp; B &rarr; C }</i>.
+</DIV>
+<hr>
+<DIV id="s40">
+<div class='heading'>Normalization</div>
+<p>
+<font color='#0000BB'>Normalization</font>: branch of relational theory providing design insights.
+<p>
+The goals of normalization:
+<ul>
+<li> be able to characterise the level of redundancy in a relational schema
+<li> provide mechanisms for transforming schemas to remove redundancy
+</ul>
+<p>
+Normalization draws heavily on the theory of functional dependencies.
+</DIV>
+<hr>
+<DIV id="s41">
+<div class='heading'>Normal Forms</div>
+<p>
+Normalization theory defines six <font color='#0000BB'>normal forms</font> (NFs).
+<p>
+Each normal form:
+<ul>
+<li> involves a set of dependency properties that a schema must satisfy
+<li> gives guarantees about presence/absence of update anomalies
+</ul>
+Higher normal forms have less redundancy <i>&rArr;</i> less update problems.
+</DIV>
+<hr>
+<DIV id="s42">
+<div class='heading'>Normal Forms <span style="font-size:67%">(cont)</span></div>
+<p>
+Must first decide which normal form <i>rNF</i> is "acceptable".
+<p>
+The normalization process:
+<ul>
+<li> check whether each relation in schema is in <i>rNF</i>
+<li> if a relation is not in <i>rNF</i>
+<ul>
+<li> partition into sub-relations where each is closer to <i>rNF</i>
+</ul>
+<li> repeat until all relations in schema are in <i>rNF</i>
+</ul>
+</DIV>
+<hr>
+<DIV id="s43">
+<div class='heading'>Normal Forms <span style="font-size:67%">(cont)</span></div>
+<p>
+A brief history of normal forms:
+<ul>
+<li> First,Second,Third Normal Forms (1NF,2NF,3NF) <small>(Codd 1972)</small>
+<li> Boyce-Codd Normal Form (BCNF) <small>(1974)</small>
+<li> Fourth Normal Form (4NF) <small>(Zaniolo 1976, Fagin 1977)</small>
+<li> Fifth Normal Form (5NF) <small>(Fagin 1979)</small>
+</ul>
+NF hierarachy: &nbsp; 5NF <i>&rArr;</i> 4NF <i>&rArr;</i> BCNF <i>&rArr;</i> 3NF <i>&rArr;</i> 2NF <i>&rArr;</i> 1NF
+<p>
+1NF allows most redundancy; &nbsp; 5NF allows least redundancy.
+</DIV>
+<hr>
+<DIV id="s44">
+<div class='heading'>Normal Forms <span style="font-size:67%">(cont)</span></div>
+<p>
+<div class='center'>
+<p><table border='0' cellpadding='6'>
+<tr valign=top>
+  <td><nobr>1NF</td>
+  <td></td><td>
+    all attributes have atomic values <br>
+    we assume this as part of relational model
+  </td>
+</tr>
+<tr valign=top>
+  <td><nobr>2NF</td>
+  <td></td><td>
+    all non-key attributes fully depend on key <br>
+    (i.e. no partial dependencies) <br>
+    avoids much redundancy <br>
+  </td>
+</tr>
+<tr valign=top>
+  <td><nobr>3NF<br>BCNF</td>
+  <td></td><td>
+    no attributes dependent on non-key attrs<br>
+    (i.e. no transitive dependencies) <br>
+    avoids remaining redundancy <br>
+  </td>
+</tr>
+<tr valign=top>
+  <td><nobr>4NF</td>
+  <td></td><td>
+    removes problems due to multivalued dependencies
+  </td>
+</tr>
+<tr valign=top>
+  <td><nobr>5NF</td>
+  <td></td><td>
+    removes problems due to join dependencies
+  </td>
+</tr>
+</table><p>
+</div>
+</DIV>
+<hr>
+<DIV id="s45">
+<div class='heading'>Normal Forms <span style="font-size:67%">(cont)</span></div>
+<p>
+In practice, BCNF and 3NF are the most important. <br>
+<small>(these are generally the "acceptable normal forms" for relational design)</small>
+<p>
+Boyce-Codd Normal Form (BCNF):
+<ul>
+<li> eliminates all redundancy due to functional dependencies
+<li> but may not preserve original functional dependencies
+</ul>
+Third Normal Form (3NF):
+<ul>
+<li> eliminates most (but not all) redundancy due to <i>fd</i>s
+<li> guaranteed to preserve all functional dependencies
+</ul>
+</DIV>
+<hr>
+<DIV id="s46">
+<div class='heading'>Relation Decomposition</div>
+<p>
+The standard transformation technique to remove redundancy:
+<ul>
+<li> <font color='#0000BB'>decompose</font> relation <i>R</i> into relations <i>S</i> and <i>T</i>
+</ul>
+<p>
+We accomplish decomposition by
+<ul>
+<li> selecting (overlapping) subsets of attributes 
+<li> forming new relations based on attribute subsets
+</ul>
+Properties: &nbsp; <i>R = S &cup; T, &nbsp; S &cap; T &ne; {}</i> &nbsp; and ideally &nbsp; <i>r(R) = s(S) <img src="lib/join-small.gif"> t(T)</i>
+<p>
+We may require several decompositions to achieve acceptable NF.
+<p>
+<font color='#0000BB'>Normalization algorithms</font> tell us how to choose <i>S</i> and <i>T</i>.
+</DIV>
+<hr>
+<DIV id="s47">
+<div class='heading'>Schema Design</div>
+<p>
+Consider the following relation for <i>BankLoans</i>:
+<div class='center'>
+<p><table border='1' cellpadding='2'>
+<tr align=center>
+  <td><b>branchName</b></td>
+  <td><b>branchCity</b></td>
+  <td><b>assets</b></td>
+  <td><b>custName</b></td>
+  <td><b>loanNo</b></td>
+  <td><b>amount</b></td>
+</tr>
+<tr align=center>
+  <td>Downtown</td>
+  <td>Brooklyn</td>
+  <td>9000000</td>
+  <td>Jones</td>
+  <td>L-17</td>
+  <td>1000</td>
+</tr>
+<tr align=center>
+  <td>Redwood</td>
+  <td>Palo Alto</td>
+  <td>2100000</td>
+  <td>Smith</td>
+  <td>L-23</td>
+  <td>2000</td>
+</tr>
+<tr align=center>
+  <td>Perryridge</td>
+  <td>Horseneck</td>
+  <td>1700000</td>
+  <td>Hayes</td>
+  <td>L-15</td>
+  <td>1500</td>
+</tr>
+<tr align=center>
+  <td>Downtown</td>
+  <td>Brooklyn</td>
+  <td>9000000</td>
+  <td>Jackson</td>
+  <td>L-15</td>
+  <td>1500</td>
+</tr>
+<tr align=center>
+  <td>Mianus</td>
+  <td>Horseneck</td>
+  <td>400000</td>
+  <td>Jones</td>
+  <td>L-93</td>
+  <td>500</td>
+</tr>
+<tr align=center>
+  <td>Round Hill</td>
+  <td>Horseneck</td>
+  <td>8000000</td>
+  <td>Turner</td>
+  <td>L-11</td>
+  <td>900</td>
+</tr>
+<tr align=center>
+  <td>North Town</td>
+  <td>Rye</td>
+  <td>3700000</td>
+  <td>Hayes</td>
+  <td>L-16</td>
+  <td>1300</td>
+</tr>
+</table><p>
+</div>
+</DIV>
+<hr>
+<DIV id="s48">
+<div class='heading'>Schema Design <span style="font-size:67%">(cont)</span></div>
+<p>
+The <i>BankLoans</i> relation exhibits update anomalies (insert, update, delete).
+<p>
+The cause of these problems can be stated in terms of <i>fd</i>s
+<ul>
+<li> a branch is located in one city &nbsp; <i>branchName &rarr; branchCity</i>
+<li> a branch may handle many loans &nbsp; <i>branchName <notrightarrow> loanNo</i>
+</ul>
+In other words, some attributes are determined by <i>branchName</i>,
+while others are not.
+<p>
+This suggests that we have two separate notions (branch and loan)
+mixed up in a single relation
+</DIV>
+<hr>
+<DIV id="s49">
+<div class='heading'>Schema Design <span style="font-size:67%">(cont)</span></div>
+<p>
+To improve the design, decompose the <i>BankLoans</i> relation.
+<p>
+The following decomposition is not helpful:
+<p>
+&nbsp;&nbsp;&nbsp; <i>Branch(branchName, branchCity, assets)</i> <br>
+&nbsp;&nbsp;&nbsp; <i>CustLoan(custName, loanNo, amount)</i>
+<p>
+because we lose information <small>(which branch is a loan held at?)</small>
+<p>
+Clearly, we need to leave some "connection" between the new relations,
+so that we can reconstruct the original information if needed.
+<p>
+Another possible decomposition:
+<p>
+&nbsp;&nbsp;&nbsp; <i>BranchCust(branchName, branchCity, assets, custName)</i> <br>
+&nbsp;&nbsp;&nbsp; <i>CustLoan(custName, loanNo, amount)</i>
+</DIV>
+<hr>
+<DIV id="s50">
+<div class='heading'>Schema Design <span style="font-size:67%">(cont)</span></div>
+<p>
+The <i>BranchCust</i> relation instance:
+<div class='center'>
+<p><table border='1' cellpadding='2'>
+<tr align=center>
+  <td><b>branchName</b></td>
+  <td><b>branchCity</b></td>
+  <td><b>assets</b></td>
+  <td><b>custName</b></td>
+</tr>
+<tr align=center>
+  <td>Downtown</td>
+  <td>Brooklyn</td>
+  <td>9000000</td>
+  <td>Jones</td>
+</tr>
+<tr align=center>
+  <td>Redwood</td>
+  <td>Palo Alto</td>
+  <td>2100000</td>
+  <td>Smith</td>
+</tr>
+<tr align=center>
+  <td>Perryridge</td>
+  <td>Horseneck</td>
+  <td>1700000</td>
+  <td>Hayes</td>
+</tr>
+<tr align=center>
+  <td>Downtown</td>
+  <td>Brooklyn</td>
+  <td>9000000</td>
+  <td>Jackson</td>
+</tr>
+<tr align=center>
+  <td>Mianus</td>
+  <td>Horseneck</td>
+  <td>400000</td>
+  <td>Jones</td>
+</tr>
+<tr align=center>
+  <td>Round Hill</td>
+  <td>Horseneck</td>
+  <td>8000000</td>
+  <td>Turner</td>
+</tr>
+<tr align=center>
+  <td>North Town</td>
+  <td>Rye</td>
+  <td>3700000</td>
+  <td>Hayes</td>
+</tr>
+</table><p>
+</div>
+</DIV>
+<hr>
+<DIV id="s51">
+<div class='heading'>Schema Design <span style="font-size:67%">(cont)</span></div>
+<p>
+The <i>CustLoan</i> relation instance:
+<p>
+<div class='center'>
+<p><table border='1' cellpadding='2'>
+<tr align=center>
+  <td><b>custName</b></td>
+  <td><b>loanNo</b></td>
+  <td><b>amount</b></td>
+</tr>
+<tr align=center>
+  <td>Jones</td>
+  <td>L-17</td>
+  <td>1000</td>
+</tr>
+<tr align=center>
+  <td>Smith</td>
+  <td>L-23</td>
+  <td>2000</td>
+</tr>
+<tr align=center>
+  <td>Hayes</td>
+  <td>L-15</td>
+  <td>1500</td>
+</tr>
+<tr align=center>
+  <td>Jackson</td>
+  <td>L-15</td>
+  <td>1500</td>
+</tr>
+<tr align=center>
+  <td>Jones</td>
+  <td>L-93</td>
+  <td>500</td>
+</tr>
+<tr align=center>
+  <td>Turner</td>
+  <td>L-11</td>
+  <td>900</td>
+</tr>
+<tr align=center>
+  <td>Hayes</td>
+  <td>L-16</td>
+  <td>1300</td>
+</tr>
+</table><p>
+</div>
+</DIV>
+<hr>
+<DIV id="s52">
+<div class='heading'>Schema Design <span style="font-size:67%">(cont)</span></div>
+<p>
+The result:
+<p>
+<i>BranchCust</i> still has redundancy problems.
+<p>
+<i>CustLoan</i> doesn't, but there is potential confusion over L-15.
+<p>
+But even worse, when we put these relations back together to try to
+re-create the original relation, we get some extra tuples!
+<p>
+Not good.
+</DIV>
+<hr>
+<DIV id="s53">
+<div class='heading'>Schema Design <span style="font-size:67%">(cont)</span></div>
+<p>
+The result of <i>Join(BranchCust,CustLoan)</i>
+<p>
+<p><table border='1' cellpadding='2'>
+<tr align=center>
+  <td><b>branchName</b></td>
+  <td><b>branchCity</b></td>
+  <td><b>assets</b></td>
+  <td><b>custName</b></td>
+  <td><b>loanNo</b></td>
+  <td><b>amount</b></td>
+</tr>
+<tr align=center>
+  <td>Downtown</td>
+  <td>Brooklyn</td>
+  <td>9000000</td>
+  <td>Jones</td>
+  <td>L-17</td>
+  <td>1000</td>
+</tr>
+<tr align=center>
+  <td><font color='#0000BB'>Downtown</font></td>
+  <td><font color='#0000BB'>Brooklyn</font></td>
+  <td><font color='#0000BB'>9000000</font></td>
+  <td><font color='#0000BB'>Jones</font></td>
+  <td><font color='#0000BB'>L-93</font></td>
+  <td><font color='#0000BB'>500</font></td>
+</tr>
+<tr align=center>
+  <td>Redwood</td>
+  <td>Palo Alto</td>
+  <td>2100000</td>
+  <td>Smith</td>
+  <td>L-23</td>
+  <td>2000</td>
+</tr>
+<tr align=center>
+  <td>Perryridge</td>
+  <td>Horseneck</td>
+  <td>1700000</td>
+  <td>Hayes</td>
+  <td>L-15</td>
+  <td>1500</td>
+</tr>
+<tr align=center>
+  <td><font color='#0000BB'>Perryridge</font></td>
+  <td><font color='#0000BB'>Horseneck</font></td>
+  <td><font color='#0000BB'>1700000</font></td>
+  <td><font color='#0000BB'>Hayes</font></td>
+  <td><font color='#0000BB'>L-16</font></td>
+  <td><font color='#0000BB'>1300</font></td>
+</tr>
+<tr align=center>
+  <td>Downtown</td>
+  <td>Brooklyn</td>
+  <td>9000000</td>
+  <td>Jackson</td>
+  <td>L-15</td>
+  <td>1500</td>
+</tr>
+<tr align=center>
+  <td>Mianus</td>
+  <td>Horseneck</td>
+  <td>400000</td>
+  <td>Jones</td>
+  <td>L-93</td>
+  <td>500</td>
+</tr>
+<tr align=center>
+  <td><font color='#0000BB'>Mianus</font></td>
+  <td><font color='#0000BB'>Horseneck</font></td>
+  <td><font color='#0000BB'>400000</font></td>
+  <td><font color='#0000BB'>Jones</font></td>
+  <td><font color='#0000BB'>L-17</font></td>
+  <td><font color='#0000BB'>1000</font></td>
+</tr>
+<tr align=center>
+  <td>Round Hill</td>
+  <td>Horseneck</td>
+  <td>8000000</td>
+  <td>Turner</td>
+  <td>L-11</td>
+  <td>900</td>
+</tr>
+<tr align=center>
+  <td>North Town</td>
+  <td>Rye</td>
+  <td>3700000</td>
+  <td>Hayes</td>
+  <td>L-16</td>
+  <td>1300</td>
+</tr>
+<tr align=center>
+  <td><font color='#0000BB'>North Town</font></td>
+  <td><font color='#0000BB'>Rye</font></td>
+  <td><font color='#0000BB'>3700000</font></td>
+  <td><font color='#0000BB'>Hayes</font></td>
+  <td><font color='#0000BB'>L-15</font></td>
+  <td><font color='#0000BB'>1500</font></td>
+</tr>
+</table><p>
+</DIV>
+<hr>
+<DIV id="s54">
+<div class='heading'>Schema Design <span style="font-size:67%">(cont)</span></div>
+<p>
+This is clearly not a successful decomposition.
+<p>
+The fact that we ended up with extra tuples was symptomatic of losing
+some critical "connection" information during the decomposition.
+<p>
+Such a decomposition is called a <font color='#0000BB'>lossy decomposition</font>.
+<p>
+In a good decomposition, we should be able to reconstruct the
+original relation exactly:
+<p>
+<div class='center'>
+if <i>R</i> is decomposed into <i>S</i> and <i>T</i>, then <i>Join(S,T) = R</i>
+</div>
+<p>
+Such a decomposition is called <font color='#0000BB'>lossless join decomposition</font>.
+</DIV>
+<hr>
+<DIV id="s55">
+<div class='heading'>Boyce-Codd Normal Form</div>
+<p>
+A relation schema <i>R</i> is in BCNF w.r.t a set <i>F</i> of functional dependencies iff:
+<ul>
+<li> for all <i>fd</i>s <i>X &rarr; Y</i> in <i>F<sup>+</sup></i>
+<li> either <i>X &rarr; Y</i> is trivial (i.e. <i>Y &sub; X</i>)
+<li> or <i>X</i> is a superkey
+</ul>
+A DB schema is in BCNF if all relation schemas are in BCNF.
+<p>
+<small>
+Observations:
+<ul>
+<li> any two-attribute relation is in BCNF
+<li> any relation with key <i>K</i>, other attributes <i>X</i>, and <i>K &rarr; X</i> is in BCNF
+</ul>
+</small>
+</DIV>
+<hr>
+<DIV id="s56">
+<div class='heading'>Boyce-Codd Normal Form <span style="font-size:67%">(cont)</span></div>
+<p>
+If we transform a schema into BCNF, we are guaranteed:
+<ul>
+<li> no update anomalies due to <i>fd</i>-based redundancy
+<li> lossless join decomposition
+</ul>
+However, we are <font color='#0000BB'>not</font> guaranteed:
+<ul>
+<li> all <i>fd</i>s from the original schema exist in the new schema
+</ul>
+<p>
+This may be a problem if the <i>fd</i>s contain significant semantic
+information about the problem domain.
+<p>
+If we need to preserve dependencies, use 3NF.
+</DIV>
+<hr>
+<DIV id="s57">
+<div class='heading'>BCNF Decomposition</div>
+<p>
+The following algorithm converts an arbitrary schema to BCNF:
+<p><pre>
+Inputs: schema <i>R</i>, set <i>F</i> of <i>fd</i>s
+Output: set <i>Res</i> of BCNF schemas
+
+<i>Res</i> = {R};
+while (any schema <i>S &isin; Res</i> is not in BCNF) {
+    choose an <i>fd</i> <i>X &rarr; Y</i> on <i>S</i> that violates BCNF
+    <i>Res</i> = <i>(Res-S) &cup; (S-Y) &cup; XY</i>
+}
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s58">
+<div class='heading'>BCNF Decomposition <span style="font-size:67%">(cont)</span></div>
+<p>
+Example (the <i>BankLoans</i> schema):
+<p>
+<i>BankLoans(branchName,  branchCity, assets, custName, loanNo, amount)</i>
+<p>
+Has functional dependencies <i>F</i>
+<ul>
+<li> <i>branchName &rarr; assets,branchCity</i>
+<li> <i>loanNo &rarr; amount,branchName</i>
+</ul>
+The key for <i>BankLoans</i> is <i>branchName,custName,loanNo</i>
+</DIV>
+<hr>
+<DIV id="s59">
+<div class='heading'>BCNF Decomposition <span style="font-size:67%">(cont)</span></div>
+<p>
+Applying the BCNF algorithm:
+<ul>
+<li> check <i>BankLoans</i> relation ... it is not in BCNF <br>
+	<small>(<i>branchName &rarr; assets,branchCity</i> violates BCNF
+	 criteria; LHS is not a key)</small>
+<li> to fix ... decompose <i>BankLoans</i> into
+<p>
+&nbsp;&nbsp;&nbsp; <i>Branch(branchName, branchCity, assets)</i> <br>
+&nbsp;&nbsp;&nbsp; <i>LoanInfo(branchName, custName, loanNo, amount)</i>
+<li> check <i>Branch</i> relation ... it is in BCNF <br>
+	<small>(the only nontrivial <i>fd</i>s have LHS=<i>branchName</i>, which is a key)</small>
+</ul>
+<small>(continued)</small>
+</DIV>
+<hr>
+<DIV id="s60">
+<div class='heading'>BCNF Decomposition <span style="font-size:67%">(cont)</span></div>
+<p>
+Applying the BCNF algorithm (cont):
+<ul>
+<li> check <i>LoanInfo</i> relation ... it is not in BCNF <br>
+	<small>(<i>loanNo &rarr; amount,branchName</i> violates BCNF
+	criteria; LHS is not a key)</small>
+<li> to fix ... decompose <i>LoanInfo</i> into
+<p>
+&nbsp;&nbsp;&nbsp; <i>Loan(branchName, loanNo, amount)</i> <br>
+&nbsp;&nbsp;&nbsp; <i>Borrower(custName, loanNo)</i>
+<li> check <i>Loan</i> ... it is in BCNF
+<li> check <i>Borrower</i> ... it is in BCNF
+</ul>
+</DIV>
+<hr>
+<DIV id="s61">
+<div class='heading'>Third Normal Form</div>
+<p>
+A relation schema <i>R</i> is in 3NF w.r.t a set <i>F</i> of functional dependencies iff:
+<ul>
+<li> for all <i>fd</i>s <i>X &rarr; Y</i> in <i>F<sup>+</sup></i>
+<li> either <i>X &rarr; Y</i> is trivial (i.e. <i>Y &sub; X</i>)
+<li> or <i>X</i> is a superkey
+<li> or <i>Y</i> is a single attribute from a key
+</ul>
+A DB schema is in 3NF if all relation schemas are in 3NF.
+<p>
+<small>The extra condition represents a slight weakening of BCNF requirements.</small>
+</DIV>
+<hr>
+<DIV id="s62">
+<div class='heading'>Third Normal Form <span style="font-size:67%">(cont)</span></div>
+<p>
+If we transform a schema into 3NF, we are guaranteed:
+<ul>
+<li> lossless join decomposition
+<li> the new schema preserves all of the <i>fd</i>s from the original schema
+</ul>
+However, we are <font color='#0000BB'>not</font> guaranteed:
+<ul>
+<li> no update anomalies due to <i>fd</i>-based redundancy
+</ul>
+<p>
+Whether to use BCNF or 3NF depends on overall design considerations.
+</DIV>
+<hr>
+<DIV id="s63">
+<div class='heading'>Third Normal Form <span style="font-size:67%">(cont)</span></div>
+<p>
+The following algorithm converts an arbitrary schema to 3NF:
+<p><pre>
+Inputs: schema <i>R</i>, set <i>F</i> of <i>fd</i>s
+Output: set <i>Res</i> of 3NF schemas
+
+let <i>F<sub>c</sub></i> be a minimal cover for <i>F</i>
+<i>Res</i> = {}
+for each <i>fd</i> <i>X &rarr; Y</i> in <i>F<sub>c</sub></i> {
+    if (no schema <i>S &isin; Res</i> contains <i>XY</i>) {
+        <i>Res</i> = <i>Res &cup; XY</i>
+    }
+}
+if (no schema <i>S &isin; Res</i> contains a candidate key for <i>R</i>) {
+    <i>K</i> = any candidate key for <i>R</i>
+    <i>Res</i> = <i>Res &cup; K</i>
+}
+</pre><p>
+</DIV>
+<hr>
+<DIV id="s64">
+<div class='heading'>Database Design Methodology</div>
+<p>
+To achieve a "good" database design:
+<ul>
+<li> identify attributes, entities, relationships &nbsp; <i>&rarr;</i> &nbsp; ER design
+<li> map ER design to relational schema
+<li> identify constraints <small>(including keys and functional dependencies)</small>
+<li> apply BCNF/3NF algorithms to produce normalized schema
+</ul>
+<small>
+Note: may subsequently need to "denormalise" if the design yields inadequate performance.
+</small>
+</DIV>
+<p><hr><p>
+<span style='font-size:11px;color: grey;'>Produced: 13 Sep 2020</span>
+ <script src='lib/prism.js'></script>   
+ <script src='lib/sg.js'></script>   
+</body>
+</html>

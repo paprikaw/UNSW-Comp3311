@@ -1,0 +1,3627 @@
+<title>SQL: Schemas, Queries, Updates, Views
+
+<slide>
+<heading>SQL
+<em>SQL</em> = <b>S</b>tructured <b>Q</b>uery <b>L</b>anguage
+<~> <small>(sometimes called <q>sequel</q>)</small>.
+<p>
+SQL is an ANSI/ISO standard language for querying and manipulating 
+relational DBMSs.
+<p>
+Designed to be a <q>human readable</q> language comprising:
+<itemize>
+<item> data definition facilities
+<item> database modification operations
+<item> database query operations, including:
+<small>
+<itemize>
+<item> relational algebra, set operations, aggregation, grouping, ...
+</itemize>
+</small>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+SQL was developed at IBM (San Jose Lab) during the 1970's,
+and standardised in 1986.
+<p>
+DBMSs typically implement the SQL2 standard <~> <small>(aka SQL-92)</small>.
+<p>
+Unfortunately, they also:
+<itemize>
+<item> implement a (large) subset of the standard
+<item> extend the standard in various <q>useful</q> ways
+</itemize>
+SQL (in some form) looks likely to survive in the next generation
+of database systems.
+<p>
+In these slides, we try to use only <i>standard</i> (portable) SQL2.
+</slide>
+
+<slide>
+<continued>
+Since SQL2, there have been three new proposed standards:
+<p>
+SQL:1999 added e.g.
+<itemize>
+<sitem> boolean and BLOB types, arrays/rows, ...
+<sitem> procedures programming constructs, triggers
+<sitem> recursive queries
+<sitem> OO-like objects, inheritance, ...
+</itemize>
+SQL:2003 ...
+<itemize>
+<sitem> standardised some SQL:1999 extensions
+<sitem> added a standard for meta-data (catalogues)
+<sitem> standardised stored procedures (SQL/PSM)
+<sitem> added a new <@>MERGE</@> statement (<q>upsert</q>)
+<sitem> defined interfaces to C, Java, XML, object systems, ...
+</itemize>
+SQL:2008 added additional support for XML.
+</slide>
+
+<slide>
+<continued>
+Major DBMSs (Oracle, DB2, SQLServer, PostgreSQL MySQL):
+<itemize>
+<item> implement most/all of SQL2
+<item> implement much of SQL:1999
+<item> implement some of SQL:2003
+<item> omit difficult-to-implement features e.g. assertions
+</itemize>
+PostgreSQL ...
+<itemize>
+<item> implements almost all of SQL2 <~> <small>(see documentation)</small>
+<item> does not implement: recursive queries, assertions
+<item> provides non-standard mechanisms for: updatable views
+<item> currently has PLpgSQL, will also have SQL/PSM soon
+</itemize>
+</slide>
+
+<slide>
+<continued>
+SQL provides high-level, declarative access to data.
+<p>
+However, SQL is not a Turing-complete programming language.
+<p>
+Applications typically embed evaluation of SQL queries into PL's:
+<itemize>
+<item> Java and the JDBC API
+<item> PHP/Perl/Tcl and their various DBMS bindings
+<item> RDBMS-specific programming languages <br>
+	<small>(e.g. Oracle's PL/SQL, PostgreSQL's PLpgSQL)</small>
+<item> C and low-level library interfaces to DBMS engine <br>
+	<small>(e.g. Oracle's OCI, PostgreSQL's libpq)</small>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+SQL's query sub-language is based on <em>relational algebra</em>.
+<p>
+Relational algebra:
+<itemize>
+<item> formal language of expressions mapping tables<$><rightarrow></$>tables
+<item> comprising three basic operations ...
+<itemize>
+<item> <em>select</em>: <small>filter table rows via a condition on attributes</small>
+<item> <em>project</em>: <small>filter table columns by name</small>
+<item> <em>join</em>: <small>combines two tables via a condition</small>
+</itemize>
+<item> along with set operations (union, intersection, difference)
+<item> and a variety of aggregates (including min(), max(), count(), etc)
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Example relational algebra operations:
+<diagram>Pic/sql/relalg
+</slide>
+
+<slide>
+<heading>Example Databases
+In order to demonstrate aspects of SQL, we use two databases:
+<itemize>
+<item> <@>bank</@>: customers, accounts, branches, ...
+<item> <@>beer</@>: beers, bars, drinkers, ...
+</itemize>
+These databases are available for you to play with.
+</slide>
+
+<slide>
+<heading>Example Database #1
+ER design for a simple banking application:
+<diagram>Pic/sql/schema2.png
+</slide>
+
+<slide>
+<continued>
+Relational schema corresponding to the ER design:
+<diagram>Pic/sql/rschema2.png
+</slide>
+
+<slide>
+<continued>
+We will use the following instance of this schema:
+<p>
+<b>Branch</b> relation/table instance:
+<sprogram>
+ branchName |    address     | assets 
+------------+----------------+--------
+ Clovelly   | Clovelly Rd.   |   1000
+ Coogee     | Coogee Bay Rd. |  40000
+ Maroubra   | Anzac Pde.     |  17000
+ Randwick   | Alison Rd.     |  20000
+ UNSW       | near Library   |   3000
+</sprogram>
+<b>Customer</b> relation/table instance:
+<sprogram>
+  name  |    address     | customerNo | homebranch 
+--------+----------------+------------+------------
+ Adam   | Belmore Rd.    |      12345 | Randwick
+ Bob    | Rainbow St.    |      32451 | Coogee
+ Chuck  | Clovelly Rd.   |      76543 | Clovelly
+ David  | Anzac Pde.     |      82199 | UNSW
+ George | Anzac Pde.     |      81244 | Maroubra
+ Graham | Malabar Rd.    |      92754 | Maroubra
+ Greg   | Coogee Bay Rd. |      22735 | Coogee
+ Jack   | High St.       |      12666 | Randwick
+</sprogram>
+</slide>
+
+<slide>
+<continued>
+<b>Account</b> relation/table instance:
+<sprogram>
+ branchName | accountNo | balance 
+------------+-----------+---------
+ UNSW       | U-245     |    1000
+ UNSW       | U-291     |    2000
+ Randwick   | R-245     |   20000
+ Coogee     | C-123     |   15000
+ Coogee     | C-124     |   25000
+ Clovelly   | Y-123     |    1000
+ Maroubra   | M-222     |    5000
+ Maroubra   | M-225     |   12000
+</sprogram>
+<b>Owner</b> relation/table instance:
+<sprogram>
+ account | customer 
+---------+----------
+ U-245   |    12345
+ U-291   |    12345
+ U-291   |    12666
+ R-245   |    12666
+ C-123   |    32451
+ C-124   |    22735
+ Y-123   |    76543
+ M-222   |    92754
+ M-225   |    12345
+</sprogram>
+</slide>
+
+<slide>
+<heading>Example Database #2
+ER design for beers/bars/drinkers database:
+<diagram>Pic/sql/schema.png
+</slide>
+
+<slide>
+<continued>
+Relational schema corresponding to the ER design:
+<diagram>Pic/sql/rschema.png
+</slide>
+
+<slide>
+<continued>
+We will use the following instance of this schema:
+<p>
+<b>Bars</b> relation/table instance:
+<sprogram>
+       name       |   addr    | license 
+------------------+-----------+---------
+ Australia Hotel  | The Rocks |  123456
+ Coogee Bay Hotel | Coogee    |  966500
+ Lord Nelson      | The Rocks |  123888
+ Marble Bar       | Sydney    |  122123
+ Regent Hotel     | Kingsford |  987654
+ Royal Hotel      | Randwick  |  938500
+</sprogram>
+<b>Drinkers</b> relation/table instance:
+<sprogram>
+  name  |   addr   |   phone    
+--------+----------+------------
+ Adam   | Randwick | 9385-4444 
+ Gernot | Newtown  | 9415-3378 
+ John   | Clovelly | 9665-1234 
+ Justin | Mosman   | 9845-4321 
+</sprogram>
+</slide>
+
+<slide>
+<continued>
+<b>Beers</b> relation/table instance:
+<sprogram>
+        name         |     manf      
+---------------------+---------------
+ 80/-                | Caledonian
+ Bigfoot Barley Wine | Sierra Nevada
+ Burragorang Bock    | George IV Inn
+ Crown Lager         | Carlton
+ Fosters Lager       | Carlton
+ Invalid Stout       | Carlton
+ Melbourne Bitter    | Carlton
+ New                 | Toohey's
+ Old                 | Toohey's
+ Old Admiral         | Lord Nelson
+ Pale Ale            | Sierra Nevada
+ Premium Lager       | Cascade
+ Red                 | Toohey's
+ Sheaf Stout         | Toohey's
+ Sparkling Ale       | Cooper's
+ Stout               | Cooper's
+ Three Sheets        | Lord Nelson
+ Victoria Bitter     | Carlton
+</sprogram>
+</slide>
+
+<slide>
+<continued>
+<b>Frequents</b> relation/table instance:
+<sprogram>
+ drinker |       bar        
+---------+------------------
+ Adam    | Coogee Bay Hotel
+ Gernot  | Lord Nelson
+ John    | Coogee Bay Hotel
+ John    | Lord Nelson
+ John    | Australia Hotel
+ Justin  | Regent Hotel
+ Justin  | Marble Bar
+</sprogram>
+</slide>
+
+<slide>
+<continued>
+<b>Likes</b> relation/table instance:
+<sprogram>
+ drinker |        beer         
+---------+---------------------
+ Adam    | Crown Lager
+ Adam    | Fosters Lager
+ Adam    | New
+ Gernot  | Premium Lager
+ Gernot  | Sparkling Ale
+ John    | 80/-
+ John    | Bigfoot Barley Wine
+ John    | Pale Ale
+ John    | Three Sheets
+ Justin  | Sparkling Ale
+ Justin  | Victoria Bitter
+</sprogram>
+</slide>
+
+<slide>
+<continued>
+<b>Sells</b> relation/table instance:
+<sprogram>
+       bar        |       beer       | price 
+------------------+------------------+-------
+ Australia Hotel  | Burragorang Bock |  3.50
+ Coogee Bay Hotel | New              |  2.25
+ Coogee Bay Hotel | Old              |  2.50
+ Coogee Bay Hotel | Sparkling Ale    |  2.80
+ Coogee Bay Hotel | Victoria Bitter  |  2.30
+ Lord Nelson      | Three Sheets     |  3.75
+ Lord Nelson      | Old Admiral      |  3.75
+ Marble Bar       | New              |  2.80
+ Marble Bar       | Old              |  2.80
+ Marble Bar       | Victoria Bitter  |  2.80
+ Regent Hotel     | New              |  2.20
+ Regent Hotel     | Victoria Bitter  |  2.20
+ Royal Hotel      | New              |  2.30
+ Royal Hotel      | Old              |  2.30
+ Royal Hotel      | Victoria Bitter  |  2.30
+</sprogram>
+</slide>
+
+<slide>
+<heading>SQL Syntax
+SQL definitions, queries and statements are composed of:
+<itemize>
+<sitem> <em>comments</em> ... <@@>--</@@> comments to end of line
+<sitem> <em>identifiers</em> ... similar to regular programming languages
+<sitem> <em>keywords</em> ... a large set (e.g. <@>CREATE</@>, <@>SELECT</@>, <@>TABLE</@>)
+<sitem> <em>data types</em> ... a small set (e.g. <@>integer</@>, <@>varchar</@>, <@>date</@>)
+<sitem> <em>operators</em> ... similar to regular programming languages
+<sitem> <em>constants</em> ... similar to regular programming languages
+</itemize>
+<i>Similar</i> means <q>often the same, but not always</a> ...
+<itemize>
+<sitem> <@>'John'</@>, <@>'blue'</@>, <@>'it''s'</@> are <em>strings</em>
+<sitem> <@>"Students"</@>, <@>"Really Silly!"</@> are <em>identifiers</em>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+While SQL identifiers and keywords are case-insensitive, we generally:
+<itemize>
+<sitem> write keywords in upper case <~> <small>(until it becomes annoying)</small> <br>
+	e.g. <@>SELECT</@>, <@>FROM</@>, <@>WHERE</@>, <@>CREATE</@>, ...
+<sitem> write relation names with an initial upper-case letter <br>
+	e.g. <@>Customers</@>, <@>Students</@>, <@>Owns</@>, <@>EnrolledIn</@>
+<sitem> write attribute names in all lower-case <br>
+	e.g. <@>id</@>, <@>name</@>, <@>partNumber</@>, <@>isActive</@>
+</itemize>
+We follow the above conventions when writing programs.
+<p>
+We ignore the above conventions when typing in lectures.
+</slide>
+
+<slide>
+<heading>SQL Keywords
+A categorised list of frequently-used SQL92 keywords:
+<sprogram>
+<b>Querying</b>        <b>Defining Data</b>   <b>Changing Data</b>
+SELECT          CREATE          INSERT
+FROM            TABLE           INTO
+WHERE           INTEGER         VALUES
+GROUP BY        REAL            UPDATE
+HAVING          VARCHAR         SET
+ORDER BY        CHAR            DELETE
+DESC            KEY             DROP
+EXISTS          PRIMARY         ALTER
+IS NULL         FOREIGN
+NOT NULL        REFERENCES
+IN              CONSTRAINT
+DISTINCT        CHECK
+AS
+</sprogram>
+<small>
+There are 225 reserved words in SQL92 ... not a small language.
+</small>
+</slide>
+
+<slide>
+<continued>
+A list of PostgreSQL's SQL keywords:
+<sprogram>
+ALL           DEFERRABLE    IS           OVERLAPS
+ANALYSE       DESC          ISNULL       PRIMARY
+ANALYZE       DISTINCT      JOIN         PUBLIC
+AND           DO            LEADING      REFERENCES
+ANY           ELSE          LEFT         RIGHT
+AS            END           LIKE         SELECT
+ASC           EXCEPT        LIMIT        SESSION_USER
+BETWEEN       FALSE         NATURAL      SOME
+BINARY        FOR           NEW          TABLE
+BOTH          FOREIGN       NOT          THEN
+CASE          FREEZE        NOTNULL      TO
+CAST          FROM          NULL         TRAILING
+CHECK         FULL          OFF          TRUE
+COLLATE       GROUP         OFFSET       UNION
+COLUMN        HAVING        OLD          UNIQUE
+CONSTRAINT    ILIKE         ON           USER
+CROSS         IN            ONLY         USING
+CURRENT_DATE  INITIALLY     OR           VERBOSE
+CURRENT_TIME  INNER         ORDER        WHEN
+CURRENT_USER  INTERSECT     OUTER        WHERE
+DEFAULT       INTO
+</sprogram>
+<small>
+Note that some SQL92 reserved words are not reserved words in PostgreSQL.
+</small>
+</slide>
+
+<slide>
+<heading>SQL Identifiers
+Names are used to identify
+<itemize>
+<item> database objects such as tables, attributes, views, ...
+<item> meta-objects such as types, functions, constraints, ...
+</itemize>
+Identifiers in SQL use similar conventions to programming languages
+	<small>i.e. a sequence of alpha-numerics, starting with an alphabetic.</small>
+<p>
+Can create arbitrary indentifiers by enclosing in <@>"..."</@>
+<p>
+Example identifiers:
+<program>
+employee    student   Courses
+last_name   "That's a Great Name!"
+</program>
+<small>Oracle SQL also allows unquoted hash (<@>#</@>) and dollar (<@>$</@>) in identifiers.</small>
+</slide>
+
+<slide>
+<continued>
+Since SQL does not distinguish case, the following are all treated
+as being the same identifier:
+<program>    
+employee   Employee   EmPlOyEe
+</program>
+Most RDBMSs will let you give the same name to different kinds of objects
+(e.g. a table called <@>Beer</@> and an attribute called <@>Beer</@>).
+<p>
+Some common naming conventions:
+<itemize>
+<item>
+name tables representing entitites via plural nouns <br>
+(e.g. <@>Drinkers</@>, <@>TheDrinkers</@>, <@>AllDrinkers</@>, ...)
+<item>
+name foreign key attributes after the table they refer to <br>
+(e.g. <@>beer</@> in the <@>Sells</@> relation)
+</itemize>
+</slide>
+
+<slide>
+<heading>Constants in SQL
+Numeric constants have same syntax as programming languages, e.g.
+<program>
+10    3.14159    2e-5    6.022e23 
+</program>
+<p>
+String constants are written in single quotes, e.g.
+<program>
+'John'   'some text'   '!%#%!$'   'O''Brien'
+'"'   '[A-Z]{4}\d{4}'   'a VeRy! LoNg String'
+</program>
+PostgreSQL provides extended strings containing <@>\</@> escapes, e.g.
+<program>
+E'\n'   E'O\'Brien'   E'[A-Z]{4}\\d{4}'   E'John'
+</program>
+Boolean constants: <@>TRUE</@> <small>and</small> <@>FALSE</@>
+<p>
+<small>PostgreSQL also allows <@>'t'</@>, <@>'true'</@>, <@>'yes'</@>,
+	<@>'f'</@>, <@>'false'</@>, <@>'no'</@></small>
+</slide>
+
+<slide>
+<continued>
+Other kinds of constants are typically written as strings.
+<p>
+Dates: <@>'2008-04-13'</@>, <~> Times: <@>'13:30:15'</@>
+<p>
+Timestamps: <@>'2004-10-19 10:23:54'</@> 
+<p>
+PostgreSQL also recognises: <@>'January 26 11:05:10 1988 EST'</@>
+<p>
+Time intervals: <@>'10 minutes'</@>, <~> <@>'5 days, 6 hours'</@>
+<p>
+PostgreSQL also has IP address, XML, etc. data types.
+</slide>
+
+<slide>
+<heading>SQL Data Types
+All attributes in SQL relations are typed <~>
+<small>(i.e. have domain specified)</small>
+<p>
+SQL supports a small set of useful built-in data types: <br>
+text string, number <small>(integer,real)</small>, date, boolean, binary
+<p>
+Various type conversions are available (e.g. date to string, string to date,
+integer to real) and applied automatically <q>where they make sense</q>.
+<p>
+Basic domain (type) checking is performed automatically.
+<p>
+The <@>NULL</@> value is treated as a member of all data types.
+<p>
+No structured data types are available <small>(in SQL2)</small>.
+</slide>
+
+<slide>
+<continued>
+Various kinds of number types are available:
+<itemize>
+<item> <@>INTEGER</@> (or <@>INT</@>), <@>SMALLINT</@>
+	<~>...<~> 32/16-bit integers 
+<item> <@>REAL</@>, <@>DOUBLE PRECISION</@>
+	<~>...<~> 32/64-bit floating point
+<item> <@>NUMBER(</@><$>d</$><@>,</@><$>p</$><@>)</@>
+<~>...<~> fixed-point reals (<$>d</$> digits, <$>p</$> after dec.pt.)
+</itemize>
+PostgreSQL also provides ...
+<itemize>
+<item> <@>serial</@>: auto-generated integer values for primary keys
+<item> <@>currency</@>: fixed-point reals, displayed as strings <@>$1,000.00</@>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Two string types are available:
+<itemize>
+<item> <@>CHAR(</@><i>n</i><@>)</@> <~>...<~> uses <$>n</$> bytes, left-justified, blank-padded
+<item> <@>VARCHAR(</@><i>n</i><@>)</@> <~>...<~> uses 0..<$>n</$> bytes, no padding
+</itemize>
+String types can be coerced by blank-padding or truncation.
+<program>
+'abc'::CHAR(2) = 'ab'     'abc'::CHAR(4) = 'abc '
+</program>
+PostgreSQL also provides <@>TEXT</@> for arbitrary strings
+<itemize>
+<sitem> convenient; no need to worry <q>how long is a name?</q>
+<sitem> efficient <~> <small>(different to some other DBMSs)</small>
+<sitem> but not part of SQL standard
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Dates are simply specially-formatted strings, with a range of
+operations to implement date semantics.
+<p>
+Format is typically <~><@>YYYY-MM-DD</@><~>, e.g. <@>'1998-08-02'</@>
+<p>
+Accepts other formats (and has format-conversion functions), but
+beware of two-digit years <~> <small>(year 2000)</small>
+<p>
+Comparison operators implement <i>before</i> (<@><<</@>) and <i>after</i> (<@>>></@>).
+<p>
+Subtraction counts number of days between two dates.
+<p>
+<small>Etc. etc. ... consult your local SQL Manual</small>
+</slide>
+
+<slide>
+<continued>
+PostgreSQL also supports several non-standard data types.
+<itemize>
+<item> generic text string data i.e. <@>text</@>
+<item> arbitrary binary data <small>(BLOBs)</small> i.e. <@>bytea</@>
+<item> geometric data types e.g. <@>point</@>, <@>circle</@>, <@>polygon</@>, ...
+</itemize>
+Also, extends relational model so that a single attribute
+can contain an array/matrix of values, e.g.
+<sprogram>
+CREATE TABLE Employees (
+       empid     integer primary key,
+       name      text,
+       pay_rate  float[]
+);
+INSERT INTO Employees VALUES
+       (1234, 'John', '{35.00,45.00,60.00}');
+SELECT pay_rate[2] FROM Employees ...
+</sprogram>
+</slide>
+
+<slide>
+<heading>Tuple and Set Literals
+Tuple and set constants are both written as:
+<program>
+( <$>val<sub>1</sub>, val<sub>2</sub>, val<sub>3</sub>,</$> ... )
+</program>
+The correct interpretation is worked out from the context.
+<p>
+Examples:
+<sprogram>
+INSERT INTO Student(stude#, name, course)
+VALUES (2177364, 'Jack Smith', 'BSc')
+       <comment>-- tuple literal</comment>
+
+CREATE TABLE Academics (
+       id   integer,
+       name varchar(40),
+       job  varchar(10) CHECK
+               job IN ('Lecturer', 'Tutor');
+               <comment>-- set literal</comment>
+</sprogram>
+</slide>
+
+<slide>
+<continued>
+SQL data types provide coarse-grained control over values.
+<p>
+If more fine-grained control over values is needed:
+<itemize>
+<item> constraints can express more precise conditions
+<item> new "data types" can be defined 
+</itemize>
+Examples:
+<program>
+CREATE DOMAIN PositiveInt AS INTEGER
+   CHECK (VALUE > 0);
+CREATE DOMAIN Colour AS 
+   CHECK (VALUE IN ('red','yellow','green','blue','violet'));
+CREATE TABLE T (
+   x Colour,
+   y PositiveInt,
+   z INTEGER CHECK (z BETWEEN 10 AND 20)
+);
+</program>
+</slide>
+
+<slide>
+<heading>SQL Operators
+Comparison operators are defined on all types:
+<program>
+<<   >>   <<=   >>=   =   <<>>  (or !=)
+</program>
+Boolean operators <@>AND</@>, <@>OR</@>, <@>NOT</@> are also available
+<p>
+Note <@>AND</@>,<@>OR</@> are not <q>short-circuit</q> in the same way as C's <@>&&</@>,<@>||</@>
+<p>
+Most data types also have type-specific operations available
+<p>
+<small>
+See PostgreSQL Documentation Chapter 8/9 for data types and operators
+</small>
+</slide>
+
+<slide>
+<continued>
+<b>String comparison:</b>
+<itemize>
+<item> <$>str<sub>1</sub></$> <@><<</@> <$>str<sub>2</sub></$>
+<~>...<~> compare using dictionary order
+<item> <$>str</$> <@>LIKE</@> <$>pattern</$>
+<~>...<~> matches string to pattern 
+</itemize>
+Pattern-matching uses SQL-specific pattern expressions:
+<itemize>
+<item> <@>%</@> matches anything <~> (like <@>.*</@>)
+<item> <@>_</@> matches any single char <~> (like <@>.</@>)
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Examples (using SQL92 pattern matching):
+<deftable 6>
+<row>
+<col1><@>Name LIKE 'Ja%'</@></col1>
+<col2><@>Name</@> begins with 'Ja'</col2>
+</row>
+<row>
+<col1><@>Name LIKE '_i%'</@></col1>
+<col2><@>Name</@> has 'i' as 2nd letter</col2>
+</row>
+<row>
+<col1><@>Name LIKE '%o%o%'</@></col1>
+<col2><@>Name</@> contains two 'o's</col2>
+</row>
+<row>
+<col1><@>Name LIKE '%ith'</@></col1>
+<col2><@>Name</@> ends with 'ith'</col2>
+</row>
+<row>
+<col1><@>Name LIKE 'John'</@></col1>
+<col2><@>Name</@> matches 'John'</col2>
+</row>
+</deftable>
+PostgreSQL also supports case-insensitive match: <@>ILIKE</@>
+</slide>
+
+<slide>
+<continued>
+Most Unix-based DBMSs utilise the regexp library
+<itemize>
+<item> to provide full <small>POSIX</small> regular expression matching
+</itemize>
+PostgreSQL uses the <@>~</@> operator for this:
+<syntax>
+<$>Attr</$> ~ '<$>RegExp</$>'
+</syntax>
+PostgreSQL also provides full-text searching <small>(see doc)</small>
+</slide>
+
+<slide>
+<continued>
+Examples (using <small>POSIX</small> regular expressions):
+<deftable 6>
+<row>
+<col1><@>Name ~ '^Ja'</@></col1>
+<col2><@>Name</@> begins with 'Ja'</col2>
+</row>
+<row>
+<col1><@>Name ~ '^.i'</@></col1>
+<col2><@>Name</@> has 'i' as 2nd letter</col2>
+</row>
+<row>
+<col1><@>Name ~ '.*o.*o.*'</@></col1>
+<col2><@>Name</@> contains two 'o's</col2>
+</row>
+<row>
+<col1><@>Name ~ 'ith$'</@></col1>
+<col2><@>Name</@> ends with 'ith'</col2>
+</row>
+<row>
+<col1><@>Name ~ 'John'</@></col1>
+<col2><@>Name</@> matches 'John'</col2>
+</row>
+</deftable>
+</slide>
+
+<slide>
+<continued>
+<b>String manipulation:</b>
+<itemize>
+<item> <$>str<sub>1</sub></$> <@>||</@> <$>str<sub>2</sub></$> ... return concatenation of <$>str<sub>1</sub></$> and <$>str<sub>2</sub></$>
+<item> <@>lower(</@><$>str</$><@>)</@> ... return lower-case version of <$>str</$>
+<item> <@>substring(</@><$>str</$>,<$>start</$>,<$>count</$><@>)</@> ... extract chars from <$>str</$>
+</itemize>
+<small>Etc. etc. ... consult your local SQL Manual (e.g. PostgreSQL Sec 9.4)</small>
+<p>
+Note that above operations are null-preserving (strict):
+<itemize>
+<item> if any operand is <@>NULL</@>, result is <@>NULL</@>
+<item> beware of <@>(a||' '||b||' '||c)</@> ... <@>NULL</@> if any of
+	<@>a</@>, <@>b</@>, <@>c</@> are null
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Arithmetic operations:
+<sprogram>
++  -  *  /  abs  ceil  floor  power  sqrt  sin  
+</sprogram>
+Aggregations apply to a column of numbers in a relation:
+<itemize>
+<item> <@>count(</@><$>attr</$><@>)</@>
+	<~>...<~> number of rows in <$>attr</$> column
+<item> <@>sum(</@><$>attr</$><@>)</@>
+	<~>...<~> sum of values for <$>attr</$>
+<item> <@>avg(</@><$>attr</$><@>)</@>
+	<~>...<~> mean of values for <$>attr</$>
+<item> <@>min/max(</@><$>attr</$><@>)</@>
+	<~>...<~> min/max of values for <$>attr</$>
+</itemize>
+Note: <@>count</@> applies to columns of non-numbers as well.
+</slide>
+
+<slide>
+<continued>
+<@>NULL</@> in arithmetic operation always yields <@>NULL</@>, e.g.
+<program>
+3 + NULL = NULL      1 / NULL = NULL
+</program>
+<@>NULL</@> in aggregations is ignored <small>(treated as unknown)</small>, e.g.
+<program>
+sum(1,2,3,4,5,6)       = 21
+sum(1,2,NULL,4,NULL,6) = 13
+avg(1,2,3,4,5)         = 3
+avg(NULL,2,NULL,4)     = 3
+</program>
+</slide>
+
+<slide>
+<heading>The <@>NULL</@> Value
+Expressions containing <@>NULL</@> generally yield <@>NULL</@>.
+<p>
+However, boolean expressions use three-valued logic:
+<reltable 4>
+<row>
+<col1> <$>a</$> </col1>
+<col2> <$>b</$> </col2>
+<col3> <$>a</$> <@>AND</@> <$>b</$> </col3>
+<col4> <$>a</$> <@>OR</@> <$>b</$> </col4>
+</row>
+<row>
+<col1> TRUE </col1>
+<col2> TRUE </col2>
+<col3> TRUE </col3>
+<col4> TRUE </col4>
+</row>
+<row>
+<col1> TRUE </col1>
+<col2> FALSE </col2>
+<col3> FALSE </col3>
+<col4> TRUE </col4>
+</row>
+<row>
+<col1> TRUE </col1>
+<col2> NULL </col2>
+<col3> NULL </col3>
+<col4> TRUE </col4>
+</row>
+<row>
+<col1> FALSE </col1>
+<col2> FALSE </col2>
+<col3> FALSE </col3>
+<col4> FALSE </col4>
+</row>
+<row>
+<col1> FALSE </col1>
+<col2> NULL </col2>
+<col3> FALSE </col3>
+<col4> NULL </col4>
+</row>
+<row>
+<col1> NULL </col1>
+<col2> NULL </col2>
+<col3> NULL </col3>
+<col4> NULL </col4>
+</row>
+</row>
+</reltable>
+</slide>
+
+<slide>
+<continued>
+Important consequence of <@>NULL</@> behaviour ...
+<p>
+These expressions do not work as (might be) expected:
+<program>
+<$>x</$> = NULL    <$>x</$> <<>> NULL
+</program>
+Both return <@>NULL</@> regardless of the value of <$>x</$>
+<p>
+Can only test for <@>NULL</@> using:
+<program>
+<$>x</$> IS NULL     <$>x</$> IS NOT NULL
+</program>
+</slide>
+
+<slide>
+<continued>
+Other ways PostgeSQL provides for dealing with <@>NULL</@>:
+<p>
+<@>coalesce(</@><$>Val<sub>1</sub></$><@>,</@><$>Val<sub>2</sub></$><@>,</@>...<$>Val<sub>n</sub></$><@>)</@>
+<itemize>
+<item> returns first non-null value <$>Val<sub>i</sub></$>
+<item> useful for providing a <q>displayable</q> value for nulls
+</itemize>
+<@>nullif(</@><$>Val<sub>1</sub></$><@>,</@><$>Val<sub>2</sub></$><@>)</@>
+<itemize>
+<item> returns null if <$>Val<sub>1</sub></$> is equal to <$>Val<sub>2</sub></$>
+<item> can be used to provide inverse of <@>coalesce()</@>
+</itemize>
+</slide>
+
+<slide>
+<heading>SQL: Schemas
+</slide>
+
+<slide>
+<heading>Relational Data Definition
+In order to give a relational data model, we need to:
+<itemize>
+<item> describe tables
+<item> describe attributes that comprise tables
+<item> describe any constraints on the data
+</itemize>
+A <em>relation schema</em> defines an individual table.
+<p>
+A <em>database schema</em> is a collection of relation schemas that
+defines the structure of and constraints on an entire database.
+</slide>
+
+<slide>
+<continued>
+So far, we have given relational schemas informally, e.g.
+<itemize>
+<item> individual relation schemas
+<sprogram>
+Account(<b>accountNo</b>, <i>branchName</i>, balance)
+Branch(<b>branchNo</b>, address, assets)
+Customer(<b>customerNo</b>, name, address, <i>homeBranch</i>)
+Owner(<i>customer</i>,<i>branch</i>)
+</sprogram>
+<item> database schemas
+<diagram>Pic/sql/rschema2.png
+</itemize>
+</slide>
+
+<slide>
+<heading>SQL Data Definition Language
+S<b>Q</b>L is normally considered to be a query language.
+<p>
+However, it also has a data definition sub-language (DDL)
+for describing database schemas.
+<p>
+The SQL DDL allows us to specify:
+<itemize>
+<item> names of tables
+<item> names and domains for attributes
+<item> various types of constraints <small>(e.g. primary/foreign keys)</small>
+</itemize>
+It also provides mechanisms for performance tuning <small>(see later)</small>.
+</slide>
+
+<slide>
+<heading>Defining a Database Schema
+Relations (tables) are described using:
+<program>
+CREATE TABLE <i>RelName</i> (
+    <$>attribute<sub>1</sub> <~> domain<sub>1</sub> <~> constraints</$>,
+    <$>attribute<sub>2</sub> <~> domain<sub>2</sub> <~> constraints</$>,
+    ...
+    <$>table</$>-<$>level constraints</$>, ...
+)
+</program>
+<small>
+where <$>constraints</$> can include details about primary keys, foreign
+keys, default values, and constraints on attribute values.
+</small>
+<p>
+This not only defines the table schema but also creates an empty
+instance of the table.
+<p>
+Tables are removed via <~~> <@>DROP TABLE</@> <i>RelName</i><@>;</@>
+</slide>
+
+<slide>
+<continued>
+Consider the relational diagram for the example schema:
+<diagram>Pic/sql/rschema2.png
+<small>
+This shows explicitly the connection between foreign key attributes
+and their corresponding key attributes.
+<p>
+The SQL DDL provides notation for expressing this in the table definition.
+</small>
+</slide>
+
+<slide>
+<continued>
+SQL DDL for the example schema:
+<program>
+CREATE TABLE Branch (
+    name          varchar(30),
+    address       varchar(50),
+    assets        float,
+    PRIMARY KEY   (name)
+);
+</program>
+<~><br>
+<small>
+Note: <@>name</@> is required to be unique and not null
+</small>
+</slide>
+
+<slide>
+<continued>
+More SQL DDL for the example schema:
+<program>
+CREATE TABLE Customer (
+    customerNo    integer,
+    name          varchar(40),
+    address       varchar(50),
+    homeBranch    varchar(30) not null,
+    PRIMARY KEY   (customerNo),
+    FOREIGN KEY   (homeBranch)
+                  REFERENCES Branch(name)
+);
+</program>
+<~><br>
+<small>
+Note: the <@>not null</@> captures total participation,
+i.e. every customer has a home branch.
+</small>
+</slide>
+
+<slide>
+<continued>
+More SQL DDL for the example schema:
+<program>
+CREATE TABLE Account (
+    accountNo     char(5),
+    heldAtBranch  varchar(30) not null,
+    balance       float,
+    PRIMARY KEY   (accountNo),
+    FOREIGN KEY   (heldAtBranch)
+                  REFERENCES Branch(name)
+);
+</program>
+<~><br>
+<small>
+Note: the <@>not null</@> captures total participation,
+i.e. every accountis held at some branch.
+</small>
+</slide>
+
+<slide>
+<continued>
+More SQL DDL for the example schema:
+<program>
+CREATE TABLE OwnedBy (
+    account       char(5),
+    customer      integer,
+    PRIMARY KEY   (account,customer),
+    FOREIGN KEY   (account)
+                  REFERENCES Account(accountNo),
+    FOREIGN KEY   (customer)
+                  REFERENCES Customer(customerNo)
+);
+</program>
+<small>
+Note: it is not possible in SQL to capture the semantics
+that Accounts are required to be owned by some Customer.
+</small>
+</slide>
+
+<slide>
+<heading>Declaring Keys
+Primary keys:
+<itemize>
+<item> if a single attribute, declare with attribute, <~> e.g.
+<program>
+accountNo char(5) PRIMARY KEY,
+</program>
+<item> if several attributes, declare with table constraints, <~> e.g.
+<program>
+name    varchar(40),
+address varchar(50),
+...
+PRIMARY KEY (name,address)
+</program>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+If we want to define a numeric primary key, e.g.
+<program>
+CREATE TABLE R ( id INTEGER PRIMARY KEY, ... );
+</program>
+we still have the problem of generating unique values.
+<p>
+Most DBMSs provide a mechanism to
+<itemize>
+<sitem> generating a squence of unique values
+<sitem> ensuring that tuples don't get assigned the same value
+</itemize>
+PostgreSQL's version:
+<program>
+CREATE TABLE R ( id SERIAL PRIMARY KEY, ... );
+</program>
+</slide>
+
+<slide>
+<continued>
+Foreign keys:
+<itemize>
+<item> if a single attribute, specify <$>Relation(Attribute)</$>, <~> e.g. 
+<program>
+customer integer
+           REFERENCES Customer(customerNo)
+<comment>-- or</comment>
+customer integer REFERENCES Customer
+<comment>-- or</comment>
+FOREIGN KEY (customer)
+           REFERENCES Customer(customerNo)
+</program>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Foreign keys: <small>(cont)</small>
+<itemize>
+<item> if several attributes, specify in table constraints, <~> e.g.
+<program>
+name  varchar(40),
+addr  varchar(50),
+...
+FOREIGN KEY (name,addr)
+        REFERENCES Person(name,address)
+</program>
+</itemize>
+<small>
+If defining foreign keys with table constraints, must use <@>FOREIGN KEY</@> keywords.
+</small>
+</slide>
+
+<slide>
+<continued>
+Declaring foreign keys assures <b>referential integrity</b>.
+<p>
+Example:
+<p>
+<@>Account.branchName</@> refers to primary key of <@>Branch</@>
+<p>
+If we want to delete a tuple from <@>Branch</@>, and there are tuples
+in <@>Account</@> that refer to it, we could ...
+<itemize>
+<item> <b>reject</b> the deletion <small>(PostgreSQL/Oracle default behaviour)</small>
+<item> <b>set-NULL</b> the foreign key attributes in <@>Account</@> records
+<item> <b>cascade</b> the deletion and remove <@>Account</@> records
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Can force the alternative delete behaviours via e.g.
+<program>
+<comment>-- to cascade deletes</comment>
+customer integer
+           REFERENCES Customer(customerNo)
+           ON DELETE CASCADE
+
+<comment>-- to set foreign keys to NULL</comment>
+customer integer
+           REFERENCES Customer(customerNo)
+           ON DELETE SET NULL
+</program>
+</slide>
+
+<slide>
+<continued>
+Example of different deletion strategies:
+<diagram>Pic/sql/delete.png
+</slide>
+
+<slide>
+<heading>Other Attribute Properties
+Can specify that an attribute must have a non-null value, e.g.
+<program>
+barcode varchar(20) NOT NULL,
+price   float NOT NULL
+</program>
+<~> <br>
+Can specify that an attribute must have a unique value, e.g.
+<program>
+barcode varchar(20) UNIQUE,
+isbn    varchar(15) UNIQUE NOT NULL
+</program>
+<~> <br>
+Primary keys are automatically <~> <@>UNIQUE NOT NULL</@>.
+<p>
+</slide>
+
+<slide>
+<continued>
+Can specify a <@>DEFAULT</@> value for an attribute
+<itemize>
+<item> will be assigned to attribute if no value is supplied during insert
+</itemize>
+<b>Example:</b>
+<sprogram>
+CREATE TABLE Account (
+    accountNo  char(5) PRIMARY KEY,
+    branchName varchar(30)
+                 REFERENCES Branch(name)
+                 DEFAULT 'Central',
+    balance    float DEFAULT 0.0
+);
+
+INSERT INTO Account(accountNo) VALUES ('A-456')
+<comment>-- produces the tuple</comment>
+Account('A-456','Central',0.0)
+</sprogram>
+</slide>
+
+<slide>
+<heading>Attribute Value Constraints
+In fact, <@>NOT NULL</@> is a special case of a constraint on the
+value that an attribute is allowed to take.
+<p>
+SQL has a more general mechanism for specifying such constraints.
+<program>
+<i>attrName</i>  <i>type</i>  CHECK ( <i>condition</i> )
+</program>
+The <i>Condition</i> can be arbitrarily complex, and may even
+involve other attributes, relations and <@>SELECT</@> queries.
+<p>
+<small>
+(but many RDBMSs (e.g. Oracle and PostgreSQL) don't allow <@>SELECT</@> in <@>CHECK</@>)
+</small>
+</slide>
+
+<slide>
+<continued>
+<b>Example:</b>
+<program>
+CREATE TABLE Example
+(
+   gender CHAR(1) CHECK (gender IN ('M','F')),
+   Xvalue INT     NOT NULL,
+   Yvalue INT     CHECK (Yvalue > Xvalue),
+   Zvalue FLOAT   CHECK (Zvalue >
+                          (SELECT MAX(price)
+                           FROM   Sells)
+                  )
+);
+</program>
+</slide>
+
+<slide>
+<heading>Named Constraints
+Any constraint in an SQL DDL can be named via
+<program>
+CONSTRAINT  <i>constraintName</i>  <$>constraint</$>
+</program>
+Example:
+<program>
+CREATE TABLE Example
+(
+   gender CHAR(1) CONSTRAINT GenderCheck
+                  CHECK (gender IN ('M','F')),
+   Xvalue INT     NOT NULL,
+   Yvalue INT     CONSTRAINT XYOrder
+                  CHECK (Yvalue > Xvalue),
+);
+</program>
+</slide>
+
+<slide>
+<heading>SQL: Building Databases
+</slide>
+
+<slide>
+<heading>Creating Databases
+Mechanism for creating databases is typically DBMS-specific.
+<p>
+Many implement a (non-standard) SQL-like statement:
+<syntax>
+CREATE DATABASE <$>DBname</$>;
+</syntax>
+Many provide an external command, e.g PostgreSQL's
+<syntax>
+$ <b>createdb</b> <$>DBname</$>
+</syntax>
+Produces an empty database (no tables, etc) called <$>DBname</$>
+</slide>
+
+<slide>
+<continued>
+A database can be completely removed (no backup) via
+<syntax>
+$ <b>dropdb</b> <$>DBname</$>
+</syntax>
+This removes all tuples, all tables, all traces of <$>DBname</$>
+<p>
+Tables can be removed from a database schema via:
+<syntax>
+DROP <$>TableName</$>
+</syntax>
+All tuples can be removed from a table via:
+<syntax>
+DELETE FROM <$>TableName</$>
+</syntax>
+</slide>
+
+<slide>
+<continued>
+Loading a schema with PostgreSQL:
+<program>
+$ <b>createdb mydb</b>
+$ <b>psql mydb</b>
+...
+mydb=# <b>\i schema.sql</b>
+...
+</program>
+or
+<program>
+$ <b>psql -f schema.sql mydb</b>
+</program>
+Running the above as:
+<program>
+$ <b>psql -a -f schema.sql mydb</b>
+</program>
+intersperses messages with the schema definition.
+<p>
+Useful for debugging, since errors appear in context.
+</slide>
+
+<slide>
+<continued>
+Re-loading schemas is not well-supported in PostgreSQL.
+<p>
+Simplest approach is:
+<program>
+$ <b>dropdb mydb</b>
+$ <b>createdb mydb</b>
+$ <b>psql -f schema.sql mydb</b>
+</program>
+An alternative is to leave DB but drop all tables:
+<program>
+$ <b>psql mydb</b>
+...
+mydb=# <b>drop Table1;</b>
+mydb=# <b>drop Table2;</b>
+<comment>etc. etc. in correct order</comment>
+mydb=# <b>\i schema.sql</b>
+...
+</program>
+<~><br>
+<small>
+Later, we'll see how to write functions to automate this.
+</small>
+</slide>
+
+<slide>
+<continued>
+The entire contents of a database may be dumped:
+<program>
+$ <b>pg_dump mydb >> mydb.dump</b>
+</program>
+Dumps all definitions needed to re-create entire DB
+<itemize>
+<item> table definitions (<@>create table</@>)
+<item> constraints, including PKs and FKs
+<item> all data from all tables
+<item> domains, stored procedures, triggers, etc.
+</itemize>
+Some things change appearance, but mean the same thing <br>
+<small>
+(e.g. <@>varchar(30)</@> becomes <@>character varying(30)</@>, etc.)
+</small>
+</slide>
+
+<slide>
+<continued>
+Dumps may be used for backup/restore or copying DBs
+<program>
+$ <b>pg_dump mydb >> mydb.dump</b>  <comment>-- backup</comment>
+$ <b>createdb newdb</b>
+$ <b>psql newdb -f mydb.dump</b>    <comment>-- copy</comment>
+</program>
+Result: <@>newdb</@> is a snapshot/copy of <@>mydb</@>.
+<itemize>
+<item> however, different object identifiers
+<item> as changes are made, the two DBs will diverge
+</itemize>
+</slide>
+
+<slide>
+<heading>Data Modification in SQL
+SQL provides mechanisms for modifying data (tuples) in tables:
+<itemize>
+<item> <@>INSERT</@> ... add a new tuple into a table
+<item> <@>DELETE</@> ... remove tuples from a table <small>(via condition)</small>
+<item> <@>UPDATE</@> ... modify values in exiting tuples <small>(via condition)</small>
+</itemize>
+Constraint checking is applied automatically on any change.
+<p>
+<small>
+(See description of relational model for details of which checking applied when)
+</small>
+</slide>
+
+<slide>
+<continued>
+Also provides mechanisms for modifying table meta-data:
+<itemize>
+<item> <@>CREATE TABLE</@> ... create a new empty table
+<item> <@>DROP TABLE</@> ... remove table from database <small>(incl. tuples)</small>
+<item> <@>ALTER TABLE</@> ... change properties of existing table
+</itemize>
+Analogous operations are available on other kinds of database objects, e.g.
+<itemize>
+<item> <@>CREATE VIEW</@>, <~> <@>CREATE FUNCTION</@>, <~> <@>CREATE RULE</@>, ...
+<item> <@>DROP VIEW</@>, <~> <@>DROP FUNCTION</@>, <~> <@>DROP RULE</@>, ...
+<item> no <@>UPDATE</@> on these; use <@>CREATE OR REPLACE</@>
+</itemize>
+</slide>
+
+<slide>
+<heading>Insertion
+Accomplished via the <@>INSERT</@> operation:
+<syntax>
+INSERT INTO <i>RelationName</i>
+VALUES (<$>val<sub>1</sub></$>, <$>val<sub>2</sub></$>, <$>val<sub>3</sub></$>, ...)
+
+INSERT INTO <$>RelationName</$>(<$>Attr<sub>1</sub></$>, <$>Attr<sub>2</sub></$>, ...)
+VALUES (<$>valForAttr<sub>1</sub></$>, <$>valForAttr<sub>2</sub></$>, ...)
+</syntax>
+Each form adds a single new tuple into <$>RelationName</$>.
+</slide>
+
+<slide>
+<continued>
+<@>INSERT INTO </@><$>R</$><@> VALUES (</@><$>v<sub>1</sub></$><@>,</@><$>v<sub>2</sub></$><@>,...)</@>
+<itemize>
+<item> values must be supplied for all attributes of <$>R</$>
+<item> in same order as appear in <@>CREATE TABLE</@> statement
+</itemize>
+<@>INSERT INTO </@><$>R</$><@>(</@><$>A<sub>1</sub></$><@>,</@><$>A<sub>2</sub></$><@>,...) VALUES (</@><$>v<sub>1</sub></$><@>,</@><$>v<sub>2</sub></$><@>,...)</@>
+<itemize>
+<item> can specify any subset of attributes of <$>R</$>
+<item> values must match attribute specification order
+<item> unspecified attributes are assigned default or null
+</itemize>
+</slide>
+
+<slide>
+<continued>
+<b>Example:</b> Add the fact that Justin likes 'Old'.
+<program>
+INSERT INTO Likes VALUES ('Justin','Old');
+<comment>-- or --</comment>
+INSERT INTO Likes(drinker,beer)
+       VALUES('Justin', 'Old');
+<comment>-- or --</comment>
+INSERT INTO Likes(beer,drinker)
+       VALUES('Old','Justin');
+</program>
+<b>Example:</b> Add a new drinker with unknown phone number.
+<program>
+INSERT INTO Drinkers(name,addr)
+       VALUES('Frank','Coogee');
+<comment>-- which inserts the tuple ...</comment>
+('Frank', 'Coogee', null)
+</program>
+</slide>
+
+<slide>
+<continued>
+<b>Example:</b> insertion with default values
+<program>
+ALTER TABLE Likes
+   ALTER COLUMN beer SET DEFAULT 'New';
+ALTER TABLE Likes
+   ALTER COLUMN drinker SET DEFAULT 'Joe';
+
+INSERT INTO Likes(drinker)
+       VALUES('Fred');
+INSERT INTO Likes(beer)
+       VALUES('Sparkling Ale');
+
+<comment>-- inserts the two new tuples ...</comment>
+('Fred', 'New')
+('Joe', 'Sparkling Ale')
+</program>
+</slide>
+
+<slide>
+<continued>
+<b>Example:</b> insertion with insufficient values.
+<p>
+E.g. specify that drinkers' phone numbers cannot be <@>NULL</@>.
+<program>
+ALTER TABLE Drinkers
+   ALTER COLUMN phone SET NOT NULL;
+</program>
+And then try to insert a new drinker whose phone number we don't know:
+<program>
+INSERT INTO Drinkers(name,addr)
+       VALUES ('Zoe', 'Manly');
+
+ERROR: ExecInsert: Fail to add null value
+       in not null attribute phone
+</program>
+</slide>
+
+<slide>
+<heading>Insertion from Queries
+Can use the result of a query to perform insertion of multiple
+tuples at once.
+<program>
+   INSERT INTO <i>Relation</i> ( <i>Subquery</i> );
+</program>
+<p>
+Tuples of <i>Subquery</i> must be projected into a suitable format
+(i.e. matching the tuple-type of <i>Relation</i> ).
+</slide>
+
+<slide>
+<continued>
+<b>Example:</b>
+Create a relation of potential drinking buddies (i.e. people who
+go to the same bars as each other).
+<sprogram>
+CREATE TABLE DrinkingBuddies (
+   drinker varchar(20) references Drinkers(name),
+   buddy   varchar(20) references Drinkers(name),
+   primary key (drinker,buddy)
+);
+
+INSERT INTO DrinkingBuddies (
+   SELECT a.drinker AS drinker,
+          b.drinker AS buddy
+   FROM   Frequents a, Frequents b
+   WHERE  a.bar = b.bar AND a.drinker <> b.drinker
+);
+</sprogram>
+<small>
+Note: this is better done as a view (treat this as a materialized view).
+</small>
+</slide>
+
+<slide>
+<heading>Bulk Insertion of Data
+Tuples may be inserted individually:
+<program>
+insert into Stuff(x,y,s) values (2,4,'green');
+insert into Stuff(x,y,s) values (4,8,null);
+insert into Stuff(x,y,s) values (8,null,'red');
+...
+</program>
+but this is tedious if 1000's of tuples are involved.
+<p>
+It is also inefficient, because all relevant constraints are
+checked after insertion of each tuple.
+</slide>
+
+<slide>
+<continued>
+Most DBMSs provide non-SQL methods for bulk insertion:
+<itemize>
+<sitem> using a compact representation for each tuple
+<sitem> loading all tuples without constraint checking
+<sitem> doing all constraint checks at the end
+</itemize>
+Downside: if even one tuple is buggy, none are inserted.
+<p>
+Example: PostgreSQL's <@>copy</@> statement:
+<program>
+copy Stuff(x,y,s) from stdin;
+2       4       green
+4       8       \N
+8       \N      red
+\.
+</program>
+Can also copy from a named file.
+</slide>
+
+<slide>
+<heading>Deletion
+Accomplished via the <@>DELETE</@> operation:
+<program>
+DELETE FROM <i>Relation</i>
+WHERE  <i>Condition</i>
+</program>
+Removes all tuples from <i>Relation</i> that satisfy <i>Condition</i>.
+<p>
+<b>Example:</b> Justin no longer likes Sparkling Ale.
+<program>
+DELETE FROM Likes
+WHERE drinker = 'Justin'
+      AND beer = 'Sparkling Ale';
+</program>
+<b>Special case:</b> Make relation <i>R</i> empty.
+<program>
+DELETE FROM R;
+</program>
+</slide>
+
+<slide>
+<continued>
+<b>Example:</b> remove all expensive beers from sale.
+<program>
+DELETE FROM Sells
+WHERE price >= 3.00;
+</program>
+<b>Example:</b> remove all drinkers with no fixed address.
+<program>
+DELETE FROM Drinkers
+WHERE addr IS NULL;
+</program>
+This fails if such Drinkers are referenced in other tables.
+</slide>
+
+<slide>
+<heading>Semantics of Deletion
+Method A for <~> <@>DELETE FROM</@> <i>R</i> <@>WHERE</@> <i>Cond</i> :
+<program>
+FOR EACH tuple T in R DO
+    IF T satisfies Cond THEN
+        remove T from relation R
+    END
+END
+</program>
+Method B for <~> <@>DELETE FROM</@> <i>R</i> <@>WHERE</@> <i>Cond</i> :
+<program>
+FOR EACH tuple T in R DO
+    IF T satisfies Cond THEN
+        make a note of this T
+    END
+END
+FOR EACH noted tuple T DO
+    remove T from relation R
+END
+</program>
+Does it matter which method is used?
+</slide>
+
+<slide>
+<continued>
+<b>Example:</b>
+Delete all beers for which there is another beer by the same manufacturer.
+<program>
+DELETE FROM Beers b
+WHERE EXISTS
+      (SELECT name
+       FROM   Beers
+       WHERE  manf = b.manf 
+              AND name <> b.name);
+</program>
+Does the query result in ...
+<itemize>
+<item> deletion of all beers by brewers who make multiple beers
+<item> deletion of all but the <q>last beer</q> by such brewers
+</itemize>
+Note: PostgreSQL disallows deletions with correlated subqueries
+<small>(the <@>FROM</@> clause can be only a table name).</small>
+</slide>
+
+<slide>
+<continued>
+Example continued ...
+<p>
+Different results come from different evaluation methods ..
+<itemize>
+<item> Method A: iterate and evaluate condition for each beer
+<small>
+<itemize>
+<item> consider a manufacturer <$>M</$> who makes two beers <$>A</$> and <$>B</$>
+<item> when we reach <$>A</$>, there are two beers by <$>M</$>, so delete <$>A</$>
+<item> when we reach <$>B</$>, there are no other beers by <$>M</$>, so not deleted
+</itemize>
+</small>
+<item> Method B: evalute condition and then do all deletions
+<small>
+<itemize>
+<item> both <$>A</$> and <$>B</$> test positive, and so both are deleted
+</itemize>
+</small>
+</itemize>
+<small>
+Most RDBMSs use Method B, which matches natural semantics of <@>DELETE</@>.
+</small>
+</slide>
+
+<slide>
+<heading>Updates
+An update allows you to modify values of specified attributes
+in specified tuples of a relation:
+<program>
+UPDATE <i>R</i>
+SET    <i>list of assignments</i>
+WHERE  <i>Condition</i>
+</program>
+Each tuple in relation <i>R</i> that satisfies <i>Condition</i>
+has the assignments applied to it.
+<p>
+Assignments may:
+<itemize>
+<item> assign constant values to attributes, <br>
+	e.g. <@>SET price = 2.00</@>
+<item> use existing values in the tuple to compute new values, <br>
+	e.g. <@>SET price = price * 0.5</@>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+<b>Example:</b> Adam changes his phone number.
+<program>
+UPDATE Drinkers
+SET    phone = '9385-2222'
+WHERE  name = 'Adam';
+</program>
+<b>Example:</b> John moves to Coogee.
+<program>
+UPDATE Drinkers
+SET    addr = 'Coogee',
+       phone = '9665-4321'
+WHERE  name = 'John';
+</program>
+</slide>
+
+<slide>
+<continued>
+Can update many tuples at once <~> <small>(all tuples that satisfy condition)</small>
+<p>
+<b>Example:</b> Make <dollar>3 the maximum price for beer.
+<program>
+UPDATE Sells
+SET    price = 3.00
+WHERE  price > 3.00;
+</program>
+<b>Example:</b> Increase beer prices by 10%.
+<program>
+UPDATE Sells
+SET    price = price * 1.10;
+</program>
+</slide>
+
+<slide>
+<heading>Changing Tables
+Accomplished via the <@>ALTER TABLE</@> operation:
+<program>
+ALTER TABLE <i>Relation</i> <i>Modifications</i>
+</program>
+Some possible modifications are:
+<itemize>
+<item> add a new column (attribute)
+	<~> <small>(set value to <@>NULL</@> unless default given)</small>
+<item> change properties of an existing attribute
+	<~> <small>(e.g. constraints)</small>
+<item> remove an attribute
+</itemize>
+</slide>
+
+<slide>
+<continued>
+<b>Example:</b> Add phone numbers for hotels.
+<program>
+ALTER TABLE Bars
+   ADD phone char(10) DEFAULT 'Unlisted';
+</program>
+This appends a new column to the table and sets value
+for this attribute to <@>'Unlisted'</@> in every tuple.
+<p>
+Specific phone numbers can subsequently be added via:
+<program>
+UPDATE Bars
+SET    phone = '9665-0000'
+WHERE  name = 'Coogee Bay Hotel';
+</program>
+If no default value is given, new column is set to all <@>NULL</@>.
+</slide>
+
+<slide>
+<heading>For More Details ...
+Full details are in the PostgreSQL Reference Manual.
+<p>
+See the section <q>SQL Commands</q>, which has entries for
+<itemize>
+<item> <@>INSERT</@>, <~> <@>DELETE</@>, <~> <@>UPDATE</@>
+<item> <@>CREATE</@> <$>X</$>, <~> <@>DROP</@> <$>Y</$>, <~> <@>ALTER</@> <$>Z</$>
+</itemize>
+<small>
+You will become very familiar with some of these commands by end of session.
+</small>
+</slide>
+
+<slide>
+<heading>SQL: Queries
+</slide>
+
+<slide>
+<heading>Queries
+A <em>query</em> is a <em>declarative program</em> that retrieves
+data from a database.
+<p>
+Analogous to an expression in relational algebra.
+<p>
+But SQL does not implement relational algebra precisely.
+<p>
+Queries are used in two ways in RDBMSs:
+<itemize>
+<item> interactively <~> <small>(e.g. in <@>psql</@>)</small>
+<small>
+<itemize>
+<item> the entire result is displayed in tabular format on the output
+</itemize>
+</small>
+<item> by a program <~> <small>(e.g. in a PLpgSQL function)</small>
+<small>
+<itemize>
+<item> the result tuples are consumed one-at-a-time by the program
+</itemize>
+</small>
+</itemize>
+</slide>
+
+<slide>
+<heading>Queries in SQL
+The most common kind of SQL statement is the <tt>SELECT</tt> query:
+<program>
+SELECT <i>attributes</i>
+FROM   <i>relations</i>
+WHERE  <i>condition</i>
+</program>
+The result of this statement is a relation,
+which is typically displayed on output.
+<p>
+The <@>SELECT</@> statement contains the functionality of select,
+project and join from the relational algebra.
+</slide>
+
+<slide>
+<heading>SELECT Example
+The question <q>What beers are made by Toohey's?</q>, can be phrased:
+<sprogram>
+SELECT Name FROM Beers WHERE Manf = 'Toohey''s';
+</sprogram>
+This gives a subset of the <@>Beers</@> relation, displayed as:
+<sprogram>
+    name     
+-------------
+ New
+ Old
+ Red
+ Sheaf Stout
+</sprogram>
+<p>
+<small>
+Notes:
+<itemize>
+<sitem> upper- and lower-case are not distinguished, except in strings.
+<sitem> quotes are escaped by doubling them (<@>''''</@> is like C <@>'\''</@>)
+</itemize>
+</small>
+</slide>
+
+<slide>
+<heading>Semantics of <@>SELECT</@>
+For SQL <@>SELECT</@> statement on a single relation:
+<program>
+SELECT <i>Attributes</i>
+FROM   <i>R</i>
+WHERE  <i>Condition</i>
+</program>
+Formal semantics (relational algebra):
+<p>
+<center>
+<$>Proj[Attributes]( Sel[Condition]( R ) )</$>
+</center>
+</slide>
+
+<slide>
+<continued>
+Operationally, we think in terms of a <i>tuple variable</i>
+ranging over all tuples of the relation.
+<p>
+Operational semantics:
+<program>
+FOR EACH tuple T in R DO
+    check whether T satisfies the condition
+                        in the WHERE clause
+    IF it does THEN
+        print the attributes of T that are
+            specified in the SELECT clause
+    END
+END
+</program>
+</slide>
+
+<slide>
+<heading>Projection in SQL
+For a relation <$>R</$> and attributes <$>X <subseteq> R</$>,
+the relational algebra expression
+<~> <$><proj><sub>X</sub>(R)</$> <~>
+is implemented in SQL as:
+<program>
+SELECT <$>X</$> FROM <$>R</$>
+</program>
+<b>Example:</b> Names of drinkers = <$><proj><sub>Name</sub>(Drinkers)</$>
+<program>
+SELECT Name FROM Drinkers;
+
+  name  
+--------
+ Adam
+ Gernot
+ John
+ Justin
+</program>
+</slide>
+
+<slide>
+<continued>
+<b>Example:</b> Names/addresses of drinkers = <$><proj><sub>Name,Addr</sub>(Drinkers)</$>
+<program>
+SELECT Name, Addr FROM Drinkers;
+
+  name  |   addr   
+--------+----------
+ Adam   | Randwick
+ Gernot | Newtown
+ John   | Clovelly
+ Justin | Mosman
+</program>
+</slide>
+
+<slide>
+<continued>
+The symbol <@>*</@> denotes a list of <em>all</em> attributes.
+<p>
+<b>Example:</b> All information about drinkers = <$>(Drinkers)</$>
+<program>
+SELECT * FROM Drinkers;
+
+  name  |   addr   |   phone    
+--------+----------+------------
+ Adam   | Randwick | 9385-4444 
+ Gernot | Newtown  | 9415-3378 
+ John   | Clovelly | 9665-1234 
+ Justin | Mosman   | 9845-4321 
+</program>
+</slide>
+
+<slide>
+<heading>Renaming via <tt>AS</tt>
+<p>
+SQL implements renaming (<$><renam></$>) via the <@>AS</@> clause within <@>SELECT</@>.
+<p>
+<b>Example:</b> rename Beers(name,manf) to Beers(beer,brewer)
+<program>
+SELECT name AS beer, manf AS Brewer
+FROM Beers;
+
+        beer         |    brewer     
+---------------------+---------------
+ 80/-                | Caledonian
+ Bigfoot Barley Wine | Sierra Nevada
+ Burragorang Bock    | George IV Inn
+ Crown Lager         | Carlton
+ Fosters Lager       | Carlton
+...
+</program>
+</slide>
+
+<slide>
+<heading>Expressions as Values in Columns
+<@>AS</@> can also be used to introduce <em>computed</em> values
+<small>(generalised projection)</small>
+<p>
+<b>Example:</b> display beer prices in Yen, rather than dollars
+<sprogram>
+SELECT bar, beer, price*120 AS PriceInYen  FROM Sells;
+
+       bar        |       beer       |    priceinyen    
+------------------+------------------+------------------
+ Australia Hotel  | Burragorang Bock |              420
+ Coogee Bay Hotel | New              |              270
+ Coogee Bay Hotel | Old              |              300
+ Coogee Bay Hotel | Sparkling Ale    | 335.999994277954
+ Coogee Bay Hotel | Victoria Bitter  | 275.999994277954
+ Lord Nelson      | Three Sheets     |              450
+ Lord Nelson      | Old Admiral      |              450
+ ...
+</sprogram>
+</slide>
+
+<slide>
+<heading>Text in Result Table
+Trick: to put specific text in output columns
+<itemize>
+<item> use string constant expression with <@>AS</@>
+</itemize>
+<b>Example:</b> using Likes(drinker, beer)
+<sprogram>
+SELECT drinker, 'likes Cooper''s' AS WhoLikes
+FROM   Likes
+WHERE  beer = 'Sparkling Ale';
+
+ drinker |    wholikes    
+---------+----------------
+ Gernot  | likes Cooper's
+ Justin  | likes Cooper's
+</sprogram>
+</slide>
+
+<slide>
+<heading>Selection in SQL
+The relational algebra expression
+<~> <$><sel><sub>Cond</sub>(Rel)</$> <~>
+is implemented in SQL as:
+<program>
+SELECT * FROM Rel WHERE Cond
+</program>
+<b>Example:</b> All about the bars at The Rocks
+<sprogram>
+SELECT * FROM Bars WHERE Addr='The Rocks';
+
+      name       |   addr    | license 
+-----------------+-----------+---------
+ Australia Hotel | The Rocks |  123456
+ Lord Nelson     | The Rocks |  123888
+(2 rows)
+</sprogram>
+The condition can be an arbitrarily complex boolean-valued
+expression using the operators mentioned previously.
+</slide>
+
+<slide>
+<continued>
+<b>Example:</b> Find the price that The Regent charges for New
+<sprogram>
+SELECT price
+FROM   Sells
+WHERE  bar = 'Regent Hotel' AND beer = 'New';
+
+ price 
+-------
+   2.2
+</sprogram>
+This can be formatted better via <@>to_char</@>, e.g.
+<sprogram>
+SELECT to_char(price,'$99.99') AS price
+FROM   Sells
+WHERE  bar = 'Regent Hotel' AND beer = 'New';
+
+  price  
+---------
+ $  2.20
+</sprogram>
+<@>to_char()</@> supports a wide range of conversions.
+</slide>
+
+<slide>
+<heading>Multi-relation <@>SELECT</@> Queries
+Syntax is similar to simple <@>SELECT</@> queries:
+<program>
+SELECT <i>Attributes</i>
+FROM   <i>R1, R2, ...</i>
+WHERE  <i>Condition</i>
+</program>
+Difference is that <@>FROM</@> clause contains a list of relations.
+<p>
+Also, the condition typically includes cross-relation (join) conditions.
+</slide>
+
+<slide>
+<continued>
+<b>Example:</b> Find the brewers whose beers John likes.
+<program>
+SELECT Manf as brewer
+FROM   Likes, Beers
+WHERE  beer = name AND drinker = 'John';
+
+    brewer     
+---------------
+ Caledonian
+ Sierra Nevada
+ Sierra Nevada
+ Lord Nelson
+</program>
+Note: duplicates could be eliminated by using <@>DISTINCT</@>.
+</slide>
+
+<slide>
+<continued>
+The above example corresponds to a relational algebra evaluation like:
+<program>
+BeerDrinkers = Likes Join[beer=name] Beers
+JohnsBeers   = Sel[drinker=John](BeerDrinkers)
+Brewers      = Proj[manf](JohnsBeers)
+Result       = Rename[manf->brewer](Brewers)
+</program>
+The SQL compiler knows how to translate tests
+<itemize>
+<item> involving attributes from two relations into a join
+<item> involving attributes from one relations into a selection
+</itemize>
+</slide>
+
+<slide>
+<heading>Semantics of Multi-Relation <@>SELECT</@>
+For SQL <@>SELECT</@> statement on several relations:
+<program>
+SELECT <i>Attributes</i>
+FROM   <i>R1, R2, ... Rn</i>
+WHERE  <i>Condition</i>
+</program>
+Formal semantics (relational algebra):
+<p>
+<center>
+<$>Proj[Attributes]( Sel[Condition]( R1 <times> R2 <times> ... Rn ) )</$>
+</center>
+</slide>
+
+<slide>
+<continued>
+Operational semantics of <@>SELECT</@>:
+<sprogram>
+FOR EACH tuple T1 in R1 DO
+    FOR EACH tuple T2 in R2 DO
+        ...
+            check WHERE condition for current
+               assignment of T1, T2, ... vars
+            IF holds THEN
+               print attributes of T1, T2, ...
+                           specified in SELECT
+            END
+        ...
+    END
+END
+</sprogram>
+<small>
+Requires one tuple variable for each relation, and nested loops over relations.
+This is <em>not</em> how it's actually computed!
+</small>
+</slide>
+
+<slide>
+<heading>Name Clashes in Conditions
+If a selection condition
+<itemize>
+<item> refers to two relations
+<item> the relations have attributes with the same name
+</itemize>
+use the relation name to disambiguate.
+<p>
+<b>Example:</b> Which hotels have the same name as a beer?
+<program>
+SELECT Bars.name
+FROM   Bars, Beers
+WHERE  Bars.name = Beers.name;
+</program>
+<small><gray>(The answer to this query is empty, but there is nothing special about this)</gray></small>
+</slide>
+
+<slide>
+<continued>
+Can use such qualified names, even if there is no ambiguity:
+<program>
+   SELECT Sells.beer
+   FROM   Sells
+   WHERE  Sells.price > 3.00;
+</program>
+Advice:
+<itemize>
+<item> qualify attribute names only when absolutely necessary
+</itemize>
+Note:
+<itemize>
+<item> SQL's <@>AS</@> operator is only for renaming output
+<item> it provides no help with disambiguation
+</itemize>
+</slide>
+
+<slide>
+<heading>Explicit Tuple Variables
+The relation-dot-attribute convention doesn't help
+if we happen to use the same relation twice in a <@>SELECT</@>.
+<p>
+To handle this, we need to define new names for each <q>instance</q>
+of the relation in the <@>FROM</@> clause.
+<p>
+Syntax:
+<program>
+SELECT r1.a, r2.b
+FROM   R r1, R r2
+WHERE  r1.a = r2.a
+</program>
+</slide>
+
+<slide>
+<continued>
+<b>Example:</b> Find pairs of beers by the same manufacturer.
+<sprogram>
+SELECT b1.name, b2.name
+FROM   Beers b1, Beers b2
+WHERE  b1.manf = b2.manf AND b1.name << b2.name;
+
+        name         |       name       
+---------------------+------------------
+ Crown Lager         | Fosters Lager
+ Crown Lager         | Invalid Stout
+ Crown Lager         | Melbourne Bitter
+ Crown Lager         | Victoria Bitter
+ Fosters Lager       | Invalid Stout
+ Fosters Lager       | Melbourne Bitter
+ ...
+</sprogram>
+<small>
+The second part of the condition is used to avoid:
+<itemize>
+<sitem> pairing a beer with itself <~> e.g. <@>(New,New)</@>
+<sitem> same pairs with different order <~> e.g. <@>(New,Old) (Old,New)</@>
+</itemize>
+</small>
+</slide>
+
+<slide>
+<continued>
+A common alternative syntax for
+<program>
+SELECT r1.a, r2.b
+FROM   R r1, R r2
+WHERE  r1.a = r2.a
+</program>
+uses the <@>as</@> keyword
+<program>
+SELECT r1.a, r2.b
+FROM   R <b>as</b> r1, R <b>as</b> r2
+WHERE  r1.a = r2.a
+</program>
+</slide>
+
+<slide>
+<heading>Explicit Joins
+SQL supports syntax for explicit joins:
+<syntax>
+SELECT...FROM A natural join B
+SELECT...FROM A join B using (<$>A<sub>1</sub></$>,...,<$>A<sub>n</sub></$>)
+SELECT...FROM A join B on <$>Condition</$>
+</syntax>
+The <@>natural join</@> and <@>join using</@> forms assume
+that the join attributes are named the same in each relation.
+</slide>
+
+<slide>
+<continued>
+<b>Example:</b> Find the beers sold at bars where John drinks
+<program>
+SELECT Sells.bar, beer, price
+FROM   Sells, Frequents
+WHERE  drinker = 'John'
+       AND Sells.bar = Frequents.bar;
+</program>
+could also be expressed as
+<program>
+SELECT bar, beer, price
+FROM   Sells natural join Frequents
+WHERE  drinker='John';
+       <comment>-- joins on the only common attribute: bar</comment>
+</program>
+</slide>
+
+<slide>
+<continued>
+The example could also be expressed as
+<program>
+SELECT bar, beer, price
+FROM   Sells join Frequents using (bar)
+WHERE  drinker='John';
+       <comment>-- only one bar attribute in join result</comment>
+</program>
+or
+<program>
+SELECT Sells.bar, beer, price
+FROM   Sells join Frequents
+           on Sells.bar = Frequents.bar
+WHERE  drinker='John';
+       <comment>-- bar attribute occurs twice in join result</comment>
+</program>
+</slide>
+
+<slide>
+<heading>Outer Join
+Join only produces tuples where there are matching values
+in both of the relations involved in the join.
+<p>
+Often, it is useful to produce results for all tuples in
+one relation, even if it has no matches in the other.
+<p>
+Consider the query: for each region, find out who drinks there.
+</slide>
+
+<slide>
+<continued>
+A regular join only gives results for regions where people
+drink.
+<sprogram>
+SELECT B.addr, F.drinker
+FROM   Bars as B join Frequents as F
+       on (bar = name)
+ORDER BY addr;
+
+   addr    | drinker 
+-----------+---------
+ Coogee    | Adam
+ Coogee    | John
+ Kingsford | Justin
+ Sydney    | Justin
+ The Rocks | John
+</sprogram>
+But what if we want a result that shows all regions,
+even if there are no drinkers there?
+</slide>
+
+<slide>
+<continued>
+An <em>outer join</em> solves this problem.
+<p>
+For <$>R</$> <@>OUTER JOIN</@> <$>S</$>
+<itemize>
+<item> all <q>tuples</q> in <$>R</$> have an entry in the result
+<item> if a tuple from <$>R</$> matches a tuple in <$>S</$>, <br>
+	we get the normal join result tuple
+<item> if a tuple from <$>R</$> has no matches in <$>S</$>, <br>
+	the attributes supplied by <$>S</$> are <@>NULL</@>
+</itemize>
+This outer join variant is called <@>LEFT OUTER JOIN</@>.
+</slide>
+
+<slide>
+<continued>
+Solving the example query with an outer join:
+<sprogram>
+SELECT B.addr, F.drinker
+FROM   Bars as B
+          left outer join
+       Frequents as F
+          on (bar = name)
+ORDER BY B.addr;
+
+    addr    | drinker 
+------------+---------
+ Coogee     | Adam
+ Coogee     | John
+ Kingsford  | Justin
+ Randwick   | 
+ Sydney     | Justin
+ The Rocks  | John
+</sprogram>
+Note that Randwick is now mentioned
+<small>(because of the Royal Hotel)</small>.
+</slide>
+
+<slide>
+<continued>
+Many RDBMSs provide three variants of outer join:
+<itemize>
+<item> <$>R</$> <@>LEFT OUTER JOIN</@> <$>S</$>
+<itemize>
+<item> behaves as described above
+</itemize>
+<item> <$>R</$> <@>RIGHT OUTER JOIN</@> <$>S</$>
+<itemize>
+<item> includes all tuples from <$>S</$> in the result
+<item> <@>NULL</@>-fills any <$>S</$> tuples with no matches in <$>R</$>
+</itemize>
+<item> <$>R</$> <@>FULL OUTER JOIN</@> <$>S</$>
+<itemize>
+<item> includes all tuples from <$>R</$> and <$>S</$> in the result
+<item> those without matches in other relation are <@>NULL</@>-filled
+</itemize>
+</itemize>
+</slide>
+
+<slide>
+<heading> Subqueries
+The result of a <@>SELECT-FROM-WHERE</@> query can be used in the
+<@>WHERE</@> clause of another query.
+<p>
+<b>Simplest Case:</b> Subquery returns a single, unary tuple
+<p>
+Can treat the result as a single constant value and use in expressions.
+<p>
+Syntax:
+<program>
+SELECT *
+FROM   R
+WHERE  R.a = (SELECT x FROM S WHERE Cond)
+             <comment>-- assume only one result</comment>
+</program>
+</slide>
+
+<slide>
+<continued>
+<b>Example:</b>
+Find bars that serve New at the same price as the Coogee Bay Hotel
+charges for VB.
+<sprogram>
+SELECT bar
+FROM   Sells
+WHERE  beer = 'New' AND
+       price =
+          (SELECT price
+           FROM   Sells
+           WHERE  bar = 'Coogee Bay Hotel'
+                  AND beer = 'Victoria Bitter');
+
+     bar     
+-------------
+ Royal Hotel
+</sprogram>
+<small>
+The inner query finds the price of VB at the CBH, and uses
+this as an argument to a test in the outer query.
+</small>
+</slide>
+
+<slide>
+<continued>
+Note the potential ambiguity in references to attributes of <@>Sells</@>
+<sprogram>
+SELECT <b>bar</b>
+FROM   Sells
+WHERE  <b>beer</b> = 'New' AND
+       price =
+          (SELECT price
+           FROM   Sells
+           WHERE  <b><blue>bar</blue></b> = 'Coogee Bay Hotel'
+                  AND <b><blue>beer</blue></b> = 'Victoria Bitter');
+</sprogram>
+This introduces notions of scope: an attribute refers to the most
+closely nested relation with that attribute.
+<p>
+Parentheses around the subquery are required (and set the scope).
+</slide>
+
+<slide>
+<continued>
+Note also that the query could be answered via:
+<sprogram>
+SELECT s1.bar
+FROM   Sells as s1, Sells as s2
+WHERE  s1.beer = 'New'
+       AND s1.price = s2.price 
+       AND s2.bar = 'Coogee Bay Hotel'
+       AND s2.beer = 'Victoria Bitter';
+</sprogram>
+In general, expressing a query via joins will be much more
+efficient than expressing it with sub-queries.
+</slide>
+
+<slide>
+<continued>
+<b>Complex Case:</b> Subquery returns multiple unary tuples.
+<p>
+Treat it as a list of values, and use the various operators
+on lists/sets (e.g. <@>IN</@>).
+<p>
+<b>Complex Case:</b> Subquery returns a relation.
+<p>
+Most of the <q>list operators</q> also work on relations.
+<p>
+
+</slide>
+
+<slide>
+<heading> The <@>IN</@> Operator
+Tests whether a specified tuple is contained in a relation.
+<p>
+<i>tuple</i> <@>IN</@> <i>relation</i> <~> is true iff the tuple
+is contained in the relation.
+<p>
+Conversely for <~> <i>tuple</i> <@>NOT IN</@> <i>relation</i>.
+<p>
+Syntax:
+<program>
+SELECT *
+FROM   R
+WHERE  R.a IN (SELECT x FROM S WHERE Cond)
+              <comment>-- assume multiple results</comment>
+</program>
+</slide>
+
+<slide>
+<continued>
+<b>Example:</b>
+Find the name and brewer of beers that John likes.
+<program>
+SELECT *
+FROM   Beers
+WHERE  name IN
+          (SELECT beer
+           FROM   Likes
+           WHERE  drinker = 'John');
+
+        name         |     manf      
+---------------------+---------------
+ 80/-                | Caledonian
+ Bigfoot Barley Wine | Sierra Nevada
+ Pale Ale            | Sierra Nevada
+ Three Sheets        | Lord Nelson
+</program>
+The subexpression answers the question "What are the names
+of the beers that John likes?"
+</slide>
+
+<slide>
+<continued>
+Note that this query can be answered equally well without using <@>IN</@>.
+<program>
+SELECT Beers.name, Beers.manf
+FROM   Beers, Likes
+WHERE  Likes.drinker = 'John' AND
+       Likes.beer = Beers.name;
+
+        name         |     manf      
+---------------------+---------------
+ 80/-                | Caledonian
+ Bigfoot Barley Wine | Sierra Nevada
+ Pale Ale            | Sierra Nevada
+ Three Sheets        | Lord Nelson
+</program>
+The version with the subquery corresponds more closely to the way the
+original query was expressed, and is probably "more natural".
+<p>
+The subquery version is, however, potentially less efficient.
+</slide>
+
+<slide>
+<heading> The <@>EXISTS</@> Function
+<@>EXISTS(</@><i>relation</i><@>)</@> is true iff the relation is non-empty.
+<p>
+<b>Example:</b>
+Find the beers that are the unique beer by their manufacturer.
+<program>
+SELECT name, manf
+FROM   Beers b1
+WHERE  NOT EXISTS
+          (SELECT *
+           FROM   Beers
+           WHERE  manf = b1.manf
+                  AND name != b1.name);
+</program>
+Note the scoping rule: to refer to outer <@>Beers</@> in the
+inner subquery, we need to define a named tuple variable
+(in this example <@>b1</@>).
+<p>
+A subquery that refers to values from a surrounding query
+is called a <b>correlated subquery</b>.
+</slide>
+
+<slide>
+<heading> Quantifiers
+<@>ANY</@> and <@>ALL</@> behave as existential and universal quantifiers
+respectively.
+<p>
+<b>Example:</b> Find the beers sold for the highest price.
+<program>
+SELECT beer
+FROM   Sells
+WHERE  price >>=
+          ALL(SELECT price FROM sells);
+</program>
+Beware: in common use, "any" and "all" are often synonyms.
+<p>
+E.g. "I'm better than any of you" vs. "I'm better than all of you".
+</slide>
+
+<slide>
+<heading> Union, Intersection, Difference
+SQL implements the standard set operations on <q>union-compatible</q>
+relations:
+<deftable 6>
+<row>
+<col1><i>R1</i> <@>UNION</@> <i>R2</i></col1>
+<col2>set of tuples in either <i>R1</i> or <i>R2</i></col2>
+</row>
+<row>
+<col1><i>R1</i> <@>INTERSECT</@> <i>R2</i></col1>
+<col2>set of tuples in both <i>R1</i> and <i>R2</i></col2>
+</row>
+<col1><i>R1</i> <@>EXCEPT</@> <i>R2</i></col1>
+<col2>set of tuples in <i>R1</i> but not <i>R2</i></col2>
+</row>
+</deftable>
+<small>
+Oracle deviates from the SQL standard and uses <@>MINUS</@>
+for <@>EXCEPT</@>; PostgreSQL follows the standard.
+</small>
+</slide>
+
+<slide>
+<continued>
+<b>Example:</b>
+Find the drinkers and beers such that the drinker likes
+the beer and frequents a bar that sells it.
+<program>
+(SELECT * FROM Likes)
+INTERSECT
+(SELECT drinker,beer
+ FROM   Sells natural join Frequents);
+
+ drinker |      beer       
+---------+-----------------
+ Adam    | New
+ John    | Three Sheets
+ Justin  | Victoria Bitter
+</program>
+</slide>
+
+<slide>
+<heading> Bag Semantics of SQL
+An SQL relation is really a <b>bag</b> (<b>multiset</b>):
+<itemize>
+<item> it may contain the same tuple more than once
+<item> unlike lists, there is no specified order on the elements
+<item> example: <$>{1, 2, 1, 3}</$> is a bag and is not a set
+</itemize>
+This changes the semantics of the "set" operators
+<@>UNION</@>, <@>INTERSECT</@> and <@>MINUS</@>.
+</slide>
+
+<slide>
+<continued>
+<b>Bag Union</b>
+<p>
+Sum the times an element appears in the two bags
+<itemize>
+<item> example: <~> <$>{1,2,1} <~> <union> <~> {1,2,3} <~> = <~> {1,1,1,2,2,3}</$>
+</itemize>
+<b>Bag Intersection</b>
+<p>
+Take the minimum number of occurrences from each bag.
+<itemize>
+<item> example: <~> <$>{1,2,1} <~> <intersect> <~> {1,2,3} <~> = <~> {1,2}</$>
+</itemize>
+<b>Bag Difference</b>
+<p>
+Proper-subract the number of occurrences in the two bags.
+<itemize>
+<item> example: <~> <$>{1,2,1} <~> - <~> {1,2,3} <~> = <~> {1}</$>
+</itemize>
+</slide>
+
+<slide>
+<heading> Forcing Bag/Set Semantics
+Default result for <@>SELECT-FROM-WHERE</@> is a bag.
+<p>
+Default result for <@>UNION</@>, <@>INTERSECT</@>, <@>MINUS</@> is a set.
+<p>
+Why the difference?
+<p>
+A bag can be produced faster because no need to worry about eliminating
+duplicates (which typically requires sorting).
+<p>
+Can force set semantics with <~> <@>SELECT DISTINCT</@>.
+<p>
+Can force bag semantics with <~> <@>UNION ALL</@>, ...
+</slide>
+
+<slide>
+<continued>
+<b>Example:</b> What beer manufacturers are there?
+<program>
+SELECT DISTINCT manf FROM Beers;
+
+     manf      
+---------------
+ Caledonian
+ Carlton
+ Cascade
+ Cooper's
+ George IV Inn
+ Lord Nelson
+ Sierra Nevada
+ Toohey's
+</program>
+Note that the result is sorted.
+<p>
+If we omit <@>DISTINCT</@>, we get 18 unsorted tuples in the result.
+</slide>
+
+<slide>
+<heading>Division
+Not all SQL implementations provide a divide operator, but the same effect
+can be achieved by combination of existing operations.
+<p>
+<b>Example:</b> Find bars that each sell all of the beers Justin likes.
+<program>
+SELECT DISTINCT a.bar
+FROM   Sells a
+WHERE  NOT EXISTS (
+           (SELECT beer FROM Likes
+            WHERE drinker = 'Justin')
+           EXCEPT
+           (SELECT beer FROM Sells b
+            WHERE bar = a.bar)
+       );
+</program>
+</slide>
+
+<slide>
+<heading>Selection with Aggregation
+Selection clauses can contain aggregation operations.
+<p>
+<b>Example:</b> What is the average price of New?
+<program>
+SELECT AVG(price)
+FROM   Sells
+WHERE  beer = 'New';
+
+       avg        
+------------------
+ 2.38749998807907
+</program>
+<small>
+Note:
+<itemize>
+<sitem> the bag semantics of SQL gives the correct result here
+<sitem> the price for New in all hotels will be included, even if two hotels sell
+it at the same price
+<sitem> if we used set semantics, we'd get the average of all the
+<em>different</em> prices for New.
+</itemize>
+</small>
+</slide>
+
+<slide>
+<continued>
+If we want set semantics, we can force using <@>DISTINCT</@>.
+<p>
+<b>Example:</b> How many different bars sell beer?
+<program>
+SELECT COUNT(DISTINCT bar)
+FROM   Sells;
+
+ count 
+-------
+     6
+</program>
+Without <@>DISTINCT</@>, the result is 15 ... the number of
+entries in the <@>Sells</@> table.
+</slide>
+
+<slide>
+<heading> Aggregation operators
+The following operators apply to a list (bag) of
+<em>numeric</em> values in one column of a relation:
+<program>
+SUM   AVG   MIN   MAX   COUNT
+</program>
+The notation <@>COUNT(*)</@> gives the number of tuples in a relation.
+<p>
+<b>Example:</b> How many different beers are there?
+<program>
+SELECT COUNT(*) FROM Beers;
+
+ count 
+-------
+    18
+</program>
+</slide>
+
+<slide>
+<heading>Grouping
+<@>SELECT-FROM-WHERE</@> can be followed by <@>GROUP BY</@> to:
+<itemize>
+<item> partition result relation into groups
+	<br><small>(according to values of specified attribute)</small>
+<item> summarise some (several) aspects of each group
+<item> output relation contains one tuple per group
+</itemize>
+<p>
+<b>Example:</b> How many beers does each brewer make?
+<p>
+There is one entry for each beer by each brewer in the
+<@>Beers</@> table ...
+</slide>
+
+<slide>
+<continued>
+The following gives us a list of brewers:
+<program>
+SELECT manf FROM Beers;
+</program>
+The number of occurrences of each brewer is the number of
+beers that they make.
+<p>
+Ordering the list makes it much easier to work out:
+<program>
+SELECT manf FROM Beers ORDER BY manf;
+</program>
+but we still need to count length of runs by hand.
+</slide>
+
+<slide>
+<continued>
+If we <em>group</em> the runs, we can <@>count(*)</@> them:
+<program>
+SELECT   manf, COUNT(manf)
+FROM     Beers
+GROUP BY manf;
+
+     manf      | count 
+---------------+-------
+ Caledonian    |     1
+ Carlton       |     5
+ Cascade       |     1
+ Cooper's      |     2
+ George IV Inn |     1
+ Lord Nelson   |     2
+ Sierra Nevada |     2
+ Toohey's      |     4
+</program>
+</slide>
+
+<slide>
+<continued> Semantics of <@>GROUP BY</@>
+<@>GROUP BY</@> is used as follows:
+<program>
+   SELECT   <i>attributes/aggregations</i>
+   FROM     <i>relations</i>
+   WHERE    <i>condition</i>
+   GROUP BY <i>attribute</i>
+</program>
+Semantics:
+<enumerate>
+<item> apply product and selection as for <@>SELECT-FROM-WHERE</@>
+<item> partition result into groups based on values of <i>attribute</i>
+<item> apply any aggregation separately to each group
+</enumerate>
+</slide>
+
+<slide>
+<continued>
+The query
+<sprogram>
+select manf,count(manf) from Beers group by manf;
+</sprogram>
+first produces a partitioned relation 
+and then counts the number of tuples in each partition:
+<p>
+<diagram>Pic/sql/groupby.png
+</slide>
+
+<slide>
+<continued>
+Grouping is typically used in queries involving the phrase
+<q>for each</q>.
+<p>
+<b>Example:</b>
+For each drinker, find the average price of New at the bars they go to.
+<sprogram>
+SELECT   drinker, AVG(price) as "Avg.Price"
+FROM     Frequents, Sells
+WHERE    beer = 'New'
+         AND Frequents.bar = Sells.bar
+GROUP BY drinker;
+
+ drinker | Avg.Price 
+---------+-----------
+ Adam    |      2.25
+ John    |      2.25
+ Justin  |       2.5
+</sprogram>
+</slide>
+
+<slide>
+<heading> Restrictions on <@>SELECT</@> Lists
+When using grouping, every attribute in the <@>SELECT</@> list must:
+<itemize>
+<item> have an aggregation operator applied to it <~~> OR
+<item> appear in the <@>GROUP-BY</@> clause
+</itemize>
+<b>Incorrect Example:</b>
+Find the hotel that sells 'New' cheapest.
+<program>
+SELECT bar, MIN(price)
+FROM   Sells
+WHERE  beer = 'New';
+</program>
+PostgreSQL's response to this query:
+<program>
+ERROR: Attribute sells.bar must be GROUPed
+        or used in an aggregate function
+</program>
+</slide>
+
+<slide>
+<continued>
+How to answer the query: Which bar sells 'New' cheapest?
+<program>
+SELECT bar
+FROM   Sells
+WHERE  beer = 'New' AND
+       price <= (SELECT MIN(price)
+                 FROM   Sells
+                 WHERE  beer = 'New');
+
+     bar      
+--------------
+ Regent Hotel
+</program>
+</slide>
+
+<slide>
+<continued>
+Also, cannot use grouping to simply re-order results.
+<p>
+<b>Incorrect Example:</b>
+Print beers grouped by their manufacturer.
+<program>
+SELECT name, manf FROM Beers
+GROUP BY manf;
+
+ERROR: Attribute beers.name must be GROUPed
+       or used in an aggregate function
+</program>
+</slide>
+
+<slide>
+<continued>
+How to print beers grouped by their manufacturer?
+<program>
+SELECT name, manf FROM Beers
+ORDER BY manf;
+
+        name         |     manf      
+---------------------+---------------
+ 80/-                | Caledonian
+ Crown Lager         | Carlton
+ Fosters Lager       | Carlton
+ Invalid Stout       | Carlton
+ Melbourne Bitter    | Carlton
+ Victoria Bitter     | Carlton
+ Premium Lager       | Cascade
+...
+</program>
+<@>ORDER BY</@> can be applied to multiple attributes.
+</slide>
+
+<slide>
+<heading> Eliminating Groups
+In some queries, you can use the <@>WHERE</@> condition to
+eliminate groups.
+<p>
+<b>Example:</b> Average beer price by suburb excluding hotels in The Rocks.
+<program>
+SELECT   Bars.addr, AVG(Sells.price)
+FROM     Sells, Bars
+WHERE    Bars.addr != 'The Rocks'
+         AND Sells.bar = Bars.name
+GROUP BY Bars.addr;
+</program>
+For more complex conditions on groups, use the <@>HAVING</@> clause.
+</slide>
+
+<slide>
+<continued>
+<@>HAVING</@> is used to qualify a <@>GROUP-BY</@> clause:
+<program>
+SELECT   <i>attributes/aggregations</i>
+FROM     <i>relations</i>
+WHERE    <i>condition</i> (on tuples)
+GROUP BY <i>attribute</i>
+HAVING   <i>condition</i> (on group);
+</program>
+Semantics of <@>HAVING</@>:
+<enumerate>
+<sitem> generate the groups as for <@>GROUP-BY</@>
+<sitem> eliminate groups <em>not</em> satisfying <@>HAVING</@> condition
+<sitem> apply aggregations to remaining groups
+</enumerate>
+<small>
+Note: <@>HAVING</@> condition can use relations/variables from <@>FROM</@>
+just like <@>WHERE</@> condition, but variables range over each group.
+</small>
+</slide>
+
+<slide>
+<continued>
+<b>Example:</b> Find the average price of common beers  (i.e.
+those that are served in more than one hotel).
+<program>
+SELECT   beer,
+         to_char(AVG(price),'9.99')
+           as "$$$"
+FROM     Sells
+GROUP BY beer
+HAVING   COUNT(bar) > 1;
+
+      beer       |  $$$   
+-----------------+-------
+ New             |  2.39
+ Old             |  2.53
+ Victoria Bitter |  2.40
+</program>
+</slide>
+
+<slide>
+<continued>
+The <@>HAVING</@> condition can have components that do not
+use aggregation.
+<p>
+<b>Example:</b> Find the average price of beers that are either
+commonly served (in more than one hotel) or are manufactured by Cooper's.
+<program>
+SELECT beer, AVG(price)
+FROM   Sells
+GROUP BY beer
+HAVING COUNT(bar) > 1
+       OR beer in
+           (SELECT name
+            FROM   beers
+            WHERE  manf = 'Cooper''s');
+
+      beer       |       avg        
+-----------------+------------------
+ New             | 2.38749998807907
+ Old             | 2.53333330154419
+ Sparkling Ale   | 2.79999995231628
+ Victoria Bitter | 2.39999997615814
+</program>
+</slide>
+
+<slide>
+<continued>
+GROUP-BY and HAVING also provide an alternative formulation
+for division.
+<p>
+<b>Example:</b> Find bars that each sell all of the beers Justin likes.
+<program>
+SELECT DISTINCT S.bar
+FROM   Sells S, Likes L
+WHERE  S.beer = L.beer
+       AND L.drinker = 'Justin'
+GROUP BY bar
+HAVING count(S.beer) =
+           (SELECT count(beer) FROM Likes
+            WHERE drinker = 'Justin');
+</program>
+</slide>
+
+<slide>
+<heading>Partitions and Window Functions
+Sometimes it is useful to
+<itemize>
+<item> partition a table into groups
+<item> compute results that apply to each group
+<item> use these results with individual tuples in the group
+</itemize>
+Comparison with <@>GROUP-BY</@>
+<itemize>
+<item> <@>GROUP-BY</@> produces one tuple for each group
+<item> <@>PARTITION</@> augments each tuple with group-based value(s)
+<item> can use other functions than aggregates <small>(e.g. ranking)</small>
+<item> can use attributes other than the partitioning ones
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Syntax for <@>PARTITION</@>:
+<syntax>
+SELECT <$>attr<sub>1</sub></$>, <$>attr<sub>2</sub></$>, ...,
+       <$>aggregate<sub>1</sub></$> OVER (PARTITION BY <$>attr<sub>i</sub></$>),
+       <$>aggregate<sub>2</sub></$> OVER (PARTITION BY <$>attr<sub>j</sub></$>), ...
+FROM   <$>Table</$>
+WHERE  <$>condition on attributes</$>
+</syntax>
+Note: the <$>condition</$> cannot include the <$>aggregate</$> value(s)
+</slide>
+
+<slide>
+<continued>
+Example: show each city with daily temperature and temperature range
+<p>
+Schema: <$>Weather(city,date,temperature)</$>
+<program>
+SELECT  city,  date,  temperature as temp,
+        min(temperature) OVER (PARTITION BY city) as lowest,
+        max(temperature) OVER (PARTITION BY city) as highest
+FROM    Weather;
+</program>
+Output: <$>Result(city, date, temp, lowest, highest)</$>
+</slide>
+
+<slide>
+<continued>
+Example showing <@>GROUP BY</@> and <@>PARTITION</@> difference:
+<program>
+SELECT city, min(temperature) max(temperature)
+FROM   Weather  GROUP BY city
+</program>
+Result: one tuple for each city <~> <$>Result(city,min,max)</$>
+<program>
+SELECT city,  date,  temperature as temp,
+       min(temperature) OVER (PARTITION BY city),
+       max(temperature) OVER (PARTITION BY city)
+FROM   Weather;
+</program>
+Result: one tuple for each temperature measurement.
+</slide>
+
+<slide>
+<continued>
+Example: get a list of low-scoring students in each course
+<br> <small>(low-scoring = mark is less than average mark for class)</small>
+<p>
+Schema: <$>Enrolment(course,student,mark)</$>
+<p>
+Approach:
+<itemize>
+<sitem> generate tuples containing <$>(student,mark,classAvg)</$>
+<sitem> select just those tuples satisfying <$>(mark << classAvg)</$>
+</itemize>
+Implementation of first step via window function
+<program>
+SELECT course, student, mark,
+       avg(mark) OVER (PARTITION BY course)
+FROM   Enrolments;
+</program>
+We now look at several ways to complete this data request ...
+</slide>
+
+<slide>
+<heading>Complex Queries
+For complex queries, it is often useful to
+<itemize>
+<item> break the query into a collection of smaller queries
+<item> define the top-level query in terms of these
+</itemize>
+This can be accomplished in three ways in SQL:
+<itemize>
+<item> views <~> <small>(discussed in detail below)</small>
+<item> subqueries in the <@>FROM</@> clause
+<item> subqueries in a <@>WITH</@> clause
+</itemize>
+<~><br>
+<small>
+Note that we cannot <q>correlate</q> such subqueries in the same way
+as we can subqueries in the <@>WHERE</@> clause.
+</small>
+</slide>
+
+<slide>
+<continued>
+Defining complex queries using views:
+<program>
+CREATE VIEW CourseMarksAndAverages(course,student,mark,avg)
+AS
+SELECT course, student, mark,
+       avg(mark) OVER (PARTITION BY course)
+FROM   Enrolments;
+
+SELECT course, student, mark
+FROM   CourseMarksAndAverages
+WHERE  mark << avg;
+</program>
+</slide>
+
+<slide>
+<continued>
+In the general case:
+<syntax>
+CREATE VIEW <$>View<sub>1</sub></$>(<$>a,b,c,d</$>) AS <$>Query<sub>1</sub></$>;
+CREATE VIEW <$>View<sub>2</sub></$>(<$>e,f,g</$>) AS <$>Query<sub>2</sub></$>;
+...
+SELECT <$>a</$>,<$>f</$> FROM <$>View<sub>1</sub></$>, <$>View<sub>2</sub></$> WHERE <$>c</$> = <$>e</$>;
+</syntax>
+Notes:
+<itemize>
+<sitem> look like tables <~> <small>(<q>virtual</q> tables)</small>
+<sitem> exist as objects in the database <~> <small>(stored queries)</small>
+<sitem> useful if specific query is required frequently
+</itemize>
+</slide>
+
+
+<slide>
+<continued>
+Defining complex queries using <@>FROM</@> subqueries:
+<program>
+SELECT course, student, mark
+FROM   (SELECT course, student, mark,
+               avg(mark) OVER (PARTITION BY course)
+        FROM   Enrolments) AS CourseMarkAndAverages
+WHERE  mark << avg;
+</program>
+Avoids the need to define views.
+</slide>
+
+<slide>
+<continued>
+In the general case:
+<syntax>
+SELECT <$>attributes</$>
+FROM   (<$>Query<sub>1</sub></$>) AS X,
+       (<$>Query<sub>2</sub></$>) AS Y,
+       ...
+WHERE  X.a = Y.b AND <$>other conditions</$>
+</syntax>
+Notes:
+<itemize>
+<sitem> must provide name for each subquery, even if never used
+<sitem> subquery table inherits attribute names from query <br>
+	<small>(e.g. in the above, we assume that <$>Query<sub>1</sub></$> returns an attribute called <@>a</@>)</small>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Defining complex queries using <@>WITH</@>:
+<program>
+WITH CourseMarksAndAverages AS
+     (SELECT course, student, mark,
+             avg(mark) OVER (PARTITION BY course)
+      FROM   CourseEnrolments)
+SELECT course, student, mark, avg
+FROM   CourseMarksAndAverages
+WHERE  mark << avg;
+</program>
+Avoids the need to define views.
+</slide>
+
+<slide>
+<continued>
+In the general case:
+<syntax>
+WITH   <$>Name<sub>1</sub></$>(a,b,c) AS (<$>Query<sub>1</sub></$>),
+       <$>Name<sub>2</sub></$> AS (<$>Query<sub>1</sub></$>), ...
+SELECT <$>attributes</$>
+FROM   <$>Name<sub>1</sub></$>, <$>Name<sub>2</sub></$>, ...
+WHERE  <$>conditions with attributes of Name<sub>1</sub> and Name<sub>2</sub></$>
+</syntax>
+Notes:
+<itemize>
+<sitem> <$>Name<sub>1</sub></$>, etc. are like temporary tables
+<sitem> named tables inherit attribute names from query
+</itemize>
+</slide>
+
+<slide>
+<heading>Recursive Queries
+<@>WITH</@> also provides the basis for recursive queries.
+<p>
+Recursive queries are structured as:
+<syntax>
+WITH RECURSIVE <$>Recurs</$>(<$>attributes</$>) AS (
+     SELECT ... <$>not involving Recurs</$>
+   UNION
+     SELECT ... FROM <$>Recurs</$>, ...
+)
+SELECT <$>attributes</$>
+FROM   <$>Recurs</$>, ...
+WHERE  <$>condition involving Recurs attributes</$>
+</syntax>
+<small>
+Useful for scenarios in which we need to traverse multi-level relationships.
+</small>
+</slide>
+
+<slide>
+<continued>
+Simple example involving a <q>virtual</q> table.
+<p>
+Sum the numbers from 1 to 100:
+<program>
+WITH RECURSIVE t(n) AS (
+     SELECT 1
+   UNION
+     SELECT n+1 FROM t WHERE n < 100
+)
+SELECT sum(n) FROM t;
+</program>
+</slide>
+
+<slide>
+<continued>
+In the general case:
+<syntax>
+WITH RECURSIVE <$>Recurs</$>(<$>attributes</$>) AS (
+     <$>Q<sub>1</sub></$> (non-recursive query)
+   UNION
+     <$>Q<sub>2</sub></$> (recursive query)
+)
+SELECT * FROM <$>Recurs</$>;
+</syntax>
+Requires the use of several temporary tables:
+<itemize>
+<sitem> <$>Result</$> is the final result of evaluating the query
+<sitem> <$>Working</$>, <$>Temp</$> hold intermediate results 
+</itemize>
+</slide>
+
+<slide>
+<continued>
+How recursion works:
+<program>
+<$>Working</$> =  <$>Result</$> = evaluate <$>Q<sub>1</sub></$>
+while (<$>Working</$> table is not empty) {
+    <$>Temp</$> = evaluate <$>Q<sub>2</sub></$>, using <$>Working</$> in place of <$>Recurs</$>
+    <$>Temp</$> = <$>Temp</$> - <$>Result</$>
+    <$>Result</$> = <$>Result</$> UNION <$>Temp</$>
+    <$>Working</$> = <$>Temp</$>
+}
+</program>
+<~>
+<small>
+I.e. generate new tuples until we see nothing not already seen.
+</small>
+</slide>
+
+<slide>
+<continued>
+Example: count number of each sub-part in a given part.
+<p>
+Schema: <$>Parts(part, sub_part, quantity)</$>
+<sprogram>
+WITH RECURSIVE IncludedParts(sub_part, part, quantity) AS (
+    SELECT sub_part, part, quantity
+    FROM   Parts WHERE part = <$>GivenPart</$>
+  UNION ALL
+    SELECT p.sub_part, p.part, p.quantity
+    FROM   IncludedParts i, Parts p
+    WHERE  p.part = i.sub_part
+  )
+SELECT sub_part, SUM(quantity) as total_quantity
+FROM   IncludedParts
+GROUP  BY sub_part
+</sprogram>
+</slide>
+
+<slide>
+<heading>SQL: Views
+</slide>
+
+<slide>
+<heading> Views
+A <em>view</em> is like a <q>virtual relation</q> defined via a query.
+<p>
+View definition and removal:
+<syntax>
+CREATE VIEW <$>ViewName</$> AS <$>Query</$>
+
+CREATE VIEW <$>ViewName</$> [ (<$>AttributeNames</$>) ]
+AS <$>Query</$>
+
+DROP VIEW <$>ViewName</$>
+</syntax>
+The <$>Query</$> may be any SQL query, involving
+<itemize>
+<item> other views <~> <small>(<i>intensional relations</i>)</small>
+<item> stored tables <~> <small>(<i>extensional relations</i>)</small>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+The stored tables in a view are referred to as <em>base tables</em>.
+<p>
+Views are defined only after their base tables are defined.
+<p>
+A view is valid only as long as its underlying query is valid.
+<p>
+Dropping a view has no effect on the base tables.
+</slide>
+
+<slide>
+<continued>
+<b>Example:</b>
+An avid Carlton drinker might not be interested in any other kinds of beer.
+<program>
+CREATE VIEW  MyBeers  AS
+   SELECT name, manf
+   FROM   Beers
+   WHERE  manf = 'Carlton';
+
+SELECT * FROM MyBeers;
+
+       name       |  manf   
+------------------+---------
+ Crown Lager      | Carlton
+ Fosters Lager    | Carlton
+ Invalid Stout    | Carlton
+ Melbourne Bitter | Carlton
+ Victoria Bitter  | Carlton
+</program>
+</slide>
+
+<slide>
+<continued>
+A view might not use all attributes of the base relations.
+<p>
+<b>Example:</b> We don't really need the address of inner-city hotels.
+<program>
+CREATE VIEW  InnerCityHotels  AS
+   SELECT name, license
+   FROM   Bars
+   WHERE  addr in ('The Rocks','Sydney');
+
+SELECT * FROM InnerCityHotels;
+
+      name       | license 
+-----------------+---------
+ Australia Hotel |  123456
+ Lord Nelson     |  123888
+ Marble Bar      |  122123
+</program>
+</slide>
+
+<slide>
+<continued>
+A view might use computed attribute values.
+<p>
+<b>Example:</b> Number of beers produced by each brewer.
+<program>
+CREATE VIEW BeersBrewed AS
+   SELECT manf as brewer,
+          count(*) as nbeers
+   FROM   beers GROUP BY manf;
+
+SELECT * FROM BeersBrewed;
+
+    brewer     | nbeers 
+---------------+--------
+ Caledonian    |      1
+ Carlton       |      5
+ Cascade       |      1
+ ...
+</program>
+</slide>
+
+<slide>
+<heading>Renaming View Attributes
+This can be achieved in two different ways:
+<program>
+CREATE VIEW  InnerCityHotels  AS
+   SELECT name AS pub, license AS lic
+   FROM   Bars
+   WHERE  addr IN ('The Rocks', 'Sydney');
+
+CREATE VIEW  InnerCityHotels(pub,lic)  AS
+   SELECT name, license
+   FROM   Bars
+   WHERE  addr IN ('The Rocks', 'Sydney');
+</program>
+</slide>
+
+<slide>
+<heading>Using Views
+Views can be used in queries as if they were stored relations.
+<p>
+However, they differ from stored relations in two important respects:
+<itemize>
+<item> their <q>value</q> can change without being explicitly modified <br>
+	<small>(i.e. a view may change whenever one of its base tables is updated)</small>
+<item> they may not be able to be explicitly modified (updated) <br>
+	<small>(only a certain simple kinds of views can be explicitly updated)</small>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+<b>Example:</b> of view changing when base table changes.
+<program>
+SELECT * FROM InnerCityHotels;
+      name       | license 
+-----------------+---------
+ Australia Hotel |  123456
+ Lord Nelson     |  123888
+ Marble Bar      |  122123
+
+<comment>-- then the Lord Nelson goes broke</comment>
+DELETE FROM Bars WHERE name = 'Lord Nelson';
+
+<comment>-- no explict update has been made to InnerCityHotels</comment>
+SELECT * FROM InnerCityHotels;
+      name       | license 
+-----------------+---------
+ Australia Hotel |  123456
+ Marble Bar      |  122123
+</program>
+</slide>
+
+<slide>
+<heading>Updating Views
+Explicit updates are allowed on views satisfying the following:
+<itemize>
+<item> the view involves a single relation <@>R</@>
+<item> the <@>WHERE</@> clause does not involve <@>R</@> in a subquery
+<item> the <@>WHERE</@> clause only uses attributes from the <@>SELECT</@>
+</itemize>
+Attributes not in the view's <@>SELECT</@> will be set to <@>NULL</@>
+in the base relation after an insert into the view.
+</slide>
+
+<slide>
+<continued>
+<b>Example:</b> Our <@>InnerCityHotel</@> view is not updatable.
+<program>
+INSERT INTO InnerCityHotels
+VALUES ('Jackson''s on George', '9876543');
+</program>
+creates a new tuple in the <@>Bars</@> relation:
+<program>
+(Jackson's on George,  NULL,  9876543)
+</program>
+when we <@>SELECT</@> from the view, this new tuple does not
+satisfy the view condition:
+<program>
+addr IN ('The Rocks', 'Sydney')
+</program>
+</slide>
+
+<slide>
+<continued>
+If we had chosen to omit the <@>license</@> attribute instead,
+it would be updatable:
+<program>
+CREATE VIEW CityHotels AS
+   SELECT name,addr FROM Bars
+   WHERE  addr IN ('The Rocks', 'Sydney');
+
+INSERT INTO CityHotels 
+VALUES ('Jackson''s on George', 'Sydney');
+</program>
+creates a new tuple in the <@>Bars</@> relation:
+<program>
+(Jackson's on George, Sydney, NULL)
+</program>
+which would appear in the view after the insertion.
+</slide>
+
+<slide>
+<continued>
+Updatable views in PostgreSQL require us to specify explicitly
+how updates are done:
+<program>
+CREATE RULE InsertCityHotel AS
+   ON INSERT TO CityHotels
+   DO INSTEAD
+      INSERT INTO Bars VALUES
+         (new.name, new.addr, NULL);
+
+CREATE RULE UpdateCityHotel AS
+   ON UPDATE TO CityHotels
+   DO INSTEAD
+      UPDATE Bars
+      SET    addr = new.addr
+      WHERE  name = old.name;
+</program>
+</slide>
+
+
+<slide>
+<heading>Evaluating Views
+Two alternative ways of implementing views:
+<itemize>
+<item> re-writing rules (or macros)
+<itemize>
+<item> when a view is used in a query, the query is re-written
+<item> after rewriting, becomes a query only on base relations
+</itemize>
+<item> explicit stored relations (called <em>materialized views</em>)
+<itemize>
+<item> the view is stored as a real table in the database
+<item> updated appropriately when base tables are modified
+</itemize>
+</itemize>
+<small>
+The difference: underlying query evaluated either at query time or at update time.
+</small>
+</slide>
+
+<slide>
+<continued>
+<b>Example:</b> Using the <@>InnerCityHotels</@> view.
+<program>
+CREATE VIEW  InnerCityHotels  AS
+   SELECT name, license
+   FROM   Bars
+   WHERE  addr IN ('The Rocks', 'Sydney');
+
+SELECT name
+FROM   InnerCityHotels
+WHERE  license = '123456';
+
+<comment>--is rewritten into the following form before execution</comment>
+
+SELECT name
+FROM   Bars
+WHERE  addr IN ('The Rocks', 'Sydney')
+       AND license = '123456';
+</program>
+</slide>
+
+<slide>
+<continued>
+Demonstrate the rewriting process via relational algebra.
+<p>
+Some abbreviations
+<itemize>
+<item> <@>n</@> = <@>name</@>, <@>l</@> = <@>license</@>
+<item> <@>L</@> = <@>license = ''123456'</@>
+<item> <@>A</@> = <@>addr IN ('The Rocks', 'Sydney')</@>
+</itemize>
+View definition in RA:
+<program>
+InnerCityHotels = <$><proj><sub>(n,l)</sub></$>(<$><sel><sub>(A)</sub></$>(Bars))
+</program>
+</slide>
+
+<slide>
+<continued>
+Rewriting of query involving a view:
+<program>
+= SELECT name from InnerCityHotels
+  WHERE license = '123456'
+
+= <$><proj><sub>(n)</sub></$>(<$><sel><sub>(L)</sub></$>(InnerCityHotels))
+= <$><proj><sub>(n)</sub></$>(<$><sel><sub>(L)</sub></$>(<$><proj><sub>(n,l)</sub></$>(<$><sel><sub>(A)</sub></$>(Bars))))
+= <$><proj><sub>(n)</sub></$>(<$><proj><sub>(n,l)</sub></$>(<$><sel><sub>(L)</sub></$>(<$><sel><sub>(A)</sub></$>(Bars))))
+= <$><proj><sub>(n)</sub></$>(<$><sel><sub>(L)</sub></$>(<$><sel><sub>(A)</sub></$>(Bars)))
+= <$><proj><sub>(n)</sub></$>(<$><sel><sub>(L & A)</sub></$>(Bars))
+= <$><proj><sub>(n)</sub></$>(<$><sel><sub>(A & L)</sub></$>(Bars))
+
+= SELECT name FROM Bars
+  WHERE addr IN ('The Rocks', 'Sydney')
+        AND license = '123456'
+</program>
+</slide>
+
+<slide>
+<heading>Materialized Views
+Naive implementation of materialized views:
+<itemize>
+<item> replace view table by re-evaluating query after each update
+</itemize>
+Clearly this costs space and makes updates more expensive.
+<p>
+However, in a situation where
+<itemize>
+<item> updates are infrequent compared to queries on the view
+<item> the cost of <q>computing</q> the view is expensive
+</itemize>
+this approach provides substantial benefits.
+<p>
+Materialized views are used extensively in data warehouses.
+</slide>

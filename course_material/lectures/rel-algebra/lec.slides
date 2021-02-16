@@ -1,0 +1,286 @@
+<title>Relational Algebra
+<footer>COMP3311 20T3 <diamond> Relational Algebra <diamond>
+
+<slide>
+<heading>Relational Algebra
+<em>Relational algebra</em> (RA) can be viewed as ...
+<itemize>
+<item> mathematical system for manipulating relations, or
+<item> data manipulation language (DML) for the relational model
+</itemize>
+Relational algebra consists of:
+<itemize>
+<item> <em>operands</em>: relations, or variables representing relations
+<item> <em>operators</em> that map relations to relations
+<item> rules for combining operands/operators into expressions
+<item> rules for evaluating such expressions
+</itemize>
+Why is it important?
+<itemize>
+<item> because it forms the basis for DBMS implementation
+<item> relational algebra ops are like the machine code for DBMSs
+</itemize>
+</slide>
+
+<slide>
+<continued>
+<br>
+Core relational algebra operations:
+<itemize>
+<item> <em>rename</em>: change names of relations/attributes
+<item> <em>selection</em>: choosing a subset of tuples/rows
+<item> <em>projection</em>: choosing a subset of attributes/columns
+<item> <em>union</em>, <em>intersection</em>, <em>difference</em>: combining relations
+<item> <em>product</em>, <em>join</em>: combining relations
+</itemize>
+Common extensions include:
+<itemize>
+<item> <em>aggregation</em>, <~><em>projection++</em>, <~><em>division</em>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Select, project, join provide a powerful set of operations for
+building relations and extracting interesting data from them.
+<p>
+<diagram>Pics/relalg/spj.png
+<p>
+Adding set operations and renaming makes RA <em>complete</em>.
+</slide>
+
+<slide>
+<heading>Notation
+Standard treatments of relational algebra use Greek symbols.
+<p>
+We use the following notation <small>(because it is easier to reproduce)</small>:
+<deftable>
+<row>
+  <col1><b>Operation</b></col1>
+  <col2><b>Standard<br>Notation</b></col2>
+  <col3><b>Our<br>Notation</b></col3>
+</row>
+<row>
+  <col1>Selection</col1>
+  <col2><$><sel><sub>expr</sub>(Rel)</$></col2>
+  <col3><$>Sel[expr](Rel)</$></col3>
+</row>
+<row>
+  <col1>Projection</col1>
+  <col2><$><proj><sub>A,B,C</sub>(Rel)</$></col2>
+  <col3><$>Proj[A,B,C](Rel)</$></col3>
+</row>
+<row>
+  <col1>Join</col1>
+  <col2><$>Rel<sub>1</sub> <Join><sub>expr</sub> Rel<sub>2</sub></$></col2>
+  <col3><$>Rel<sub>1</sub> <~>Join[expr]<~> Rel<sub>2</sub></$></col3> 
+</row>
+<row>
+  <col1>Rename</col1>
+  <col2><$><renam><sub>schema</sub>Rel</$></col2>
+  <col3><$>Rename[schema](Rel)</$></col3> 
+</row>
+</deftable>
+<small>
+For other operations (e.g. set operations) we adopt the standard notation. <br>
+Except when typing in a text file, where <@>*</@> = intersection, <@>+</@> = union
+</small>
+</slide>
+
+<slide>
+<heading>Describing RA Operations
+We define the semantics of RA operations using
+<itemize>
+<item> <q>conditional set</q> expressions <~> e.g. <$>{ X | condition on X }</$>
+<item> tuple notations:
+<itemize>
+<item> <$>t[AB]</$> <~> <small>(extracts attributes <$>A</$> and <$>B</$> from tuple <$>t</$>)</small>
+<item> <$>(x,y,z)</$> <~> <small>(enumerated tuples; specify attribute values)</small>
+</itemize>
+<item> quantifiers, set operations, boolean operators
+</itemize>
+For each operation, we also describe it operationally:
+<itemize>
+<item> give an algorithm to compute the result, tuple-by-tuple
+<item> <small>the algorithm is not generally how it will be computed in practice</small>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+All RA operators return a result of type <em>relation</em>.
+<p>
+For convenience, we can name a result and use it later.
+<p>
+E.g.
+<program>
+Temp = R <$>op<sub>1</sub></$> S <$>op<sub>2</sub></$> T
+Res  = Temp <$>op<sub>3</sub></$> Z
+<comment>-- which is equivalent to</comment>
+Res  = (R <$>op<sub>1</sub></$> S <$>op<sub>2</sub></$> T) <$>op<sub>3</sub></$> Z
+</program>
+<small>
+Each <q>intermediate result</q> has a well-defined schema.
+</small>
+</slide>
+
+<slide>
+<heading>Example Database #1
+<p><br>
+<diagram>Pics/relalg/db1.png
+</slide>
+
+<slide>
+<heading>Example Database #2
+<p><br>
+<diagram>Pics/relalg/db2.png
+</slide>
+
+<slide>
+<heading>Rename
+<em>Rename</em> provides <q>schema mapping</q>.
+<p>
+If expression <$>E</$> returns a relation
+<$>R(A<sub>1</sub>, A<sub>2</sub>, ... A<sub>n</sub>)</$>, then
+<p>
+<center>
+<$>Rename[S(B<sub>1</sub>, B<sub>2</sub>, ... B<sub>n</sub>)](E)</$>
+</center>
+<p>
+gives a relation called <$>S</$>
+<itemize>
+<item> containing the same set of tuples as <$>E</$>
+<item> but with the name of each attribute changed from <$>A<sub>i</sub></$>
+to <$>B<sub>i</sub></$>
+</itemize>
+Rename is like the identity function on the <i>contents</i> of a relation
+<p>
+The only thing that Rename changes is the schema.
+</slide>
+
+<slide>
+<continued>
+<em>Rename</em> can be viewed as a <q>technical</q> apparatus of RA.
+<p>
+We can also use implicit rename/project in sequences of RA operations, e.g.
+<program90>
+<comment>--  R(a,b,c),  S(c,d)</comment>
+Res = Rename[Res(b,c,d)](Project[b,c](Sel[a>5](R)) Join S)
+<comment>-- vs</comment>
+Tmp1 = Select[a>5](R)
+Tmp2 = Project[b,c](Tmp1)
+Tmp3 = Rename[Tmp3(cc,d)](S)
+Tmp4 = Tmp2 Join[c=cc] Tmp3
+Res  = Rename[Res(b,c,d)](Tmp4)
+<comment>-- vs</comment>
+Tmp1(b,c)  = Select[a>5](R)
+Tmp2(cc,d) = S
+Res(b,c,d) = Tmp1 Join[c=cc] Tmp2
+</program>
+In SQL, we achieve a similar effect by defining a set of views
+</slide>
+
+<slide>
+<heading>Selection
+<em>Selection</em> returns a subset of the tuples
+in a relation <$>r(R)</$> that satisfy a specified condition <$>C</$>.
+<p>
+<center>
+<$><sel><sub>C</sub>(r)</$> <~> = <~> <$>Sel[C](r)</$> <~> = <~> { <$>t</$> <~>|<~> <$>t <in> r <and> C(t)</$> }
+</center>
+<p>
+<$>C</$> is a boolean expression on attributes in <$>R</$>.
+<p>
+Result size: <~> |<$><sel><sub>C</sub>(r)</$>| <$><leq></$> |<$>r</$>|
+<p>
+Result schema: <~> same as the schema of <$>r</$> <~> (i.e. <$>R</$>)
+<p>
+Algorithmic view:
+<program>
+<$>result</$> = {}
+for each tuple <$>t</$> in relation <$>r</$>
+    if (<$>C(t)</$>) { <$>result</$> = <$>result <union> {t}</$> }
+</program>
+</slide>
+
+<slide>
+<continued>
+Examples of selection:
+<p>
+<diagram>Pics/relalg/selection2
+</slide>
+
+<slide>
+<continued>
+Querying with relational algebra (selection) ...
+<itemize>
+<br>
+<item> Details of all bars in The Rocks
+<program>
+Result = Sel[addr=The Rocks](Bars)
+</program>
+<br>
+<item> Beers made by Sierra Nevada
+<program>
+SNBeers = Sel[manf=Sierra Nevada](Beers)
+Result  = Rename[beer](Proj[name](SNBeers))
+</program>
+</itemize>
+</slide>
+
+<slide>
+<heading>Projection
+<em>Projection</em> returns a set of tuples containing
+a subset of the attributes in the original relation.
+<p>
+<center>
+<$><proj><sub>X</sub>(r)</$> <~> = <~> <$>Proj[X](r)</$> <~> = <~> { <$>t[X]</$> <~>|<~> <$>t <in> r</$> }, <~~~> where <$>r(R)</$>
+</center>
+<p>
+<$>X</$> specifies a subset of the attributes of <$>R</$>.
+<p>
+Note that removing key attributes can produce duplicates.
+<p>
+In RA, duplicates are removed from the result <em>set</em>.
+<br>
+<small><gray>(In RDBMS's, duplicates are retained <~> (i.e. they use bags, not sets)</small>)</gray></small>
+<p>
+Result size: <~> |<$><proj><sub>X</sub>(r)</$>| <$><leq></$> |<$>r</$>|
+<~~~>
+Result schema: <~> <$>R'(X)</$>
+<p>
+Algorithmic view:
+<program>
+<$>result</$> = {}
+for each tuple <$>t</$> in relation <$>r</$>
+    <$>result</$> = <$>result <union> {t[X]}</$>
+</program>
+</slide>
+
+<slide>
+<continued>
+Examples of projection:
+<p>
+<diagram>Pics/relalg/projection2
+</slide>
+
+<slide>
+<continued>
+Querying with relational algebra (projection)...
+<itemize>
+<br>
+<item> Names of all beers
+<program>
+Result = Proj[name](Beers)
+</program>
+<item> Names of drinkers who live in Newtown
+<program>
+Result = Proj[name](Sel[addr=Newtown](Drinkers))
+</program>
+<item> What are all of the breweries?
+<program>
+Result(brewer) = Proj[manf](Beers)
+</program>
+</itemize>
+</slide>
+

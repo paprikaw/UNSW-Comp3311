@@ -1,0 +1,238 @@
+<title>Query Evaluation
+<footer>COMP3311 20T3 <diamond> Query Evaluation <diamond>
+
+<slide>
+<heading>DBMS Architecture
+<br>
+COMP3311 is not a course on DBMS Architecture <smaller>(that's COMP9315)</smaller>
+<p>
+But knowing just a little about how DBMSs work can help
+<itemize>
+<item> to avoid/fix inefficiencies in database applications
+</itemize>
+DBMSs attempt to handle this issue in modules for ...
+<itemize>
+<item> query processing (QP) .. methods for evaluating queries
+</itemize>
+As a programmer, you cede a lot of control to the DBMS, but can
+<itemize>
+<item> use QP knowledge to make DB applications <em>efficient</em>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Our view of the DBMS so far ...
+<p><br>
+<diagram>Pics/qproc/qeval1
+<p><br>
+A machine to process SQL queries.
+</slide>
+
+<slide>
+<continued>
+One view of DB engine: <q><em>relational algebra</em> virtual machine</q>
+<p>
+Machine code for such a machine:
+<div align="center">
+<table 3>
+<row>
+<col1> selection (<sel>) </col1>
+<col2> projection (<proj>) </col2>
+<col3> join (<join>, <times>) </col3>
+</row>
+<row>
+<col1> union (<union>) </col1>
+<col2> intersection (<intersect>) </col2>
+<col3> difference (-) </col3>
+</row>
+<row>
+<col1> sort </col1>
+<col2> insert </col2>
+<col3> delete </col3>
+</row>
+</table>
+</div>
+<p>
+For each of these operations:
+<itemize>
+<item> various data structures and algorithms are available
+<item> DBMSs may provide only one, or may provide a choice
+</itemize>
+</slide>
+
+<slide>
+<heading>Query Evaluation
+The path of a query through its evaluation:
+<p><br>
+<diagram>Pics/dbms/qryeval
+</slide>
+
+<slide>
+<heading>Mapping SQL to RA
+Mapping SQL to relational algebra, e.g.
+<program>
+<comment>-- schema: R(a,b) S(c,d)</comment>
+select a as x
+from   R join S on (b=c)
+where  d = 100
+<comment>-- could be mapped to</comment>
+Tmp1(a,b,c,d) = R Join[b=c] S
+Tmp2(a,b,c,d) = Sel[d=100](Tmp1)
+Tmp3(a)       = Proj[a](Tmp2)
+Res(x)        = Rename[Res(x)](Tmp3)
+</program>
+In general:
+<itemize>
+<item> <@>SELECT</@> clause becomes <i>projection</i>
+<item> <@>WHERE</@> condition becomes <i>selection</i> or <i>join</i>
+<item> <@>FROM</@> clause becomes <i>join</i>
+</itemize>
+</slide>
+
+<slide>
+<heading>Mapping Example
+Consider the database schema:
+<program90>
+Person(pid, name, address, ...)
+Subject(sid, code, title, uoc, ...)
+Terms(tid, code, start, end, ...)
+Courses(cid, sid, tid, ...)
+Enrolments(cid, pid, mark, ..)
+</program>
+<p>
+and the query: <i>Courses with more than 100 students in them?</i>
+<p>
+which can be expressed in SQL as
+<program90>
+select s.sid, s.code
+from   Course c join Subject s on (c.sid=s.sid)
+       join Enrolment e on (c.cid=e.cid)
+group  by s.sid, s.code
+having count(*) > 100;
+</program>
+</slide>
+
+<slide>
+<continued>
+The SQL might be compiled to
+<p>
+<program90>
+Tmp1(cid,sid,pid)   = Course Join[c.cid = e.cid] Enrolment
+Tmp2(cid,code,pid)  = Tmp1 Join[t1.sid = s.sid] Subject
+Tmp3(cid,code,nstu) = GroupCount[cid,code](Tmp2)
+Res(cid,code)       = Sel[nstu > 100](Tmp3)
+</program>
+or, equivalently
+<program90>
+Tmp1(cid,code)      = Course Join[c.sid = s.sid] Subject
+Tmp2(cid,code,pid)  = Tmp1 Join[t1.cid = e.cid] Enrolment
+Tmp3(cid,code,nstu) = GroupCount[cid,code](Tmp2)
+Res(cid,code)       = Sel[nstu > 100](Tmp3)
+</program>
+Which is better?
+</slide>
+
+<slide>
+<heading>Query Cost Estimation
+The cost of evaluating a query is determined by
+<itemize>
+<item> the operations specified in the query execution plan
+<item> size of relations <~> <small>(database relations and temporary relations)</small>
+<item> access mechanisms <~> <small>(indexing, hashing, sorting, join algorithms)</small>
+<item> size/number of main memory buffers <~> <small>(and replacement strategy)</small>
+</itemize>
+Analysis of costs involves <i>estimating</i>:
+<itemize>
+<item> the size of intermediate results
+<item> then, based on this, cost of secondary storage accesses
+</itemize>
+<br>
+Accessing data from disk is the dominant cost in query evaluation
+</slide>
+
+<slide>
+<continued>
+An <em>execution plan</em> is a sequence of relational operations.
+<p>
+Consider execution plans for:
+	<~~> <$> <sel><sub>c</sub> (R <~><join><sub>d</sub><~> S <~><join><sub>e</sub><~> T) </$>
+<program>
+tmp1   :=  hash_join[d](R,S)
+tmp2   :=  sort_merge_join[e](tmp1,T)
+result :=  binary_search[c](tmp2)
+</program>
+or
+<program>
+tmp1   :=  sort_merge_join[e](S,T)
+tmp2   :=  hash_join[d](R,tmp1)
+result :=  linear_search[c](tmp2)
+</program>
+or
+<program>
+tmp1   :=  btree_search[c](R)
+tmp2   :=  hash_join[d](tmp1,S)
+result :=  sort_merge_join[e](tmp2)
+</program>
+All produce same result, but have different costs.
+</slide>
+
+<slide>
+<heading>Implementations of RA Ops
+Sorting <~> <gray><small>(quicksort, etc. are not applicable)</small></gray>
+<itemize>
+<item> external merge sort <~> <small>(cost <$>O(Nlog<sub>B</sub>N)</$> with <$>B</$> memory buffers)</small>
+</itemize>
+Selection <~> <gray><small>(different techniques developed for different query types)</small></gray>
+<itemize>
+<item> sequential scan <~> <small>(worst case, cost <$>O(N)</$>)</small>
+<item> index-based <~> <small>(e.g. B-trees, cost <$>O(logN)</$>, tree nodes are pages)</small>
+<item> hash-based <~> <small>(<$>O(1)</$> best case, only works for equality tests)</small>
+</itemize>
+Join <~> <gray><small>(fast joins are critical to success of relational DBMSs)</small></gray>
+<itemize>
+<item> nested-loop join <~> <small>(cost <$>O(N.M)</$>, buffering can reduce to <$>O(N+M)</$>)</small>
+<item> sort-merge join <~> <small>(cost <$>O(NlogN+MlogM)</$>)</small>
+<item> hash-join <~> <small>(best case cost <$>O(N+M.N/B)</$>, with <$>B</$> memory buffers)</small>
+</itemize>
+</slide>
+
+<slide>
+<heading>Query Optimisation
+What is the "best" method for evaluating a query?
+<p>
+Generally, <i>best</i> = lowest cost = fastest evaluation time
+<p>
+<em>Cost</em> is measured in terms of pages read/written
+<itemize>
+<item> data is stored in fixed-size blocks (e.g. 4KB)
+<item> data transferred disk<leftrightarrow>>memory in whole blocks
+<item> cost of disk<leftrightarrow>memory transfer is highest cost in system
+<item> processing in memory is very fast compared to I/O
+</itemize>
+</slide>
+
+<slide>
+<continued>
+A DBMS <em>query optimiser</em> works as follows:
+<p>
+<program>
+Input: relational algebra expression
+Output: execution plan (sequence of RA ops)
+
+bestCost = INF; bestPlan = none
+while (more possible plans) {
+   plan = produce a new evaluation plan
+   cost = estimated_cost(plan)
+   if (cost < bestCost) {
+      bestCost = cost; bestPlan = plan
+   }
+}
+return bestPlan
+</program>
+Typically, there are very many possible plans
+<itemize>
+<item> smarter optimisers generate likely subset of possible plans
+</itemize>
+</slide>
+

@@ -1,0 +1,239 @@
+<title>PLpgSQL (iii)
+<footer>COMP3311 20T3 <diamond> PLpgSQL (iii) <diamond>
+
+<slide>
+<heading>PLpgSQL Functions (recap)
+<br>
+Defining PLpgSQL functions:
+<syntax>
+<green>CREATE OR REPLACE</green>
+   <$>funcName</$>(<$>param1</$>, <$>param2</$>, ....)
+   <green>RETURNS</green> <$>rettype</$>
+<green>AS $$</green>
+<blue>DECLARE</blue>
+   <$>variable</$> <$>declarations</$>
+<blue>BEGIN</blue>
+   <$>code</$> <$>for</$> <$>function</$>
+<blue>END;</blue>
+<green>$$ LANGUAGE</green> plpgsql;
+</syntax>
+</slide>
+
+<slide>
+<heading>Query results in PLpgSQL
+Can evaluate a query and iterate through its results
+<itemize>
+<item> one tuple at a time, using a <@>for ... loop</@>
+</itemize>
+<program>
+declare
+   <brown>tup</brown> <$>Type</$>;
+begin
+   <blue>for</blue> <brown>tup</brown> <blue>in</blue> <$>Query</$>
+   loop
+      <$>Statements</$>;
+   end loop;
+end;
+</program>
+Type of <tt><brown>tup</brown></tt> variable must match type of <$>Query</$> results
+<p>
+If declared as <@>record</@>, will automatically match <$>Query</$> results type
+</slide>
+
+<slide>
+<continued>
+<b>Example:</b> count the number of Employees earning more than min.salary
+<program90>
+create or replace function
+   well_paid(_minsal integer) returns integer
+as $$
+declare
+   nemps integer := 0;
+   <brown>tuple</brown> <blue>record</blue>;  <comment>-- could also be <brown>tuple</brown> <navy>Employees</navy>;</comment>
+begin
+   <blue>for</blue> <brown>tuple</brown> <blue>in</blue>
+      select <brown>*</brown> from Employees where salary > _minsal
+   loop
+      nemps := nemps + 1;
+   end loop;
+   return nemps;
+end;
+$$ language plpgsql;
+</program>
+</slide>
+
+<slide>
+<continued>
+Alternative to the above (but less efficient):
+<program90>
+create or replace function
+   well_paid(_minsal integer) returns integer
+as $$
+declare
+   nemps integer := 0;
+   <brown>tuple</brown> <blue>record</blue>;
+begin
+   <blue>for</blue> <brown>tuple</brown> <blue>in</blue>
+      select <brown>name,salary</brown> from Employees
+   loop
+      if (<brown>tuple.salary > _minsal</brown>) then
+         nemps := nemps + 1;
+      end if;
+   end loop;
+   return nemps;
+end;
+$$ language plpgsql;
+</program>
+</slide>
+
+<slide>
+<continued>
+<br>
+And the example could be done more simply (and efficiently) as:
+<program90>
+create or replace function
+   well_paid(_minsal integer) returns integer
+as $$
+declare
+   nemps integer;
+begin
+   select <blue>count(*) into nemps</blue>
+   from   Employees where salary > _minsal
+   return nemps;
+end;
+$$ language plpgsql;
+</program>
+</slide>
+
+<slide>
+<heading>Dynamically Generated Queries
+<@@>EXECUTE</@@> takes a string and executes it as an SQL query.
+<p>
+Examples:
+<program>
+<comment>-- constant string</comment>
+execute 'select * from Employees';
+<comment>-- concatenation of constant strings</comment>
+execute 'select * from '||'Employees';
+<comment>-- using a name of e.g. table or attribute</comment>
+execute 'select * from '||quote_ident($1);
+<comment>-- using a value generated in the program</comment>
+execute 'delete from Accounts' ||
+        ' where holder='||quote_literal($1);
+</program>
+Can be used in any context where an SQL query is expected
+<p>
+This mechanism allows us to <em>construct</em> queries <q>on the fly</q>.
+</slide>
+
+<slide>
+<continued>
+Example: a wrapper for updating a single text field
+<program90>
+create or replace function
+   set(_table text, _attr text, _val text) returns void
+as $$
+declare
+   query text;
+begin
+   query := 'update ' || quote_ident(_table);
+   query := query || ' SET ' || quote_ident(_attr);
+   query := query || ' = ' || quote_literal(_val);
+   <blue>execute</blue> query;
+end; $$ language plpgsql;
+</program>
+which could be used as e.g.
+<program>
+select set('branches','assets','0.00');
+</program>
+</slide>
+
+<slide>
+<continued>
+One limitation of <@>EXECUTE</@>:
+<itemize>
+<item> cannot use <@>select into</@> inside dynamic queries
+</itemize>
+Needs to be expressed instead as:
+<program>
+declare tuple R%rowtype; n int;
+execute 'select * from R where id='||n into tuple;
+<comment>-- or</comment>
+declare x int; y int; z text;
+execute 'select a,b,c from R where id='||n into x,y,z;
+</program>
+<small>
+Notes:
+<itemize>
+<sitem> if query returns multiple tuples, first one is stored
+<sitem> if query returns zero tuples, all nulls are stored
+</itemize>
+</small>
+</slide>
+
+<slide>
+<heading>Functions vs Views
+A difference between views and functions returning a <@>SETOF</@>:
+<itemize>
+<item> <@>CREATE VIEW</@> produces a <q>virtual</q> table definition <br>
+<item> <@>SETOF</@> functions require an existing tuple type
+</itemize>
+In examples above, we used existing <@>Employees</@> tuple type.
+<p>
+In general, you need to define the tuple return type via
+<program90>
+create type <$>TupleType</$> as ( <$>attr<sub>1</sub></$>  <$>type<sub>1</sub></$>, ...  <$>attr<sub>n</sub></$>  <$>type<sub>n</sub></$> );
+</program>
+<p>
+Other major differences between <@>setof</@> functions and views ...
+<itemize>
+<item> functions have parameters; views don't <~> <tiny>(although <@>where</@> might help)</tiny>
+<item> functions are "run-time" objects; views are interpolated into queries
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Another example of function returning <@>setof</@> tuples ...
+<program90>
+create type <brown>EmpInfo</brown> as (name text, pay integer);
+
+create or replace </green>function</green>
+   richEmps(_minsal integer) returns <blue>setof</blue> <brown>EmpInfo</brown>
+as $$
+declare
+   emp record;   info <brown>EmpInfo</brown>;
+begin
+   for emp in
+      select * from Employees where salary >> _minsal
+   loop
+      info.name := emp.name;
+      info.pay := emp.salary;
+      <blue>return next</blue> info;
+   end loop;
+end; $$ language plpgsql;
+</program>
+</slide>
+
+<slide>
+<continued>
+Using the function ...
+<program>
+select * from richEmps(100000);
+</program>
+versus a view
+<program90>
+create or repalce <green>view</green> richEmps(name,pay) as
+select name, salary from Employees where salary >> 100000;
+
+select * from richEmps;  <comment>-- but no scope for different salary</comment>
+</program>
+versus an SQL function
+<program90>
+create or replace <green>function</green>
+   richEmps(_minsal integer) returns setof <brown>EmpInfo</brown>
+as $$
+select name, salary from Employees where salary >> _minsal;
+$$ language sql;
+</program>
+</slide>

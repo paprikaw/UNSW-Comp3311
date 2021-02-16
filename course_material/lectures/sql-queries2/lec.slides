@@ -1,0 +1,310 @@
+<title>SQL: Queries on Multiple Tables
+<footer>COMP3311 20T3 <diamond> SQL: Queries on Multiple Tables <diamond>
+
+<slide>
+<heading>Queries on Multiple Tables
+Queries involving a single table are useful.
+<p>
+Exploiting all data in the DB requires
+<itemize>
+<item> combining data from multiple tables
+<item> typically involving primary/foreign key matching
+</itemize>
+<b>Example:</b> Which brewers makes beers that John likes?
+<program90>
+select b.brewer
+from   Beers b <blue>join</blue> Likes L on <blue>(b.name = L.beer)</blue>
+where  L.drinker = 'John';
+</program>
+Info on brewers is in <@>Beers</@>; info on who likes what in <@>Likes</@>.
+<p>
+Need to combine info from both tables using "common" attributes
+</slide>
+
+<slide>
+<continued>
+Example <@>Beers</@> and <@>Likes</@> tuples:
+<program80>
+Beers(80/-, Caledonian, Scotch Ale)     Likes(John, Sculpin)
+Beers(New, Toohey's, Lager)             Likes(John, Red Nut)
+Beers(Red Nut, Bentspoke, Red IPA)      Likes(Adam, New)
+Beers(Sculpin, Ballast Point, IPA)      Likes(John, 80/-)
+</program>
+"Merged" tuples resulting from
+<itemize>
+<item> <@>Beers b <blue>join</blue> Likes L on <blue>(b.name = L.beer)</blue></@>
+</itemize>
+<program80>
+Joined(<green>80/-</green>, Caledonian, Scotch Ale, John, <green>80/-</green>)
+Joined(<green>New</green>, Toohey's, Lager, Adam, <green>New</green>)
+Joined(<green>Red Nut</green>, Bentspoke, Red IPA, John, <green>Red Nut</green>)
+Joined(<green>Sculpin</green>, Ballast Point, IPA, John, <green>Sculpin</green>)
+</program>
+In the query, the <@>where</@> clause removes all tuples not related to John
+</slide>
+
+<slide>
+<heading>Join
+<br>
+Join is the SQL operator that combines tuples from tables.
+<p>
+Such an important operation that several variations exist
+<itemize>
+<item> <em>natural join</em> matches tuples via equality on common attributes
+<item> <em>equijoin</em> matches tuples via equality on specified attributes
+<item> <em>theta-join</em> matches tuples via a boolean expression
+<item> <em>outer join</em> like theta-join, but includes non-matching tuples
+</itemize>
+<br>
+We focus on theta-join and outer join in this course
+</slide>
+
+<slide>
+<continued>
+<br>
+Join fits into <@>SELECT</@> queries as follows:
+<program>
+SELECT <i>Attributes</i>
+FROM   <i>R1</i>
+       JOIN R2 ON (<i>JoinCondition<sub>1</sub></i>)
+       JOIN R3 ON (<i>JoinCondition<sub>2</sub></i>)
+       ...
+WHERE  <i>Condition</i>
+</program>
+Can include an arbitrary number of joins.
+<p>
+<@>WHERE</@> clause typically filters out some of the joined tuples.
+</slide>
+
+<slide>
+<continued>
+<br>
+Alternative syntax for joins:
+<program>
+SELECT brewer
+FROM   Likes L, Beers b
+WHERE  L.beer = b.name
+       AND L.drinker = 'John';
+</program>
+Join condition(s) are specified in the <@>WHERE</@> clause
+<p>
+We prefer the explicit <@>JOIN</@> syntax, but this is sometimes more compact
+<p>
+Note: duplicates could be eliminated by using <@>distinct</@>
+</slide>
+
+<slide>
+<continued>
+Operational semantics of <~> <@>R1 JOIN R2 ON (<i>Condition</i>)</@>:
+<program>
+FOR EACH tuple t1 in R1 DO
+    FOR EACH tuple t2 in R2 DO
+        check <i>Condition</i> for current
+           t1, t2 attribute values
+        IF <i>Condition</i> holds THEN
+            add (t1,t2) to result
+        END
+    END
+END
+</program>
+Easy to generalise: add more relations, include <@>WHERE</@> condition
+<p>
+<small>
+Requires one tuple variable for each relation, and nested loops over relations.<br>
+But this is <em>not</em> how it's actually computed!
+</small>
+</slide>
+
+<slide>
+<heading>Name Clashes in Conditions
+If a <@>SELECT</@> statement
+<itemize>
+<item> refers to multiple tables
+<item> some tables have attributes with the same name
+</itemize>
+use the table name to disambiguate.
+<p>
+<b>Example:</b> Which hotels have the same name as a beer?
+<program90>
+SELECT Bars.name
+FROM   Bars, Beers
+WHERE  Bars.name = Beers.name;
+<comment>-- or, using table aliases ...</comment>
+SELECT r.name
+FROM   Bars r, Beers b
+WHERE  r.name = b.name
+</program>
+</slide>
+
+<slide>
+<heading>Explicit Tuple Variables
+Table-dot-attribute doesn't help if we use same table twice in <@>SELECT</@>.
+<p>
+To handle this, define new names for each <q>instance</q> of the table
+<program90>
+SELECT r1.a, r2.b  FROM  <green>R</green> r1, <green>R</green> r2  WHERE  r1.a = r2.a
+</program>
+<b>Example:</b> Find pairs of beers by the same manufacturer.
+<program90>
+SELECT b1.name, b2.name
+FROM   Beers b1 JOIN Beers b2 ON (b1.brewer = b2.brewer)
+WHERE  b1.name << b2.name;
+</program>
+<small>
+The <@>WHERE</@> condition is used to avoid:
+<itemize>
+<sitem> pairing a beer with itself <~> e.g. <@>(New,New)</@>
+<sitem> same pairs with different order <~> e.g. <@>(New,Old) (Old,New)</@>
+</itemize>
+</small>
+</slide>
+
+<slide>
+<heading>Outer Join
+<br>
+Join only produces a result tuple from <$>t<sub>R</sub></$> and
+<$>t<sub>S</sub></$> where ...
+<itemize>
+<item> there are appropriate values in both tuples
+<item> so that the join condition is satisfied
+</itemize>
+<program>
+SELECT * FROM R JOIN S WHERE (<i>Condition</i>)
+</program>
+Sometimes, we want a result for <i>every</i><~> <@>R</@> tuple
+<itemize>
+<item> even if some <@>R</@> tuples have no matching <@>S</@> tuple
+</itemize>
+These kinds of requests often include "for each" or "for every"
+</slide>
+
+<slide>
+<continued>
+<b>Example</b>: for each suburb with a bar, find out who drinks there.
+<p>
+Theta-join only gives results for suburbs where people drink.
+<program90>
+SELECT B.addr, F.drinker
+FROM   Bars B
+       JOIN Frequents F ON (F.bar = B.name)
+ORDER  BY addr;
+
+   addr    | drinker 
+-----------+---------
+ Coogee    | Adam
+ Coogee    | John
+ Kingsford | Justin
+ Sydney    | Justin
+ The Rocks | John
+</program>
+But what if we want all suburbs, even if some have are no drinkers?
+<p>
+<small>This is from an older and simpler instance of the beers database.</small>
+</slide>
+
+<slide>
+<continued>
+<br>
+An <em>outer join</em> solves this problem.
+<p>
+For <~> <$>R</$><~~> <@>OUTER JOIN</@> <$>S</$><~~> <@>ON (</@><$>Condition</$><@>)</@>
+<itemize>
+<item> all <q>tuples</q> in <$>R</$> have an entry in the result
+<item> if a tuple from <$>R</$> matches tuples in <$>S</$>, <br>
+	we get the normal join result tuples
+<item> if a tuple from <$>R</$> has no matches in <$>S</$>, <br>
+	the attributes supplied by <$>S</$> are <@>NULL</@>
+</itemize>
+This outer join variant is called <@>LEFT OUTER JOIN</@>.
+</slide>
+
+<slide>
+<continued>
+Solving the example query with an outer join:
+<program90>
+SELECT B.addr, F.drinker
+FROM   Bars B
+       <@@>LEFT OUTER JOIN</@@> Frequents F on (F.bar = B.name)
+ORDER BY B.addr;
+
+    addr    | drinker 
+------------+---------
+ Coogee     | Adam
+ Coogee     | John
+ Kingsford  | Justin
+ Randwick   | 
+ Sydney     | Justin
+ The Rocks  | John
+</program>
+Note that Randwick is now mentioned
+<small>(because of the Royal Hotel)</small>.
+</slide>
+
+<slide>
+<continued>
+Operational semantics of <~> <@>R1 LEFT OUTER JOIN R2 ON (<i>Cond</i>)</@>:
+<program>
+FOR EACH tuple t1 in R1 DO
+    nmatches = 0
+    FOR EACH tuple t2 in R2 DO
+        check <i>Cond</i> for current
+           t1, t2 attribute values
+        IF <i>Cond</i> holds THEN
+            nmatches++
+            add (t1,t2) to result
+        END
+    END
+    IF nmatches == 0 THEN
+        t2 = (null,null,null,...)
+        add (t1,t2) to result
+    END
+END
+</program>
+</slide>
+
+<slide>
+<continued>
+Many RDBMSs provide three variants of outer join:
+<itemize>
+<item> <$>R</$><~> <@>LEFT OUTER JOIN</@> <$>S</$>
+<itemize>
+<item> behaves as described above
+</itemize>
+<item> <$>R</$><~> <@>RIGHT OUTER JOIN</@> <$>S</$>
+<itemize>
+<item> includes all tuples from <$>S</$><~> in the result
+<item> <@>NULL</@>-fills any <$>S</$><~> tuples with no matches in <$>R</$>
+</itemize>
+<item> <$>R</$><~> <@>FULL OUTER JOIN</@> <$>S</$>
+<itemize>
+<item> includes all tuples from <$>R</$><~> and <$>S</$><~> in the result
+<item> those without matches in other relation are <@>NULL</@>-filled
+</itemize>
+</itemize>
+</slide>
+
+<slide>
+<heading> Subqueries
+The result of a query can be used in the
+<@>WHERE</@> clause of another query.
+<p>
+<b>Case 1:</b> Subquery returns a single, unary tuple
+<p>
+<program80>
+SELECT * FROM R WHERE R.a <green>=</green> (SELECT S.x FROM S WHERE Cond<sub>1</sub>)
+</program>
+<b>Case 2:</b> Subquery returns multiple values
+<p>
+<program80>
+SELECT * FROM R WHERE R.a <green>IN</green> (SELECT S.x FROM S WHERE Cond<sub>2</sub>)
+</program>
+<br>
+<small>
+This approach is often used in the initial discussion of SQL in some textbooks.
+<p>
+These kinds of queries can generally be solved <i>more efficiently</i> using a join
+</small>
+<program80>
+SELECT * FROM R JOIN S ON (R.a = S.x) WHERE Cond
+</program>
+</slide>

@@ -1,0 +1,269 @@
+<html>
+<head>
+<title>RA Join Operations</title>
+<link href='lib/slides.css' rel='stylesheet' type='text/css'>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML" async></script>
+<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js'></script>
+<link href='https://fonts.googleapis.com/css?family=Lato' rel='stylesheet'>
+<link href='lib/prism.css' rel='stylesheet'>
+<script src='lib/sg.js'></script>
+</head>
+<body>
+ <DIV class='slideCl1' id="s0"  >
+<div class='navCl1'><a href="#s1"><span class='nextArrowCl'>>></span></a> </div> <div class='heading'>RA Join Operations</div><p><ul class='indexUl'  style='font-size: 0.7em;'><li class="i"> <a href="#s1">RA Operations to Combine Relations</a>
+<li class="i"> <a href="#s2">Product</a>
+<li class="i"> <a href="#s4">Natural Join</a>
+<li class="i"> <a href="#s6">Theta Join</a>
+<li class="i"> <a href="#s9">Outer Join</a>
+<li class="i"> <a href="#s11">Division</a>
+</ul></DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; RA Join Operations &#9826; [0/13]</div> <DIV class='slideCl1    ' id="s1"  >
+<div class='navCl1'> <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s2"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; RA Operations to Combine Relations</div></td><td align='right'></td></tr></table>
+<p>
+<br>
+Relational algebra has several ways to combine info from relations
+<ul>
+<li> product &nbsp; ... &nbsp; R &times; S &nbsp; ... &nbsp; <small>select * from R join S on (true)</small>
+<li> natural join &nbsp; ... &nbsp; R &#10781; S &nbsp; ... &nbsp; <small>select * from R natural join S</small>
+<li> (inner) join &nbsp; ... &nbsp; R &#10781;<sub>C</sub> S &nbsp; ... &nbsp; <small>select * from R join S on (C)</small>
+<li> outer join &nbsp; ... &nbsp; R &#10197;<sub>C</sub> S &nbsp; ... &nbsp; <small>select * from R left outer join S on (C)</small>
+<li> division &nbsp; ... &nbsp; R / S &nbsp; ... &nbsp; <small>see SQL slides for examples</small>
+</ul>
+Join conditions involve related attributes from the two relations
+<p>
+Frequently, primary-key joined with foreign-key
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; RA Join Operations &#9826; [1/13]</div> <DIV class='slideCl1    ' id="s2"  >
+<div class='navCl1'><a href="#s1"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s3"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Product</div></td><td align='right'></td></tr></table>
+<p>
+<font color='#0000BB'>Product</font> (Cartesian product) combines information from
+two relations pairwise on tuples.
+<p>
+<div class='center'>
+<i>r &times; s</i> &nbsp; = &nbsp; { <i>(t<sub>1</sub> : t<sub>2</sub>)</i> &nbsp;|&nbsp; <i>t<sub>1</sub> &isin; r &and; t<sub>2</sub> &isin; s</i> }, &nbsp;&nbsp;&nbsp; where <i>r(R), s(S)</i>
+</div>
+<p>
+Each tuple in the result contains all attributes from <i>r</i> and <i>s</i>,
+possibly with some fields renamed to avoid ambiguity.
+<p>
+If <i>t<sub>1</sub> = (A<sub>1</sub>...A<sub>n</sub>)</i> and
+   <i>t<sub>2</sub> = (B<sub>1</sub>...B<sub>n</sub>)</i> then
+   <i>(t<sub>1</sub>:t<sub>2</sub>) = (A<sub>1</sub>...A<sub>n</sub>,B<sub>1</sub>...B<sub>n</sub>)</i>
+<p>
+Result size is <big><font color='#0000BB'>large</font></big>: &nbsp; |<i>r &times; s</i>| = |<i>r</i>|.|<i>s</i>|
+&nbsp;&nbsp;&nbsp;
+Schema: <i>R&cup;S</i>
+<p>
+Algorithmic view:
+<p><pre>
+<i>result</i> = {}
+for each tuple <i>t<sub>1</sub></i> in relation <i>r</i>
+    for each tuple <i>t<sub>2</sub></i> in relation <i>s</i>
+        <i>result</i> = <i>result &cup; {(<i>t<sub>1</sub>:t<sub>2</sub></i>)}</i> }
+</pre><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; RA Join Operations &#9826; [2/13]</div> <DIV class='slideCl1    ' id="s3"  >
+<div class='navCl1'><a href="#s2"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s4"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Product <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Example of product:
+<p><br>
+<p><div align='center'>
+<img alt="[Diagram:Pics/relalg/product.png]" src="Pics/relalg/product.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; RA Join Operations &#9826; [3/13]</div> <DIV class='slideCl1    ' id="s4"  >
+<div class='navCl1'><a href="#s3"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s5"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Natural Join</div></td><td align='right'></td></tr></table>
+<p>
+<font color='#0000BB'>Natural join</font> is a specialised product:
+<ul>
+<li> containing only pairs that match on <font color='#0000BB'>common</font> attributes
+<li> with one of each pair of common attributes eliminated
+</ul>
+Consider relation schemas <i>R(ABC..J<font color="#008800">KLM</font>)</i>,  <i>S(<font color="#008800">KLM</font>N..XYZ)</i>.
+<p>
+The natural join of relations <i>r(R)</i> and <i>s(S)</i> is defined as:
+<p>
+<div class='center'>
+<i>r &#10781; s</i> &nbsp; = &nbsp; <i>r Join s</i> &nbsp; = &nbsp; 
+	{ <i>(t<sub>1</sub>[ABC..J] : t<sub>2</sub>[K..XYZ])</i> &nbsp;|&nbsp;
+	  <i>t<sub>1</sub> &isin; r &and; t<sub>2</sub> &isin; s &and; match</i>
+	}
+<p>
+where &nbsp;&nbsp; <i>match</i> &nbsp; = &nbsp;
+		<i>t<sub>1</sub>[K] = t<sub>2</sub>[K] &and;
+		t<sub>1</sub>[L] = t<sub>2</sub>[L] &and;
+		t<sub>1</sub>[M] = t<sub>2</sub>[M]</i>
+</div>
+<p>
+Algorithmic view:
+<p><pre>
+<i>result</i> = {}
+for each tuple <i>t<sub>1</sub></i> in relation <i>r</i>
+   for each tuple <i>t<sub>2</sub></i> in relation <i>s</i>
+      if (<i>matches(t<sub>1</sub>,t<sub>2</sub>)</i>)
+         <i>result</i> = <i>result &cup; {combine(<i>t<sub>1</sub>,t<sub>2</sub></i>)}</i>
+</pre><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; RA Join Operations &#9826; [4/13]</div> <DIV class='slideCl1    ' id="s5"  >
+<div class='navCl1'><a href="#s4"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s6"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Natural Join <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Example of natural join:
+<p>
+<p><div align='center'>
+<img alt="[Diagram:Pics/relalg/nat-join.png]" src="Pics/relalg/nat-join.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; RA Join Operations &#9826; [5/13]</div> <DIV class='slideCl1    ' id="s6"  >
+<div class='navCl1'><a href="#s5"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s7"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Theta Join</div></td><td align='right'></td></tr></table>
+<p>
+The <font color='#0000BB'>theta join</font> is a specialised product
+containing only pairs that match on a supplied condition <i>C</i>.
+<p>
+<div class='center'>
+<i>r &#10781;<sub>C</sub> s</i> &nbsp; = &nbsp; { <i>(t<sub>1</sub> : t<sub>2</sub>)</i> &nbsp;|&nbsp; <i>t<sub>1</sub> &isin; r &and; t<sub>2</sub> &isin; s &and; C(t<sub>1</sub> : t<sub>2</sub>)</i> }, <br>
+where <i>r(R),s(S)</i>
+</div>
+<p>
+Examples: &nbsp; <i>(r1 Join[B>E] r2)</i> ... <i>(r1 Join[E&lt;D&and;C=G] r2)</i>
+<p>
+All attribute names are required to be distinct <small>(cf natural join)</small>
+<p>
+Can be defined in terms of other RA operations:
+<p>
+<div class='center'>
+<i>r &#10781;<sub>C</sub> s</i> &nbsp; = &nbsp; <i>r Join[C] s</i> &nbsp; = &nbsp; <i> Sel[C] ( r &times; s )</i>
+</div>
+<p>
+Note that &nbsp; <i>r &#10781;<sub>true</sub> s &nbsp; = &nbsp; r &times; s</i>.
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; RA Join Operations &#9826; [6/13]</div> <DIV class='slideCl1    ' id="s7"  >
+<div class='navCl1'><a href="#s6"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s8"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Theta Join <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Example theta join:
+<p>
+<p><div align='center'>
+<img alt="[Diagram:Pics/relalg/join2.png]" src="Pics/relalg/join2.png">
+</div><p>
+<p align="right">(Theta join is the most frequently-used join in SQL queries)</p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; RA Join Operations &#9826; [7/13]</div> <DIV class='slideCl1    ' id="s8"  >
+<div class='navCl1'><a href="#s7"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s9"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Theta Join <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Querying with relational algebra (join) ...
+<ul>
+<li> Who drinks in Newtown bars?
+<p><pre style="font-size:90%">
+NewtownBars(nbar) = Sel[addr=Newtown](Bars)
+Tmp = Frequents Join[bar=nbar] NewtownBars
+Result(drinker) = Proj[drinker](Tmp)
+</pre><p>
+<li> Who drinks beers made by Carlton?
+<p><pre style="font-size:90%">
+CarltonBeers = Sel[manf=Carlton](Beers)
+Tmp = Likes Join[beer=name] CarltonBeers
+Result(drinker) = Proj[drinker)Tmp
+</pre><p>
+</ul>
+<p><br>
+Reminder: projection removes duplicates
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; RA Join Operations &#9826; [8/13]</div> <DIV class='slideCl1    ' id="s9"  >
+<div class='navCl1'><a href="#s8"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s10"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Outer Join</div></td><td align='right'></td></tr></table>
+<p>
+R &#10781;<sub>C</sub> S does not include in its result
+<ul>
+<li> values from any R tuples that do not match some S tuple under C
+<li> values from any S tuples that do not match some R tuple under C
+</ul>
+R &#10197;<sub>C</sub> S (left outer join) includes
+<ul>
+<li> all tuples that would result from a theta join
+<li> values from all R tuples, even with no matching S tuple
+</ul>
+For tuples with no match, assign NULL to "unmatched" attributes
+<p><br>
+Variants are <font color='#0000BB'>right outer join</font> and <font color='#0000BB'>full outer join</font>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; RA Join Operations &#9826; [9/13]</div> <DIV class='slideCl1    ' id="s10"  >
+<div class='navCl1'><a href="#s9"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s11"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Outer Join <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Example left outer join:
+<p>
+<p><div align='center'>
+<img alt="[Diagram:Pics/relalg/outer.png]" src="Pics/relalg/outer.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; RA Join Operations &#9826; [10/13]</div> <DIV class='slideCl1    ' id="s11"  >
+<div class='navCl1'><a href="#s10"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s12"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Division</div></td><td align='right'></td></tr></table>
+<p>
+Consider two relation schemas <i>R</i> and <i>S</i> where <i>S &sub; R</i>.
+<p>
+The <font color='#0000BB'>division</font> operation is defined on instances <i>r(R)</i>, <i>s(S)</i> as:
+<p>
+<div class='center'>
+<i>r / s</i> &nbsp; = &nbsp; <i>r Div s</i> &nbsp; = &nbsp;
+	{ <i>t</i> | <i>t &isin; r[R-S] &and; satisfy</i> }
+<p>
+where &nbsp; <i>satisfy</i> &nbsp; = &nbsp; <i>&forall; t<sub>s</sub> &isin; S ( &exist; t<sub>r</sub> &isin; R ( t<sub>r</sub>[S] = t<sub>s</sub> &and; t<sub>r</sub>[R-S] = t ) )</i>
+</div>
+<p>
+Operationally:
+<ul>
+<li> consider each subset of tuples in <i>R</i> that match on <i>t[R-S]</i>
+<li> for this subset of tuples, take the <i>t[S]</i> values from each
+<li> if this covers all tuples in <i>S</i>, then include <i>t[R-S]</i> in the result
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; RA Join Operations &#9826; [11/13]</div> <DIV class='slideCl1    ' id="s12"  >
+<div class='navCl1'><a href="#s11"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>  <a href="#s13"><span class='nextArrowCl'> >> </span></a> </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Division <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Example of division:
+<p><br>
+<p><div align='center'>
+<img alt="[Diagram:Pics/relalg/division2.png]" src="Pics/relalg/division2.png">
+</div><p>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; RA Join Operations &#9826; [12/13]</div> <DIV class='slideCl1    ' id="s13"  >
+<div class='navCl1'><a href="#s12"><span class='prevArrowCl'> << </span></a>  <a href="#s0"><span class='upArrowCl'>&and;</span></a>   </div> <table width='100%' cellpadding='0'>
+<tr valign='top'><td align='left'><div class='heading'>&#10070; Division <span style="font-size:67%">(cont)</span></div></td><td align='right'></td></tr></table>
+<p>
+Querying with relational algebra (division) ...
+<p>
+Division handles queries that include the notion "for all".
+<p>
+E.g. Which beers are sold in all bars?</font>
+<p>
+We can answer this as follows:
+<ul>
+<li> generate a relation of beers and bars where they are sold
+<ul>
+<li>	<i>r1 = Proj[beer,bar](Sold)</i>
+</ul>
+<li> generate a relation of all bars
+<ul>
+<li> <i>r2 = Rename[r2(bar)](Proj[name](Bars))</i>
+</ul>
+<li> find which beers appear in tuples with <font color='#0000BB'>every</font> bar
+<ul>
+<li> <i>res &nbsp; = r1 &nbsp;Div&nbsp; r2</i>
+</ul>
+</ul>
+</DIV>
+<div class='slideNumCl2'>COMP3311 20T3 &#9826; RA Join Operations &#9826; [13/13]</div><p><hr><p>
+<span style='font-size:11px;color: grey;'>Produced: 11 Nov 2020</span>
+ <script src='lib/prism.js'></script>   
+ <script src='lib/sg.js'></script>   
+</body>
+</html>

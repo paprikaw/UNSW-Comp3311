@@ -1,0 +1,258 @@
+<title>SQL Queries (iii)
+<footer>COMP3311 20T3 <diamond> SQL Queries (iii) <diamond>
+
+<slide>
+<heading>Sets in SQL
+The relational model is set-based
+<p>
+Set literals are written as<~> <@@>(</@@>
+<$>expr<sub>1</sub></$><@@>,</@@>
+<$>expr<sub>2</sub></$><@@>,</@@>
+...
+<@@>)</@@>
+<~><smaller>(each <$>expr<sub>i</sub></$> yields an atomic value)</smaller>
+<p>
+SQL query results are <small>(more or less)</small> sets of tuples or atomic values
+<p>
+Examples:
+<program90>
+<comment>-- set literals</comment>
+(1,2,3)    ('a','b','c','d')
+<comment>-- set of atomic values</comment>
+(select salary from Employees)
+<comment>-- set of tuple values</comment>
+(select id, name from Employees)
+</program>
+<p>
+SQL provides a variety of set-based operators:
+	<~><elem>, <~><union>, <~><intersect>, <~>-, <~>/, <~><exists>, <~><forall>, ...
+</slide>
+
+<slide>
+<heading>Bags in SQL
+SQL query results are actually <em>bags</em> (multisets), allowing duplicates, e.g.
+<program>
+select age from Students;
+<comment>-- yields (18,18,18,...19,19,19,19,...20,20,20,...)</comment>
+</program>
+Can convert bag to set (eliminate duplicates) using <@@>DISTINCT</@@>, e.g
+<program>
+select distinct age from Students;
+</program>
+SQL set operations <~><@@>UNION</@@>, <~><@@>INTERSECT</@@>, <~><@@>EXCEPT</@@> <~>...
+<itemize>
+<item> yield sets by default (i.e. eliminate duplicates)
+<item> can produce bags with keyword <@@>ALL</@@> <~><small>(e.g. <@>UNION ALL</@>)</small>
+</itemize>
+<program90>
+(1,2,3) UNION (2,3,4)  <comment>yields</comment>  (1,2,3,4)
+(1,2,3) UNION ALL (2,3,4)  <comment>yields</comment>  (1,2,3,2,3,4)
+</program>
+</slide>
+
+<slide>
+<heading> The <@>IN</@> Operator
+<br>
+Tests whether a specified tuple is contained in a relation <~><small>(i.e. t<elem>R)</small>
+<p>
+<i>tuple</i> <~><@>IN</@><~> <i>relation</i> <~> is true iff the tuple
+is contained in the relation.
+<p>
+Conversely for <~> <i>tuple</i> <~><@>NOT IN</@><~> <i>relation</i>.
+<p>
+Syntax:
+<program>
+SELECT *
+FROM   R
+WHERE  R.a IN (SELECT x FROM S WHERE Cond)
+              <comment>-- assume multiple results</comment>
+</program>
+</slide>
+
+<slide>
+<continued>
+<b>Example:</b>
+Find the name and brewer of beers that John likes.
+<program90>
+SELECT name, brewer
+FROM   Beers
+WHERE  name IN
+          (SELECT beer
+           FROM   Likes
+           WHERE  drinker = 'John');
+
+        name         |    brewer      
+---------------------+---------------
+ 80/-                | Caledonian
+ Bigfoot Barley Wine | Sierra Nevada
+ Pale Ale            | Sierra Nevada
+ Three Sheets        | Lord Nelson
+</program>
+Subquery = "What are the names of the beers that John likes?"
+<p>
+<small>(This and subsequent beer queries use an older smaller version of the Beer database)</small>
+</slide>
+
+<slide>
+<heading> The <@>EXISTS</@> Operator
+<br>
+<@>EXISTS(</@><i>relation</i><@>)</@> is true iff the relation is non-empty.
+<p>
+<b>Example:</b>
+Find the beers that are the unique beer by their manufacturer.
+<program90>
+SELECT name, brewer
+FROM   Beers b1
+WHERE  NOT EXISTS
+          (SELECT *
+           FROM   Beers b2
+           WHERE  b2.brewer = b1.brewer
+                  AND b2.name <<>> b1.name);
+</program>
+A subquery that refers to values from a surrounding query
+is called a <em>correlated subquery</em>.
+</slide>
+
+<slide>
+<heading> Quantifiers
+<br>
+<@>ANY</@> and <@>ALL</@> behave as existential and universal quantifiers
+respectively.
+<p>
+<b>Example:</b> Find the beers sold for the highest price.
+<program>
+SELECT beer
+FROM   Sells
+WHERE  price >>=
+          ALL(SELECT price FROM sells);
+</program>
+<br>
+Beware: in common use, "any" and "all" are often synonyms.
+<p>
+E.g. "I'm better than any of you" vs. "I'm better than all of you".
+</slide>
+
+<slide>
+<heading> Union, Intersection, Difference
+<br>
+SQL implements the standard set operations
+<deftable 6>
+<row>
+<col1><i>R1</i> <@>UNION</@> <i>R2</i></col1>
+<col2>set of tuples in either <i>R1</i> or <i>R2</i></col2>
+</row>
+<row>
+<col1><i>R1</i> <@>INTERSECT</@> <i>R2</i></col1>
+<col2>set of tuples in both <i>R1</i> and <i>R2</i></col2>
+</row>
+<col1><i>R1</i> <@>EXCEPT</@> <i>R2</i></col1>
+<col2>set of tuples in <i>R1</i> but not <i>R2</i></col2>
+</row>
+</deftable>
+<@>R1</@> and <@>R2</@> must be <em>union-compatible</em> (i.e. same schema)
+<p>
+Union and intersection semantics are straightforward.
+</slide>
+
+<slide>
+<continued>
+<b>Example:</b>
+Find the drinkers and beers such that the drinker likes
+the beer and frequents a bar that sells it.
+<program>
+(SELECT drinker, beer FROM Likes)
+INTERSECT
+(SELECT drinker,beer
+ FROM   Sells natural join Frequents);
+
+ drinker |      beer       
+---------+-----------------
+ Adam    | New
+ John    | Three Sheets
+ Justin  | Victoria Bitter
+</program>
+</slide>
+
+<slide>
+<continued>
+Set difference is implemented by <@@>EXCEPT</@@>
+<p>
+<diagram>Pics/sql/except
+<p>
+Semantics of set difference: <~> R except S = { x <elem> R, where x <not><elem> S }
+</slide>
+
+<slide>
+<heading>Division
+Division aims to find values in one table that occur in conjunction with 
+all values in another table:
+<p>
+<diagram>Pics/sql/division
+<br><p>
+Arises in queries like "Find Xs that are related to all Ys / every Y"
+</slide>
+
+<slide>
+<continued>
+Not all SQL implementations provide a division operator
+<p>
+But can be achieved by combination of existing operations
+<p>
+<b>Example:</b> Find bars that each sell all of the beers Justin likes.
+<program>
+SELECT DISTINCT a.bar
+FROM   Sells a
+WHERE  NOT EXISTS (
+           (SELECT beer FROM Likes
+            WHERE drinker = 'Justin')
+           EXCEPT
+           (SELECT beer FROM Sells b
+            WHERE bar = a.bar)
+       );
+</program>
+</slide>
+
+<slide>
+<heading>Selection with Aggregation
+Selection clauses can contain aggregation operations.
+<p>
+<b>Example:</b> What is the average price of New?
+<program>
+SELECT AVG(price)
+FROM   Sells
+WHERE  beer = 'New';
+
+       avg        
+------------------
+ 2.38749998807907
+</program>
+<small>
+<itemize>
+<sitem> the bag semantics of SQL gives the correct result here
+<sitem> the price for New in all hotels will be included, even if two hotels sell
+it at the same price
+<sitem> if we used set semantics, we'd get the average of all the
+<em>different</em> prices for New.
+</itemize>
+</small>
+</slide>
+
+<slide>
+<continued>
+If we want set semantics, can force using <@>DISTINCT</@>.
+<p>
+<b>Example:</b> How many different bars sell beer?
+<program>
+SELECT COUNT(DISTINCT bar)
+FROM   Sells;
+
+ count 
+-------
+     6
+</program>
+<p>
+Without <@>DISTINCT</@>, counts number of entries in the <@>Sells</@> table.
+<p>
+Aggregation operators on numbers: <~><@@>SUM</@@>, <~><@@>AVG</@@>, <~><@@>MIN</@@>, <~><@@>MAX</@@>, 
+</slide>
+

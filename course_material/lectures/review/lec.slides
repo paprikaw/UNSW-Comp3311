@@ -1,0 +1,196 @@
+<title>Course Review
+<footer>COMP3311 20T3 <diamond> Course Review <diamond>
+
+<slide>
+<heading>COMP3311 Course Aims
+At the end of this course you should be able to:
+<itemize>
+<item> develop accurate, non-redundant data models;
+<item> realise data models as relational database schemas;
+<item> formulate queries via the full range of SQL constructs;
+<item> use stored procedures and triggers to extend DBMS capabilities;
+<item> write Python scripts that interact effectively with databases;
+<item> analyze performance issues in relational database applications;
+<item> understand the overall process of query evaluation;
+<item> understand transactions and serializability
+</itemize>
+</slide>
+
+<slide>
+<heading>Syllabus Overview
+<enumerate>
+<item> Data modelling and database design
+<small>
+<itemize>
+<sitem> Entity-relationship (ER) design, relational data model
+<sitem> Relational theory
+        <~> <small>(algebra, dependencies, normalisation)</small>
+</itemize>
+</small>
+<item> Database application development
+<small>
+<itemize>
+<sitem> SQL for querying, data definition and modification
+        <~> <small>(PostgreSQL's version)</small>
+<sitem> extending SQL
+        <~> <small>Queries, Functions, Aggregates, Triggers</small>
+<sitem> PostgreSQL,
+        <~> <tt>psql</tt> <small>(an SQL shell)</small>,
+        <~> PLpgSQL <small>(procedural SQL)</small>
+<sitem> SQLite,
+	<~> <tt>sqlite3</tt> <small>(an SQL shell)</small>
+<sitem> Python3, 
+	<~> Psycopg2,
+	<~> accessing data programmatically
+</itemize>
+</small>
+<item> DBMS theory/technology
+<small>
+<itemize>
+<sitem> relational algebra,
+	<~> functional dependencies,
+	<~> normalization
+<sitem> DBMS architecture,
+	<~> query processing,
+	<~> transaction processing
+<sitem> performance tuning, indexes
+</itemize>
+</small>
+</enumerate>
+</slide>
+
+<slide>
+<heading>Assessment Summary
+Your final mark/grade will be determined as follows:
+<p>
+<program>
+quizzes = mark for on-line quizzes   (out of 18)
+ass1    = mark for assignment 1      (out of 12)
+ass2    = mark for assignment 2      (out of 16)
+ass3    = mark for assignment 3      (out of 14)
+exam    = mark for final exam        (out of 40)
+okExam  = exam >= 18                 (after scaling)
+mark    = ass1 + ass2 + ass3 + quizzes + exam
+grade   = HD|DN|CR|PS  if mark >= 50 && okExam
+        = FL           if mark <  50 && okExam
+        = UF           if !okExam
+</program>
+</slide>
+
+<slide>
+<heading>Final Exam
+Thu 03 Dec, 12-hour exam time-frame, with ~ 3-hours worth of work
+<p>
+Questions ...
+<itemize>
+<item> ~60% practical, including SQL, PLpgSQL, Python, Psycopg2
+<item> ~40% theory, including typed answers
+</itemize>
+<p>
+What you have access to ...
+<itemize>
+<item> the exam paper (html)
+<item> the Course Webcms3 site
+<item> PostgreSQL/Python/Psycopg2 doco
+<item> ... and the whole Web
+</itemize>
+</slide>
+
+<slide>
+<heading>Revision
+Sources for revision material:
+<itemize>
+<item> Lecture Notes, Prac/Theory Exercises, Assignments
+<item> <em>Fundamentals of Database Systems</em>,
+	<small>Elmasri/Navathe</small>
+<item> <em>Database System Concepts</em>,
+	<small>Silberschatz/Korth/Sudarshan</small>
+<item> <em>Database Management Systems</em>,
+	<small>Ramakrishnan/Gehrke</small>
+<item> <em>Database Systems: Complete Book</em>,
+	<small>Garcia-M/Ullman/Widom</small>
+<item> <em>Database Systems: App-oriented</em>,
+	<small>Kifer/Bernstein/Lewis</small>
+<item> PostgreSQL/Python/Psycopg2 Documentation
+	<small>(to some extent)</small>
+</itemize>
+</slide>
+
+<slide>
+<heading>Assessment
+Assessment is about determining how well <em>you</em> understand the syllabus
+of this course.
+<p>
+If you can't <em>demonstrate your understanding</em>, you won't pass.
+<p>
+In particular, I don't pass people just because ...
+<itemize>
+<sitem> please, please, ... my parents will be ashamed of me
+<sitem> please, please, ... I tried <i>really hard</i> in this course
+<sitem> please, please, ... this is my final course to graduate
+<sitem> please, please, ... I'll be excluded if I fail COMP3311
+<sitem> please, please, ... if I fail this, I can't do COMP9xxx
+<sitem> etc. etc. etc.
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Of course, assessment isn't a <q>one-way street</q> ...
+<itemize>
+<item> I get to assess you in the final exam
+<item> you get to assess me in the Course Evaluation
+</itemize>
+MyExperience evaluations are online (via MyUNSW) NOW
+<p>
+Telling me good things is ok.
+<p>
+Telling me things to improve is very useful.
+</slide>
+
+<slide>
+<heading>Beyond COMP3311
+<em>COMP9313</em> Big Data Management
+<itemize>
+<item> handling data that won't fit in a DBMS on one machine
+</itemize>
+<em>COMP9315</em> Database Systems Implementation
+<itemize>
+<sitem> comprehensive study of DBMS internals
+</itemize>
+<em>COMP9318</em> Data Warehousing and Data Mining
+<itemize>
+<sitem> data summarisation/discovery techniques
+</itemize>
+<em>COMP9319</em> Web Data Compression and Search
+<itemize>
+<sitem> compression and searching algorithms, and XML
+</itemize>
+<em>COMP6714</em> Information Retrieval and Web Search
+<itemize>
+<sitem> finding information in unstructured text
+</itemize>
+</slide>
+
+<slide>
+<heading>Some Thoughts ...
+<br>
+You need to learn for life, not just the exam.
+<p>
+In particular, learn to find answers for yourself.
+<p>
+No single correct answer.
+	<small>(Solutions range from poor to excellent)</small>
+<p>
+Take <em>pride</em> in your work.
+	<small>(Aim for quality, not just correctness)</small>
+</slide>
+
+<slide>
+<heading>Finally ...
+<center>
+<diagram>Pics/misc/thats-all-folks.jpg
+<orange>Good Luck with the Exams ... and Life ...</orange>
+</center>
+</slide>
+

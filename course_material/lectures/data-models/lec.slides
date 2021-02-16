@@ -1,0 +1,130 @@
+<title>Data Models
+<footer>COMP3311 21T1 <diamond> Data Models <diamond>
+
+<slide>
+<heading>Data Modelling
+Aims of data modelling:
+<itemize>
+<item> describe what <em>information</em> is contained in the database <br>
+	<small>(e.g., entities: students, courses, accounts, branches, patients, ...)</small>
+<item> describe <em>relationships</em> between data items <br>
+	<small>(e.g., John is enrolled in COMP3311, Tom's account is held at Coogee)</small>
+<item> describe <em>constraints</em> on data <br>
+	<small>(e.g., 7-digit IDs, students can enrol in no more than 3 courses per term)</small>
+</itemize>
+<p>
+Data modelling is a <em>design</em> process
+<itemize>
+<item> converts requirements into a data model
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Kinds of data models:
+<itemize>
+<item> <em>logical</em>: abstract, for conceptual design, <small>e.g., ER, <brown>ODL, UML</brown></small>
+<item> <em>physical</em>: record-based, for implementation, <small>e.g., relational, SQL</small>
+</itemize>
+<br>
+Strategy: design using abstract model; map to physical model
+<br>
+<diagram>Pics/er-rel/data-modelling.png
+</slide>
+
+<slide>
+<heading>Some Design Ideas
+Consider the following while working through exercises:
+<itemize>
+<item> start simple ... evolve design as problem better understood
+<item> identify objects (and their properties), then relationships
+<item> most designs involve kinds (classes) of people
+<item> keywords in requirements suggest data/relationships <br>
+	<small>(rule-of-thumb: nouns <$><rightarrow></$> data, verbs <$><rightarrow></$> relationships)</small>
+<item> don't confuse operations with relationships <br>
+	<small>(operation: he <b>buys</b> a book; relationship: the book <b>is owned</b> by him)</small>
+<item> consider all possible data, not just what is available
+</itemize>
+</slide>
+
+<slide>
+<exercise>GMail Data Model
+Consider the
+<url mail.google.com>GMail system <small>(or any other modern mail client)</small>
+<p>
+Develop an informal data model for it by identifying:
+<itemize>
+<item> the data items involved (objects and their attributes)
+<item> relationships between these data items
+<item> constraints on the data and relationships
+</itemize>
+<center>
+%<url exercises/GmailDataModel.txt>[Sample Solution]
+</center>
+</slide>
+
+<slide>
+<continued>
+Objects in GMail data model:
+<program>
+users
+        gmail-address, name, password, ...
+
+messages
+        timestamp, sender*, title, content, ...
+
+tags
+        owner, name, colour parent*
+
+settings
+        name, value, user*
+</program>
+Relationships in GMail data model:
+<program>
+recipients
+        user - message
+
+sent
+        user - message
+
+tag-hierarchy
+        child-tag - parent-tag
+
+settings
+        user - setting
+</program>
+Constraints in GMail data model:
+<program>
+gmail-address values are unique
+
+users must have a password <smaller>(strong?)</smaller>
+
+every message has a sender
+
+every message has a non-empty title and content
+
+values for each setting are valid for that setting
+</program>
+</slide>
+
+<slide>
+<heading>Quality of Designs
+There is no single <q>best</q> design for a given application.
+<p>
+Most important aspects of a design (data model):
+<itemize>
+<sitem> correctness
+	<~> <small>(satisfies requirements accurately)</small>
+<sitem> completeness
+	<~> <small>(all reqs covered, all assumptions explicit)</small>
+<sitem> consistency
+	<~> <small>(no contradictory statements)</small>
+</itemize>
+Potential <brown>inadequacies</brown> in a design:
+<itemize>
+<sitem> omits information that needs to be included
+<sitem> contains redundant information <small>(<$><Rightarrow></$> inconsistency)</small>
+<sitem> leads to an inefficient implementation
+<sitem> violates syntactic or semantic rules of data model
+</itemize>
+</slide>

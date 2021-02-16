@@ -1,0 +1,102 @@
+<html>
+<head>
+<title>Bank Database</title>
+<link rel='stylesheet' type='text/css' href='../../../course.css'>
+</head>
+<body>
+<center>
+<table width=100% border=0>
+<tr>
+
+<td align=center valign=top width=50%>
+  <font size=5 color=navy><b>Bank Database</b></font>
+</td>
+
+</table>
+</center>
+<p>
+<center>
+<table width=95% cellpadding=8>
+<tr valign=top>
+<td bgcolor='#CCCCCC'><b>File/Directory</b></td>
+<td bgcolor='#CCCCCC'><b>Description</b></td>
+</tr>
+
+<tr>
+<td><a href='build.sql'>build.sql</a></td>
+<td>
+Script that invokes other scripts to create tables
+and populate them, using triggers to get branch
+assets values correct.
+</td>
+</tr>
+
+<tr>
+<td><a href='schema.sql'>schema.sql</a></td>
+<td>
+SQL DDL definitions for Bank database.
+</td>
+</tr>
+
+<tr>
+<td><a href='rmdb.sql'>rmdb.sql</a></td>
+<td>
+Cleans up all tables from existing Bank database.
+Won't work if there are functions and views that
+refer to these tables.
+</td>
+</tr>
+
+<tr>
+<td><a href='populate.sql'>populate.sql</a></td>
+<td>
+Statements to add tuples to all tables.
+Should only be run after assets triggers are installed.
+</td>
+</tr>
+
+<tr>
+<td><a href='branches.sql'>branches.sql</a></td>
+<td>
+Function to print a report on customers and assets
+for each branch. An example of using PLpgSQL to
+create complex (non-tabular) output. (Exercise)
+</td>
+</tr>
+
+<tr>
+<td><a href='totsal.sql'>totsal.sql</a></td>
+<td>
+Three small functions that show various ways to extract
+a total from a query (including implicit and explicit cursors).
+</td>
+</tr>
+
+<tr>
+<td><a href='layoff.sql'>layoff.sql</a></td>
+<td>
+Functions to implement downsizing (Exercise).
+</td>
+</tr>
+
+<tr>
+<td><a href='assets.sql'>assets.sql</a></td>
+<td>
+Triggers to ensure that branch assets match the balances
+held in accounts at each branch.
+</td>
+</tr>
+
+<tr>
+<td><a href='withdraw.sql'>withdraw.sql</a></td>
+<td>
+Three versions of a function to withdraw money from an
+account. In order of increasing complexity in how much
+error checking they do.
+</td>
+</tr>
+
+</table>
+</center>
+</body>
+</html>

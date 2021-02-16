@@ -1,0 +1,503 @@
+<title>Normalisation
+<footer>COMP3311 20T3 <diamond> Normalisation <diamond>
+
+
+<slide>
+<heading>Normalisation
+<em>Normalisation</em> aims to put a schema into <$>xNF</$>
+<itemize>
+<item> by ensuring that all relations in the schema are in <$>xNF</$>
+</itemize>
+<br>
+How normalisation works ...
+<itemize>
+<item> decide which normal form <$>xNF</$><~> is <q>acceptable</q>
+<itemize>
+<sitem> i.e. how much redundancy are we willing to tolerate?
+</itemize>
+<item> check whether each relation in schema is in <$>xNF</$>
+<item> if a relation is not in <$>xNF</$>
+<itemize>
+<sitem> <em>partition</em> into sub-relations where each is "closer to" <$>xNF</$>
+</itemize>
+<item> repeat until all relations in schema are in <$>xNF</$>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+In practice, BCNF and 3NF are the most important normal forms.
+<p>
+<br>
+Boyce-Codd Normal Form (BCNF):
+<itemize>
+<item> eliminates all redundancy due to functional dependencies
+<item> but may not preserve original functional dependencies
+</itemize>
+<br>
+Third Normal Form (3NF):
+<itemize>
+<item> eliminates most (but not all) redundancy due to <$>fd</$>s
+<item> guaranteed to preserve all functional dependencies
+</itemize>
+</slide>
+
+<slide>
+<heading>Relation Decomposition
+The standard transformation technique to remove redundancy:
+<itemize>
+<item> <em>decompose</em> relation <$>R</$><~> into relations <$>S</$><~> and <$>T</$>
+</itemize>
+<p>
+We accomplish decomposition by
+<itemize>
+<item> selecting (overlapping) subsets of attributes 
+<item> forming new relations based on attribute subsets
+</itemize>
+Properties: <~> <$>R = S <union> T, <~> S <intersect> T <neq> <empty></$> <~> and <~> <$>r(R) = s(S) <join> t(T)</$>
+<p>
+May require several decompositions to achieve acceptable NF.
+<p>
+<em>Normalisation algorithms</em> tell us how to choose <$>S</$> and <$>T</$>.
+</slide>
+
+<slide>
+<heading>Schema (Re)Design
+Consider the following relation for <$>BankLoans</$>:
+<center>
+<reltable 6>
+<row>
+  <col1><b>branchName</b></col1>
+  <col2><b>branchCity</b></col2>
+  <col3><b>assets</b></col3>
+  <col4><b>custName</b></col4>
+  <col5><b>loanNo</b></col5>
+  <col6><b>amount</b></col6>
+</row>
+<row>
+  <col1>Downtown</col1>
+  <col2>Brooklyn</col2>
+  <col3>9000000</col3>
+  <col4>Jones</col4>
+  <col5>L-17</col5>
+  <col6>1000</col6>
+</row>
+<row>
+  <col1>Redwood</col1>
+  <col2>Palo Alto</col2>
+  <col3>2100000</col3>
+  <col4>Smith</col4>
+  <col5>L-23</col5>
+  <col6>2000</col6>
+</row>
+<row>
+  <col1>Perryridge</col1>
+  <col2>Horseneck</col2>
+  <col3>1700000</col3>
+  <col4>Hayes</col4>
+  <col5>L-15</col5>
+  <col6>1500</col6>
+</row>
+<row>
+  <col1>Downtown</col1>
+  <col2>Brooklyn</col2>
+  <col3>9000000</col3>
+  <col4>Jackson</col4>
+  <col5>L-15</col5>
+  <col6>1500</col6>
+</row>
+<row>
+  <col1>Mianus</col1>
+  <col2>Horseneck</col2>
+  <col3>400000</col3>
+  <col4>Jones</col4>
+  <col5>L-93</col5>
+  <col6>500</col6>
+</row>
+<row>
+  <col1>Round Hill</col1>
+  <col2>Horseneck</col2>
+  <col3>8000000</col3>
+  <col4>Turner</col4>
+  <col5>L-11</col5>
+  <col6>900</col6>
+</row>
+<row>
+  <col1>North Town</col1>
+  <col2>Rye</col2>
+  <col3>3700000</col3>
+  <col4>Hayes</col4>
+  <col5>L-16</col5>
+  <col6>1300</col6>
+</row>
+</reltable>
+</center>
+<p>
+This schema has all of the update anomalies mentioned earlier.
+</slide>
+
+<slide>
+<continued>
+To improve the design, decompose the <$>BankLoans</$> relation.
+<p>
+The following decomposition is not helpful:
+<p>
+<~~~> <$>Branch(branchName, branchCity, assets)</$> <br>
+<~~~> <$>CustLoan(custName, loanNo, amount)</$>
+<p>
+because we lose information <small>(which branch is a loan held at?)</small>
+<p>
+Another possible decomposition:
+<p>
+<~~~> <$>BranchCust(branchName, branchCity, assets, custName)</$> <br>
+<~~~> <$>CustLoan(custName, loanNo, amount)</$>
+</slide>
+
+<slide>
+<continued>
+The <$>BranchCust</$> relation instance:
+<center>
+<reltable 4>
+<row>
+  <col1><b>branchName</b></col1>
+  <col2><b>branchCity</b></col2>
+  <col3><b>assets</b></col3>
+  <col4><b>custName</b></col4>
+</row>
+<row>
+  <col1>Downtown</col1>
+  <col2>Brooklyn</col2>
+  <col3>9000000</col3>
+  <col4>Jones</col4>
+</row>
+<row>
+  <col1>Redwood</col1>
+  <col2>Palo Alto</col2>
+  <col3>2100000</col3>
+  <col4>Smith</col4>
+</row>
+<row>
+  <col1>Perryridge</col1>
+  <col2>Horseneck</col2>
+  <col3>1700000</col3>
+  <col4>Hayes</col4>
+</row>
+<row>
+  <col1>Downtown</col1>
+  <col2>Brooklyn</col2>
+  <col3>9000000</col3>
+  <col4>Jackson</col4>
+</row>
+<row>
+  <col1>Mianus</col1>
+  <col2>Horseneck</col2>
+  <col3>400000</col3>
+  <col4>Jones</col4>
+</row>
+<row>
+  <col1>Round Hill</col1>
+  <col2>Horseneck</col2>
+  <col3>8000000</col3>
+  <col4>Turner</col4>
+</row>
+<row>
+  <col1>North Town</col1>
+  <col2>Rye</col2>
+  <col3>3700000</col3>
+  <col4>Hayes</col4>
+</row>
+</reltable>
+</center>
+</slide>
+
+<slide>
+<continued>
+The <$>CustLoan</$> relation instance:
+<p>
+<center>
+<reltable 3>
+<row>
+  <col1><b>custName</b></col1>
+  <col2><b>loanNo</b></col2>
+  <col3><b>amount</b></col3>
+</row>
+<row>
+  <col1>Jones</col1>
+  <col2>L-17</col2>
+  <col3>1000</col3>
+</row>
+<row>
+  <col1>Smith</col1>
+  <col2>L-23</col2>
+  <col3>2000</col3>
+</row>
+<row>
+  <col1>Hayes</col1>
+  <col2>L-15</col2>
+  <col3>1500</col3>
+</row>
+<row>
+  <col1>Jackson</col1>
+  <col2>L-15</col2>
+  <col3>1500</col3>
+</row>
+<row>
+  <col1>Jones</col1>
+  <col2>L-93</col2>
+  <col3>500</col3>
+</row>
+<row>
+  <col1>Turner</col1>
+  <col2>L-11</col2>
+  <col3>900</col3>
+</row>
+<row>
+  <col1>Hayes</col1>
+  <col2>L-16</col2>
+  <col3>1300</col3>
+</row>
+</reltable>
+</center>
+</slide>
+
+<slide>
+<continued>
+Now consider the result of <$>(BranchCust<~><join><~>CustLoan)</$>
+<p>
+<reltable 6>
+<row>
+  <col1><b>branchName</b></col1>
+  <col2><b>branchCity</b></col2>
+  <col3><b>assets</b></col3>
+  <col4><b>custName</b></col4>
+  <col5><b>loanNo</b></col5>
+  <col6><b>amount</b></col6>
+</row>
+<row>
+  <col1>Downtown</col1>
+  <col2>Brooklyn</col2>
+  <col3>9000000</col3>
+  <col4>Jones</col4>
+  <col5>L-17</col5>
+  <col6>1000</col6>
+</row>
+<row>
+  <col1><em>Downtown</em></col1>
+  <col2><em>Brooklyn</em></col2>
+  <col3><em>9000000</em></col3>
+  <col4><em>Jones</em></col4>
+  <col5><em>L-93</em></col5>
+  <col6><em>500</em></col6>
+</row>
+<row>
+  <col1>Redwood</col1>
+  <col2>Palo Alto</col2>
+  <col3>2100000</col3>
+  <col4>Smith</col4>
+  <col5>L-23</col5>
+  <col6>2000</col6>
+</row>
+<row>
+  <col1>Perryridge</col1>
+  <col2>Horseneck</col2>
+  <col3>1700000</col3>
+  <col4>Hayes</col4>
+  <col5>L-15</col5>
+  <col6>1500</col6>
+</row>
+<row>
+  <col1><em>Perryridge</em></col1>
+  <col2><em>Horseneck</em></col2>
+  <col3><em>1700000</em></col3>
+  <col4><em>Hayes</em></col4>
+  <col5><em>L-16</em></col5>
+  <col6><em>1300</em></col6>
+</row>
+<row>
+  <col1>Downtown</col1>
+  <col2>Brooklyn</col2>
+  <col3>9000000</col3>
+  <col4>Jackson</col4>
+  <col5>L-15</col5>
+  <col6>1500</col6>
+</row>
+<row>
+  <col1>Mianus</col1>
+  <col2>Horseneck</col2>
+  <col3>400000</col3>
+  <col4>Jones</col4>
+  <col5>L-93</col5>
+  <col6>500</col6>
+</row>
+<row>
+  <col1><em>Mianus</em></col1>
+  <col2><em>Horseneck</em></col2>
+  <col3><em>400000</em></col3>
+  <col4><em>Jones</em></col4>
+  <col5><em>L-17</em></col5>
+  <col6><em>1000</em></col6>
+</row>
+<row>
+  <col1>Round Hill</col1>
+  <col2>Horseneck</col2>
+  <col3>8000000</col3>
+  <col4>Turner</col4>
+  <col5>L-11</col5>
+  <col6>900</col6>
+</row>
+<row>
+  <col1>North Town</col1>
+  <col2>Rye</col2>
+  <col3>3700000</col3>
+  <col4>Hayes</col4>
+  <col5>L-16</col5>
+  <col6>1300</col6>
+</row>
+<row>
+  <col1><em>North Town</em></col1>
+  <col2><em>Rye</em></col2>
+  <col3><em>3700000</em></col3>
+  <col4><em>Hayes</em></col4>
+  <col5><em>L-15</em></col5>
+  <col6><em>1500</em></col6>
+</row>
+</reltable>
+</slide>
+
+<slide>
+<continued>
+This is clearly not a successful decomposition.
+<p>
+The fact that we ended up with extra tuples was symptomatic of losing
+some critical <q>connection</q> information during the decomposition.
+<p>
+Such a decomposition is called a <em>lossy decomposition</em>.
+<p>
+In a good decomposition, we should be able to reconstruct the
+original relation exactly:
+<p>
+<center>
+if <$>R</$> is decomposed into <$>S</$> and <$>T</$>, then <$>S <join> T = R</$>
+</center>
+<p>
+Such a decomposition is called <em>lossless join decomposition</em>.
+</slide>
+
+<slide>
+<heading>BCNF Normalisation Algorithm
+The following algorithm converts an arbitrary schema to BCNF:
+<program>
+<navy>Inputs:</navy> schema <$>R</$>, set <$>F</$> of <$>fd</$>s
+<navy>Output:</navy> set <$>Res</$> of BCNF schemas
+
+<$>Res</$> = {R};
+while (any schema <$>S <in> Res</$> is not in BCNF) {
+    choose any <$>fd</$> <$>X <rightarrow> Y</$> on <$>S</$> that violates BCNF
+    <$>Res</$> = <$>(Res-S) <union> (S-Y) <union> XY</$>
+}
+</program>
+The last step means: make a table from <$>XY</$>; drop <$>Y</$> from table <$>S</$>
+<p>
+The "choose any" step means that the algorithm is non-deterministic
+</slide>
+
+<slide>
+<heading>BCNF Normalisation Example
+Recall the <$>BankLoans</$> schema:
+<p>
+<$>BankLoans(branchName,  branchCity, assets, custName, loanNo, amount)</$>
+<p>
+Rename to simplify ...
+<p>
+<small><$>B = branchName, C = branchCity, A = assets, N = CustName, L = loanNo, M = amount</$></small>
+<p>
+So ... <$>R = BCANLM</$>, <~~><$>F = { B <rightarrow> CA, L <rightarrow> MN }</$>,
+<~~><$>key(R) = BL</$>
+<p>
+<$>R</$> is not in BCNF, because <$><red>B</red> <rightarrow> CA</$> is not a whole key
+<p>
+Decompose into
+<itemize>
+<item> <$>S = BCA</$>, <~~><$>F<sub>S</sub> = { B <rightarrow> CA }</$> <~~><$>key(S) = B</$>
+<item> <$>T = BNLM</$>, <~~><$>F<sub>T</sub> = { L <rightarrow> NM }</$>, <~~><$>key(T) = BL</$>
+</itemize>
+<small>(continued)</small>
+</slide>
+
+<slide>
+<continued>
+<$>S = BCA</$><~> is in BCNF, <~> only one <$>fd</$><~> and it has key on LHS
+<p>
+<$>T = BLNM</$><~> is not in BCNF, because <$><red>L</red> <rightarrow> NM</$> is not a whole key
+<p>
+Decompose into ...
+<itemize>
+<item> <$>U = LNM</$>, <~~><$>F<sub>U</sub> = { L <rightarrow> NM }</$>, <~~><$>key(U) = L</$>, <~>which is BCNF
+<item> <$>V = BL</$>, <~~><$>F<sub>V</sub> = {}</$>, <~~><$>key(V) = BL</$>, <~>which is BCNF
+</itemize>
+Result:
+<itemize>
+<item> <$>S = (branchName, branchCity, assets) = Branches</$>
+<item> <$>U = (loanNo, custName, amount) = Loans</$>
+<item> <$>V = (branchName, loanNo) = BranchOfLoan</$>
+</itemize>
+</slide>
+
+<slide>
+<heading>3NF Normalisation Algorithm
+The following algorithm converts an arbitrary schema to 3NF:
+<program>
+<navy>Inputs:</navy> schema <$>R</$>, set <$>F</$> of <$>fd</$>s
+<navy>Output:</navy> set <$>R<sub>i</sub></$> of 3NF schemas
+
+let <$>F<sub>c</sub></$> be a reduced <em>minimal cover</em> for <$>F</$>
+<$>Res</$> = {}
+for each <$>fd</$> <$>X <rightarrow> Y</$> in <$>F<sub>c</sub></$> {
+    if (no schema <$>S <in> Res</$> contains <$>XY</$>) {
+        <$>Res</$> = <$>Res <union> XY</$>
+    }
+}
+if (no schema <$>S <in> Res</$> contains a key for <$>R</$>) {
+    <$>K</$> = any candidate key for <$>R</$>
+    <$>Res</$> = <$>Res <union> K</$>
+}
+</program>
+</slide>
+
+
+<slide>
+<heading>3NF Normalisation Example
+Recall the <$>BankLoans</$> schema:
+<p>
+<$>BankLoans(branchName,  branchCity, assets, custName, loanNo, amount)</$>
+<p>
+Rename to simplify ...
+<p>
+<$>R = BCANLM</$>, <~~><$>F = { B <rightarrow> CA, L <rightarrow> MN }</$>,
+<~~><$>key(R) = BL</$>
+<p>
+Compute minimal cover = <~><$>{ B <rightarrow> C, B <rightarrow> A, L <rightarrow> M, L <rightarrow> N }</$>
+<p>
+Reduce minimal cover = <~><$>{ B <rightarrow> CA, L <rightarrow> MN }</$>
+<p>
+Convert  into relations: <~><$>S = BCA, T = LNM</$>
+<p>
+No relation has key <~><$>BL</$>, so add new table containing key <~><$>U = BL</$>
+<p>
+Result is <$>S = BCA, T = LNM, U = BL</$> ... same as BCNF
+</slide>
+
+<slide>
+<heading>Database Design Methodology
+To achieve a <q>good</q> database design:
+<itemize>
+<item> identify attributes, entities, relationships <~> <$><rightarrow></$> <~> ER design
+<item> map ER design to relational schema
+<item> identify constraints <small>(including keys and functional dependencies)</small>
+<item> apply BCNF/3NF algorithms to produce normalised schema
+</itemize>
+<small>
+Note: may subsequently need to <q>denormalise</q> if the design yields inadequate performance.
+</small>
+</slide>
+

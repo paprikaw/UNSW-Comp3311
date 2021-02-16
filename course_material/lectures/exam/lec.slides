@@ -1,0 +1,110 @@
+<title>Exam Preview
+<footer>COMP3311 20T3 <diamond> Exam Preview <diamond>
+
+<slide>
+<heading>COMP3311 Final Exam
+<br>
+Key Details:
+<itemize>
+<item> Thursday 3<sup>rd</sup> December
+<item> Questions open at 10am AEDT
+<item> Submissions close at 10pm AEDT
+<item> Start work by 6pm AEDT <smaller>(at the latest)</smaller>
+<item> Submit answers via <@>give</@>/Webcms3
+<item> Can submit answers multiple times
+<item> Can submit answers any time
+<item> Do NOT leave submission until the last minute
+</itemize>
+</slide>
+
+<slide>
+<continued>
+More details:
+<itemize>
+<item> Amount of work in exam ~3 hours worth
+<item> 7 prac questions <~> <smaller>(SQL, PLpgSQL, Python/Psycopg2)</smaller>
+<item> 5 written questions <~> <smaller>(e.g. tute questions)</smaller>
+<item> Best done on home computer; can be done via <@>ssh grieg</@>
+<item> Exam paper presented as collection of Web pages
+<item> We give you ...
+<itemize>
+<item> a collection of answer template files
+<item> a database dump, for the practical questions
+<item> a <@>check</@> script
+</itemize>
+<item> Exam paper, database and templates can all be downloaded
+</itemize>
+</slide>
+
+<slide>
+<heading>Environment
+<br>
+What you need, to do the exam
+<itemize>
+<item> a web browser
+<item> PostgreSQL (v12), Python 3.7, Psycopg2
+<item> enough space to create a small-ish database
+</itemize>
+Where might you find such an environment?
+<itemize>
+<item> on Grieg
+<item> on the VLab servers
+<item> on your home machine
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Grieg is ok ...
+<itemize>
+<item> as long as you haven't filled you <@>/srvr/</@> quota
+<item> which can easily be fixed by re-installing your PG server
+</itemize>
+VLab servers ...
+<itemize>
+<item> need a decent network connection
+<item> need to run <@>pginit</@> on server
+<item> PostgreSQL files go into <@>/tmp/</@>
+</itemize>
+On home machine ...
+<itemize>
+<item> need to set up and check environment NOW
+</itemize>
+</slide>
+
+<slide>
+<continued>
+In the exam ...
+<itemize>
+<item> read the Instructions
+<item> set up your working directory
+<itemize>
+<item> <@>unzip exam-work.zip</@> <~> giving ...
+<item> <@>q1/</@> .. <@>q7/</@> prac question directories
+<item> <@>q8.txt</@> .. <@>q12.txt</@> written question templates
+<item> <@>XX.dump</@> .. database dump
+<item> <@>check</@> .. testing script
+</itemize>
+<item> create and populate the database
+<item> answer the questions
+<item> submit each answer as you complete it
+</itemize>
+</slide>
+
+<slide>
+<heading>Supplementary Exams
+<br>
+Supplementary Exams are only available to people who
+<itemize>
+<item> are absent from the Final Exam with <i>good reason</i> <br>
+	<small>(good = documented, serious, clearly affects ability to do exam)</small>
+<item> have performed well during the rest of the semester
+</itemize>
+If you are awarded a Supp Exam ...
+<itemize>
+<item> you <b>must</b> make yourself available for it
+	<small>(mid January)</small>
+<item> non-attendance at the Supp <$><Rightarrow></$> mark of 0 for the exam
+</itemize>
+</slide>
+

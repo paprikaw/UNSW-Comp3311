@@ -1,0 +1,303 @@
+<title>Functional Dependency
+<footer>COMP3311 20T3 <diamond> Functional Dependency <diamond>
+
+
+<slide>
+<heading>Notation/Terminology
+<br>
+Most texts adopt the following terminology:
+<p>
+<deftable>
+<row>
+  <col1>Attributes</col1>
+  <col2>
+  <small>
+  upper-case letters from start of alphabet
+  (e.g. <$>A</$>, <$>B</$>, <$>C</$>, ...)</small>
+  </col2>
+</row>
+<row>
+  <col1>Sets of attributes</col1>
+  <col2>
+  <small>
+  concatenation of attribute names
+  (e.g. <$>X=ABCD</$>, <$>Y=EFG</$> )</small>
+  </col2>
+</row>
+<row>
+  <col1>Relation schemas</col1>
+  <col2>
+  <small>
+  upper-case letters, denoting set of all attributes
+  (e.g. <$>R</$>)</small>
+  </col2>
+</row>
+<row>
+  <col1>Relation instances</col1>
+  <col2>
+  <small>
+  lower-case letter corresponding to schema
+  (e.g. <$>r(R)</$>)</small>
+  </col2>
+</row>
+<row>
+  <col1>Tuples</col1>
+  <col2>
+  <small>
+  lower-case letters <~>
+  (e.g. <$>t</$>, <$>t'</$>, <$>t<sub>1</sub></$>, <$>u</$>, <$>v</$> )</small>
+  </col2>
+</row>
+<row>
+  <col1>Attributes in tuples</col1>
+  <col2>
+  <small>
+  tuple[attrSet] (e.g. <$>t[ABCD]</$>, <$>t[X]</$>)</small>
+  </col2>
+</row>
+</deftable>
+</slide>
+
+<slide>
+<heading>Functional Dependency
+A relation instance <$>r(R)</$> satisfies a dependency <$>X <rightarrow> Y</$> <~>if
+<itemize>
+<item> for any <$>t, u <in> r</$>, <~> <$>t[X] = u[X] <~> <Rightarrow> <~> t[Y] = u[Y]</$>
+</itemize>
+In other words, if two tuples in <$>R</$> agree in their values for the
+set of attributes <$>X</$>, then they must also agree in their values for
+the set of attributes <$>Y</$>.
+<p>
+We say that <q><$>Y</$> <~>is <em>functionally dependent</em> on <$>X</$> </q>.
+<p>
+Attribute sets <$>X</$> and <$>Y</$> may overlap; <~>
+it is trivially true that <$>X <rightarrow> X</$>.
+<p>
+<small>
+Notes:
+<itemize>
+<sitem> <$>X <rightarrow> Y</$> can also be read as <q><$>X</$> determines <$>Y</$></q>
+<sitem> the single arrow <$><rightarrow></$> denotes <em>functional dependency</em>
+<sitem> the double arrow <$><Rightarrow></$> denotes logical implication
+</itemize>
+</small>
+</slide>
+
+<slide>
+<continued>
+Consider the following (redundancy-laden) relation:
+<program90>
+Title         | Year | Len | Studio    | Star
+--------------+------+-----+-----------+---------------
+King Kong     | 1933 | 100 | RKO       | Fay Wray
+King Kong     | 1976 | 134 | Paramount | Jessica Lange
+King Kong     | 1976 | 134 | Paramount | Jeff Bridges
+Mighty Ducks  | 1991 | 104 | Disney    | Emilio Estevez
+Wayne's World | 1995 |  95 | Paramount | Dana Carvey
+Wayne's World | 1995 |  95 | Paramount | Mike Meyers
+</program>
+Some functional dependencies in this relation
+<itemize>
+<item> <@>Title Year</@> <rightarrow> <@>Len</@>,
+	<~~~> <@>Title Year</@> <rightarrow> <@>Studio</@>
+</itemize>
+<b>Not</b> a functional dependency
+<itemize>
+<item> <@>Title Year</@> <rightarrow> <@>Star</@>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Consider an instance <$>r(R)</$> of the relation schema <$>R(ABCDE)</$>:
+<p>
+<pre>
+ <b><$>A</$></b>  | <b><$>B</$></b>  | <b><$>C</$></b>  | <b><$>D</$></b>  | <b><$>E</$></b>
+----+----+----+----+----
+ <$>a1</$> | <$>b1</$> | <$>c1</$> | <$>d1</$> | <$>e1</$>
+ <$>a2</$> | <$>b1</$> | <$>c2</$> | <$>d2</$> | <$>e1</$>
+ <$>a3</$> | <$>b2</$> | <$>c1</$> | <$>d1</$> | <$>e1</$>
+ <$>a4</$> | <$>b2</$> | <$>c2</$> | <$>d2</$> | <$>e1</$>
+ <$>a5</$> | <$>b3</$> | <$>c3</$> | <$>d1</$> | <$>e1</$>
+</pre>
+<p>
+Since <$>A</$> <~>values are unique, the definition of <$>fd</$> <~>gives:
+<itemize>
+<item> <$>A <rightarrow> B, <~~> A <rightarrow> C, <~~> A <rightarrow> D, <~~> A <rightarrow> E, <~~~> or <~~> A <rightarrow> BCDE</$>
+</itemize>
+Since all <$>E</$> <~>values are the same, it follows that:
+<itemize>
+<item> <$>A <rightarrow> E, <~~> B <rightarrow> E, <~~> C <rightarrow> E, <~~> D <rightarrow> E</$>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Other observations:
+<itemize>
+<item> combinations of <$>BC</$> are unique, therefore <~> <$>BC <rightarrow> ADE</$>
+<item> combinations of <$>BD</$> are unique, therefore <~> <$>BD <rightarrow> ACE</$>
+<item> if <$>C</$> values match, so do <$>D</$> values, therefore <~> <$>C <rightarrow> D</$>
+<item> however, <$>D</$> values don't determine <$>C</$> values, so <~> <$>!(D <rightarrow> C)</$>
+</itemize>
+We could derive many other dependencies, e.g. <~> <$>AE <rightarrow> BC</$>, ...
+<p>
+In practice, choose a minimal set of <$>fd</$>s (<em>basis</em>)
+<itemize>
+<item> from which all other <$>fd</$>s can be derived
+<item> which captures useful problem-domain information
+</itemize>
+</slide>
+
+<slide>
+<exercise>Functional Dependencies (i)
+Real estate agents conduct visits to rental properties
+<itemize>
+<item> need to record which property, who went, when, results
+<item> each property is assigned a unique code (P#, e.g. P4)
+<item> each staff member has a staff number (S#, e.g. S43)
+<item> staff members use company cars to conduct visits
+<item> a visit occurs at a specific time on a given day
+<item> notes are made on the state of the property after each visit
+</itemize>
+The company stores all of the associated data in a spreadsheet.
+</slide>
+
+<slide>
+<continued>
+The spreadsheet ...
+<program80>
+<b>P</b># | <b>W</b>hen        | <b>A</b>ddress    | <b>N</b>otes         | <b>S</b>#  | Na<b>m</b>e  | <b>C</b>arReg
+---+-------------+------------+---------------+-----+-------+-------
+P4 | 03/06 15:15 | 55 High St | Bathroom leak | S44 | Rob   | ABK754
+P1 | 04/06 11:10 | 47 High St | All ok        | S44 | Rob   | ABK754
+P4 | 03/07 12:30 | 55 High St | All ok        | S43 | Dave  | ATS123
+P1 | 05/07 15:00 | 47 High St | Broken window | S44 | Rob   | ABK754
+P1 | 05/07 15:00 | 47 High St | Leaking tap   | S44 | Rob   | ABK754
+P2 | 13/07 12:00 | 12 High St | All ok        | S42 | Peter | ATS123
+P1 | 10/08 09:00 | 47 High St | Window fixed  | S42 | Peter | ATS123
+P3 | 11/08 14:00 | 99 High St | All ok        | S41 | John  | AAA001
+P4 | 13/08 10:00 | 55 High St | All ok        | S44 | Rob   | ABK754
+P3 | 05/09 11:15 | 99 High St | Bathroom leak | S42 | Peter | ATS123
+</program>
+<br>
+Functional dependencies: <~> <$>P <rightarrow> A, <~~> A <rightarrow> P, <~~~> S <rightarrow> m, <~~> S <rightarrow> C</$>
+</slide>
+
+<slide>
+<heading>Functional Dependency (again)
+Above examples consider dependency within a relation instance <$>r(R)</$>.
+<p>
+More important for <i>design</i><~> is dependency across all possible
+instances of the relation (i.e. a schema-based dependency).
+<p>
+This is a simple generalisation of the previous definition:
+<itemize>
+<item> for any <$>t, u <in> </$><red>any</red><$> r(R)</$>, <~> <$>t[X] = u[X] <~> <Rightarrow> <~> t[Y] = u[Y]</$>
+</itemize>
+Such dependencies tend to capture semantics of problem domain.
+<p>
+E.g. real estate example
+<itemize>
+<item> <$>P <rightarrow> A</$> suggests a property entity, <~> <$>S <rightarrow> N, <~~>  S <rightarrow> C</$> suggest a staff entity
+<item> Property(P#,addr), <~> Staff(S#,name,car), <~> Inspection(P#,S#,when,notes)
+</itemize>
+</slide>
+
+<slide>
+<continued>
+<br>
+Can we generalise some ideas about functional dependency? <br>
+<p>
+<br>
+E.g. are there dependencies that hold for <i>any</i> relation?
+<itemize>
+<item> yes, but they're generally trivial, e.g. <$>Y <subset> X <~> <Rightarrow> <~> X <rightarrow> Y</$>
+</itemize>
+<br>
+E.g. do some dependencies suggest the existence of others?
+<itemize>
+<item> yes, <em>rules of inference</em> allow us to <em>derive</em> dependencies
+<item> allow us to reason about sets of functional dependencies
+</itemize>
+</slide>
+
+<slide>
+<heading>Inference Rules
+<em>Armstrong's rules</em> are general rules of inference on <$>fd</$>s.
+<p> <br>
+F1. <em>Reflexivity</em> <~> e.g. <~> <$>X <rightarrow> X</$>
+<small>
+<itemize>
+<item> a formal statement of <i>trivial dependencies</i>; useful for derivations
+</itemize>
+</small>
+<br>
+F2. <em>Augmentation</em> <~> e.g. <~> <$>X <rightarrow> Y <~><Rightarrow><~> XZ <rightarrow> YZ</$>
+<small>
+<itemize>
+<item> if a dependency holds, then we can expand its left hand side (along with RHS)
+</itemize>
+</small>
+<br>
+F3. <em>Transitivity</em> <~> e.g. <~> <$>X <rightarrow> Y, Y <rightarrow> Z <~><Rightarrow><~> X <rightarrow> Z</$>
+<small>
+<itemize>
+<item> the <q>most powerful</q> inference rule; useful in multi-step derivations
+</itemize>
+</small>
+</slide>
+
+<slide>
+<continued>
+Armstrong's rules are complete, but other useful rules exist:
+<p>
+<br>
+F4. <em>Additivity</em> <~> e.g. <~> <$>X <rightarrow> Y, X <rightarrow> Z <~> <Rightarrow> <~> X <rightarrow> YZ</$>
+<small>
+<itemize>
+<item> useful for constructing new right hand sides of <$>fd</$>s (also called <em>union</em>)
+</itemize>
+</small>
+<br>
+F5. <em>Projectivity</em> <~> e.g. <~> <$>X <rightarrow> YZ <~> <Rightarrow> <~> X <rightarrow> Y, X <rightarrow> Z</$>
+<small>
+<itemize>
+<item> useful for reducing right hand sides of <$>fd</$>s (also called <em>decomposition</em>)
+</itemize>
+</small>
+<br>
+F6. <em>Pseudotransitivity</em> <~> e.g. <~> <$>X <rightarrow> Y, YZ <rightarrow> W <~> <Rightarrow> <~> XZ <rightarrow> W</$>
+<small>
+<itemize>
+<item> shorthand for a common transitivity derivation
+</itemize>
+</small>
+</slide>
+
+<slide>
+<continued>
+Example: determining validity of <$>AB <rightarrow> GH</$>, given:
+<p>
+<center>
+<$>R = ABCDEFGHIJ</$> <p>
+<$>F = { AB <rightarrow> E, <~> AG <rightarrow> J, <~> BE <rightarrow> I, <~> E <rightarrow> G, <~> GI <rightarrow> H }</$>
+</center>
+Derivation:
+<center>
+<table 3>
+<row><col1> 1. <~> </col1><col2> <$>AB <rightarrow> E</$> </col2><col3> (given) </col3></row>
+<row><col1> 2. <~> </col1><col2> <$>E <rightarrow> G</$> </col2><col3> (given) </col3></row>
+<row><col1> 3. <~> </col1><col2> <blue><$>AB <rightarrow> G</$></blue> </col2><col3> (using F3 on 1,2) </col3></row>
+<row><col1> 4. <~> </col1><col2> <$>AB <rightarrow> AB</$> </col2><col3> (using F1) </col3></row>
+<row><col1> 5. <~> </col1><col2> <$>AB <rightarrow> B</$> </col2><col3> (using F5 on 4) </col3></row>
+<row><col1> 6. <~> </col1><col2> <$>AB <rightarrow> BE</$> </col2><col3> (using F4 on 1,5) </col3></row>
+<row><col1> 7. <~> </col1><col2> <$>BE <rightarrow> I</$> </col2><col3> (given) </col3></row>
+<row><col1> 8. <~> </col1><col2> <$>AB <rightarrow> I</$> </col2><col3> (using F3 on 6,7) </col3></row>
+<row><col1> 9. <~> </col1><col2> <$>AB <rightarrow> GI</$> </col2><col3> (using F4 on 3,8) </col3></row>
+<row><col1> 10. </col1><col2> <$>GI <rightarrow> H</$> </col2><col3> (given) </col3></row>
+<row><col1> 11. </col1><col2> <blue><$>AB <rightarrow> H</$></blue> </col2><col3> (using F3 on 9,10) </col3></row>
+<row><col1> 12. </col1><col2> <$>AB <rightarrow> GH</$> </col2><col3> (using F4 on 3,11) </col3></row>
+</table>
+</center>
+</slide>

@@ -1,0 +1,212 @@
+<title>Programming with Databases
+<footer>COMP3311 20T3 <diamond> Programming with Databases <diamond>
+
+<slide>
+<heading>Programming with Databases
+So far, we have seen ...
+<itemize>
+<item> accessing data via SQL queries
+<item> packaging SQL queries as views/functions
+<item> building functions to return tables
+<item> implementing assertions via triggers
+</itemize>
+All of the above programming
+<itemize>
+<item> is very close to the data
+<item> takes place inside the DBMS
+</itemize>
+</slide>
+
+<slide>
+<continued>
+While SQL (+ PLpgSQL) gives a powerful data access mechanism
+<itemize>
+<item> it is <i>not</i> an application programming language
+</itemize>
+Complete applications require code to
+<itemize>
+<item> handle the user interface <~> <small>(GUI or Web)</small>
+<item> interact with other systems <~> <small>(e.g. other DBs)</small>
+<item> perform compute-intensive work <~> <small>(vs. data-intensive)</small>
+</itemize>
+<q>Conventional</q> programming languages (PLs) provide these.
+<p>
+We need PL + DBMS connectivity.
+</slide>
+
+<slide>
+<continued>
+Requirements of an interface between PL and RDBMS:
+<itemize>
+<item> mechanism for connecting to the DBMS <small>(authentication)</small>
+<item> mechanism for mapping PL "requests" to DB queries
+<item> mechanism for iterating over query results
+<item> mapping betwen tuples and PL objects
+</itemize>
+Distance between PL and DBMS is variable, e.g.
+<itemize>
+<item> <@>libpq</@> allows C programs to use PG structs
+<item> JDBC transmits SQL strings, retrieves tuples-as-objects
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Programming Language / DBMS archtecture:
+<br>
+<diagram>Pics/pldb/dbpl-arch
+</slide>
+
+<slide>
+<heading>PL/DB Interface
+Common DB access API used in programming languages
+<program>
+<red>db</red> = connect_to_dbms(<$>DBname</$>,<$>User/Password</$>);
+
+<red>query</red> = build_SQL("<$>SqlStatementTemplate</$>",<$>values</$>);
+
+<red>results</red> = execute_query(<red>db</red>,<red>query</red>);
+
+while (more_tuples_in(<red>results</red>))
+{
+   <red>tuple</red> = fetch_row_from(<red>results</red>);
+   <comment>// do something with values in tuple ...</comment>
+}
+</program>
+This pattern is used in many different libraries:
+<itemize>
+<item> Java/JDBC, PHP/PDO, Perl/DBI, Python/Psycopg2, Tcl, ...
+</itemize>
+</slide>
+
+<slide>
+<continued>
+DB access libraries have similar overall structure.
+<p>
+But differ in the details:
+<itemize>
+<item> whether object-oriented or procedural flavour
+<item> function/method names and parameters
+<item> how to get data from program into SQL statements
+<item> how to get data from tuples into program variables
+</itemize>
+Object-relational mappers (ORMs) ...
+<itemize>
+<sitem> aim to hide the details of the database schema and queries
+<sitem> allow programmers to manipulate objects, not tuples
+<sitem> potentially use the PL<leftrigharrow>DB connection inefficiently
+</itemize>
+</slide>
+
+<slide>
+<heading>PL/DB Mismatch
+There is a tension between PLs and DBMSs
+<itemize>
+<item> DBMSs deal very efficiently with large sets of tuples
+<item> PLs encourage dealing with single tuples/objects
+</itemize>
+If not handled carefully, can lead to inefficient use of DB.
+<p>
+Note: relative costs of DB access operations from PL:
+<itemize>
+<item> establishing a DBMS connection ... very high
+<item> initiating an SQL query ... high
+<item> accessing individual tuple ... small
+</itemize>
+</slide>
+
+<slide>
+<continued>
+Consider this (imaginary) PL/DBMS access method:
+<program>
+<comment>--  establish connection to DBMS</comment>
+db = dbAccess("DB");
+query = "select a,b from R,S where ... ";
+<comment>--  invoke query and get handle to result set</comment>
+results = dbQuery(db, query);
+<comment>--  for each tuple in result set</comment>
+while (tuple = dbNext(results)) {
+    <comment>--  process next tuple</comment>
+    process(tuple['a'], tuple['b']);
+}
+</program>
+<br>
+<small>
+Estimated costs: <~><@>dbAccess</@> = 500ms, <~><@>dbQuery</@> = 200ms, <~><@>dbNext</@> = 10ms
+<p>
+In later cost estimates, ignore <@>dbAccess</@> ... same base cost for all examples
+</small>
+</slide>
+
+<slide>
+<continued>
+Example: find mature-age students <~> <small>(e.g. 10000 students, 500 over 40)</small>
+<program>
+query = "select * from Student";
+results = dbQuery(db, query);
+while (tuple = dbNext(results)) {
+    if (tuple['age'] >= 40) {
+        <comment>--  process mature-age student</comment>
+    }
+}
+</program>
+<br>
+We transfer 10000 tuples from DB, 9500 are irrelevant
+<p>
+Cost = 1*200 + 10000*10 = 100200ms = 100s
+</slide>
+
+<slide>
+<continued>
+E.g. should be implemented as:
+<program>
+query = "select * from Student where age >= 40";
+results = dbQuery(db, query);
+while (tuple = dbNext(results)) {
+    <comment>--  process mature-age student</comment>
+}
+</program>
+<br>
+Transfers only the 500 tuples that are needed.
+<p>
+Cost = 1*200 + 500*10 = 5200ms = 5s
+</slide>
+
+<slide>
+<continued>
+Example: find info about all marks for all students
+<program>
+query1 = "select id,name from Student";
+res1 = dbQuery(db, query1);
+while (tuple1 = dbNext(res1)) {
+    query2 = "select course,mark from Marks"
+             + " where student = " + tuple1['id'];
+    res2 = dbQuery(db,query2);
+    while (tuple2 = dbNext(res2)) {
+        <comment>--  process student/course/mark info</comment>
+    }
+}
+</program>
+E.g. 10000 students, each with 8 marks, <Rightarrow> run 10001 queries
+<p>
+Cost = 10001*200 + 80000*10 = 2800s = 46min
+</slide>
+
+<slide>
+<continued>
+E.g. should be implemented as:
+<program>
+query = "select id,name,course,mark"
+        + " from Student s join Marks m "
+        + " on (s.id=m.student)"
+results = dbQuery(db, query);
+while (tuple = dbNext(results)) {
+    <comment>--  process student/course/mark info</comment>
+}
+</program>
+<br>
+We invoke 1 query, and transfer same number of tuples.
+<p>
+Cost = 1*200ms + 80000*10ms = 800s = 13min
+</slide>
+

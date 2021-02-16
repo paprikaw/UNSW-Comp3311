@@ -1,0 +1,15 @@
+
+Student(+12345, John Shepherd, Botany Rd, Alexandria, AUS)
+
+Unit(+COMP3311, +20T3, [ER,Rel,SQL,Psycopg2], Database Systems)
+
+School(+CSE, http://www.cse.unsw.edu.au)
+
+
+Relationships
+
+a student must be enrolled in one or more unit
+a unit has 0 or more students enrolled in it
+
+a unit is offered by one school
+a school offers 0 or more units

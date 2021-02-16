@@ -1,0 +1,242 @@
+<title>SQL Introduction
+<footer>COMP3311 21T1 <diamond> SQL Intro <diamond>
+
+<slide>
+<heading>SQL vs Relational Model
+The <em>relational model</em> is a formal system for
+<itemize>
+<item> describing data <~> <small>(relations, tuples, attributes, domains, constraints)</small>
+<item> manipulating data <~> <small>(relational algebra ... covered elsewhere)</small>
+</itemize>
+<em>SQL</em> is a "programming" language for
+<itemize>
+<item> describing data <~> <small>(tables, rows, fields, types, constraints)</small>
+<item> manipulating data <~> <small>(query language)</small>
+</itemize>
+SQL extends the relational model in some ways <small>(e.g bags vs sets of tuples)</small>
+<p>
+SQL omits some aspects of the relational model <small>(e.g. general constraints)</small>
+</slide>
+
+<slide>
+<heading>SQL History
+Developed at IBM in the mid-1970's (System-R)
+<p>
+Standardised in 1986, and then in 1989, 1992, 1999, 2003, ... 2019
+<p>
+Many database management systems (DBMSs) have been built around SQL
+<itemize>
+<item> <small>System-R, Oracle, Ingres, DB2, PostgreSQL, MySQL, SQL-server, SQLite, ...</small>
+</itemize>
+<p>
+DBMSs <small>vs</small> the standard
+<itemize>
+<item> all DBMSs implement a subset of the 1999 standard <small>(aka SQL3)</small>
+<item> all DBMSs implement proprietary extensions to the standard
+</itemize>
+Conforming to standard should ensure portability of database applications
+</slide>
+
+<slide>
+<heading>SQL Intro
+SQL has several sub-languages ...
+<itemize>
+<item> meta-data definition language <~> <small>(e.g. <~><@>create table</@>, etc.)</small>
+<item> meta-data update language <~> <small>(e.g. <~><@>alter table, drop table</@>)</small>
+<item> data update language <~> <small>(e.g. <~><@>insert, update, delete</@>)</small>
+<item> query language <~> <small>(e.g. <~><@>select ... from ... where</@>, etc.)</small>
+</itemize>
+Meta-data languages manage the database <em>schema</em>
+<p>
+Data update language manages sets of <em>tuples</em>
+</slide>
+
+<slide>
+<continued>
+Syntax-wise, SQL is similar to other programming languages
+<itemize>
+<item> has keywords, identifiers, constants, operators
+<item> but strings are different to most PLs
+<small>
+<itemize>
+<item> <@>'...'</@> are constant strings, e.g. <@>'a'</@>, <@>'abc123'</@>, <@>'John''s bag'</@>
+<item> <@>"..."</@> allow non-alpha chars in identifiers and make id's case-sensitive
+</itemize>
+</small>
+</itemize>
+In the standard, all non-quoted identifiers map to all upper-case
+<itemize>
+<item> e.g. <@>BankBranches</@> = <@>bankbranches</@> are treated as <@>BANKBRANCHES</@>
+</itemize>
+In PostgreSQL, all non-quoted identifiers map to all lower-case
+<itemize>
+<item> e.g. <@>BankBranches</@> = <@>BANKBRANCHES</@> are treated as <@>bankbranches</@>
+</itemize>
+In all standards-adhering DBMSs, different quoted identifiers are different
+<itemize>
+<item> <@>"BankBranches"</@> &ne; <@>"bankbranches"</@> &ne; <@>"BANKBRANCHES"</@>
+</itemize>
+</slide>
+
+<slide>
+<heading>SQL Syntax in a Nutshell
+SQL definitions, queries and statements are composed of:
+<itemize>
+<item> <em>comments</em> ... <@@>--</@@> comments to end of line
+<item> <em>identifiers</em> ... similar to regular programming languages
+<item> <em>keywords</em> ... a large set (e.g. <@>CREATE</@>, <@>DROP</@>, <@>TABLE</@>)
+<item> <em>data types</em> ... small set of basic types (e.g. <@>integer</@>, <@>date</@>)
+<item> <em>operators</em> ... similar to regular programming languages
+<item> <em>constants</em> ... similar to regular programming languages
+</itemize>
+<i>Similar</i> means <q>often the same, but not always</q> ...
+</slide>
+
+<slide>
+<continued>
+Comments: everything after <blue><@@>--</@@> <i>is a comment</i></blue>
+<p>
+Identifiers: alphanumeric (a la C), but also <@>"An Identifier"</@>
+<p>
+Reserved words: many e.g. <@>CREATE</@>, <@>SELECT</@>, <@>TABLE</@>, ...
+<p>
+Reserved words cannot be used identifiers unless quoted e.g <@>"table"</@>
+<p>
+Strings: e.g. <@>'a string'</@>, <~><@>'don''t ask'</@>, <~>but no <@>'\n'</@>
+<~> <small>(use <@>e'\n'</@>)</small>
+<p>
+Numbers: like C, e.g. <@>1</@>, <~><@>-5</@>, <~><@>3.14159</@>, <~>...
+<p>
+Types: <~><@>integer</@>, <~><@>float</@>, <~><@>char(</@><$>n</$><@>)</@>, <~><@>varchar(</@><$>n</$><@>)</@>, <~><@>date</@>, ...
+<p>
+Operators: <~><@>=</@>, <~><@><<>></@>, <~><@><<</@>, <~><@><<=</@>, <~><@>>></@>, <~><@>>>=</@>, <~><@>AND</@>, <~><@>OR</@>, <~><@>NOT</@>, ...
+</slide>
+
+<slide>
+<heading>Names in SQL
+Identifiers denote:
+<itemize>
+<item> database objects such as tables, attributes, views, ...
+<item> meta-objects such as types, functions, constraints, ...
+</itemize>
+Naming conventions that I (try to) use in this course:
+<itemize>
+<item> relation names: <~> e.g. <@>Branches</@>, <@>Students</@>, ... <small>(use plurals)</small>
+<item> attribute names: <~> e.g. <@>name</@>, <@>code</@>, <@>firstName</@>, ...
+<item> foreign keys: named after either or both of
+<itemize>
+<sitem> table being referenced <~> e.g. <@>staff</@> or <@>staff_id</@>, ...
+<sitem> relationship being modelled <~> e.g. <@>teaches</@>, ...
+</itemize>
+</itemize>
+We initially write SQL keywords in all upper-case in slides.
+</slide>
+
+<slide>
+<heading>Types/Constants in SQL
+Numeric types: <@>INTEGER</@>, <@>REAL</@>,
+	<@>NUMERIC(</@><$>w</$><@>,</@><$>d</$><@>)</@>
+<program>
+10    -1    3.14159    2e-5    6.022e23 
+</program>
+<p>
+String types: <@>CHAR(</@><$>n</$><@>)</@>, <@>VARCHAR(</@><$>n</$><@>)</@>,
+	<navy><@>TEXT</@></navy>
+<program>
+'John'   'some text'   '!%#%!$'   'O''Brien'
+'"'   '[A-Z]{4}\d{4}'   'a VeRy! LoNg String'
+</program>
+<navy>PostgreSQL</navy> provides extended strings containing <@>\</@> escapes, e.g.
+<program>
+E'\n'   E'O\'Brien'   E'[A-Z]{4}\\d{4}'   E'John'
+</program>
+<p>
+Type-casting via <$>Expr</$><@@>::</@@><$>Type</$>
+	<~> (e.g. <@>'10'::integer</@>)
+</slide>
+
+<slide>
+<continued>
+Logical type: <@>BOOLEAN</@>, <@>TRUE</@> <small>and</small> <@>FALSE</@> <~> (<small>or</small> <@>true</@> <small>and</small> <@>false</@>)
+<p>
+<small><navy>PostgreSQL</navy> also allows <@>'t'</@>, <@>'true'</@>, <@>'yes'</@>,
+	<@>'f'</@>, <@>'false'</@>, <@>'no'</@></small>
+<p>
+Time-related types: <@>DATE</@>, <@>TIME</@>, <@>TIMESTAMP</@>, <@>INTERVAL</@>
+<program>
+'2008-04-13'  '13:30:15'  '2004-10-19 10:23:54'
+<navy>'Wed Dec 17 07:37:16 1997 PST'</navy>
+'10 minutes'  '5 days, 6 hours, 15 seconds'
+</program>
+Subtraction of timestamps yields an interval, e.g.
+<program>
+now()::TIMESTAMP - birthdate::TIMESTAMP
+</program>
+<navy>PostgreSQL</navy> also has a range of non-standard types, e.g. <br>
+<small>
+<itemize>
+<sitem> geometric (point/line/...), currency, IP addresses, JSON, XML, objectIDs, ...
+<sitem> non-standard types typically use string literals (<@>'...'</@>) <tiny>which need to be interpreted</tiny>
+</itemize>
+</small>
+</slide>
+
+<slide>
+<continued>
+Users can define their own types in several ways:
+<syntax>
+<comment>-- domains: constrained version of existing type</comment>
+
+<navy>CREATE DOMAIN</navy> <$>Name</$> AS <$>Type</$> CHECK ( <$>Constraint</$> )
+
+<comment>-- tuple types: defined for each table</comment>
+
+<navy>CREATE TYPE</navy> <$>Name</$> AS ( <$>AttrName</$> <$>AttrType</$>, ... )
+
+<comment>-- enumerated type: specify elements and ordering</comment>
+
+<navy>CREATE TYPE</navy> <$>Name</$> AS ENUM ( '<$>Label</$>', ... )
+</syntax>
+</slide>
+
+<slide>
+<heading>Examples of Defining Domains/Types
+<program>
+<comment>-- positive integers</comment>
+CREATE DOMAIN PosInt AS integer CHECK (value > 0);
+
+<comment>-- a UNSW course code</comment>
+CREATE DOMAIN CourseCode AS char(8)
+    CHECK (value ~ '[A-Z]{4}[0-9]{4}');
+
+<comment>-- a UNSW student/staff ID</comment>
+CREATE DOMAIN ZID AS integer
+    CHECK (value betweem 1000000 and 9999999);
+
+<comment>-- standard UNSW grades (FL,PS,CR,DN,HD)</comment>
+CREATE DOMAIN Grade AS char(2)
+    CHECK (value in ('FL','PS','CR','DN','HD'));
+<comment>-- or</comment>
+CREATE TYPE Grade AS ENUM ('FL','PS','CR','DN','HD');
+</program>
+</slide>
+
+<slide>
+<heading>Tuple and Set Literals
+Tuple and set constants are both written as:
+<program>
+( <$>val<sub>1</sub>, val<sub>2</sub>, val<sub>3</sub>,</$> ... )
+</program>
+The correct interpretation is worked out from the context.
+<p>
+Examples:
+<sprogram>
+INSERT INTO Student(studeID, name, degree)
+   VALUES (2177364, 'Jack Smith', 'BSc')
+          <comment>-- tuple literal</comment>
+
+CONSTRAINT CHECK gender IN ('male','female','unspecified')
+                           <comment>-- set literal</comment>
+</sprogram>
+</slide>
+

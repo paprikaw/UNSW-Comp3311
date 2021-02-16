@@ -1,0 +1,298 @@
+<title>SQL: Updating the Data
+<footer>COMP3311 20T3 <diamond> SQL: Updating the Data <diamond>
+
+<slide>
+<heading>Data Modification in SQL
+We have seen statements to modify table meta-data <small>(in DB catalog)</small>:
+<itemize>
+<item> <@>CREATE TABLE</@> ... add new, initially empty, table to DB
+<item> <@>DROP TABLE</@> ... remove table data (all tuples) and meta-data
+<item> <@>ALTER TABLE</@> ... change meta-data of table
+	<small>(e.g add constraints)</small>
+</itemize>
+SQL also provides statements for modifying data in tables:
+<itemize>
+<item> <@>INSERT</@> ... add a new tuple(s) into a table
+<item> <@>DELETE</@> ... remove tuples from a table <small>(via condition)</small>
+<item> <@>UPDATE</@> ... modify values in existing tuples <small>(via condition)</small>
+</itemize>
+Constraint checking is applied automatically on any change.
+<p>
+Operation fails (no change to DB) if any constraint check fails
+</slide>
+
+<slide>
+<heading>Insertion
+Add new tuples via the <@@>INSERT</@@> operation:
+<syntax>
+INSERT INTO <i>RelationName</i>
+VALUES (<$>val<sub>1</sub></$>, <$>val<sub>2</sub></$>, <$>val<sub>3</sub></$>, ...)
+
+INSERT INTO <$>RelationName</$>(<$>Attr<sub>1</sub></$>, <$>Attr<sub>2</sub></$>, ...)
+VALUES (<$>valForAttr<sub>1</sub></$>, <$>valForAttr<sub>2</sub></$>, ...)
+
+INSERT INTO <i>RelationName</i>
+VALUES <$>Tuple<sub>1</sub></$>, <$>Tuple<sub>2</sub></$>, <$>Tuple<sub>3</sub></$>, ...
+</syntax>
+The first two add a single new tuple into <$>RelationName</$>.
+<p>
+The last form adds multiple tuples into <$>RelationName</$>.
+</slide>
+
+<slide>
+<continued>
+<br>
+<@>INSERT INTO </@><$>R</$><@> VALUES (</@><$>v<sub>1</sub></$><@>,</@><$>v<sub>2</sub></$><@>,...)</@>
+<itemize>
+<item> values must be supplied for all attributes of <$>R</$>
+<item> in same order as appear in <@>CREATE TABLE</@> statement
+<item> special value <@>DEFAULT</@> forces default value or <@>NULL</@>
+</itemize>
+<@>INSERT INTO </@><$>R</$><@>(</@><$>A<sub>1</sub></$><@>,</@><$>A<sub>2</sub></$><@>,...) VALUES (</@><$>v<sub>1</sub></$><@>,</@><$>v<sub>2</sub></$><@>,...)</@>
+<itemize>
+<item> can specify any subset of attributes of <$>R</$>
+<item> values must match attribute specification order
+<item> unspecified attributes are assigned default or null
+</itemize>
+</slide>
+
+<slide>
+<continued>
+<b>Example:</b> Add the fact that Justin likes 'Old'.
+<program90>
+INSERT INTO Likes VALUES ('Justin','Old');
+<comment>-- or --</comment>
+INSERT INTO Likes(drinker,beer) VALUES('Justin','Old');
+<comment>-- or --</comment>
+INSERT INTO Likes(beer,drinker) VALUES('Old','Justin');
+</program>
+<br>
+<b>Example:</b> Add a new beer with unknown style.
+<program>
+INSERT INTO Beers(name,brewer)
+       VALUES('Mysterio','Hop Nation');
+<comment>-- which inserts the tuple ...</comment>
+('Mysterio', 'Hop Nation', null)
+</program>
+</slide>
+
+<slide>
+<continued>
+<b>Example:</b> insertion with default values
+<program>
+ALTER TABLE Likes
+   ALTER COLUMN beer SET DEFAULT 'New';
+ALTER TABLE Likes
+   ALTER COLUMN drinker SET DEFAULT 'Joe';
+
+INSERT INTO Likes(drinker) VALUES('Fred');
+INSERT INTO Likes(beer) VALUES('Sparkling Ale');
+
+<comment>-- inserts the two new tuples ...</comment>
+('Fred', 'New')
+('Joe', 'Sparkling Ale')
+</program>
+</slide>
+
+<slide>
+<continued>
+<b>Example:</b> insertion with insufficient values.
+<p>
+E.g. specify that drinkers' phone numbers cannot be <@>NULL</@>.
+<program>
+ALTER TABLE Drinkers
+   ALTER COLUMN phone SET NOT NULL;
+</program>
+<br>
+Then try to insert a drinker whose phone number we don't know:
+<program90>
+INSERT INTO Drinkers(name,addr) VALUES ('Zoe','Manly');
+
+ERROR:  null value in column "phone" violates
+                              not-null constraint
+DETAIL:  Failing row contains (Zoe, Manly, null).
+</program>
+</slide>
+
+<slide>
+<heading>Bulk Insertion of Data
+Tuples may be inserted individually:
+<program>
+insert into Stuff(x,y,s) values (2,4,'green');
+insert into Stuff(x,y,s) values (4,8,null);
+insert into Stuff(x,y,s) values (8,null,'red');
+...
+</program>
+but this is tedious if 1000's of tuples are involved.
+<p>
+It is also inefficient
+<itemize>
+<item> all relevant constraints are checked on insertion of each tuple
+</itemize>
+So, most DBMSs provide non-SQL methods for bulk insertion
+</slide>
+
+<slide>
+<continued>
+Bulk insertion methods typically ...
+<itemize>
+<item> use a compact representation for each tuple
+<item> "load" all tuples without constraint checking
+<item> do all constraint checks at the end
+<item> if any tuples fail checks, none are inserted
+</itemize>
+<p>
+Example: PostgreSQL's <@>copy</@> statement:
+<program>
+<@@>COPY</@@> Stuff(x,y,s) <@@>FROM</@@> stdin;
+2       4       green
+4       8       <brown>\N</brown>
+8       <brown>\N</brown>      red
+<brown>\.</brown>
+</program>
+Can also copy from a named file <~> <smaller>(but must be readable by PostrgeSQL server)</smaller>
+</slide>
+
+<slide>
+<heading>Deletion
+Removing tuples is accomplished via <@@>DELETE</@@> statement:
+<program>
+DELETE FROM <i>Relation</i>
+WHERE  <i>Condition</i>
+</program>
+Removes all tuples from <i>Relation</i><~> that satisfy <i>Condition</i>.
+<p>
+<b>Example:</b> Justin no longer likes Sparkling Ale.
+<program>
+DELETE FROM Likes
+WHERE drinker = 'Justin'
+      AND beer = 'Sparkling Ale';
+</program>
+<b>Special case:</b> Make relation <i>R</i><~> empty.
+<program>
+DELETE FROM R; <~~> <comment>or</comment> <~~> DELETE FROM R WHERE true;
+</program>
+</slide>
+
+<slide>
+<continued>
+<b>Example:</b> remove all expensive beers from sale.
+<program>
+DELETE FROM Sells WHERE price >= 5.00;
+</program>
+<br>
+<b>Example:</b> remove all beers with unknown style
+<program>
+DELETE FROM Beers WHERE style IS NULL;
+</program>
+This fails* if such Beers are referenced from other tables
+<p>
+E.g. such Beers are liked by someone or sold in some bar
+<p>
+* no beers are removed, even if some are not referenced
+</slide>
+
+<slide>
+<heading>Semantics of Deletion
+Method A for <~> <@>DELETE FROM</@> <i>R</i><~> <@>WHERE</@> <i>Cond</i> :
+<program90>
+FOR EACH tuple T in R DO
+    IF T satisfies Cond THEN
+        remove T from relation R
+    END
+END
+</program>
+Method B for <~> <@>DELETE FROM</@> <i>R</i><~>  <@>WHERE</@> <i>Cond</i> :
+<program90>
+FOR EACH tuple T in R DO
+    IF T satisfies Cond THEN
+        make a note of this T
+    END
+END
+FOR EACH noted tuple T DO
+    remove T from relation R
+END
+</program>
+</slide>
+
+<slide>
+<continued>
+Does it matter which method the DBMS uses?
+<p>
+For most cases, the same tuples would be deleted
+<p>
+But if <i>Cond</i><~> involes a query on the table <i>R</i>
+<itemize>
+<item> the result of <i>Cond</i> might change as the deletion progresses
+<item> so Method A might delete less tuples than Method B
+</itemize>
+E.g.
+<program>
+DELETE FROM Beers
+WHERE (SELECT count(*) FROM Beers) > 10;
+</program>
+<p>
+<small>
+Method A deletes beers until there are only 10 left <br>
+Method B deletes all beers if there were more than 10 to start with
+</small>
+</slide>
+
+<slide>
+<heading>Updates
+The <@@>UPDATE</@@> statement allows you to ...
+<itmeize>
+<item> modify values of specified attributes in specified tuples of a relation
+</itemize>
+<program>
+UPDATE <i>R</i>
+SET    <i>List of assignments</i>
+WHERE  <i>Condition</i>
+</program>
+Each tuple in relation <i>R</i><~> that satisfies <i>Condition</i>
+is affected
+<p>
+Assignments may:
+<itemize>
+<item> assign constant values to attributes, <br>
+	e.g. <@>SET price = 2.00</@>
+<item> use existing values in the tuple to compute new values, <br>
+	e.g. <@>SET price = price * 0.5</@>
+</itemize>
+</slide>
+
+<slide>
+<continued>
+<b>Example:</b> Adam changes his phone number.
+<program>
+UPDATE Drinkers
+SET    phone = '9385-2222'
+WHERE  name = 'Adam';
+</program>
+<b>Example:</b> John moves to Coogee.
+<program>
+UPDATE Drinkers
+SET    addr = 'Coogee',
+       phone = '9665-4321'
+WHERE  name = 'John';
+</program>
+</slide>
+
+<slide>
+<continued>
+Examples that modify many tuples ...
+<p>
+<b>Example:</b> Make <dollar>6 the maximum price for beer.
+<program>
+UPDATE Sells
+SET    price = 6.00
+WHERE  price > 6.00;
+</program>
+<br>
+<b>Example:</b> Increase beer prices by 10%.
+<program>
+UPDATE Sells
+SET    price = price * 1.10;
+</program>
+Updates all tuples (as if <@>WHERE true</@>)
+</slide>

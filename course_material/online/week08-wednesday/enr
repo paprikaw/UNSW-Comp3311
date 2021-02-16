@@ -1,0 +1,35 @@
+#!/usr/local/bin/python3.7
+import sys
+import psycopg2
+if len(sys.argv) < 3:
+    print("Usage:",sys.argv[0],"subject term")
+    exit(1)
+subject = sys.argv[1]
+term = sys.argv[2]
+conn = None
+query = """
+select s.code, s.name, termName(t.id), count(*)
+from   Courses c 
+       join Subjects s on (c.subject=s.id)
+       join Terms t on (c.term=t.id)
+       join Course_enrolments e on (e.course=c.id)
+where  s.code = %s and termName(t.id) = %s
+group  by s.code, s.name, termName(t.id)
+"""
+try:
+   conn = psycopg2.connect("dbname=mymy2")
+   cur = conn.cursor()
+   cur.execute(query, [subject,term])
+   courseInfo = cur.fetchone()
+   if courseInfo is None:
+      print("No such course")
+      exit(0)
+   #subject,title,term,count = courseInfo
+   title = courseInfo[1]
+   count = courseInfo[3]
+   print(subject,term,title,"has",count,"students")
+except psycopg2.Error as err:
+   print("database error: ", err)
+finally:
+   if conn:
+      conn.close()

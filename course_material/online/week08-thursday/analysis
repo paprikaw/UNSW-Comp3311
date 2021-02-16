@@ -1,0 +1,31 @@
+The difference between one query and multiple queries
+
+avgs
+q = query calculating avg mark for all relevant course
+foreach result in q
+   print course info + average mark
+
+avgs2
+q = query getting all relevant courses
+foreach course in q
+   q1 = calculate avg for course
+   get average mark
+   print course info + average mark
+
+
+$ time ./avgs > /dev/null
+
+real	0m5.253s
+user	0m0.127s
+sys	0m0.021s
+
+$ time ./avgs2 > /dev/null
+
+real	5m22.421s
+user	0m1.605s
+sys	0m0.303s
+
+
+The lesson:
+- DO NOT nest queries in the programming language
+- as much as possible, do everything in a single query

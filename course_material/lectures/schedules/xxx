@@ -1,0 +1,51 @@
+
+<slide>
+<continued>
+To describe transaction effects, we consider:
+<itemize>
+<item> <@>READ</@> - transfer data from disk to memory
+<item> <@>WRITE</@> - transfer data from memory to disk
+<item> <@>ABORT</@> - terminate transaction, unsuccessfully
+<item> <@>COMMIT</@> - terminate transaction, successfully
+</itemize>
+Normally abbreviated to <@>R(X)</@>, <@>W(X)</@>, <@>A</@>, <@>C</@>
+<vspace 1>
+<itemize>
+<item> <@>SELECT</@> produces <@>READ</@> operations on the database.
+<item> <@>INSERT</@> produces <@>WRITE</@> operations. 
+<item> <@>UPDATE</@>, <@>DELETE</@> produce both <@>READ</@> + <@>WRITE</@> operations.
+</itemize>
+</slide>
+
+<slide>
+<heading>Transaction Consistency
+Transactions typically have intermediate states
+that are invalid.
+<p>However, states <em>before</em> and <em>after</em> transaction
+must be valid.
+<p><br>
+<diagram>Pics/xact/tx-exec1.png
+<p><br><br>
+Reminder: "valid" = satisfying all of the specified constraints
+<p>
+Valid = consistent = satisfying all stated constraints on the data
+</slide>
+
+<slide>
+<continued>
+Transaction descriptions can be abstracted
+<itemize>
+<item> consider only <em>R</em>ead and <em>W</em>rite operations on shared data
+<item> e.g. T1: R(X) W(X) R(Y) W(Y), <~> T2: R(X) R(Y) W(X) W(Y)
+</itemize>
+A <em>schedule</em> defines ...
+<itemize>
+<item> a specific execution of one or more transactions
+<item> typically concurrent, with interleaved operations
+</itemize>
+Abribtrary interleaving of operations causes <em>anomalies</em>, so that ...
+<item> two consistency-preserving transactions
+<item> produce a final state which is not consistent
+</itemize>
+</slide>
+
