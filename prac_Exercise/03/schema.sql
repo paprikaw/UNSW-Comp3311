@@ -2,10 +2,10 @@
 -- Schema for simple company database
 
 create table Employees (
-	tfn         char(11) where tfn ~ '[0-9]{3}-[0-9]{3}-[0-9]{3}',
+	tfn         char(11) check(tfn ~ '[0-9]{3}-[0-9]{3}-[0-9]{3}'),
 	givenName   varchar(30) NOT NULL,
 	familyName  varchar(30),
-	hoursPweek  float check  (hourspweek <= 168 and hourspweek >= 0) 
+	hoursPweek  float check  (hourspweek <= 168 and hourspweek >= 0),
 	primary key (tfn)
 );
 
@@ -13,7 +13,7 @@ create table Departments (
 	id          char(3) UNIQUE,
 	name        varchar(100) UNIQUE,
 	manager     char(11),
-	primary key (id),
+	primary key (id)
 );
 
 create table DeptMissions (
