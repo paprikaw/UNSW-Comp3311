@@ -10,10 +10,11 @@ create table Employees (
 );
 
 create table Departments (
-	id          char(3) UNIQUE,
+	id          char(3) UNIQUE check(id ~ '[0-9]{3}'),
 	name        varchar(100) UNIQUE,
-	manager     char(11),
-	primary key (id)
+	manager     char(11) UNIQUE,
+	primary key (id),
+	foreign key (manager) REFERENCES Employees(tfn)
 );
 
 create table DeptMissions (
@@ -26,7 +27,7 @@ create table DeptMissions (
 create table WorksFor (
 	employee    char(11),
 	department  char(3),
-	percentage  float check (percentage > 0 and percentage <= 1),
+  	percentage int check(percentage > 0 and percentage <= 100),
 	primary key (employee,department),
 	foreign key (employee) REFERENCES employees(tfn),
 	foreign key (department) REFERENCES departments(id)
