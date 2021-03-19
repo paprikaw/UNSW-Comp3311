@@ -376,6 +376,11 @@ select sid from (
                 ) foo
 $$ language sql;
 
+create or replace function insured_person(pno integer) returns TABLE(pid integer) as
+$$
+    select c.pid from client c, insured_by ib where ib.pno=$1 and ib.cid = c.cid;
+$$ language sql;
+
 
 create or replace function policy_constraint() returns trigger
 as
@@ -404,7 +409,6 @@ create trigger policy_enforement
     for each row
 execute function policy_constraint();
 
-
 create or replace function underwriting_constraint() returns trigger
 as
 $$
@@ -413,7 +417,7 @@ _pno integer;
 _sid integer;
 begin
     select ur.pno from underwriting_record ur where ur.urid = new.urid into _pno;
-    select sid from involving_staff(_pno) ivs where new.sid=ivs.sid into _sid;
+    select s.sid from insured_person(_pno) ip, staff s where s.pid=ip.pid into _sid;
     if found then
         raise exception 'Can not alter underwriting record since this staff have this policy';
     end if;
@@ -435,7 +439,7 @@ _pno integer;
 _sid integer;
 begin
     select c.pno from coverage c, rating_record rr where c.coid=rr.coid and rr.rid= new.rid into _pno;
-    select sid from involving_staff(_pno) ivs where new.sid=ivs.sid into _sid;
+    select s.sid from insured_person(_pno) ip, staff s where s.pid=ip.pid into _sid;
     if found then
         raise exception 'Can not alter underwriting record since this staff have this policy';
     end if;
