@@ -1,8 +1,7 @@
 #!/usr/bin/python3
-from operator import itemgetter
 
 '''
-The msearch (movie search) script lists the movie title, year, content rating, IMDB score and genres of those movies with the title, actor, or director matching the given substring (case insensitive), one per line. It accepts any number of given substrings (but at least one). If more than one substring are provided, they should be considered as a conjunctive selection query (i.e., via AND). For example, consider 
+The msearch (movie search) script lists the movie title, year, content rating, IMDB score and genres of those movies with the title, actor, or director matching the given substring (case insensitive), one per line. It accepts any number of given substrings (but at least one). If more than one substring are provided, they should be considered as a conjunctive selection query (i.e., via AND).
 '''
 
 import sqlite3,sys

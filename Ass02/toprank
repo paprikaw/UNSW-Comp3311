@@ -1,0 +1,52 @@
+#!/usr/bin/python3
+
+'''
+The toprank script ranks movies based on their IMDB rating. It considers movies with given genres and the minimum acceptable IMDB score to be listed in the output.
+'''
+import sqlite3,sys
+
+
+if len(sys.argv) != 3 :
+  print("Usage: ./toprank Genres MinRating")
+  sys.exit(1)
+
+Genre =sys.argv[1]
+MinRating =sys.argv[2]
+
+Genre_list = Genre.split("&")
+
+try:
+  con = sqlite3.connect('a2.db')
+except sqlite3.Error as err:
+    print("database error: ", err)
+cur = con.cursor()
+sql = '''select title, year, content_rating, lang, imdb_score, num_voted_users, group_concat(genre) as genre
+from (select m.title, m.year, m.content_rating, m.lang, r.imdb_score, r.num_voted_users, g.genre
+      from movie m
+               join genre g on m.id = g.movie_id
+               join rating r on m.id = r.movie_id
+      where r.imdb_score >= ?)
+
+group by title, year, content_rating, lang, imdb_score, num_voted_users
+'''
+if Genre_list != [""]:
+    sql += "having " + " and ".join(["group_concat(genre) like ?" for _ in Genre_list]) + '''order by imdb_score desc,
+  num_voted_users desc,
+  year desc
+    '''
+    args = ["%" + Genre + "%" for Genre in Genre_list]
+    args.insert(0, MinRating)
+    cur.execute(sql, args)
+else:
+    sql += '''order by imdb_score desc,
+         num_voted_users desc,
+         year desc'''
+    cur.execute(sql,(MinRating,))
+
+
+results = cur.fetchall()
+for i in range(0, len(results)):
+  info_string = "(" + ", ".join([str(info) for info in results[i][1:4] if info != None]) + ")"
+  rating_string = "[" + ", ".join([str(info) for info in results[i][4:6] if info != None]) + "]"
+  print ("{}. {} {} {}".format( i + 1, results[i][0], info_string, rating_string))
+exit (0)
