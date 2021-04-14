@@ -7,13 +7,14 @@ if len(sys.argv) != 3:
  print("Usage: ./shortest actor_a actor_b")
  sys.exit(1)
 
+count = 0
+try:
+    con = sqlite3.connect('a2.db')
+except sqlite3.Error as err:
+    print("database error: {}", err)
+cur = con.cursor()
 # Find all the actor and import it into dictionary
 def acquire_adjacent(actor):
-    try:
-        con = sqlite3.connect('a2.db')
-    except sqlite3.Error as err:
-        print("database error: {}", err)
-    cur = con.cursor()
     sql = '''
     select  a3.actor_id from movie m
         join acting a on m.id = a.movie_id
@@ -21,9 +22,11 @@ def acquire_adjacent(actor):
         join acting a3 on a3.movie_id = m.id and a3.actor_id <>  a2.id
     group by a3.actor_id;
     '''
+    global count
+    count += 1
+    print(count)
     cur.execute(sql, (actor,))
     results = cur.fetchall()
-    con.close()
     return [one_actor[0] for one_actor in results if one_actor[0] != actor]
 
 
@@ -95,13 +98,6 @@ def find_path(actor, target):
     return recur(actor, target)
 
 # Get number of actor from database
-sql = "select count(*) from actor;"
-try:
-  con = sqlite3.connect('a2.db')
-except sqlite3.Error as err:
-    print("database error: ", err)
-    
-cur = con.cursor()
 # Get the actor id of given actor
 actor_name = sys.argv[1]
 target_name = sys.argv[2]
@@ -141,8 +137,6 @@ where actor_name like ? and actor_name like ?;
         cur.execute(sql, [f"%{name_a}%", f"%{name_b}%"])
         movies = [(movie[0], movie[1]) for movie in cur.fetchall()]
         relation_movies.append(movies)
-    '''Tom Cruise was in Days of Thunder (1990) with Robert Duvall;
-    ''' 
     relations = list(itertools.product(*relation_movies))
     for relation in relations:
         string_list = []
