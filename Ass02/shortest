@@ -64,7 +64,7 @@ def traversal_graph(actor, target_actor):
                 closest_actor = actor
                 closest = dis[actor]
 
-        if closest > 6 or closest > dis[target_actor]:
+        if closest > 5 or closest > dis[target_actor]:
             return pred
         visited.add(closest_actor)
         actor = closest_actor
