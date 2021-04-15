@@ -7,7 +7,6 @@ if len(sys.argv) != 3:
  print("Usage: ./shortest actor_a actor_b")
  sys.exit(1)
 
-count = 0
 try:
     con = sqlite3.connect('a2.db')
 except sqlite3.Error as err:
@@ -22,9 +21,6 @@ def acquire_adjacent(actor):
         join acting a3 on a3.movie_id = m.id and a3.actor_id <>  a2.id
     group by a3.actor_id;
     '''
-    global count
-    count += 1
-    print(count)
     cur.execute(sql, (actor,))
     results = cur.fetchall()
     return [one_actor[0] for one_actor in results if one_actor[0] != actor]
