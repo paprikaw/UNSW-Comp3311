@@ -452,4 +452,3 @@ create trigger rating_enforcement
     on rated_by
     for each row
 execute function rating_constraint();
-

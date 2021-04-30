@@ -52,7 +52,7 @@ CREATE TABLE policy (
     id integer NOT NULL
 );
 
-CREATE TABLE rated_by (
+ discographyCREATE TABLE rated_by (
     sid integer,
     rid integer,
     rdate date NOT NULL,

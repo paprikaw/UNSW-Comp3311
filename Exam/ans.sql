@@ -12,87 +12,110 @@
 -- Q1. 
 
 create or replace view Q1(name, total) as
-select actor.name, count(m.id) as total from actor join acting a on actor.id = a.actor_id
-                                                   join movie m on a.movie_id = m.id
+select actor.name, count(m.id) as total
+from actor
+         join acting a on actor.id = a.actor_id
+         join movie m on a.movie_id = m.id
 group by actor.name
-order by total DESC , actor.name ASC ;
+order by total DESC, actor.name ASC;
 
 -- Q2.
 
 create or replace view Q2(year, name) as
-    select a.year, name from
-(select m.year, max(r.imdb_score) from movie m join director d on m.director_id = d.id
-join rating r on m.id = r.movie_id
-where m.year is not null and r.num_voted_users >= 100000
-group by m.year)a
-    join
-    (select m.year, r2.imdb_score,d2.name, r2.num_voted_users from movie m join rating r2 on m.id = r2.movie_id
-        join director d2 on m.director_id = d2.id) a2
-        on a.year = a2.year and a.max = a2.imdb_score
+select a.year, name
+from (select m.year, max(r.imdb_score)
+      from movie m
+               join director d on m.director_id = d.id
+               join rating r on m.id = r.movie_id
+      where m.year is not null
+        and r.num_voted_users >= 100000
+      group by m.year) a
+         join
+     (select m.year, r2.imdb_score, d2.name, r2.num_voted_users
+      from movie m
+               join rating r2 on m.id = r2.movie_id
+               join director d2 on m.director_id = d2.id) a2
+     on a.year = a2.year and a.max = a2.imdb_score
 order by a.year;
 
 -- Q3. 
 
 create or replace view Q3 (title, name) as
 -- replace the SQL code below:
-    select m.title, d.name from movie m
-join director d on m.director_id = d.id and
-                   exists(select * from actor join acting a on actor.id = a.actor_id
-                   where actor.name = d.name and a.movie_id = m.id)
+select m.title, d.name
+from movie m
+         join director d on m.director_id = d.id and
+                            exists(select *
+                                   from actor
+                                            join acting a on actor.id = a.actor_id
+                                   where actor.name = d.name
+                                     and a.movie_id = m.id)
 order by m.title ASC, d.name ASC;
-select * from Q3
 -- Q4.
 
 create or replace view Q4 (name) as
 -- replace the SQL code below:
 select 'ABC'
-
 ;
 
 
 -- Q5. 
 
+
 create or replace view Q5(actor1, actor2) as
--- replace the SQL code below:
-select 'ABC', 'DEF'
+select actor_1, actor_2
+from (select a.name as actor_1, b.name as actor_2 from Q1 a join Q1 b on a.total = b.total and a.name <> b.name) x
+              where not exists(
+                      (select m.title
+                       from actor ac
+                                join acting a2 on ac.id = a2.actor_id
+                                join movie m on a2.movie_id = m.id
+                       where ac.name = actor_1)
+                      except
+                      (select m1.title
+                       from actor acc
+                                join acting a22 on acc.id = a22.actor_id
+                                join movie m1 on a22.movie_id = m1.id
+                       where acc.name = actor_2)
+                  );
 
-;
-
-
--- Q6. 
+-- Q6.
 
 
 create or replace function
     experiencedActor(_m int, _n int) returns setof actor
-as $$ 
+as
+$$
 declare
-oldest int;
-latest int;
-duration int;
-i record;
+    oldest   int;
+    latest   int;
+    duration int;
+    i        record;
 begin
     -- fill in the body
     for i in select * from actor
-    loop
+        loop
 
-       select max(m.year) from acting ac
-           join movie m on ac.movie_id = m.id
-        where ac.actor_id = i.id
-        into latest;
+            select max(m.year)
+            from acting ac
+                     join movie m on ac.movie_id = m.id
+            where ac.actor_id = i.id
+            into latest;
 
-       select min(m.year) from acting ac
-       join movie m on ac.movie_id = m.id
-       where ac.actor_id = i.id
-       into oldest;
+            select min(m.year)
+            from acting ac
+                     join movie m on ac.movie_id = m.id
+            where ac.actor_id = i.id
+            into oldest;
 
-       duration = latest - oldest + 1;
-       if duration >= $1 and duration <= $2 then
-           return next i;
-           duration := -1;
-            oldest := -1 ;
-           latest := -1;
-       end if;
-    end loop;
+            duration = latest - oldest + 1;
+            if duration >= $1 and duration <= $2 then
+                return next i;
+                duration := -1;
+                oldest := -1;
+                latest := -1;
+            end if;
+        end loop;
 end;
 $$ language plpgsql;
 
@@ -101,11 +124,14 @@ create or replace function genre_constraint() returns trigger
 as
 $$
 declare
-num_genre integer;
+    num_genre integer;
 begin
-    select count(*) from genre join movie m on genre.movie_id = m.id
-    where m.id = old.movie_id into num_genre;
-    if  num_genre < 6 then
+    select count(*)
+    from genre
+             join movie m on genre.movie_id = m.id
+    where m.id = old.movie_id
+    into num_genre;
+    if num_genre < 6 then
         raise exception 'should not delete the genre';
     end if;
     return new;
@@ -125,9 +151,12 @@ $$
 declare
     num_keyword integer;
 begin
-    select count(*) from keyword join movie m on keyword.movie_id = m.id
-    where m.id = old.movie_id into num_keyword;
-    if  num_keyword < 6 then
+    select count(*)
+    from keyword
+             join movie m on keyword.movie_id = m.id
+    where m.id = old.movie_id
+    into num_keyword;
+    if num_keyword < 6 then
         raise exception 'should not delete the genre';
     end if;
     return new;

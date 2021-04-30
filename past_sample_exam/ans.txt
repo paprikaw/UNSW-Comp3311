@@ -1,0 +1,54 @@
+ CREATE TABLE U (
+    id integer NOT NULL,
+    b text NOT NULL,
+    a integer NOT NULL
+    PRIMARY KEY (id),
+);
+
+CREATE TABLE m (
+    id integer NOT NULL,
+    m_context text NOT NULL,
+    FOREIGN KEY (id)
+                  REFERENCES U(id),
+    PRIMARY KEY (id, m_context)
+)
+
+ CREATE TABLE T (
+    id integer NOT NULL,
+    c text NOT NULL,
+    sid integer, 
+    a integer NOT NULL
+    PRIMARY KEY (id),
+);
+
+
+ CREATE TABLE P (
+    id integer NOT NULL,
+    e text NOT NULL
+    PRIMARY KEY (id),
+    FOREIGN KEY (id)
+                  REFERENCES P(id)
+);
+
+ CREATE TABLE Q1 (
+    id integer NOT NULL,
+    f integer NOT NULL 
+    PRIMARY KEY (id),
+    FOREIGN KEY (id)
+                  REFERENCES P(id)
+);
+
+ CREATE TABLE Q2 (
+    id integer NOT NULL,
+    PRIMARY KEY (id),
+    FOREIGN KEY (id)
+                  REFERENCES P(id)
+);
+
+ CREATE TABLE Q3(
+    id integer NOT NULL,
+    g integer NOT NULL 
+    PRIMARY KEY (id),
+    FOREIGN KEY (id)
+                  REFERENCES P(id)
+);
