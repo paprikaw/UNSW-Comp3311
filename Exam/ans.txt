@@ -1,0 +1,44 @@
+-- COMP3311 21T1 Exam Answer Template for Written Questions
+--
+-- Modify the dummy placeholder REPLACE ME for each of
+-- the Questions below (Q8 - Q11)
+
+
+-- Q8
+-- Functional dependencies
+-- (a)
+BC
+-- (b)
+A
+-- (c)
+ABCE;CDE
+
+-- Q9
+-- Normalization
+-- (a)
+ABC;CDE;EF;G
+-- (b)
+ABD;DEF;BG;AC
+-- (c)
+DE;ABCD;FAG;BCF
+
+
+-- Q10
+-- Serializability
+-- (a)
+REPLACE ME
+This is conflict serializable
+-- (b)
+This is not conflict serializable
+
+-- (c)
+
+This is view serializable
+-- (d)
+This is not view serializable
+
+
+-- Q11
+-- Relational algebra
+--
+E
